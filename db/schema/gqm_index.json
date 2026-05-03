@@ -1,0 +1,57 @@
+{
+  "name": "gqm-index",
+  "fields": [
+    { "name": "id",           "type": "Edm.String",             "key": true,  "searchable": false, "filterable": true,  "sortable": false, "facetable": false, "retrievable": true  },
+    { "name": "spec_id",      "type": "Edm.String",             "key": false, "searchable": false, "filterable": true,  "sortable": false, "facetable": false, "retrievable": true  },
+    { "name": "spec_version", "type": "Edm.String",             "key": false, "searchable": false, "filterable": true,  "sortable": true,  "facetable": false, "retrievable": true  },
+    { "name": "source",       "type": "Edm.String",             "key": false, "searchable": false, "filterable": true,  "sortable": false, "facetable": true,  "retrievable": true  },
+    { "name": "waf_code_refs","type": "Collection(Edm.String)", "key": false, "searchable": false, "filterable": true,  "sortable": false, "facetable": false, "retrievable": true  },
+    { "name": "pillar_id",    "type": "Edm.String",             "key": false, "searchable": false, "filterable": true,  "sortable": false, "facetable": true,  "retrievable": true  },
+    { "name": "goal",         "type": "Edm.String",             "key": false, "searchable": false, "filterable": false, "sortable": false, "facetable": false, "retrievable": true  },
+    { "name": "question",     "type": "Edm.String",             "key": false, "searchable": false, "filterable": false, "sortable": false, "facetable": false, "retrievable": true  },
+    { "name": "metric_name",  "type": "Edm.String",             "key": false, "searchable": true,  "filterable": true,  "sortable": false, "facetable": false, "retrievable": true  },
+    { "name": "metric_unit",  "type": "Edm.String",             "key": false, "searchable": false, "filterable": true,  "sortable": false, "facetable": true,  "retrievable": true  },
+    {
+      "name": "embedding",
+      "type": "Collection(Edm.Single)",
+      "searchable": true,
+      "retrievable": false,
+      "dimensions": 1536,
+      "vectorSearchProfile": "gqm-vector-profile"
+    }
+  ],
+  "vectorSearch": {
+    "algorithms": [
+      {
+        "name": "gqm-hnsw",
+        "kind": "hnsw",
+        "hnswParameters": {
+          "metric": "cosine",
+          "m": 4,
+          "efConstruction": 400,
+          "efSearch": 500
+        }
+      }
+    ],
+    "profiles": [
+      {
+        "name": "gqm-vector-profile",
+        "algorithm": "gqm-hnsw"
+      }
+    ]
+  },
+  "semantic": {
+    "configurations": [
+      {
+        "name": "gqm-semantic",
+        "prioritizedFields": {
+          "contentFields": [
+            { "fieldName": "metric_name" },
+            { "fieldName": "goal" },
+            { "fieldName": "question" }
+          ]
+        }
+      }
+    ]
+  }
+}

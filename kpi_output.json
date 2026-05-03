@@ -1,0 +1,72 @@
+[
+  {
+    "id": "05a36afd-d87c-42a2-897e-1d7954d621ca",
+    "gqm_id": "18315104-134c-4b57-bcb7-b8eed3853a68",
+    "pillar_id": "reliability",
+    "environment": "production",
+    "threshold_value": "<= 200ms",
+    "threshold_numeric": 200.0,
+    "threshold_direction": "lte",
+    "measurement_method": "load test",
+    "status": "pending",
+    "measured_value": null,
+    "validated_at": null,
+    "notes": "Derived from: The API must respond within 200ms at the 95th percentile under normal load"
+  },
+  {
+    "id": "4fb252c3-fa17-4dcd-9edd-bbde3bfb2d28",
+    "gqm_id": "59266741-7a32-42ee-b13d-8a7a9766e1d1",
+    "pillar_id": "security",
+    "environment": "production",
+    "threshold_value": ">= 100%",
+    "threshold_numeric": 100.0,
+    "threshold_direction": "gte",
+    "measurement_method": "automated security audit",
+    "status": "pending",
+    "measured_value": null,
+    "validated_at": null,
+    "notes": "Derived from: All endpoints must require authentication and use least-privilege access"
+  },
+  {
+    "id": "6ecebb35-2523-45d0-91f6-71e5c489103b",
+    "gqm_id": "59266741-7a32-42ee-b13d-8a7a9766e1d1",
+    "pillar_id": "security",
+    "environment": "production",
+    "threshold_value": ">= 100%",
+    "threshold_numeric": 100.0,
+    "threshold_direction": "gte",
+    "measurement_method": "access control review",
+    "status": "pending",
+    "measured_value": null,
+    "validated_at": null,
+    "notes": "Derived from: All endpoints must require authentication and use least-privilege access"
+  },
+  {
+    "id": "f246e097-e878-414d-bf77-5f5c657f149e",
+    "gqm_id": "5d5a43e3-384b-4a90-8447-17331f721590",
+    "pillar_id": "cost",
+    "environment": "production",
+    "threshold_value": "<= 30 minutes",
+    "threshold_numeric": 30.0,
+    "threshold_direction": "lte",
+    "measurement_method": "System monitoring logs",
+    "status": "pending",
+    "measured_value": null,
+    "validated_at": null,
+    "notes": "Derived from: The system must recover from partial failures within 30 minutes with no more than 5 minutes of data "
+  },
+  {
+    "id": "452f0e1b-fc9f-4657-9282-483cb9f4dbbb",
+    "gqm_id": "5d5a43e3-384b-4a90-8447-17331f721590",
+    "pillar_id": "cost",
+    "environment": "production",
+    "threshold_value": "<= 5 minutes",
+    "threshold_numeric": 5.0,
+    "threshold_direction": "lte",
+    "measurement_method": "Data loss analysis reports",
+    "status": "pending",
+    "measured_value": null,
+    "validated_at": null,
+    "notes": "Derived from: The system must recover from partial failures within 30 minutes with no more than 5 minutes of data "
+  }
+]

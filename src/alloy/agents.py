@@ -1,4 +1,12 @@
+import re
+
 from ..llm import LLM
+
+
+def _strip_code_fences(text: str) -> str:
+    """Strip markdown code fences from LLM output."""
+    return re.sub(r"```\w*\n?", "", text).strip()
+
 
 # I will move this to a YAML file later
 ALLOY_GENERATION_SYSTEM = (
@@ -26,9 +34,9 @@ class AlloyGenerationAgent:
             f"System design:\n{system_design}\n\n"
             "Generate an Alloy model for the above system design."
         )
-        return self.llm.generate(f"{ALLOY_GENERATION_SYSTEM}\n\n{prompt}")
+        return _strip_code_fences(self.llm.generate(f"{ALLOY_GENERATION_SYSTEM}\n\n{prompt}"))
 
-# This agent generates Alloy test cases in the form of assertions 
+# This agent generates Alloy test cases in the form of assertions
 class AlloyTestAgent:
     def __init__(self, llm: LLM):
         self.llm = llm
@@ -41,4 +49,4 @@ class AlloyTestAgent:
             "whether the model satisfies the above requirements."
             "Output only valid Alloy code, no explanations."
         )
-        return self.llm.generate(f"{ALLOY_TEST_SYSTEM}\n\n{prompt}")
+        return _strip_code_fences(self.llm.generate(f"{ALLOY_TEST_SYSTEM}\n\n{prompt}"))

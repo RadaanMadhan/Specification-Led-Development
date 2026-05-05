@@ -4,6 +4,7 @@ load_dotenv()
 
 from src.llm import LLM
 from src.alloy.agents import AlloyGenerationAgent, AlloyTestAgent
+from src.alloy.analyzer import AlloyAnalyzer
 
 EXAMPLE_SYSTEM_DESIGN = """
 A simple file system with the following properties:
@@ -37,6 +38,27 @@ def main():
     print("\n=== Generating Alloy Assertions ===\n")
     assertions = test_agent.generate(alloy_model, EXAMPLE_KPIS)
     print(assertions)
+
+    # Combine model and assertions, then analyze
+    full_model = alloy_model + "\n\n" + assertions
+    analyzer = AlloyAnalyzer()
+    print("\n=== Running Alloy Analyzer ===\n")
+    result = analyzer.analyze(full_model)
+    print(result.raw_output)
+
+    if result.errors:
+        print("\nErrors:")
+        for error in result.errors:
+            print(f"  - {error}")
+
+    for cmd in result.commands:
+        status = "PASS" if cmd.passed else "FAIL"
+        print(f"  [{status}] {cmd.command}")
+
+    if result.all_passed:
+        print("\nAll checks passed.")
+    else:
+        print("\nSome checks failed or had errors.")
 
 
 if __name__ == "__main__":

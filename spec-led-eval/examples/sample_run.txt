@@ -1,0 +1,59 @@
+$ speceval check ../speckit-trial/specs/001-pomo-cli/spec.md
+
+[parse]  Pomo CLI — Pomodoro Timer: 4 user stories, 15 scenarios, 14 functional requirements
+[lift]   15 scenarios, 23 states, 10 actions, 14 requirements
+[snap]   wrote cache/last_snapshot.als
+[alloy]  running alloy.jar...
+======================================================================
+  Specification Evaluation Report
+  spec: ../speckit-trial/specs/001-pomo-cli/spec.md
+  feature: Pomo CLI — Pomodoro Timer
+  parsed:  4 stories, 15 scenarios, 14 functional requirements
+  lifted:  15 scenarios, 23 states, 10 actions, 5 initial states
+======================================================================
+
+  KPI         Name                            Verdict
+  ───────────────────────────────────────────────────
+  KPI_G_001   Scenario Determinism            ✓ PASS
+  KPI_G_002   Precondition Reachability       ✗ FAIL
+  KPI_G_003   Requirement Coverage            ✗ FAIL
+
+  Summary: 1 of 3 KPIs passed.
+
+  Failure notes
+  ──────────────────────────────────────────────────
+  KPI_G_002 — Precondition Reachability
+    Every Given state is either designated Initial, or appears
+    as the Then of some other scenario.
+    Alloy reported: 01. check KPI_G_002                1/1     SAT
+    Hint: a 'Given' state in the lifted scenarios is not
+          produced as the 'Then' of any other scenario,
+          and is not in Initial. Inspect the snapshot to find it.
+
+  KPI_G_003 — Requirement Coverage
+    Every Functional Requirement (FR-NNN) is exercised by at
+    least one acceptance scenario.
+    Alloy reported: 02. check KPI_G_003                1/1     SAT
+    Uncovered FRs: FR-011, FR-014
+
+
+# Interpreting this run
+#
+# Captured against speckit-trial/specs/001-pomo-cli/spec.md on 2026-05-04.
+# Both failures are real signals about the spec, not bugs in the framework:
+#
+#   KPI-G-002 (Precondition Reachability) fails because several scenarios
+#   take preconditions that no other scenario produces — for example
+#   Story 1.2 starts with "a work phase countdown reaches zero" but no
+#   scenario describes how the system enters that state. Either the
+#   missing scenarios should be added or those states should be marked
+#   Initial.
+#
+#   KPI-G-003 (Requirement Coverage) fails because FR-011 (persist state
+#   to file) and FR-014 (clean up state file) have no acceptance scenario
+#   exercising them. The spec author should either add scenarios or
+#   acknowledge them as implicit (covered transitively).
+#
+# This is the proof that lifted-spec.md → Alloy → KPI checks works
+# end-to-end on a real SpecKit project, with the framework producing
+# actionable, spec-author-readable feedback.

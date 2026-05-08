@@ -1,0 +1,149 @@
+{
+  "feature_id": "002-bank-transfer-audit",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "PermissionGrounding",
+    "PrivilegeMonotonicity",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoSelfMutation",
+    "NoInformationLeakage"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_OneRolePerUser",
+    "FR_003_OwnerSourceOnly",
+    "FR_004_AuditorReadOnly",
+    "FR_005_AdminFullAccess",
+    "FR_006_OwnerReadOnly",
+    "FR_007_AuditLogRestricted",
+    "FR_008_DistinctAccounts",
+    "FR_009_OneAuditPerTransfer",
+    "FR_010_AuditAppendOnly",
+    "FR_011_AuditCaptures",
+    "FR_012_ValidationNoSelfTransfer",
+    "FR_015_NoLeakage",
+    "FR_016_ExactlyThreeEndpoints"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_OneRolePerUser"
+    ],
+    "FR-003": [
+      "FR_003_OwnerSourceOnly",
+      "OwnershipBasedAccess"
+    ],
+    "FR-004": [
+      "FR_004_AuditorReadOnly",
+      "LeastPrivilege"
+    ],
+    "FR-005": [
+      "FR_005_AdminFullAccess",
+      "PrivilegeMonotonicity"
+    ],
+    "FR-006": [
+      "FR_006_OwnerReadOnly"
+    ],
+    "FR-007": [
+      "FR_007_AuditLogRestricted",
+      "LeastPrivilege"
+    ],
+    "FR-008": [
+      "FR_008_DistinctAccounts",
+      "NoSelfMutation"
+    ],
+    "FR-009": [
+      "FR_009_OneAuditPerTransfer",
+      "AuditCompleteness"
+    ],
+    "FR-010": [
+      "FR_010_AuditAppendOnly",
+      "AppendOnly"
+    ],
+    "FR-011": [
+      "FR_011_AuditCaptures",
+      "AttributionCorrectness"
+    ],
+    "FR-012": [
+      "FR_012_ValidationNoSelfTransfer"
+    ],
+    "FR-013": [
+      "AuditCompleteness"
+    ],
+    "FR-014": [
+      "AuditCompleteness"
+    ],
+    "FR-015": [
+      "FR_015_NoLeakage",
+      "NoInformationLeakage"
+    ],
+    "FR-016": [
+      "FR_016_ExactlyThreeEndpoints"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_AppendOnlyAuditEntries",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_010_AuditAppendOnly"
+      ],
+      "rationale": "Removing this fact allows two distinct AuditEntry atoms to share the same Transaction, violating the append-only / no-duplicate invariant. The injection forces exactly such a duplicate to exist.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some disj ae1, ae2: AuditEntry | ae1.transaction = ae2.transaction }"
+    },
+    {
+      "fact_name": "F_NoSelfTransfer",
+      "asserts_violated": [
+        "NoSelfMutation",
+        "FR_008_DistinctAccounts",
+        "FR_012_ValidationNoSelfTransfer"
+      ],
+      "rationale": "Removing this fact allows a Transaction with source = destination. The injection forces such a self-transfer to exist.",
+      "inject_violation": "fact MUTATE_SelfTransferViolation { some t: Transaction | t.source = t.destination }"
+    },
+    {
+      "fact_name": "F_OwnershipTransferRestriction",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_003_OwnerSourceOnly"
+      ],
+      "rationale": "Removing this fact allows an AccountHolder to initiate a transfer from an account they do not own. The injection forces such a scenario.",
+      "inject_violation": "fact MUTATE_OwnershipViolation { some t: Transaction | t.initiator.role = AccountHolder and t.source.owner != t.initiator }"
+    },
+    {
+      "fact_name": "F_AuditorCannotTransfer",
+      "asserts_violated": [
+        "FR_004_AuditorReadOnly"
+      ],
+      "rationale": "Removing this fact allows an Auditor to appear as initiator of a Transaction. The injection forces an auditor-initiated transaction to exist.",
+      "inject_violation": "fact MUTATE_AuditorTransferViolation { some t: Transaction | t.initiator.role = Auditor }"
+    },
+    {
+      "fact_name": "F_AuditAttribution",
+      "asserts_violated": [
+        "AttributionCorrectness",
+        "FR_011_AuditCaptures"
+      ],
+      "rationale": "Removing this fact allows an AuditEntry to misattribute the initiator or role. The injection forces a misattributed audit entry.",
+      "inject_violation": "fact MUTATE_AttributionViolation { some ae: AuditEntry | ae.auditInitiator != ae.transaction.initiator }"
+    },
+    {
+      "fact_name": "F_AuthRequired",
+      "asserts_violated": [
+        "AuthRequiredEverywhere",
+        "FR_001_AuthRequired"
+      ],
+      "rationale": "Removing this fact allows an unauthenticated operation to be permitted. The injection forces an unauthenticated-but-permitted operation.",
+      "inject_violation": "fact MUTATE_AuthViolation { some o: Operation | o.authStatus = Unauthenticated and o.permitted = True }"
+    }
+  ]
+}

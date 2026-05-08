@@ -76,6 +76,54 @@ def assemble(domain_als: Path, kpi_library_als: Path, snapshot_als: Path) -> str
     return "\n".join(parts)
 
 
+def run_alloy_file(
+    als_path: Path,
+    *,
+    alloy_jar: Path,
+    java_bin: str = "java",
+    timeout_seconds: int = 120,
+) -> RunOutcome:
+    """Run Alloy on a single, already-self-contained .als file.
+
+    Used by the design-mode pipeline (Phase 3) where the LLM authors
+    `feature_model.als` as a complete model — no domain.als or
+    kpi_library.als concatenation needed.
+    """
+    with tempfile.TemporaryDirectory(prefix="speceval_") as workdir:
+        workdir_p = Path(workdir)
+        # Copy the input into the workdir so Alloy's cwd-side outputs land
+        # in the temp directory and get cleaned up.
+        local_als = workdir_p / "model.als"
+        local_als.write_text(als_path.read_text(encoding="utf-8"), encoding="utf-8")
+
+        try:
+            proc = subprocess.run(
+                [java_bin, "-jar", str(alloy_jar.resolve()), "exec", str(local_als)],
+                capture_output=True,
+                text=True,
+                timeout=timeout_seconds,
+                cwd=workdir,
+            )
+        except FileNotFoundError as e:
+            raise RuntimeError(
+                f"Could not invoke Java. Make sure `java` is on PATH or pass java_bin. "
+                f"Original error: {e}"
+            )
+        except subprocess.TimeoutExpired as e:
+            raise RuntimeError(
+                f"Alloy run timed out after {timeout_seconds}s. "
+                f"Partial stdout:\n{e.stdout!r}"
+            )
+
+    combined = (proc.stdout or "") + "\n" + (proc.stderr or "")
+    return RunOutcome(
+        results=parse_alloy_output(combined),
+        stdout=proc.stdout,
+        stderr=proc.stderr,
+        returncode=proc.returncode,
+    )
+
+
 def run_alloy(
     *,
     domain_als: Path,

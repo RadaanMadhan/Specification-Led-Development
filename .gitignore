@@ -38,3 +38,8 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Output JSONs
+waf_embeddings_cache.json
+gqm_output.json
+kpi_output.json

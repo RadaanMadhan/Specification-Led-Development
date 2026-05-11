@@ -28,6 +28,67 @@ from datetime import datetime
 from pathlib import Path
 import requests
 
+# ══════════════════════════════════════════════════════════════════════════════
+# SPEC PARSER — reads a SpecKit spec.md and extracts requirements
+# ══════════════════════════════════════════════════════════════════════════════
+import re
+
+def parse_spec(spec_path: Path) -> dict:
+    """
+    Reads a SpecKit spec.md and extracts:
+      - feature_name  : from the H1 heading
+      - frs           : list of (id, text) from FR-NNN lines
+      - stories       : list of user story titles
+      - scenarios     : list of Given/When/Then strings
+      - success_criteria: list of SC-NNN lines
+
+    Returns a dict with all of the above plus the raw markdown.
+    """
+    if not spec_path.exists():
+        err(f"Spec file not found: {spec_path}")
+        raise SystemExit(1)
+
+    raw = spec_path.read_text(encoding="utf-8")
+
+    # Feature name — first H1
+    name_match = re.search(r'^#\s+(.+)$', raw, re.MULTILINE)
+    feature_name = name_match.group(1).strip() if name_match else "Unknown Feature"
+
+    # FRs — lines like: - **FR-001**: System MUST ...
+    frs = []
+    for m in re.finditer(r'\*\*(FR-\d+)\*\*:\s*(.+)', raw):
+        frs.append({"id": m.group(1), "text": m.group(2).strip()})
+
+    # User story titles — ### User Story N - ...
+    stories = re.findall(r'###\s+User Story.+?-\s+(.+?)(?:\s*\(|$)', raw, re.MULTILINE)
+
+    # Acceptance scenarios — Given ... When ... Then ...
+    scenarios = []
+    for m in re.finditer(
+        r'\*\*Given\*\*\s+(.+?),\s*\*\*When\*\*\s+(.+?),\s*\*\*Then\*\*\s+(.+?)(?:\.|$)',
+        raw, re.IGNORECASE | re.DOTALL
+    ):
+        scenarios.append({
+            "given": m.group(1).strip(),
+            "when":  m.group(2).strip(),
+            "then":  m.group(3).strip(),
+        })
+
+    # Success criteria — SC-NNN lines
+    success_criteria = []
+    for m in re.finditer(r'\*\*(SC-\d+)\*\*:\s*(.+)', raw):
+        success_criteria.append({"id": m.group(1), "text": m.group(2).strip()})
+
+    return {
+        "feature_name":     feature_name,
+        "frs":              frs,
+        "stories":          stories,
+        "scenarios":        scenarios,
+        "success_criteria": success_criteria,
+        "raw":              raw,
+    }
+
+
 # ── Config ─────────────────────────────────────────────────────────────────
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
 OPENAI_MODEL   = "gpt-4o-mini"   # cheap and fast — swap to gpt-4o for better quality
@@ -60,38 +121,15 @@ def load_waf_records():
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# STEP 2 — Local semantic search (cosine similarity over word vectors)
+# STEP 2 — Semantic search using real OpenAI embeddings
 #
-# NOTE: This is a stand-in for Azure AI Search + real embeddings.
-# Real embeddings understand meaning — "recover from failure" matches RE:04
-# even without shared vocabulary. Word vectors only match shared words.
-# When Azure is ready, replace this function with an Azure Search API call.
-# The rest of the agent stays identical.
+# Uses text-embedding-3-small (same model as Azure OpenAI) via OpenAI directly.
+# WAF records are embedded once and cached in waf_embeddings_cache.json so
+# you only pay for 59 embedding calls on the first run — after that it's free.
+# When Azure AI Search is ready, replace search_waf() with an Azure Search call.
 # ══════════════════════════════════════════════════════════════════════════════
-STOPWORDS = {
-    "the","a","and","to","of","in","is","are","for","from","that","this",
-    "with","or","an","not","be","by","as","all","on","its","at","it","if",
-    "have","has","can","will","may","must","your","which","when","you","do",
-    "into","also","any","each","more","only","should","their","these","those",
-    "such","use","used","using","ensure","make","need","needs","required"
-}
-
-def build_vocab(records):
-    all_text = " ".join(
-        r.get("recommendation","") + " " + r.get("risk_summary","")
-        for r in records
-    ).lower()
-    freq = {}
-    for w in all_text.split():
-        w = w.strip(".,;:()[]'\"!?")
-        if w not in STOPWORDS and len(w) > 3:
-            freq[w] = freq.get(w, 0) + 1
-    return [w for w, c in freq.items() if c >= 2]
-
-def vectorise(text, vocab):
-    words = text.lower().split()
-    words = [w.strip(".,;:()[]'\"!?") for w in words]
-    return [words.count(w) for w in vocab]
+EMBED_MODEL  = "text-embedding-3-small"
+EMBED_CACHE  = Path(__file__).parent / "waf_embeddings_cache.json"
 
 def cosine(a, b):
     dot   = sum(x*y for x,y in zip(a,b))
@@ -100,23 +138,66 @@ def cosine(a, b):
     if mag_a == 0 or mag_b == 0: return 0.0
     return dot / (mag_a * mag_b)
 
-def search_waf(requirement, records, vocab, top_k=TOP_K):
-    """
-    Local stand-in for Azure AI Search vector query.
+def get_embedding(text: str) -> list:
+    """Call OpenAI to embed a single string. Returns 1536 floats."""
+    response = requests.post(
+        "https://api.openai.com/v1/embeddings",
+        headers={
+            "Authorization": f"Bearer {OPENAI_API_KEY}",
+            "Content-Type":  "application/json",
+        },
+        json={"model": EMBED_MODEL, "input": text}
+    )
+    if response.status_code != 200:
+        err(f"Embedding API error: {response.status_code} — {response.text[:200]}")
+        raise SystemExit(1)
+    return response.json()["data"][0]["embedding"]
 
-    Azure version (4 lines to swap in):
+def load_waf_embeddings(records) -> dict:
+    """
+    Load cached WAF embeddings from disk, or generate and cache them.
+    Only calls OpenAI once for all 59 records — subsequent runs use the cache.
+    Cache key is the WAF record id (e.g. RE:04).
+    """
+    # Load existing cache
+    cache = {}
+    if EMBED_CACHE.exists():
+        cache = json.loads(EMBED_CACHE.read_text())
+
+    # Find any records not yet cached
+    missing = [r for r in records if r["id"] not in cache]
+
+    if missing:
+        info(f"Generating embeddings for {len(missing)} WAF records (cached: {len(cache)})...")
+        for r in missing:
+            text = r["recommendation"] + " " + r["risk_summary"]
+            cache[r["id"]] = get_embedding(text)
+            ok(f"Embedded {r['id']}")
+        # Save updated cache
+        EMBED_CACHE.write_text(json.dumps(cache, indent=2))
+        ok(f"Embeddings cached → {EMBED_CACHE.name}")
+    else:
+        ok(f"Using cached embeddings for all {len(records)} WAF records")
+
+    return cache
+
+def search_waf(requirement, records, waf_embeddings, top_k=TOP_K):
+    """
+    Semantic search using real OpenAI embeddings + cosine similarity.
+    Embeds the requirement, then ranks all WAF records by cosine distance.
+
+    Azure version (swap this entire function):
         response = requests.post(
             f"{AZURE_SEARCH_ENDPOINT}/indexes/waf-index/docs/search?api-version=2024-05-01-preview",
             headers={"api-key": AZURE_SEARCH_ADMIN_KEY, "Content-Type": "application/json"},
-            json={"vectorQueries": [{"vector": embed(requirement), "fields": "embedding", "k": top_k}]}
+            json={"vectorQueries": [{"vector": get_embedding(requirement), "fields": "embedding", "k": top_k}]}
         )
-        return response.json()["value"]
+        return [(r["@search.score"], r) for r in response.json()["value"]]
     """
-    query_vec = vectorise(requirement, vocab)
+    query_vec = get_embedding(requirement)
     scored = []
     for r in records:
-        text = r.get("recommendation","") + " " + r.get("risk_summary","")
-        score = cosine(query_vec, vectorise(text, vocab))
+        score = cosine(query_vec, waf_embeddings[r["id"]])
         scored.append((score, r))
     scored.sort(key=lambda x: x[0], reverse=True)
     return [(score, r) for score, r in scored[:top_k]]
@@ -240,7 +321,13 @@ Rules:
 
     # Build kpi-index records (one per threshold)
     kpi_records = []
+    seen = set()  # dedup key: (threshold_numeric, threshold_direction)
     for kpi in derived.get("kpis", []):
+        dedup_key = (kpi["threshold_numeric"], kpi["threshold_direction"])
+        if dedup_key in seen:
+            warn(f"Duplicate KPI skipped: {kpi['threshold_value']} ({kpi['threshold_direction']})")
+            continue
+        seen.add(dedup_key)
         kpi_records.append({
             "id":                  str(uuid.uuid4()),
             "gqm_id":              gqm_id,
@@ -292,23 +379,22 @@ def run(requirement, spec_id="spec-local-001"):
     print("  KPI derivation agent — local mode")
     print(f"{'='*60}{RESET}\n")
 
-    # 1 — Load WAF data
+    # 1 — Load WAF data + embeddings
     step(1, "Loading WAF reference data")
     records = load_waf_records()
-    vocab   = build_vocab(records)
-    info(f"Vocabulary built: {len(vocab)} terms")
+    waf_embeddings = load_waf_embeddings(records)
 
     # 2 — Search for relevant WAF principles
     step(2, "Searching for relevant WAF principles")
     info(f"Requirement: \"{requirement}\"")
-    matches = search_waf(requirement, records, vocab)
+    matches = search_waf(requirement, records, waf_embeddings)
     print()
     for i, (score, r) in enumerate(matches, 1):
         bar = "█" * int(score * 20)
         print(f"  {i}. {G}{r['id']}{RESET}  {r['pillar_id']:<14}  score: {score:.3f}  {B}{bar}{RESET}")
         print(f"     {r['recommendation'][:80]}...")
 
-    warn("Note: using word-vector similarity. Real embeddings will improve match quality.")
+    info(f"Using real OpenAI embeddings (text-embedding-3-small)")
 
     # 3 — Derive GQM + KPI via OpenAI
     step(3, "Deriving GQM chain and KPI targets via OpenAI")
@@ -343,15 +429,50 @@ def run(requirement, spec_id="spec-local-001"):
 
 # ── Entry point ─────────────────────────────────────────────────────────────
 if __name__ == "__main__":
-    # ── Test requirements — edit these to try different inputs ──────────────
-    requirements = [
-        "The API must respond within 200ms at the 95th percentile under normal load",
-        "All endpoints must require authentication and use least-privilege access",
-        "The system must recover from partial failures within 30 minutes with no more than 5 minutes of data loss",
-    ]
+    import sys
 
-    spec_id = f"spec-local-{datetime.now().strftime('%Y%m%d-%H%M%S')}"
+    # Accept spec file as argument, default to spec.md in same directory
+    spec_path = Path(sys.argv[1]) if len(sys.argv) > 1 else Path(__file__).parent / "spec.md"
 
-    for req in requirements:
-        run(req, spec_id)
+    print(f"\n{BOLD}{'='*60}")
+    print("  KPI-Spec — reading from spec.md")
+    print(f"{'='*60}{RESET}")
+
+    # Parse the spec
+    spec = parse_spec(spec_path)
+    spec_id = f"spec-{datetime.now().strftime('%Y%m%d-%H%M%S')}"
+
+    print(f"\n  Feature : {spec['feature_name']}")
+    print(f"  FRs     : {len(spec['frs'])} requirements found")
+    print(f"  Stories : {len(spec['stories'])} user stories found")
+    print(f"  Scenarios: {len(spec['scenarios'])} acceptance scenarios found")
+
+    if not spec['frs']:
+        err("No FR-NNN lines found in spec. Check the spec format.")
+        raise SystemExit(1)
+
+    # Show what was parsed
+    print(f"\n  {BOLD}Requirements extracted:{RESET}")
+    for fr in spec['frs']:
+        print(f"  {B}{fr['id']}{RESET}  {fr['text']}")
+
+    print("\n" + "─"*60)
+
+    # Run the agent on every FR
+    all_gqm = []
+    all_kpi = []
+    for fr in spec['frs']:
+        requirement = f"{fr['id']}: {fr['text']}"
+        gqm_record, kpi_records = run(requirement, spec_id)
+        all_gqm.append(gqm_record)
+        all_kpi.extend(kpi_records)
         print("\n" + "─"*60 + "\n")
+
+    # Final summary
+    print(f"\n{BOLD}{G}{'='*60}")
+    print(f"  Spec processed: {spec['feature_name']}")
+    print(f"  Requirements:   {len(spec['frs'])} FRs")
+    print(f"  GQM chains:     {len(all_gqm)} generated")
+    print(f"  KPI targets:    {len(all_kpi)} generated")
+    print(f"  Outputs:        gqm_output.json  +  kpi_output.json")
+    print(f"{'='*60}{RESET}\n")

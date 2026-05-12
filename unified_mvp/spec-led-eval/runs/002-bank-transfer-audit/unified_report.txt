@@ -1,0 +1,234 @@
+==============================================================================
+  Unified Compliance Report  —  002-bank-transfer-audit
+  feature folder : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/speckit-trial/specs/002-bank-transfer-audit
+==============================================================================
+
+  Executive summary
+    Alloy:  24/26 assertions PASS; mutations 4/6 bit
+    KPI:    16 GQM chains, 17 KPI rows (16 FRs)
+
+==============================================================================
+  1. Structural Verification (Alloy)
+==============================================================================
+
+==============================================================================
+  Design Compliance Report  (Phase 3 — feature_model.als)
+  feature       : 002-bank-transfer-audit
+  spec source   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/speckit-trial/specs/002-bank-transfer-audit
+  alloy model   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/unified_mvp/spec-led-eval/runs/002-bank-transfer-audit/feature_model.als
+  patterns      : LeastPrivilege, PermissionCompleteness, PermissionGrounding, PrivilegeMonotonicity, AuthRequiredEverywhere, AuditCompleteness, AppendOnly, AttributionCorrectness, OwnershipExclusivity, OwnershipBasedAccess, NoSelfMutation, NoInformationLeakage
+  fr count      : 16 declared in spec.md
+  assertions    : 26 total (24/26 PASS via Alloy)
+==============================================================================
+
+  Compliance matrix
+  ----------------------------------------------------------------------------
+  Assertion                        Verdict   Anchor
+  ---------------------------------------------------------------------
+  LeastPrivilege                   PASS      PATTERN LeastPrivilege: contracts/http-api.md authorization tables
+  PermissionCompleteness           PASS      PATTERN PermissionCompleteness: contracts/http-api.md permission tables
+  AuthRequiredEverywhere           PASS      PATTERN AuthRequiredEverywhere: FR-001; contracts/http-api.md auth section
+  AuditCompleteness                PASS      PATTERN AuditCompleteness: FR-009; data-model.md UNIQUE(transaction_id)
+  AppendOnly                       PASS      PATTERN AppendOnly: FR-010; data-model.md "no UPDATE/DELETE"
+  AttributionCorrectness           PASS      PATTERN AttributionCorrectness: FR-011; data-model.md audit-entry fields
+  OwnershipExclusivity             PASS      PATTERN OwnershipExclusivity: data-model.md — Account owned by exactly one User
+  OwnershipBasedAccess             PASS      PATTERN OwnershipBasedAccess: FR-003, FR-006; contracts/http-api.md
+  NoSelfMutation                   PASS      PATTERN NoSelfMutation: FR-008, FR-012; data-model.md CHECK constraint
+  NoInformationLeakage             FAIL      PATTERN NoInformationLeakage: FR-015; contracts/http-api.md GET /transfers/{id}
+  FR_001_AuthRequired              PASS      FEATURE-SPECIFIC: FR-001
+  FR_002_OneRolePerUser            PASS      FEATURE-SPECIFIC: FR-002
+  FR_003_OwnerSourceOnly           PASS      FEATURE-SPECIFIC: FR-003
+  FR_004_AuditorReadOnly           PASS      FEATURE-SPECIFIC: FR-004
+  FR_005_AdminFullAccess           PASS      FEATURE-SPECIFIC: FR-005
+  FR_006_OwnerReadOnly             PASS      FEATURE-SPECIFIC: FR-006
+  FR_007_AuditLogRestricted        PASS      FEATURE-SPECIFIC: FR-007
+  FR_008_DistinctAccounts          PASS      FEATURE-SPECIFIC: FR-008
+  FR_009_OneAuditPerTransfer       PASS      FEATURE-SPECIFIC: FR-009
+  FR_010_AuditAppendOnly           PASS      FEATURE-SPECIFIC: FR-010
+  FR_011_AuditCaptures             PASS      FEATURE-SPECIFIC: FR-011
+  FR_012_ValidationNoSelfTransfer  PASS      FEATURE-SPECIFIC: FR-012 (validation — no self-transfer, positive amount)
+  FR_015_NoLeakage                 FAIL      FEATURE-SPECIFIC: FR-015
+  FR_016_ExactlyThreeEndpoints     PASS      FEATURE-SPECIFIC: FR-016 — exactly three endpoints
+  PermissionGrounding              PASS      PATTERN PermissionGrounding: spec.md FRs; contracts/http-api.md
+  PrivilegeMonotonicity            PASS      PATTERN PrivilegeMonotonicity: spec.md — admin ⊇ auditor read perms, admin ⊇ AH
+
+  Counterexamples (Alloy SAT)
+  ----------------------------------------------------------------------------
+  NoInformationLeakage  [PATTERN NoInformationLeakage: FR-015; contracts/http-api.md GET /transfers/{id}]
+    Alloy: 09. check NoInformationLeakage     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR_015_NoLeakage  [FEATURE-SPECIFIC: FR-015]
+    Alloy: 22. check FR_015_NoLeakage         0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR coverage
+  ----------------------------------------------------------------------------
+  FR-001  →  FR_001_AuthRequired=PASS, AuthRequiredEverywhere=PASS
+  FR-002  →  FR_002_OneRolePerUser=PASS
+  FR-003  →  FR_003_OwnerSourceOnly=PASS, OwnershipBasedAccess=PASS
+  FR-004  →  FR_004_AuditorReadOnly=PASS, LeastPrivilege=PASS
+  FR-005  →  FR_005_AdminFullAccess=PASS, PrivilegeMonotonicity=PASS
+  FR-006  →  FR_006_OwnerReadOnly=PASS
+  FR-007  →  FR_007_AuditLogRestricted=PASS, LeastPrivilege=PASS
+  FR-008  →  FR_008_DistinctAccounts=PASS, NoSelfMutation=PASS
+  FR-009  →  FR_009_OneAuditPerTransfer=PASS, AuditCompleteness=PASS
+  FR-010  →  FR_010_AuditAppendOnly=PASS, AppendOnly=PASS
+  FR-011  →  FR_011_AuditCaptures=PASS, AttributionCorrectness=PASS
+  FR-012  →  FR_012_ValidationNoSelfTransfer=PASS
+  FR-013  →  AuditCompleteness=PASS
+  FR-014  →  AuditCompleteness=PASS
+  FR-015  →  FR_015_NoLeakage=FAIL, NoInformationLeakage=FAIL
+  FR-016  →  FR_016_ExactlyThreeEndpoints=PASS
+
+  All FRs have at least one matching assertion.
+
+==============================================================================
+  Mutation tests  (assertion-strength validation)
+==============================================================================
+
+  Strategy: replace each named fact's body with `{}` (no constraint),
+  then re-run Alloy. Each listed assertion should now FAIL on the
+  mutated model. If it still PASSes, the assertion is vacuous and
+  must be strengthened.
+
+  - MUTATE F_AppendOnlyAuditEntries  → runs/002-bank-transfer-audit/mutated_F_AppendOnlyAuditEntries.als
+    rationale: Removing this fact allows two distinct AuditEntry atoms to share the same Transaction, violating the append-only / no-duplicate invariant. The injection forces exactly such a duplicate to exist.
+    expected to FAIL: AppendOnly, FR_010_AuditAppendOnly
+      - AppendOnly: PASS (vacuous?)
+      - FR_010_AuditAppendOnly: PASS (vacuous?)
+
+  - MUTATE F_NoSelfTransfer  → runs/002-bank-transfer-audit/mutated_F_NoSelfTransfer.als
+    rationale: Removing this fact allows a Transaction with source = destination. The injection forces such a self-transfer to exist.
+    expected to FAIL: NoSelfMutation, FR_008_DistinctAccounts, FR_012_ValidationNoSelfTransfer
+      - NoSelfMutation: FAIL (expected)
+      - FR_008_DistinctAccounts: FAIL (expected)
+      - FR_012_ValidationNoSelfTransfer: FAIL (expected)
+
+  - MUTATE F_OwnershipTransferRestriction  → runs/002-bank-transfer-audit/mutated_F_OwnershipTransferRestriction.als
+    rationale: Removing this fact allows an AccountHolder to initiate a transfer from an account they do not own. The injection forces such a scenario.
+    expected to FAIL: OwnershipBasedAccess, FR_003_OwnerSourceOnly
+      - OwnershipBasedAccess: FAIL (expected)
+      - FR_003_OwnerSourceOnly: FAIL (expected)
+
+  - MUTATE F_AuditorCannotTransfer  → runs/002-bank-transfer-audit/mutated_F_AuditorCannotTransfer.als
+    rationale: Removing this fact allows an Auditor to appear as initiator of a Transaction. The injection forces an auditor-initiated transaction to exist.
+    expected to FAIL: FR_004_AuditorReadOnly
+      - FR_004_AuditorReadOnly: FAIL (expected)
+
+  - MUTATE F_AuditAttribution  → runs/002-bank-transfer-audit/mutated_F_AuditAttribution.als
+    rationale: Removing this fact allows an AuditEntry to misattribute the initiator or role. The injection forces a misattributed audit entry.
+    expected to FAIL: AttributionCorrectness, FR_011_AuditCaptures
+      - AttributionCorrectness: FAIL (expected)
+      - FR_011_AuditCaptures: FAIL (expected)
+
+  - MUTATE F_AuthRequired  → runs/002-bank-transfer-audit/mutated_F_AuthRequired.als
+    rationale: Removing this fact allows an unauthenticated operation to be permitted. The injection forces an unauthenticated-but-permitted operation.
+    expected to FAIL: AuthRequiredEverywhere, FR_001_AuthRequired
+      - AuthRequiredEverywhere: PASS (vacuous?)
+      - FR_001_AuthRequired: PASS (vacuous?)
+
+  Mutation summary
+  ----------------------------------------------------------------------------
+  - F_AppendOnlyAuditEntries: ASSERTION VACUOUS (AppendOnly, FR_010_AuditAppendOnly)
+  - F_NoSelfTransfer: ASSERTIONS BIT (NoSelfMutation, FR_008_DistinctAccounts, FR_012_ValidationNoSelfTransfer)
+  - F_OwnershipTransferRestriction: ASSERTIONS BIT (OwnershipBasedAccess, FR_003_OwnerSourceOnly)
+  - F_AuditorCannotTransfer: ASSERTIONS BIT (FR_004_AuditorReadOnly)
+  - F_AuditAttribution: ASSERTIONS BIT (AttributionCorrectness, FR_011_AuditCaptures)
+  - F_AuthRequired: ASSERTION VACUOUS (AuthRequiredEverywhere, FR_001_AuthRequired)
+
+==============================================================================
+  2. Runtime KPI Targets (WAF-derived)
+==============================================================================
+
+  feature        : Feature Specification: Bank Transfer with Audit Trail (PoC)
+  spec run id    : spec-20260512-104549
+  volume         : 16 GQM chains, 17 KPI rows (16 FRs)
+
+  pillar breakdown
+  ----------------------------------------------------------------------------
+    Cost Optimization (CO)           2 KPI rows
+    Security (SE)                    15 KPI rows
+
+  per-FR detail
+  ----------------------------------------------------------------------------
+    FR-001  System MUST require valid authentication on every request to POST /tra
+      pillar=Security (SE), waf=['SE:05', 'SE:07', 'SE:09']
+      metric: auth_coverage_percentage (percentage)
+        - 100%           (higher is better)  via API gateway logging and monitoring
+
+    FR-002  System MUST associate every authenticated caller with exactly one role
+      pillar=Security (SE), waf=['SE:05', 'SE:04', 'SE:12']
+      metric: auth_role_assignment_accuracy (percentage)
+        - >= 95%         (higher is better)  via automated access logs review
+
+    FR-003  System MUST allow a caller with role account_holder to initiate a tran
+      pillar=Security (SE), waf=['SE:05', 'CO:01', 'SE:12']
+      metric: transfer_authorization_error_rate (percentage)
+        - >= 99%         (higher is better)  via Audit logs review and error tracking
+
+    FR-004  System MUST allow a caller with role auditor to read any transfer and 
+      pillar=Security (SE), waf=['SE:05', 'CO:04', 'CO:01']
+      metric: auth_coverage_percentage (percentage)
+        - >= 100%        (higher is better)  via Identity Access Management Audit
+        - 0              (lower is better)  via Audit Log Analysis
+
+    FR-005  System MUST allow a caller with role admin to initiate transfers betwe
+      pillar=Security (SE), waf=['SE:05', 'RE:02', 'CO:01']
+      metric: privileged_access_count (count)
+        - <= 5           (lower is better)  via audit logs review
+
+    FR-006  System MUST allow a caller with role account_holder to read a transfer
+      pillar=Security (SE), waf=['SE:05', 'CO:01', 'RE:02']
+      metric: access_control_accuracy (percentage)
+        - >= 99.9%       (higher is better)  via audit log analysis
+
+    FR-007  System MUST forbid every role other than auditor and admin from readin
+      pillar=Security (SE), waf=['SE:05', 'CO:04', 'SE:09']
+      metric: unauthorized_access_attempts_count (count)
+        - gte 0          (higher is better)  via Monitoring access logs for unsuccessful audit log access attempts
+
+    FR-008  Every successful transfer MUST debit exactly one Account (the source) 
+      pillar=Cost Optimization (CO), waf=['CO:09', 'CO:01', 'RE:05']
+      metric: successful_transfer_rate (percentage)
+        - >= 99.5%       (higher is better)  via transaction monitoring and analysis
+
+    FR-009  Every successful transfer MUST produce exactly one AuditEntry, and tha
+      pillar=Cost Optimization (CO), waf=['CO:01', 'SE:05', 'CO:09']
+      metric: successful_transfer_auditentry_count (count)
+        - = 1            (higher is better)  via automated audit log analysis
+
+    FR-010  AuditEntries MUST be append-only. The system MUST NOT expose any opera
+      pillar=Security (SE), waf=['SE:05', 'SE:09', 'SE:07']
+      metric: unauthorized_audit_entry_modifications_count (count)
+        - == 0           (lower is better)  via Audit logging analysis
+
+    FR-011  Each AuditEntry MUST capture, at minimum: the Transaction it refers to
+      pillar=Security (SE), waf=['SE:05', 'SE:07', 'CO:03']
+      metric: AuditEntry completeness percentage (percentage)
+        - >= 100%        (higher is better)  via automated data validation tool
+
+    FR-012  System MUST reject transfer requests that are invalid on their face (n
+      pillar=Security (SE), waf=['SE:05', 'RE:02', 'RE:03']
+      metric: invalid_transfer_request_rejection_rate (percentage)
+        - >= 99%         (higher is better)  via system logs analysis
+
+    FR-013  System MUST reject transfer requests that would overdraw the source ac
+      pillar=Security (SE), waf=['SE:05', 'CO:01', 'CO:03']
+      metric: transfer_request_rejection_rate (percentage)
+        - >= 99%         (higher is better)  via Automated test reporting
+
+    FR-014  System MUST ensure that concurrent transfer initiations against the sa
+      pillar=Security (SE), waf=['SE:05', 'CO:01', 'CO:09']
+      metric: concurrent_transfer_consistency_success_rate (percentage)
+        - >= 99%         (higher is better)  via automated transaction validation tests
+
+    FR-015  For an account_holder caller, GET /transfers/{id} responses for transf
+      pillar=Security (SE), waf=['SE:05', 'SE:07', 'CO:01']
+      metric: unauthorized_transfer_error_rate (percentage)
+        - >= 99%         (higher is better)  via API logging and monitoring
+
+    FR-016  System MUST expose exactly the three endpoints in scope: POST /transfe
+      pillar=Security (SE), waf=['SE:05', 'SE:07', 'SE:04']
+      metric: endpoint_exposure_count (count)
+        - >= 3           (higher is better)  via API gateway monitoring

@@ -1,0 +1,17 @@
+{
+  "name": "kpi-index",
+  "fields": [
+    { "name": "id",                 "type": "Edm.String",  "key": true,  "searchable": false, "filterable": true,  "sortable": false, "facetable": false, "retrievable": true  },
+    { "name": "gqm_id",            "type": "Edm.String",  "key": false, "searchable": false, "filterable": true,  "sortable": false, "facetable": false, "retrievable": true  },
+    { "name": "pillar_id",         "type": "Edm.String",  "key": false, "searchable": false, "filterable": true,  "sortable": false, "facetable": true,  "retrievable": true  },
+    { "name": "environment",       "type": "Edm.String",  "key": false, "searchable": false, "filterable": true,  "sortable": false, "facetable": true,  "retrievable": true  },
+    { "name": "threshold_value",   "type": "Edm.String",  "key": false, "searchable": false, "filterable": false, "sortable": false, "facetable": false, "retrievable": true  },
+    { "name": "threshold_numeric", "type": "Edm.Double",  "key": false, "searchable": false, "filterable": true,  "sortable": true,  "facetable": false, "retrievable": true  },
+    { "name": "threshold_direction","type": "Edm.String", "key": false, "searchable": false, "filterable": true,  "sortable": false, "facetable": false, "retrievable": true  },
+    { "name": "measurement_method","type": "Edm.String",  "key": false, "searchable": false, "filterable": false, "sortable": false, "facetable": false, "retrievable": true  },
+    { "name": "status",            "type": "Edm.String",  "key": false, "searchable": false, "filterable": true,  "sortable": false, "facetable": true,  "retrievable": true  },
+    { "name": "measured_value",    "type": "Edm.Double",  "key": false, "searchable": false, "filterable": true,  "sortable": true,  "facetable": false, "retrievable": true  },
+    { "name": "validated_at",      "type": "Edm.DateTimeOffset", "key": false, "searchable": false, "filterable": true, "sortable": true, "facetable": false, "retrievable": true },
+    { "name": "notes",             "type": "Edm.String",  "key": false, "searchable": false, "filterable": false, "sortable": false, "facetable": false, "retrievable": true  }
+  ]
+}

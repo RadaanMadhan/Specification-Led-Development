@@ -1,0 +1,258 @@
+[
+  {
+    "id": "b0512e7d-ad7e-44b5-a046-222dabc711d1",
+    "spec_id": "spec-20260512-092725",
+    "spec_version": "1.0.0",
+    "source": "waf_derived",
+    "waf_code_refs": [
+      "SE:05",
+      "SE:07",
+      "SE:09"
+    ],
+    "pillar_id": "security",
+    "goal": "Ensure that all requests to specified endpoints are authenticated before processing.",
+    "question": "What metrics can indicate the effectiveness of the authentication requirement implementation?",
+    "metric_name": "auth_coverage_percentage",
+    "metric_unit": "percentage"
+  },
+  {
+    "id": "27b70f9a-2711-4aa0-9243-649df479e178",
+    "spec_id": "spec-20260512-092725",
+    "spec_version": "1.0.0",
+    "source": "waf_derived",
+    "waf_code_refs": [
+      "SE:05",
+      "SE:04",
+      "SE:12"
+    ],
+    "pillar_id": "security",
+    "goal": "Ensure that every authenticated caller is accurately assigned one role from the defined set to uphold security best practices.",
+    "question": "What metrics can indicate the correctness and exclusivity of role assignments for authenticated users?",
+    "metric_name": "authenticated_role_assignment_accuracy",
+    "metric_unit": "percentage"
+  },
+  {
+    "id": "e6dbdb10-d27e-49ab-91af-7da393186ade",
+    "spec_id": "spec-20260512-092725",
+    "spec_version": "1.0.0",
+    "source": "waf_derived",
+    "waf_code_refs": [
+      "SE:05",
+      "CO:01",
+      "SE:12"
+    ],
+    "pillar_id": "security",
+    "goal": "Ensure that only authorized account holders can initiate transfers from their own accounts.",
+    "question": "What would you need to measure to know if account authorization enforcement is effective?",
+    "metric_name": "transfer_authorization_error_rate",
+    "metric_unit": "percentage"
+  },
+  {
+    "id": "9d214df3-51d7-479b-bfb8-5e78cefd81a6",
+    "spec_id": "spec-20260512-092725",
+    "spec_version": "1.0.0",
+    "source": "waf_derived",
+    "waf_code_refs": [
+      "SE:05",
+      "CO:04",
+      "CO:01"
+    ],
+    "pillar_id": "security",
+    "goal": "Ensure that the system correctly restricts auditor capabilities to read transfers and logs while preventing unauthorized transfer initiation.",
+    "question": "What would you need to measure to know if auditors can only read transfers and logs without initiating transfers?",
+    "metric_name": "auth_coverage_percentage",
+    "metric_unit": "percentage"
+  },
+  {
+    "id": "c780b4e7-1c74-48e7-8b91-9a46b915f1be",
+    "spec_id": "spec-20260512-092725",
+    "spec_version": "1.0.0",
+    "source": "waf_derived",
+    "waf_code_refs": [
+      "SE:05",
+      "RE:02",
+      "CO:01"
+    ],
+    "pillar_id": "security",
+    "goal": "Ensure that the admin role can securely and efficiently manage account transfers and audit logs.",
+    "question": "What metrics can validate the proper implementation of security and reliability for admin account transfers?",
+    "metric_name": "auth_coverage_percentage",
+    "metric_unit": "percentage"
+  },
+  {
+    "id": "9a16088b-1831-45eb-81e7-b38182368c52",
+    "spec_id": "spec-20260512-092725",
+    "spec_version": "1.0.0",
+    "source": "waf_derived",
+    "waf_code_refs": [
+      "SE:05",
+      "CO:01",
+      "RE:02"
+    ],
+    "pillar_id": "security",
+    "goal": "Ensure that the system limits access to transfers for account holders based on ownership.",
+    "question": "What would you need to measure to know if account holders can only access their own transfers?",
+    "metric_name": "successful_transfer_access_count",
+    "metric_unit": "count"
+  },
+  {
+    "id": "948ef4b0-4903-4f29-b80f-16f4dd4e005a",
+    "spec_id": "spec-20260512-092725",
+    "spec_version": "1.0.0",
+    "source": "waf_derived",
+    "waf_code_refs": [
+      "SE:05",
+      "CO:04",
+      "SE:09"
+    ],
+    "pillar_id": "security",
+    "goal": "Ensure that only authorized roles can access the audit log in the system.",
+    "question": "What would you need to measure to know if unauthorized access attempts to the audit log are being prevented?",
+    "metric_name": "unauthorized_access_attempts_count",
+    "metric_unit": "count"
+  },
+  {
+    "id": "1f1dc0bd-18d5-4552-b2dc-46f2f74c979b",
+    "spec_id": "spec-20260512-092725",
+    "spec_version": "1.0.0",
+    "source": "waf_derived",
+    "waf_code_refs": [
+      "CO:09",
+      "CO:01",
+      "RE:05"
+    ],
+    "pillar_id": "cost",
+    "goal": "Ensure that every transfer operation correctly debits one source account and credits one different destination account.",
+    "question": "What would you need to measure to know if the account transfer operations are correctly processed?",
+    "metric_name": "successful_transfer_ratio",
+    "metric_unit": "percentage"
+  },
+  {
+    "id": "b13c3e9b-054c-4233-afc6-4349ea026e35",
+    "spec_id": "spec-20260512-092725",
+    "spec_version": "1.0.0",
+    "source": "waf_derived",
+    "waf_code_refs": [
+      "CO:01",
+      "SE:05",
+      "CO:09"
+    ],
+    "pillar_id": "cost",
+    "goal": "Ensure that every successful transfer generates precisely one linked AuditEntry.",
+    "question": "What metrics can be tracked to verify that successful transfers consistently produce one AuditEntry?",
+    "metric_name": "successful_transfer_audit_entry_count",
+    "metric_unit": "count"
+  },
+  {
+    "id": "b33c32f4-908d-4473-9e1e-940e6fe08ae9",
+    "spec_id": "spec-20260512-092725",
+    "spec_version": "1.0.0",
+    "source": "waf_derived",
+    "waf_code_refs": [
+      "SE:05",
+      "SE:09",
+      "SE:07"
+    ],
+    "pillar_id": "security",
+    "goal": "To ensure that AuditEntries are strictly append-only and cannot be modified or deleted by any role.",
+    "question": "What would you need to measure to know if AuditEntries are protected from updates or deletions?",
+    "metric_name": "unauthorized_update_count",
+    "metric_unit": "count"
+  },
+  {
+    "id": "2e1b9315-0679-41e2-8774-df69dbaba0ac",
+    "spec_id": "spec-20260512-092725",
+    "spec_version": "1.0.0",
+    "source": "waf_derived",
+    "waf_code_refs": [
+      "SE:05",
+      "SE:07",
+      "CO:03"
+    ],
+    "pillar_id": "security",
+    "goal": "Ensure comprehensive and auditable logging of all critical actions in the system.",
+    "question": "What percentage of AuditEntries successfully capture all required elements of the transaction?",
+    "metric_name": "audit_entry_completeness_percentage",
+    "metric_unit": "percentage"
+  },
+  {
+    "id": "fc74c4c0-2b73-456a-887a-ec5a90a8b77b",
+    "spec_id": "spec-20260512-092725",
+    "spec_version": "1.0.0",
+    "source": "waf_derived",
+    "waf_code_refs": [
+      "SE:05",
+      "RE:02",
+      "RE:03"
+    ],
+    "pillar_id": "security",
+    "goal": "Ensure the system effectively rejects invalid transfer requests without creating transactions or audit entries.",
+    "question": "What metrics indicate the accuracy and effectiveness of request validation processes?",
+    "metric_name": "invalid_transfer_requests_rejected",
+    "metric_unit": "count"
+  },
+  {
+    "id": "0472c798-c9e6-4ae8-bf4c-45afcb66daca",
+    "spec_id": "spec-20260512-092725",
+    "spec_version": "1.0.0",
+    "source": "waf_derived",
+    "waf_code_refs": [
+      "SE:05",
+      "CO:01",
+      "CO:03"
+    ],
+    "pillar_id": "security",
+    "goal": "Ensure that the system accurately rejects transfer requests that exceed the available balance of the source account.",
+    "question": "How can we determine the accuracy of the system's rejection of overdrawn transfer requests?",
+    "metric_name": "transfer_request_rejection_accuracy",
+    "metric_unit": "percentage"
+  },
+  {
+    "id": "bdf6605c-426c-4697-a525-9e49f0a3c275",
+    "spec_id": "spec-20260512-092725",
+    "spec_version": "1.0.0",
+    "source": "waf_derived",
+    "waf_code_refs": [
+      "SE:05",
+      "CO:01",
+      "CO:09"
+    ],
+    "pillar_id": "security",
+    "goal": "Ensure consistent state management during concurrent transfer initiations to prevent negative balances or duplicate audit entries.",
+    "question": "What metrics indicate the system's ability to prevent inconsistent states during concurrent transfer processes?",
+    "metric_name": "concurrent_transfer_success_rate",
+    "metric_unit": "percentage"
+  },
+  {
+    "id": "25a94860-5a0d-4df3-a0d7-955ea1e3e2e3",
+    "spec_id": "spec-20260512-092725",
+    "spec_version": "1.0.0",
+    "source": "waf_derived",
+    "waf_code_refs": [
+      "SE:05",
+      "SE:07",
+      "CO:01"
+    ],
+    "pillar_id": "security",
+    "goal": "Ensure that GET /transfers/{id} responses do not leak information about non-permitted transfers.",
+    "question": "What metrics indicate that responses properly obscure the existence of other users' transfers?",
+    "metric_name": "unauthorized_access_response_count",
+    "metric_unit": "count"
+  },
+  {
+    "id": "ae4e43a8-61bc-4a19-b689-6aa71e5d07ca",
+    "spec_id": "spec-20260512-092725",
+    "spec_version": "1.0.0",
+    "source": "waf_derived",
+    "waf_code_refs": [
+      "SE:05",
+      "SE:07",
+      "SE:04"
+    ],
+    "pillar_id": "security",
+    "goal": "Ensure that the system adheres strictly to the defined API endpoint specification and security standards.",
+    "question": "What metrics are necessary to evaluate compliance with the specified API endpoints and security requirements?",
+    "metric_name": "auth_coverage_percentage",
+    "metric_unit": "percentage"
+  }
+]

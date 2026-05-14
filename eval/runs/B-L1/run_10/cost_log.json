@@ -1,0 +1,16 @@
+{
+  "run_id": "B-L1_run_10",
+  "spec_id": "spec-20260513-160135",
+  "total_input_tokens": 2828,
+  "total_output_tokens": 517,
+  "total_tokens": 3345,
+  "chat_input_tokens": 2784,
+  "chat_output_tokens": 517,
+  "embed_input_tokens": 44,
+  "num_kpis_derived": 6,
+  "num_gqm_chains": 4,
+  "cost_usd": 0.0007278,
+  "cost_per_kpi_usd": 0.0001213,
+  "model": "gpt-4o-mini",
+  "embed_model": "text-embedding-3-small"
+}

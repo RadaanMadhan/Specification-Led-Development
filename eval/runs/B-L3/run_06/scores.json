@@ -1,0 +1,117 @@
+[
+  {
+    "run_id": "B-L3_run_06",
+    "spec_id": "B-L3",
+    "richness": "L3",
+    "context": "B",
+    "fr_id": "FR-001",
+    "kpi_id": "5c6c63fe-b335-4627-adcc-3b8bc3e7b3c0",
+    "gqm_id": "0c9f382e-f183-43b1-a588-9501aa218d80",
+    "pillar_id": "reliability",
+    "metric_name": "API uptime percentage",
+    "threshold_numeric": 99.99,
+    "threshold_direction": "gte",
+    "waf_code_refs": [
+      "RE:02",
+      "PE:10",
+      "OE:09"
+    ],
+    "d1": 1.0,
+    "d2": 0.5,
+    "d3": 1.0,
+    "d4": 0.5,
+    "kqs_partial": 0.75
+  },
+  {
+    "run_id": "B-L3_run_06",
+    "spec_id": "B-L3",
+    "richness": "L3",
+    "context": "B",
+    "fr_id": "FR-002",
+    "kpi_id": "4af5b096-d804-4156-9229-4fbbb3c0a0b6",
+    "gqm_id": "80c0ba0a-0601-4a83-acd4-df5a57a2361b",
+    "pillar_id": "performance",
+    "metric_name": "p95 API response time",
+    "threshold_numeric": 200.0,
+    "threshold_direction": "lte",
+    "waf_code_refs": [
+      "PE:06",
+      "PE:07",
+      "PE:04"
+    ],
+    "d1": 1.0,
+    "d2": 1.0,
+    "d3": 1.0,
+    "d4": 0.5,
+    "kqs_partial": 0.875
+  },
+  {
+    "run_id": "B-L3_run_06",
+    "spec_id": "B-L3",
+    "richness": "L3",
+    "context": "B",
+    "fr_id": "FR-003",
+    "kpi_id": "2fc76b1b-3657-4684-b34c-023f337f9f2d",
+    "gqm_id": "4e4e7262-061e-4925-9fa8-1b88abbf8807",
+    "pillar_id": "reliability",
+    "metric_name": "persistence success rate",
+    "threshold_numeric": 99.99,
+    "threshold_direction": "gte",
+    "waf_code_refs": [
+      "RE:04",
+      "RE:09",
+      "RE:07"
+    ],
+    "d1": 1.0,
+    "d2": 1.0,
+    "d3": 1.0,
+    "d4": 0.5,
+    "kqs_partial": 0.875
+  },
+  {
+    "run_id": "B-L3_run_06",
+    "spec_id": "B-L3",
+    "richness": "L3",
+    "context": "B",
+    "fr_id": "FR-004",
+    "kpi_id": "da694a9c-bf8e-4a73-a98e-df67f2826977",
+    "gqm_id": "9d008f3d-f90e-4fe8-9e76-284116dffe8d",
+    "pillar_id": "operations",
+    "metric_name": "Log ingestion success rate",
+    "threshold_numeric": 99.9,
+    "threshold_direction": "gte",
+    "waf_code_refs": [
+      "OE:07",
+      "PE:04",
+      "PE:10"
+    ],
+    "d1": 1.0,
+    "d2": 0.5,
+    "d3": 1.0,
+    "d4": 0.5,
+    "kqs_partial": 0.75
+  },
+  {
+    "run_id": "B-L3_run_06",
+    "spec_id": "B-L3",
+    "richness": "L3",
+    "context": "B",
+    "fr_id": "FR-004",
+    "kpi_id": "d37c82f7-92e8-4736-9d73-f363606a63c6",
+    "gqm_id": "9d008f3d-f90e-4fe8-9e76-284116dffe8d",
+    "pillar_id": "operations",
+    "metric_name": "Log ingestion success rate",
+    "threshold_numeric": 2000.0,
+    "threshold_direction": "lte",
+    "waf_code_refs": [
+      "OE:07",
+      "PE:04",
+      "PE:10"
+    ],
+    "d1": 1.0,
+    "d2": 0.5,
+    "d3": 0.0,
+    "d4": 0.5,
+    "kqs_partial": 0.5
+  }
+]

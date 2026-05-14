@@ -27,6 +27,10 @@ import uuid
 from datetime import datetime
 from pathlib import Path
 import requests
+try:
+    from dotenv import load_dotenv; load_dotenv()
+except ImportError:
+    pass  # .env loading is optional; set OPENAI_API_KEY in environment directly
 
 # ══════════════════════════════════════════════════════════════════════════════
 # SPEC PARSER — reads a SpecKit spec.md and extracts requirements
@@ -96,6 +100,16 @@ SEED_FILE      = Path(__file__).parent / "db" / "waf_index_seed.json"
 GQM_OUTPUT        = Path(__file__).parent / "gqm_output.json"
 KPI_OUTPUT        = Path(__file__).parent / "kpi_output.json"
 TOP_K             = 3   # how many WAF principles to retrieve per requirement
+COST_LOG_OUTPUT   = Path(__file__).parent / "cost_log.json"
+
+# ── Token usage accumulator — reset per CLI invocation in __main__ ───────────
+_token_usage: dict = {"chat_input": 0, "chat_output": 0, "embed_input": 0}
+
+# Rates in USD per token (not per 1k)
+_COST_RATES: dict = {
+    "gpt-4o-mini": {"input": 0.00015 / 1000, "output": 0.00060 / 1000},
+    "gpt-4o":      {"input": 0.00250 / 1000, "output": 0.01000 / 1000},
+}
 
 # ── Colours ─────────────────────────────────────────────────────────────────
 G = "\033[92m"; R = "\033[91m"; B = "\033[94m"; Y = "\033[93m"
@@ -151,7 +165,9 @@ def get_embedding(text: str) -> list:
     if response.status_code != 200:
         err(f"Embedding API error: {response.status_code} — {response.text[:200]}")
         raise SystemExit(1)
-    return response.json()["data"][0]["embedding"]
+    data = response.json()
+    _token_usage["embed_input"] += data.get("usage", {}).get("prompt_tokens", 0)
+    return data["data"][0]["embedding"]
 
 def load_waf_embeddings(records) -> dict:
     """
@@ -230,7 +246,11 @@ def call_openai(prompt):
         err(f"OpenAI API error: {response.status_code} — {response.text[:200]}")
         raise SystemExit(1)
 
-    return response.json()["choices"][0]["message"]["content"]
+    data = response.json()
+    usage = data.get("usage", {})
+    _token_usage["chat_input"]  += usage.get("prompt_tokens", 0)
+    _token_usage["chat_output"] += usage.get("completion_tokens", 0)
+    return data["choices"][0]["message"]["content"]
 
 
 def derive_gqm_and_kpi(requirement, waf_matches, spec_id):
@@ -372,6 +392,73 @@ def save_outputs(gqm_record, kpi_records):
 
 
 # ══════════════════════════════════════════════════════════════════════════════
+# STEP 5 — Cost logging
+# Accumulates token usage across all API calls within one CLI invocation and
+# writes cost_log.json alongside gqm_output.json / kpi_output.json.
+# ══════════════════════════════════════════════════════════════════════════════
+
+def write_cost_log(spec_id: str, run_id: str, num_gqm: int, num_kpi: int) -> None:
+    """
+    Writes a cost_log.json summarising token usage and estimated cost for the run.
+
+    Uses the module-level _token_usage accumulator which is incremented by
+    get_embedding() and call_openai() as they execute.
+
+    Cost is computed for OPENAI_MODEL (chat completions) only; embedding tokens
+    are logged separately under embed_input_tokens and are excluded from cost_usd
+    because text-embedding-3-small pricing differs from gpt-4o-mini.
+
+    Args:
+        spec_id:  spec identifier string (e.g. 'A-L1' or the timestamped id).
+        run_id:   run identifier (e.g. 'A-L1_run_03', or same as spec_id if
+                  invoked outside the eval harness).
+        num_gqm:  number of GQM chains generated in this run.
+        num_kpi:  number of KPI records generated in this run.
+
+    Output:
+        Writes COST_LOG_OUTPUT (cost_log.json) in the same directory as
+        gqm_output.json.  Overwrites any previous file from the same run.
+    """
+    chat_in  = _token_usage["chat_input"]
+    chat_out = _token_usage["chat_output"]
+    embed_in = _token_usage["embed_input"]
+
+    # total_input_tokens includes both chat prompt tokens and embedding tokens
+    total_in  = chat_in + embed_in
+    total_out = chat_out
+
+    rates = _COST_RATES.get(OPENAI_MODEL)
+    if rates:
+        cost_usd = (chat_in * rates["input"]) + (chat_out * rates["output"])
+        cost_per_kpi = (cost_usd / num_kpi) if num_kpi else None
+    else:
+        cost_usd = None
+        cost_per_kpi = None
+
+    record = {
+        "run_id":               run_id,
+        "spec_id":              spec_id,
+        "total_input_tokens":   total_in,
+        "total_output_tokens":  total_out,
+        "total_tokens":         total_in + total_out,
+        "chat_input_tokens":    chat_in,
+        "chat_output_tokens":   chat_out,
+        "embed_input_tokens":   embed_in,
+        "num_kpis_derived":     num_kpi,
+        "num_gqm_chains":       num_gqm,
+        "cost_usd":             round(cost_usd, 8) if cost_usd is not None else None,
+        "cost_per_kpi_usd":     round(cost_per_kpi, 8) if cost_per_kpi is not None else None,
+        "model":                OPENAI_MODEL,
+        "embed_model":          EMBED_MODEL,
+    }
+    COST_LOG_OUTPUT.write_text(json.dumps(record, indent=2))
+    ok(f"Cost log saved  → {COST_LOG_OUTPUT.name}  "
+       f"(chat: {chat_in}in/{chat_out}out tokens, "
+       f"embed: {embed_in} tokens, "
+       f"cost: {'${:.6f}'.format(cost_usd) if cost_usd is not None else 'n/a'})")
+
+
+# ══════════════════════════════════════════════════════════════════════════════
 # Main
 # ══════════════════════════════════════════════════════════════════════════════
 def run(requirement, spec_id="spec-local-001"):
@@ -389,6 +476,7 @@ def run(requirement, spec_id="spec-local-001"):
     info(f"Requirement: \"{requirement}\"")
     matches = search_waf(requirement, records, waf_embeddings)
     print()
+    
     for i, (score, r) in enumerate(matches, 1):
         bar = "█" * int(score * 20)
         print(f"  {i}. {G}{r['id']}{RESET}  {r['pillar_id']:<14}  score: {score:.3f}  {B}{bar}{RESET}")
@@ -431,8 +519,12 @@ def run(requirement, spec_id="spec-local-001"):
 if __name__ == "__main__":
     import sys
 
-    # Accept spec file as argument, default to spec.md in same directory
-    spec_path = Path(sys.argv[1]) if len(sys.argv) > 1 else Path(__file__).parent / "spec.md"
+    # Accept spec file as argv[1], optional run_id as argv[2]
+    spec_path  = Path(sys.argv[1]) if len(sys.argv) > 1 else Path(__file__).parent / "spec.md"
+    run_id_arg = sys.argv[2] if len(sys.argv) > 2 else None
+
+    # Reset token accumulator for this invocation
+    _token_usage["chat_input"] = _token_usage["chat_output"] = _token_usage["embed_input"] = 0
 
     print(f"\n{BOLD}{'='*60}")
     print("  KPI-Spec — reading from spec.md")
@@ -441,6 +533,7 @@ if __name__ == "__main__":
     # Parse the spec
     spec = parse_spec(spec_path)
     spec_id = f"spec-{datetime.now().strftime('%Y%m%d-%H%M%S')}"
+    run_id  = run_id_arg if run_id_arg else spec_id
 
     print(f"\n  Feature : {spec['feature_name']}")
     print(f"  FRs     : {len(spec['frs'])} requirements found")
@@ -468,11 +561,14 @@ if __name__ == "__main__":
         all_kpi.extend(kpi_records)
         print("\n" + "─"*60 + "\n")
 
+    # Write cost log (covers all FR calls in this invocation)
+    write_cost_log(spec_id, run_id, len(all_gqm), len(all_kpi))
+
     # Final summary
     print(f"\n{BOLD}{G}{'='*60}")
     print(f"  Spec processed: {spec['feature_name']}")
     print(f"  Requirements:   {len(spec['frs'])} FRs")
     print(f"  GQM chains:     {len(all_gqm)} generated")
     print(f"  KPI targets:    {len(all_kpi)} generated")
-    print(f"  Outputs:        gqm_output.json  +  kpi_output.json")
+    print(f"  Outputs:        gqm_output.json  +  kpi_output.json  +  cost_log.json")
     print(f"{'='*60}{RESET}\n")

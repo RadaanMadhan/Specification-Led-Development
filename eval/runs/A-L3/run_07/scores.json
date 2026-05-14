@@ -1,0 +1,163 @@
+[
+  {
+    "run_id": "A-L3_run_07",
+    "spec_id": "A-L3",
+    "richness": "L3",
+    "context": "A",
+    "fr_id": "FR-001",
+    "kpi_id": "84904554-9da1-4ac1-96dd-a6914ef738d4",
+    "gqm_id": "267c490e-2a6e-4112-82a9-060e233ade89",
+    "pillar_id": "reliability",
+    "metric_name": "p95 GBP transfer execution time",
+    "threshold_numeric": 3000.0,
+    "threshold_direction": "lte",
+    "waf_code_refs": [
+      "RE:02",
+      "CO:04",
+      "PE:09"
+    ],
+    "d1": 1.0,
+    "d2": 0.5,
+    "d3": 1.0,
+    "d4": 0.5,
+    "kqs_partial": 0.75
+  },
+  {
+    "run_id": "A-L3_run_07",
+    "spec_id": "A-L3",
+    "richness": "L3",
+    "context": "A",
+    "fr_id": "FR-002",
+    "kpi_id": "ff7e654f-6a80-49e0-bbf9-8854425df033",
+    "gqm_id": "1a815d6a-c8ce-456f-b660-8fa0ff324231",
+    "pillar_id": "security",
+    "metric_name": "Unauthenticated request rejection time",
+    "threshold_numeric": 200.0,
+    "threshold_direction": "lte",
+    "waf_code_refs": [
+      "SE:05",
+      "SE:06",
+      "PE:07"
+    ],
+    "d1": 1.0,
+    "d2": 0.5,
+    "d3": 1.0,
+    "d4": 0.5,
+    "kqs_partial": 0.75
+  },
+  {
+    "run_id": "A-L3_run_07",
+    "spec_id": "A-L3",
+    "richness": "L3",
+    "context": "A",
+    "fr_id": "FR-002",
+    "kpi_id": "eb745b1c-75e0-4a96-bb14-7187a5e3e7fa",
+    "gqm_id": "1a815d6a-c8ce-456f-b660-8fa0ff324231",
+    "pillar_id": "security",
+    "metric_name": "Unauthenticated request rejection time",
+    "threshold_numeric": 100.0,
+    "threshold_direction": "gte",
+    "waf_code_refs": [
+      "SE:05",
+      "SE:06",
+      "PE:07"
+    ],
+    "d1": 1.0,
+    "d2": 0.5,
+    "d3": 0.0,
+    "d4": 0.5,
+    "kqs_partial": 0.5
+  },
+  {
+    "run_id": "A-L3_run_07",
+    "spec_id": "A-L3",
+    "richness": "L3",
+    "context": "A",
+    "fr_id": "FR-003",
+    "kpi_id": "807b3faf-524c-4bce-82e0-3e40aa0a1df4",
+    "gqm_id": "3eaffee7-4d49-44d4-924e-ec7153bbc9c0",
+    "pillar_id": "cost",
+    "metric_name": "log_write_time",
+    "threshold_numeric": 5.0,
+    "threshold_direction": "lte",
+    "waf_code_refs": [
+      "CO:03",
+      "CO:10",
+      "PE:04"
+    ],
+    "d1": 1.0,
+    "d2": 0.5,
+    "d3": 1.0,
+    "d4": 1.0,
+    "kqs_partial": 0.875
+  },
+  {
+    "run_id": "A-L3_run_07",
+    "spec_id": "A-L3",
+    "richness": "L3",
+    "context": "A",
+    "fr_id": "FR-004",
+    "kpi_id": "685496e3-5ba7-445f-bffc-47ae674d1412",
+    "gqm_id": "241b4427-2f68-4abb-a4c1-cee5657f2138",
+    "pillar_id": "reliability",
+    "metric_name": "monthly uptime percentage",
+    "threshold_numeric": 99.9,
+    "threshold_direction": "gte",
+    "waf_code_refs": [
+      "RE:04",
+      "RE:09",
+      "PE:10"
+    ],
+    "d1": 1.0,
+    "d2": 0.5,
+    "d3": 1.0,
+    "d4": 0.5,
+    "kqs_partial": 0.75
+  },
+  {
+    "run_id": "A-L3_run_07",
+    "spec_id": "A-L3",
+    "richness": "L3",
+    "context": "A",
+    "fr_id": "FR-004",
+    "kpi_id": "4956a394-2685-4c3b-821c-959a88b75dc9",
+    "gqm_id": "241b4427-2f68-4abb-a4c1-cee5657f2138",
+    "pillar_id": "reliability",
+    "metric_name": "monthly uptime percentage",
+    "threshold_numeric": 15,
+    "threshold_direction": "lte",
+    "waf_code_refs": [
+      "RE:04",
+      "RE:09",
+      "PE:10"
+    ],
+    "d1": 1.0,
+    "d2": 0.5,
+    "d3": 0.0,
+    "d4": 0.5,
+    "kqs_partial": 0.5
+  },
+  {
+    "run_id": "A-L3_run_07",
+    "spec_id": "A-L3",
+    "richness": "L3",
+    "context": "A",
+    "fr_id": "FR-004",
+    "kpi_id": "ea657204-b547-4f01-935e-be7768f49a46",
+    "gqm_id": "241b4427-2f68-4abb-a4c1-cee5657f2138",
+    "pillar_id": "reliability",
+    "metric_name": "monthly uptime percentage",
+    "threshold_numeric": 2000,
+    "threshold_direction": "lte",
+    "waf_code_refs": [
+      "RE:04",
+      "RE:09",
+      "PE:10"
+    ],
+    "d1": 1.0,
+    "d2": 0.5,
+    "d3": 0.0,
+    "d4": 0.5,
+    "kqs_partial": 0.5
+  }
+]

@@ -1,0 +1,117 @@
+[
+  {
+    "run_id": "A-L1_run_06",
+    "spec_id": "A-L1",
+    "richness": "L1",
+    "context": "A",
+    "fr_id": "FR-001",
+    "kpi_id": "0fc21414-ced6-4caf-b054-85fb519f8183",
+    "gqm_id": "91148c7b-9a37-427d-bf4c-9cffd8cd556a",
+    "pillar_id": "cost",
+    "metric_name": "flow_availability_percentage",
+    "threshold_numeric": 99.99,
+    "threshold_direction": "gte",
+    "waf_code_refs": [
+      "CO:09",
+      "RE:02",
+      "CO:01"
+    ],
+    "d1": 1.0,
+    "d2": 0.5,
+    "d3": 1.0,
+    "d4": 1.0,
+    "kqs_partial": 0.875
+  },
+  {
+    "run_id": "A-L1_run_06",
+    "spec_id": "A-L1",
+    "richness": "L1",
+    "context": "A",
+    "fr_id": "FR-001",
+    "kpi_id": "495aa2a8-1dd1-445a-be90-e85f7dd484d9",
+    "gqm_id": "91148c7b-9a37-427d-bf4c-9cffd8cd556a",
+    "pillar_id": "cost",
+    "metric_name": "flow_availability_percentage",
+    "threshold_numeric": 0.5,
+    "threshold_direction": "lte",
+    "waf_code_refs": [
+      "CO:09",
+      "RE:02",
+      "CO:01"
+    ],
+    "d1": 1.0,
+    "d2": 0.5,
+    "d3": 0.0,
+    "d4": 1.0,
+    "kqs_partial": 0.625
+  },
+  {
+    "run_id": "A-L1_run_06",
+    "spec_id": "A-L1",
+    "richness": "L1",
+    "context": "A",
+    "fr_id": "FR-002",
+    "kpi_id": "d76a14a3-bf72-46ee-876c-139b21d5c478",
+    "gqm_id": "3f7397c8-e99c-41e3-bf43-779457b3baa8",
+    "pillar_id": "security",
+    "metric_name": "auth_coverage_percentage",
+    "threshold_numeric": 100.0,
+    "threshold_direction": "gte",
+    "waf_code_refs": [
+      "SE:05",
+      "CO:04",
+      "CO:01"
+    ],
+    "d1": 1.0,
+    "d2": 0.5,
+    "d3": 1.0,
+    "d4": 1.0,
+    "kqs_partial": 0.875
+  },
+  {
+    "run_id": "A-L1_run_06",
+    "spec_id": "A-L1",
+    "richness": "L1",
+    "context": "A",
+    "fr_id": "FR-003",
+    "kpi_id": "c9813ec7-0b81-4311-b275-6447b262e1aa",
+    "gqm_id": "bafb5971-3ad6-4d70-8a78-1932cbc9dcd3",
+    "pillar_id": "cost",
+    "metric_name": "storage_cost_per_gb",
+    "threshold_numeric": 0.1,
+    "threshold_direction": "lte",
+    "waf_code_refs": [
+      "CO:10",
+      "SE:09",
+      "PE:04"
+    ],
+    "d1": 1.0,
+    "d2": 0.5,
+    "d3": 1.0,
+    "d4": 1.0,
+    "kqs_partial": 0.875
+  },
+  {
+    "run_id": "A-L1_run_06",
+    "spec_id": "A-L1",
+    "richness": "L1",
+    "context": "A",
+    "fr_id": "FR-004",
+    "kpi_id": "e384d001-a16e-44b2-b889-fe9f7e98b1bc",
+    "gqm_id": "de14c274-a557-4af9-bb12-c6452fceff00",
+    "pillar_id": "performance",
+    "metric_name": "System uptime percentage",
+    "threshold_numeric": 99.5,
+    "threshold_direction": "gte",
+    "waf_code_refs": [
+      "PE:10",
+      "CO:12",
+      "RE:07"
+    ],
+    "d1": 1.0,
+    "d2": 0.5,
+    "d3": 1.0,
+    "d4": 0.5,
+    "kqs_partial": 0.75
+  }
+]

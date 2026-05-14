@@ -1,0 +1,94 @@
+[
+  {
+    "run_id": "B-L1_run_06",
+    "spec_id": "B-L1",
+    "richness": "L1",
+    "context": "B",
+    "fr_id": "FR-001",
+    "kpi_id": "5ff8f861-dd3b-4491-a81d-35e1e53c2623",
+    "gqm_id": "45e1f3a9-42c6-4e37-bede-e402958679ae",
+    "pillar_id": "operations",
+    "metric_name": "task_creation_flow_availability",
+    "threshold_numeric": 99.99,
+    "threshold_direction": "gte",
+    "waf_code_refs": [
+      "OE:09",
+      "OE:10",
+      "RE:02"
+    ],
+    "d1": 1.0,
+    "d2": 0.5,
+    "d3": 1.0,
+    "d4": 1.0,
+    "kqs_partial": 0.875
+  },
+  {
+    "run_id": "B-L1_run_06",
+    "spec_id": "B-L1",
+    "richness": "L1",
+    "context": "B",
+    "fr_id": "FR-002",
+    "kpi_id": "5b07a63f-dd2c-4c51-9d15-4258a25fe445",
+    "gqm_id": "f3c13df5-a759-47e1-b700-4eab56c66e2b",
+    "pillar_id": "performance",
+    "metric_name": "p95 API response time",
+    "threshold_numeric": 200.0,
+    "threshold_direction": "lte",
+    "waf_code_refs": [
+      "PE:07",
+      "CO:13",
+      "PE:11"
+    ],
+    "d1": 1.0,
+    "d2": 0.5,
+    "d3": 1.0,
+    "d4": 0.5,
+    "kqs_partial": 0.75
+  },
+  {
+    "run_id": "B-L1_run_06",
+    "spec_id": "B-L1",
+    "richness": "L1",
+    "context": "B",
+    "fr_id": "FR-003",
+    "kpi_id": "8505e4cb-af1c-4f24-85fd-fcc377c46462",
+    "gqm_id": "0143dce4-d78d-404f-b6e3-fb9f1933bcd7",
+    "pillar_id": "performance",
+    "metric_name": "data_loss_rate",
+    "threshold_numeric": 0.01,
+    "threshold_direction": "lte",
+    "waf_code_refs": [
+      "PE:04",
+      "CO:10",
+      "RE:09"
+    ],
+    "d1": 1.0,
+    "d2": 0.5,
+    "d3": 0.0,
+    "d4": 1.0,
+    "kqs_partial": 0.625
+  },
+  {
+    "run_id": "B-L1_run_06",
+    "spec_id": "B-L1",
+    "richness": "L1",
+    "context": "B",
+    "fr_id": "FR-004",
+    "kpi_id": "a6686564-fcbd-4b13-8d11-7749fef521c6",
+    "gqm_id": "3bbb0ab3-e197-44ff-ac22-ddff95f4e1f4",
+    "pillar_id": "operations",
+    "metric_name": "log_ingestion_latency_seconds",
+    "threshold_numeric": 60.0,
+    "threshold_direction": "lte",
+    "waf_code_refs": [
+      "OE:07",
+      "PE:04",
+      "RE:09"
+    ],
+    "d1": 1.0,
+    "d2": 0.5,
+    "d3": 1.0,
+    "d4": 1.0,
+    "kqs_partial": 0.875
+  }
+]

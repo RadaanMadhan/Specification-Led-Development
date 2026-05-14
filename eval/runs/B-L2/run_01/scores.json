@@ -1,0 +1,117 @@
+[
+  {
+    "run_id": "B-L2_run_01",
+    "spec_id": "B-L2",
+    "richness": "L2",
+    "context": "B",
+    "fr_id": "FR-001",
+    "kpi_id": "9df673c3-b851-4736-aad4-a05596700451",
+    "gqm_id": "0c636711-20cf-483d-ab9f-4779ee9bca7d",
+    "pillar_id": "operations",
+    "metric_name": "critical_flow_count",
+    "threshold_numeric": 10.0,
+    "threshold_direction": "gte",
+    "waf_code_refs": [
+      "OE:09",
+      "RE:02",
+      "SE:12"
+    ],
+    "d1": 1.0,
+    "d2": 0.5,
+    "d3": 1.0,
+    "d4": 1.0,
+    "kqs_partial": 0.875
+  },
+  {
+    "run_id": "B-L2_run_01",
+    "spec_id": "B-L2",
+    "richness": "L2",
+    "context": "B",
+    "fr_id": "FR-002",
+    "kpi_id": "e5be89c0-2f4f-4e8a-b575-0b382d11b45f",
+    "gqm_id": "e6c29abd-dc81-4a56-813a-6e194455f188",
+    "pillar_id": "performance",
+    "metric_name": "p95 API response time",
+    "threshold_numeric": 200.0,
+    "threshold_direction": "lte",
+    "waf_code_refs": [
+      "PE:07",
+      "RE:06",
+      "PE:08"
+    ],
+    "d1": 1.0,
+    "d2": 0.5,
+    "d3": 1.0,
+    "d4": 0.5,
+    "kqs_partial": 0.75
+  },
+  {
+    "run_id": "B-L2_run_01",
+    "spec_id": "B-L2",
+    "richness": "L2",
+    "context": "B",
+    "fr_id": "FR-002",
+    "kpi_id": "ff6f081d-d47b-4a80-9d0b-effab96f3a69",
+    "gqm_id": "e6c29abd-dc81-4a56-813a-6e194455f188",
+    "pillar_id": "performance",
+    "metric_name": "p95 API response time",
+    "threshold_numeric": 95.0,
+    "threshold_direction": "gte",
+    "waf_code_refs": [
+      "PE:07",
+      "RE:06",
+      "PE:08"
+    ],
+    "d1": 1.0,
+    "d2": 0.5,
+    "d3": 0.0,
+    "d4": 0.5,
+    "kqs_partial": 0.5
+  },
+  {
+    "run_id": "B-L2_run_01",
+    "spec_id": "B-L2",
+    "richness": "L2",
+    "context": "B",
+    "fr_id": "FR-003",
+    "kpi_id": "835e5957-63a7-40f6-a2bf-cd8e908bb83f",
+    "gqm_id": "e0bd9869-5b3d-464b-b7a8-179aecc76f64",
+    "pillar_id": "reliability",
+    "metric_name": "task_data_persistence_success_rate",
+    "threshold_numeric": 99.0,
+    "threshold_direction": "gte",
+    "waf_code_refs": [
+      "RE:07",
+      "RE:09",
+      "PE:10"
+    ],
+    "d1": 1.0,
+    "d2": 0.5,
+    "d3": 1.0,
+    "d4": 1.0,
+    "kqs_partial": 0.875
+  },
+  {
+    "run_id": "B-L2_run_01",
+    "spec_id": "B-L2",
+    "richness": "L2",
+    "context": "B",
+    "fr_id": "FR-004",
+    "kpi_id": "e3eed946-3b39-4c6f-bf50-90a33e2f1baf",
+    "gqm_id": "2c0f3050-d5bb-4de0-8242-51cde16ed2e3",
+    "pillar_id": "cost",
+    "metric_name": "audit_log_coverage_percentage",
+    "threshold_numeric": 95.0,
+    "threshold_direction": "gte",
+    "waf_code_refs": [
+      "CO:14",
+      "SE:05",
+      "OE:07"
+    ],
+    "d1": 1.0,
+    "d2": 0.5,
+    "d3": 1.0,
+    "d4": 1.0,
+    "kqs_partial": 0.875
+  }
+]

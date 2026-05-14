@@ -1,0 +1,140 @@
+[
+  {
+    "run_id": "A-L2_run_05",
+    "spec_id": "A-L2",
+    "richness": "L2",
+    "context": "A",
+    "fr_id": "FR-001",
+    "kpi_id": "6eb89e93-3d1a-4916-b93d-0e27e92959b3",
+    "gqm_id": "7aefdfaa-a07d-4619-bb36-e0018571b893",
+    "pillar_id": "security",
+    "metric_name": "transfer_flow_availability_percentage",
+    "threshold_numeric": 99.99,
+    "threshold_direction": "gte",
+    "waf_code_refs": [
+      "SE:05",
+      "RE:02",
+      "PE:09"
+    ],
+    "d1": 1.0,
+    "d2": 0.5,
+    "d3": 1.0,
+    "d4": 1.0,
+    "kqs_partial": 0.875
+  },
+  {
+    "run_id": "A-L2_run_05",
+    "spec_id": "A-L2",
+    "richness": "L2",
+    "context": "A",
+    "fr_id": "FR-001",
+    "kpi_id": "a2d26608-f942-492d-a844-aff69a59ef64",
+    "gqm_id": "7aefdfaa-a07d-4619-bb36-e0018571b893",
+    "pillar_id": "security",
+    "metric_name": "transfer_flow_availability_percentage",
+    "threshold_numeric": 100.0,
+    "threshold_direction": "lte",
+    "waf_code_refs": [
+      "SE:05",
+      "RE:02",
+      "PE:09"
+    ],
+    "d1": 1.0,
+    "d2": 0.5,
+    "d3": 0.0,
+    "d4": 1.0,
+    "kqs_partial": 0.625
+  },
+  {
+    "run_id": "A-L2_run_05",
+    "spec_id": "A-L2",
+    "richness": "L2",
+    "context": "A",
+    "fr_id": "FR-001",
+    "kpi_id": "50dc025f-df63-46c1-89b2-08d919f6049e",
+    "gqm_id": "7aefdfaa-a07d-4619-bb36-e0018571b893",
+    "pillar_id": "security",
+    "metric_name": "transfer_flow_availability_percentage",
+    "threshold_numeric": 100.0,
+    "threshold_direction": "gte",
+    "waf_code_refs": [
+      "SE:05",
+      "RE:02",
+      "PE:09"
+    ],
+    "d1": 1.0,
+    "d2": 0.5,
+    "d3": 1.0,
+    "d4": 1.0,
+    "kqs_partial": 0.875
+  },
+  {
+    "run_id": "A-L2_run_05",
+    "spec_id": "A-L2",
+    "richness": "L2",
+    "context": "A",
+    "fr_id": "FR-002",
+    "kpi_id": "2bcf93d0-33c6-4312-85d7-64c2c33bd3e5",
+    "gqm_id": "fc3a0f8d-52cb-44ad-ad6f-69d7c1452c7e",
+    "pillar_id": "security",
+    "metric_name": "auth_coverage_percentage",
+    "threshold_numeric": 100.0,
+    "threshold_direction": "gte",
+    "waf_code_refs": [
+      "SE:05",
+      "SE:06",
+      "CO:04"
+    ],
+    "d1": 1.0,
+    "d2": 0.5,
+    "d3": 1.0,
+    "d4": 1.0,
+    "kqs_partial": 0.875
+  },
+  {
+    "run_id": "A-L2_run_05",
+    "spec_id": "A-L2",
+    "richness": "L2",
+    "context": "A",
+    "fr_id": "FR-003",
+    "kpi_id": "0f8cac5c-24c1-4c56-9410-1559c7d43d29",
+    "gqm_id": "80e040a5-c7fc-46ae-bf1c-67b4bac30869",
+    "pillar_id": "security",
+    "metric_name": "successful_transfer_audit_log_coverage",
+    "threshold_numeric": 99.0,
+    "threshold_direction": "gte",
+    "waf_code_refs": [
+      "SE:09",
+      "OE:07",
+      "SE:05"
+    ],
+    "d1": 1.0,
+    "d2": 0.5,
+    "d3": 1.0,
+    "d4": 1.0,
+    "kqs_partial": 0.875
+  },
+  {
+    "run_id": "A-L2_run_05",
+    "spec_id": "A-L2",
+    "richness": "L2",
+    "context": "A",
+    "fr_id": "FR-004",
+    "kpi_id": "495ac084-376a-43ac-b200-51f91bdf04d1",
+    "gqm_id": "e07729e5-b748-4557-a0ac-ffcb61806acf",
+    "pillar_id": "performance",
+    "metric_name": "capacity_headroom_percentage",
+    "threshold_numeric": 30.0,
+    "threshold_direction": "gte",
+    "waf_code_refs": [
+      "PE:10",
+      "PE:03",
+      "PE:02"
+    ],
+    "d1": 1.0,
+    "d2": 1.0,
+    "d3": 1.0,
+    "d4": 1.0,
+    "kqs_partial": 1.0
+  }
+]

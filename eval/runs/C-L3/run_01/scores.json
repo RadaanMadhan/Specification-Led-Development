@@ -1,0 +1,140 @@
+[
+  {
+    "run_id": "C-L3_run_01",
+    "spec_id": "C-L3",
+    "richness": "L3",
+    "context": "C",
+    "fr_id": "FR-001",
+    "kpi_id": "979d3e7a-b490-45bc-b6c1-ebe022d407cd",
+    "gqm_id": "d78876f3-f6cd-4bb1-8cd5-7ec5be0ae00b",
+    "pillar_id": "security",
+    "metric_name": "p95 API response time",
+    "threshold_numeric": 300.0,
+    "threshold_direction": "lte",
+    "waf_code_refs": [
+      "SE:09",
+      "SE:07",
+      "PE:04"
+    ],
+    "d1": 1.0,
+    "d2": 0.5,
+    "d3": 1.0,
+    "d4": 0.5,
+    "kqs_partial": 0.75
+  },
+  {
+    "run_id": "C-L3_run_01",
+    "spec_id": "C-L3",
+    "richness": "L3",
+    "context": "C",
+    "fr_id": "FR-002",
+    "kpi_id": "8d0931ef-b924-466c-89a0-acd6d421cb9d",
+    "gqm_id": "31f104ed-08bb-406f-9118-f2ac36e15379",
+    "pillar_id": "security",
+    "metric_name": "authentication_coverage_percentage",
+    "threshold_numeric": 100.0,
+    "threshold_direction": "gte",
+    "waf_code_refs": [
+      "SE:05",
+      "CO:04",
+      "SE:07"
+    ],
+    "d1": 1.0,
+    "d2": 0.5,
+    "d3": 1.0,
+    "d4": 1.0,
+    "kqs_partial": 0.875
+  },
+  {
+    "run_id": "C-L3_run_01",
+    "spec_id": "C-L3",
+    "richness": "L3",
+    "context": "C",
+    "fr_id": "FR-003",
+    "kpi_id": "8d4fa0f9-fdc9-46e4-b2c7-0accd1a945f8",
+    "gqm_id": "c9422ff2-78f8-4a1d-8dfe-ec09707e378b",
+    "pillar_id": "reliability",
+    "metric_name": "system uptime percentage",
+    "threshold_numeric": 99.95,
+    "threshold_direction": "gte",
+    "waf_code_refs": [
+      "RE:04",
+      "RE:09",
+      "PE:10"
+    ],
+    "d1": 1.0,
+    "d2": 0.5,
+    "d3": 1.0,
+    "d4": 0.5,
+    "kqs_partial": 0.75
+  },
+  {
+    "run_id": "C-L3_run_01",
+    "spec_id": "C-L3",
+    "richness": "L3",
+    "context": "C",
+    "fr_id": "FR-003",
+    "kpi_id": "2b915545-9a38-462d-8df3-c2d5a0e8d393",
+    "gqm_id": "c9422ff2-78f8-4a1d-8dfe-ec09707e378b",
+    "pillar_id": "reliability",
+    "metric_name": "system uptime percentage",
+    "threshold_numeric": 10,
+    "threshold_direction": "lte",
+    "waf_code_refs": [
+      "RE:04",
+      "RE:09",
+      "PE:10"
+    ],
+    "d1": 1.0,
+    "d2": 0.5,
+    "d3": 0.0,
+    "d4": 0.5,
+    "kqs_partial": 0.5
+  },
+  {
+    "run_id": "C-L3_run_01",
+    "spec_id": "C-L3",
+    "richness": "L3",
+    "context": "C",
+    "fr_id": "FR-003",
+    "kpi_id": "5aaa26a7-2beb-48e9-b2ca-938adafa9b4d",
+    "gqm_id": "c9422ff2-78f8-4a1d-8dfe-ec09707e378b",
+    "pillar_id": "reliability",
+    "metric_name": "system uptime percentage",
+    "threshold_numeric": 200,
+    "threshold_direction": "lte",
+    "waf_code_refs": [
+      "RE:04",
+      "RE:09",
+      "PE:10"
+    ],
+    "d1": 1.0,
+    "d2": 0.5,
+    "d3": 0.0,
+    "d4": 0.5,
+    "kqs_partial": 0.5
+  },
+  {
+    "run_id": "C-L3_run_01",
+    "spec_id": "C-L3",
+    "richness": "L3",
+    "context": "C",
+    "fr_id": "FR-004",
+    "kpi_id": "f88e3b0f-00b5-42e7-bc62-b750821ca254",
+    "gqm_id": "0b653c4e-20f0-4fad-8fee-97b1cedddd43",
+    "pillar_id": "operations",
+    "metric_name": "log completeness percentage",
+    "threshold_numeric": 99.99,
+    "threshold_direction": "gte",
+    "waf_code_refs": [
+      "OE:07",
+      "SE:09",
+      "PE:04"
+    ],
+    "d1": 1.0,
+    "d2": 0.5,
+    "d3": 1.0,
+    "d4": 0.5,
+    "kqs_partial": 0.75
+  }
+]

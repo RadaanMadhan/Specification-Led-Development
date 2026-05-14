@@ -1,0 +1,94 @@
+[
+  {
+    "run_id": "A-L2_run_04",
+    "spec_id": "A-L2",
+    "richness": "L2",
+    "context": "A",
+    "fr_id": "FR-001",
+    "kpi_id": "9e4ffa39-6a11-4ab1-8248-2a3c7e0bbac2",
+    "gqm_id": "7541405d-8f21-47da-ab6e-bee6fae618d8",
+    "pillar_id": "security",
+    "metric_name": "critical_flow_availability_percentage",
+    "threshold_numeric": 99.99,
+    "threshold_direction": "gte",
+    "waf_code_refs": [
+      "SE:05",
+      "RE:02",
+      "PE:09"
+    ],
+    "d1": 1.0,
+    "d2": 0.5,
+    "d3": 1.0,
+    "d4": 1.0,
+    "kqs_partial": 0.875
+  },
+  {
+    "run_id": "A-L2_run_04",
+    "spec_id": "A-L2",
+    "richness": "L2",
+    "context": "A",
+    "fr_id": "FR-002",
+    "kpi_id": "a554173d-f8bd-4249-b687-5927a3b24b9a",
+    "gqm_id": "9ba5371b-27e2-43d5-baa6-17eae6157d7c",
+    "pillar_id": "security",
+    "metric_name": "auth_coverage_percentage",
+    "threshold_numeric": 100.0,
+    "threshold_direction": "gte",
+    "waf_code_refs": [
+      "SE:05",
+      "SE:06",
+      "CO:04"
+    ],
+    "d1": 1.0,
+    "d2": 0.5,
+    "d3": 1.0,
+    "d4": 1.0,
+    "kqs_partial": 0.875
+  },
+  {
+    "run_id": "A-L2_run_04",
+    "spec_id": "A-L2",
+    "richness": "L2",
+    "context": "A",
+    "fr_id": "FR-003",
+    "kpi_id": "26c49774-137b-455e-9c61-b437e9123f53",
+    "gqm_id": "16afdf08-3244-43eb-900c-dc93d8dc525a",
+    "pillar_id": "security",
+    "metric_name": "audit_log_coverage_percentage",
+    "threshold_numeric": 95.0,
+    "threshold_direction": "gte",
+    "waf_code_refs": [
+      "SE:09",
+      "OE:07",
+      "SE:05"
+    ],
+    "d1": 1.0,
+    "d2": 0.5,
+    "d3": 1.0,
+    "d4": 1.0,
+    "kqs_partial": 0.875
+  },
+  {
+    "run_id": "A-L2_run_04",
+    "spec_id": "A-L2",
+    "richness": "L2",
+    "context": "A",
+    "fr_id": "FR-004",
+    "kpi_id": "399346df-06a7-4c58-8767-ec24cabc2381",
+    "gqm_id": "74c40278-43ce-4673-91c4-35a21923516f",
+    "pillar_id": "performance",
+    "metric_name": "service capacity headroom percentage",
+    "threshold_numeric": 30.0,
+    "threshold_direction": "gte",
+    "waf_code_refs": [
+      "PE:10",
+      "PE:03",
+      "PE:02"
+    ],
+    "d1": 1.0,
+    "d2": 1.0,
+    "d3": 1.0,
+    "d4": 0.5,
+    "kqs_partial": 0.875
+  }
+]

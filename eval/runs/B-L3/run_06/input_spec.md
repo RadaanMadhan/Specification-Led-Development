@@ -1,0 +1,7 @@
+# Feature: Task Management API
+
+## Functional Requirements
+- **FR-001**: Authenticated users can perform full CRUD operations on tasks via a RESTful API. Each task contains: id (UUID), title (max 255 chars), description (optional, max 2000 chars), due_date (ISO 8601), priority (low/medium/high/critical), status (open/in-progress/done/cancelled), and owner_id. The API must support filtering, sorting, and cursor-based pagination with a default page size of 25 and maximum of 100.
+- **FR-002**: All API endpoints must respond within 200ms at p95 and 500ms at p99 under a sustained load of 1,000 requests per minute. List endpoints must not degrade beyond these thresholds when result sets exceed 10,000 records. Load tests must be run against a production-equivalent environment before each major release.
+- **FR-003**: Task data must be persisted to a primary database with synchronous replication to a standby replica. The system must achieve a Recovery Point Objective (RPO) of zero committed transactions and a Recovery Time Objective (RTO) of 5 minutes. Persistence success rate must be >= 99.99% measured over any 30-day window.
+- **FR-004**: All mutating API operations must emit structured log events within 2 seconds of execution. Log events must conform to a defined schema (event_id, user_id, resource_id, action, before_state, after_state, timestamp_utc) and be ingested into the centralised log platform. Log ingestion success rate must be >= 99.9%.

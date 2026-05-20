@@ -1,3 +1,20 @@
-.venv
+.venv/
 .env
 __pycache__/
+*.pyc
+*.egg-info/
+dist/
+build/
+
+# Alloy JAR (large binary, downloaded via bootstrap.sh)
+src/speceval/tools/alloy.jar
+
+# LLM caches (reproducible on re-run)
+src/speceval/cache/
+src/kpi/waf_embeddings_cache.json
+
+# Generated outputs (reproducible on re-run)
+src/speceval/feature_model/
+src/speceval/runs/
+src/kpi/kpi_output.json
+src/kpi/gqm_output.json

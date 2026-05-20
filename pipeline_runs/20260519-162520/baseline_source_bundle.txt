@@ -1,0 +1,1619 @@
+=== baseline track ===
+
+--- FILE: baseline/banking/api/app.py ---
+from __future__ import annotations
+
+from fastapi import FastAPI
+
+from banking.api.routes import configure_routes, router
+from banking.repositories.account_repository import InMemoryAccountRepository
+from banking.repositories.audit_repository import InMemoryAuditRepository
+from banking.repositories.transaction_repository import InMemoryTransactionRepository
+from banking.services.account_service import AccountService
+from banking.services.audit_service import AuditService
+from banking.services.transfer_service import TransferService
+
+
+def create_app() -> FastAPI:
+    app = FastAPI(title="Banking Transfer System", version="1.0.0")
+
+    # Wire up repositories
+    audit_repo = InMemoryAuditRepository()
+    account_repo = InMemoryAccountRepository()
+    transaction_repo = InMemoryTransactionRepository()
+
+    # Wire up services
+    audit_service = AuditService(audit_repo)
+    account_service = AccountService(account_repo, audit_service)
+    transfer_service = TransferService(account_repo, transaction_repo, audit_service)
+
+    # Configure route dependencies
+    configure_routes(account_service, transfer_service, audit_service)
+    app.include_router(router, prefix="/api/v1")
+
+    return app
+
+
+app = create_app()
+
+--- FILE: baseline/banking/api/__init__.py ---
+
+--- FILE: baseline/banking/api/routes.py ---
+from __future__ import annotations
+
+from fastapi import APIRouter, HTTPException, status
+
+from banking.api.schemas import (
+    AccountResponse,
+    AuditEntryResponse,
+    CreateAccountRequest,
+    FreezeRequest,
+    TransactionResponse,
+    TransferRequest,
+)
+from banking.domain.exceptions import (
+    AccountFrozenError,
+    AccountNotFoundError,
+    BankingError,
+    CurrencyMismatchError,
+    InsufficientFundsError,
+    SelfTransferError,
+    UnauthorizedError,
+)
+from banking.services.account_service import AccountService
+from banking.services.audit_service import AuditService
+from banking.services.transfer_service import TransferService
+
+router = APIRouter()
+
+# These will be injected at app startup
+_account_service: AccountService | None = None
+_transfer_service: TransferService | None = None
+_audit_service: AuditService | None = None
+
+
+def configure_routes(
+    account_service: AccountService,
+    transfer_service: TransferService,
+    audit_service: AuditService,
+) -> None:
+    global _account_service, _transfer_service, _audit_service
+    _account_service = account_service
+    _transfer_service = transfer_service
+    _audit_service = audit_service
+
+
+def _banking_error_to_http(exc: BankingError) -> HTTPException:
+    if isinstance(exc, AccountNotFoundError):
+        return HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
+    if isinstance(exc, UnauthorizedError):
+        return HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(exc))
+    if isinstance(exc, (SelfTransferError, CurrencyMismatchError)):
+        return HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
+    if isinstance(exc, InsufficientFundsError):
+        return HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=str(exc))
+    if isinstance(exc, AccountFrozenError):
+        return HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(exc))
+    return HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
+
+
+# --- Account endpoints ---
+
+
+@router.post("/accounts", response_model=AccountResponse, status_code=status.HTTP_201_CREATED)
+def create_account(req: CreateAccountRequest) -> AccountResponse:
+    assert _account_service is not None
+    try:
+        account = _account_service.create_account(
+            owner=req.owner,
+            initial_balance=req.initial_balance,
+            currency=req.currency,
+        )
+    except BankingError as exc:
+        raise _banking_error_to_http(exc)
+    return AccountResponse(
+        id=account.id,
+        owner=account.owner,
+        balance=account.balance,
+        currency=account.currency,
+        is_frozen=account.is_frozen,
+    )
+
+
+@router.get("/accounts", response_model=list[AccountResponse])
+def list_accounts() -> list[AccountResponse]:
+    assert _account_service is not None
+    return [
+        AccountResponse(
+            id=a.id, owner=a.owner, balance=a.balance, currency=a.currency, is_frozen=a.is_frozen
+        )
+        for a in _account_service.list_accounts()
+    ]
+
+
+@router.get("/accounts/{account_id}", response_model=AccountResponse)
+def get_account(account_id: str) -> AccountResponse:
+    assert _account_service is not None
+    try:
+        account = _account_service.get_account(account_id)
+    except BankingError as exc:
+        raise _banking_error_to_http(exc)
+    return AccountResponse(
+        id=account.id,
+        owner=account.owner,
+        balance=account.balance,
+        currency=account.currency,
+        is_frozen=account.is_frozen,
+    )
+
+
+@router.post("/accounts/{account_id}/freeze", response_model=AccountResponse)
+def freeze_account(account_id: str, req: FreezeRequest) -> AccountResponse:
+    assert _account_service is not None
+    try:
+        account = _account_service.freeze_account(account_id, actor=req.actor)
+    except BankingError as exc:
+        raise _banking_error_to_http(exc)
+    return AccountResponse(
+        id=account.id,
+        owner=account.owner,
+        balance=account.balance,
+        currency=account.currency,
+        is_frozen=account.is_frozen,
+    )
+
+
+@router.post("/accounts/{account_id}/unfreeze", response_model=AccountResponse)
+def unfreeze_account(account_id: str, req: FreezeRequest) -> AccountResponse:
+    assert _account_service is not None
+    try:
+        account = _account_service.unfreeze_account(account_id, actor=req.actor)
+    except BankingError as exc:
+        raise _banking_error_to_http(exc)
+    return AccountResponse(
+        id=account.id,
+        owner=account.owner,
+        balance=account.balance,
+        currency=account.currency,
+        is_frozen=account.is_frozen,
+    )
+
+
+# --- Transfer endpoints ---
+
+
+@router.post("/transfers", response_model=TransactionResponse, status_code=status.HTTP_201_CREATED)
+def create_transfer(req: TransferRequest) -> TransactionResponse:
+    assert _transfer_service is not None
+    try:
+        txn = _transfer_service.transfer(
+            source_account_id=req.source_account_id,
+            destination_account_id=req.destination_account_id,
+            amount=req.amount,
+            initiated_by=req.initiated_by,
+            reason=req.reason,
+        )
+    except BankingError as exc:
+        raise _banking_error_to_http(exc)
+    return TransactionResponse(
+        id=txn.id,
+        source_account_id=txn.source_account_id,
+        destination_account_id=txn.destination_account_id,
+        amount=txn.amount,
+        currency=txn.currency,
+        status=txn.status.value,
+        initiated_by=txn.initiated_by,
+        reason=txn.reason,
+        failure_reason=txn.failure_reason,
+        created_at=txn.created_at.isoformat(),
+        completed_at=txn.completed_at.isoformat() if txn.completed_at else None,
+    )
+
+
+@router.get("/accounts/{account_id}/transactions", response_model=list[TransactionResponse])
+def list_account_transactions(account_id: str) -> list[TransactionResponse]:
+    assert _transfer_service is not None
+    return [
+        TransactionResponse(
+            id=t.id,
+            source_account_id=t.source_account_id,
+            destination_account_id=t.destination_account_id,
+            amount=t.amount,
+            currency=t.currency,
+            status=t.status.value,
+            initiated_by=t.initiated_by,
+            reason=t.reason,
+            failure_reason=t.failure_reason,
+            created_at=t.created_at.isoformat(),
+            completed_at=t.completed_at.isoformat() if t.completed_at else None,
+        )
+        for t in _transfer_service.get_account_transactions(account_id)
+    ]
+
+
+# --- Audit endpoints ---
+
+
+@router.get("/audit", response_model=list[AuditEntryResponse])
+def list_audit_log() -> list[AuditEntryResponse]:
+    assert _audit_service is not None
+    return [
+        AuditEntryResponse(
+            id=e.id,
+            timestamp=e.timestamp.isoformat(),
+            action=e.action.value,
+            actor=e.actor,
+            resource_type=e.resource_type,
+            resource_id=e.resource_id,
+            details=e.details,
+        )
+        for e in _audit_service.get_full_log()
+    ]
+
+
+@router.get("/audit/{resource_type}/{resource_id}", response_model=list[AuditEntryResponse])
+def get_resource_audit_trail(resource_type: str, resource_id: str) -> list[AuditEntryResponse]:
+    assert _audit_service is not None
+    return [
+        AuditEntryResponse(
+            id=e.id,
+            timestamp=e.timestamp.isoformat(),
+            action=e.action.value,
+            actor=e.actor,
+            resource_type=e.resource_type,
+            resource_id=e.resource_id,
+            details=e.details,
+        )
+        for e in _audit_service.get_audit_trail(resource_type, resource_id)
+    ]
+
+--- FILE: baseline/banking/api/schemas.py ---
+from __future__ import annotations
+
+from decimal import Decimal
+from typing import Optional
+
+from pydantic import BaseModel, Field
+
+
+class CreateAccountRequest(BaseModel):
+    owner: str
+    initial_balance: Decimal = Decimal("0.00")
+    currency: str = "USD"
+
+
+class TransferRequest(BaseModel):
+    source_account_id: str
+    destination_account_id: str
+    amount: Decimal = Field(gt=0)
+    initiated_by: str
+    reason: Optional[str] = None
+
+
+class AccountResponse(BaseModel):
+    id: str
+    owner: str
+    balance: Decimal
+    currency: str
+    is_frozen: bool
+
+
+class TransactionResponse(BaseModel):
+    id: str
+    source_account_id: str
+    destination_account_id: str
+    amount: Decimal
+    currency: str
+    status: str
+    initiated_by: str
+    reason: Optional[str]
+    failure_reason: Optional[str]
+    created_at: str
+    completed_at: Optional[str]
+
+
+class AuditEntryResponse(BaseModel):
+    id: str
+    timestamp: str
+    action: str
+    actor: str
+    resource_type: str
+    resource_id: str
+    details: dict
+
+
+class FreezeRequest(BaseModel):
+    actor: str
+
+
+class ErrorResponse(BaseModel):
+    error: str
+    detail: str
+
+--- FILE: baseline/banking/domain/exceptions.py ---
+class BankingError(Exception):
+    """Base exception for banking operations."""
+
+
+class AccountNotFoundError(BankingError):
+    def __init__(self, account_id: str) -> None:
+        self.account_id = account_id
+        super().__init__(f"Account not found: {account_id}")
+
+
+class InsufficientFundsError(BankingError):
+    def __init__(self, account_id: str, available: str, requested: str) -> None:
+        self.account_id = account_id
+        self.available = available
+        self.requested = requested
+        super().__init__(
+            f"Insufficient funds in account {account_id}: "
+            f"available={available}, requested={requested}"
+        )
+
+
+class SelfTransferError(BankingError):
+    def __init__(self, account_id: str) -> None:
+        self.account_id = account_id
+        super().__init__(f"Cannot transfer to the same account: {account_id}")
+
+
+class AccountFrozenError(BankingError):
+    def __init__(self, account_id: str) -> None:
+        self.account_id = account_id
+        super().__init__(f"Account is frozen: {account_id}")
+
+
+class CurrencyMismatchError(BankingError):
+    def __init__(self, source_currency: str, dest_currency: str) -> None:
+        self.source_currency = source_currency
+        self.dest_currency = dest_currency
+        super().__init__(
+            f"Currency mismatch: source={source_currency}, destination={dest_currency}"
+        )
+
+
+class UnauthorizedError(BankingError):
+    def __init__(self, message: str = "Authentication required") -> None:
+        super().__init__(message)
+
+--- FILE: baseline/banking/domain/__init__.py ---
+from banking.domain.models import Account, Transaction, TransactionStatus, AuditEntry, AuditAction
+
+__all__ = ["Account", "Transaction", "TransactionStatus", "AuditEntry", "AuditAction"]
+
+--- FILE: baseline/banking/domain/models.py ---
+from __future__ import annotations
+
+import enum
+import uuid
+from datetime import datetime, timezone
+from decimal import Decimal
+from typing import Optional
+
+from pydantic import BaseModel, Field, field_validator
+
+
+class TransactionStatus(str, enum.Enum):
+    PENDING = "pending"
+    COMPLETED = "completed"
+    FAILED = "failed"
+
+
+class AuditAction(str, enum.Enum):
+    ACCOUNT_CREATED = "account_created"
+    TRANSFER_INITIATED = "transfer_initiated"
+    TRANSFER_COMPLETED = "transfer_completed"
+    TRANSFER_FAILED = "transfer_failed"
+    ACCOUNT_FROZEN = "account_frozen"
+    ACCOUNT_UNFROZEN = "account_unfrozen"
+
+
+class Account(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    owner: str
+    balance: Decimal = Decimal("0.00")
+    currency: str = "USD"
+    is_frozen: bool = False
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+    @field_validator("balance")
+    @classmethod
+    def balance_not_negative(cls, v: Decimal) -> Decimal:
+        if v < 0:
+            raise ValueError("Balance cannot be negative")
+        return v
+
+    @field_validator("owner")
+    @classmethod
+    def owner_not_empty(cls, v: str) -> str:
+        if not v.strip():
+            raise ValueError("Owner cannot be empty")
+        return v.strip()
+
+
+class Transaction(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    source_account_id: str
+    destination_account_id: str
+    amount: Decimal
+    currency: str = "USD"
+    status: TransactionStatus = TransactionStatus.PENDING
+    initiated_by: str
+    reason: Optional[str] = None
+    failure_reason: Optional[str] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    completed_at: Optional[datetime] = None
+
+    @field_validator("amount")
+    @classmethod
+    def amount_positive(cls, v: Decimal) -> Decimal:
+        if v <= 0:
+            raise ValueError("Transfer amount must be positive")
+        return v
+
+
+class AuditEntry(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    action: AuditAction
+    actor: str
+    resource_type: str
+    resource_id: str
+    details: dict = Field(default_factory=dict)
+
+--- FILE: baseline/banking/__init__.py ---
+
+--- FILE: baseline/banking/repositories/account_repository.py ---
+from __future__ import annotations
+
+import threading
+from abc import ABC, abstractmethod
+from typing import Optional
+
+from banking.domain.models import Account
+
+
+class AccountRepository(ABC):
+    @abstractmethod
+    def save(self, account: Account) -> Account:
+        ...
+
+    @abstractmethod
+    def find_by_id(self, account_id: str) -> Optional[Account]:
+        ...
+
+    @abstractmethod
+    def find_by_owner(self, owner: str) -> list[Account]:
+        ...
+
+    @abstractmethod
+    def list_all(self) -> list[Account]:
+        ...
+
+
+class InMemoryAccountRepository(AccountRepository):
+    def __init__(self) -> None:
+        self._store: dict[str, Account] = {}
+        self._lock = threading.Lock()
+
+    def save(self, account: Account) -> Account:
+        with self._lock:
+            self._store[account.id] = account.model_copy()
+        return account
+
+    def find_by_id(self, account_id: str) -> Optional[Account]:
+        with self._lock:
+            acct = self._store.get(account_id)
+            return acct.model_copy() if acct else None
+
+    def find_by_owner(self, owner: str) -> list[Account]:
+        with self._lock:
+            return [
+                a.model_copy() for a in self._store.values() if a.owner == owner
+            ]
+
+    def list_all(self) -> list[Account]:
+        with self._lock:
+            return [a.model_copy() for a in self._store.values()]
+
+--- FILE: baseline/banking/repositories/audit_repository.py ---
+from __future__ import annotations
+
+import threading
+from abc import ABC, abstractmethod
+
+from banking.domain.models import AuditEntry
+
+
+class AuditRepository(ABC):
+    """Append-only audit log storage."""
+
+    @abstractmethod
+    def append(self, entry: AuditEntry) -> AuditEntry:
+        ...
+
+    @abstractmethod
+    def find_by_resource(self, resource_type: str, resource_id: str) -> list[AuditEntry]:
+        ...
+
+    @abstractmethod
+    def find_by_actor(self, actor: str) -> list[AuditEntry]:
+        ...
+
+    @abstractmethod
+    def list_all(self) -> list[AuditEntry]:
+        ...
+
+
+class InMemoryAuditRepository(AuditRepository):
+    """Append-only in-memory audit log. Entries cannot be modified or deleted."""
+
+    def __init__(self) -> None:
+        self._entries: list[AuditEntry] = []
+        self._lock = threading.Lock()
+
+    def append(self, entry: AuditEntry) -> AuditEntry:
+        with self._lock:
+            self._entries.append(entry.model_copy())
+        return entry
+
+    def find_by_resource(self, resource_type: str, resource_id: str) -> list[AuditEntry]:
+        with self._lock:
+            return [
+                e.model_copy()
+                for e in self._entries
+                if e.resource_type == resource_type and e.resource_id == resource_id
+            ]
+
+    def find_by_actor(self, actor: str) -> list[AuditEntry]:
+        with self._lock:
+            return [e.model_copy() for e in self._entries if e.actor == actor]
+
+    def list_all(self) -> list[AuditEntry]:
+        with self._lock:
+            return [e.model_copy() for e in self._entries]
+
+--- FILE: baseline/banking/repositories/__init__.py ---
+from banking.repositories.account_repository import AccountRepository, InMemoryAccountRepository
+from banking.repositories.transaction_repository import TransactionRepository, InMemoryTransactionRepository
+from banking.repositories.audit_repository import AuditRepository, InMemoryAuditRepository
+
+__all__ = [
+    "AccountRepository",
+    "InMemoryAccountRepository",
+    "TransactionRepository",
+    "InMemoryTransactionRepository",
+    "AuditRepository",
+    "InMemoryAuditRepository",
+]
+
+--- FILE: baseline/banking/repositories/transaction_repository.py ---
+from __future__ import annotations
+
+import threading
+from abc import ABC, abstractmethod
+from typing import Optional
+
+from banking.domain.models import Transaction
+
+
+class TransactionRepository(ABC):
+    @abstractmethod
+    def save(self, transaction: Transaction) -> Transaction:
+        ...
+
+    @abstractmethod
+    def find_by_id(self, transaction_id: str) -> Optional[Transaction]:
+        ...
+
+    @abstractmethod
+    def find_by_account(self, account_id: str) -> list[Transaction]:
+        ...
+
+    @abstractmethod
+    def list_all(self) -> list[Transaction]:
+        ...
+
+
+class InMemoryTransactionRepository(TransactionRepository):
+    def __init__(self) -> None:
+        self._store: dict[str, Transaction] = {}
+        self._lock = threading.Lock()
+
+    def save(self, transaction: Transaction) -> Transaction:
+        with self._lock:
+            self._store[transaction.id] = transaction.model_copy()
+        return transaction
+
+    def find_by_id(self, transaction_id: str) -> Optional[Transaction]:
+        with self._lock:
+            txn = self._store.get(transaction_id)
+            return txn.model_copy() if txn else None
+
+    def find_by_account(self, account_id: str) -> list[Transaction]:
+        with self._lock:
+            return [
+                t.model_copy()
+                for t in self._store.values()
+                if t.source_account_id == account_id
+                or t.destination_account_id == account_id
+            ]
+
+    def list_all(self) -> list[Transaction]:
+        with self._lock:
+            return [t.model_copy() for t in self._store.values()]
+
+--- FILE: baseline/banking/services/account_service.py ---
+from __future__ import annotations
+
+from decimal import Decimal
+
+from banking.domain.exceptions import AccountFrozenError, AccountNotFoundError
+from banking.domain.models import Account, AuditAction
+from banking.repositories.account_repository import AccountRepository
+from banking.services.audit_service import AuditService
+
+
+class AccountService:
+    def __init__(
+        self,
+        account_repo: AccountRepository,
+        audit_service: AuditService,
+    ) -> None:
+        self._account_repo = account_repo
+        self._audit_service = audit_service
+
+    def create_account(
+        self, owner: str, initial_balance: Decimal = Decimal("0.00"), currency: str = "USD"
+    ) -> Account:
+        account = Account(owner=owner, balance=initial_balance, currency=currency)
+        self._account_repo.save(account)
+        self._audit_service.log(
+            action=AuditAction.ACCOUNT_CREATED,
+            actor=owner,
+            resource_type="account",
+            resource_id=account.id,
+            details={"initial_balance": str(initial_balance), "currency": currency},
+        )
+        return account
+
+    def get_account(self, account_id: str) -> Account:
+        account = self._account_repo.find_by_id(account_id)
+        if account is None:
+            raise AccountNotFoundError(account_id)
+        return account
+
+    def freeze_account(self, account_id: str, actor: str) -> Account:
+        account = self.get_account(account_id)
+        account.is_frozen = True
+        self._account_repo.save(account)
+        self._audit_service.log(
+            action=AuditAction.ACCOUNT_FROZEN,
+            actor=actor,
+            resource_type="account",
+            resource_id=account_id,
+        )
+        return account
+
+    def unfreeze_account(self, account_id: str, actor: str) -> Account:
+        account = self.get_account(account_id)
+        account.is_frozen = False
+        self._account_repo.save(account)
+        self._audit_service.log(
+            action=AuditAction.ACCOUNT_UNFROZEN,
+            actor=actor,
+            resource_type="account",
+            resource_id=account_id,
+        )
+        return account
+
+    def list_accounts(self) -> list[Account]:
+        return self._account_repo.list_all()
+
+--- FILE: baseline/banking/services/audit_service.py ---
+from __future__ import annotations
+
+from banking.domain.models import AuditAction, AuditEntry
+from banking.repositories.audit_repository import AuditRepository
+
+
+class AuditService:
+    def __init__(self, audit_repo: AuditRepository) -> None:
+        self._audit_repo = audit_repo
+
+    def log(
+        self,
+        action: AuditAction,
+        actor: str,
+        resource_type: str,
+        resource_id: str,
+        details: dict | None = None,
+    ) -> AuditEntry:
+        entry = AuditEntry(
+            action=action,
+            actor=actor,
+            resource_type=resource_type,
+            resource_id=resource_id,
+            details=details or {},
+        )
+        return self._audit_repo.append(entry)
+
+    def get_audit_trail(self, resource_type: str, resource_id: str) -> list[AuditEntry]:
+        return self._audit_repo.find_by_resource(resource_type, resource_id)
+
+    def get_actor_history(self, actor: str) -> list[AuditEntry]:
+        return self._audit_repo.find_by_actor(actor)
+
+    def get_full_log(self) -> list[AuditEntry]:
+        return self._audit_repo.list_all()
+
+--- FILE: baseline/banking/services/__init__.py ---
+from banking.services.audit_service import AuditService
+from banking.services.transfer_service import TransferService
+from banking.services.account_service import AccountService
+
+__all__ = ["AuditService", "TransferService", "AccountService"]
+
+--- FILE: baseline/banking/services/transfer_service.py ---
+from __future__ import annotations
+
+from datetime import datetime, timezone
+from decimal import Decimal
+
+from banking.domain.exceptions import (
+    AccountFrozenError,
+    AccountNotFoundError,
+    CurrencyMismatchError,
+    InsufficientFundsError,
+    SelfTransferError,
+    UnauthorizedError,
+)
+from banking.domain.models import AuditAction, Transaction, TransactionStatus
+from banking.repositories.account_repository import AccountRepository
+from banking.repositories.transaction_repository import TransactionRepository
+from banking.services.audit_service import AuditService
+
+
+class TransferService:
+    def __init__(
+        self,
+        account_repo: AccountRepository,
+        transaction_repo: TransactionRepository,
+        audit_service: AuditService,
+    ) -> None:
+        self._account_repo = account_repo
+        self._transaction_repo = transaction_repo
+        self._audit_service = audit_service
+
+    def transfer(
+        self,
+        source_account_id: str,
+        destination_account_id: str,
+        amount: Decimal,
+        initiated_by: str,
+        reason: str | None = None,
+    ) -> Transaction:
+        # Auth check
+        if not initiated_by or not initiated_by.strip():
+            raise UnauthorizedError("Transfer must have an identified initiator")
+
+        # No self-transfer
+        if source_account_id == destination_account_id:
+            raise SelfTransferError(source_account_id)
+
+        # Load accounts
+        source = self._account_repo.find_by_id(source_account_id)
+        if source is None:
+            raise AccountNotFoundError(source_account_id)
+
+        destination = self._account_repo.find_by_id(destination_account_id)
+        if destination is None:
+            raise AccountNotFoundError(destination_account_id)
+
+        # Frozen check
+        if source.is_frozen:
+            raise AccountFrozenError(source_account_id)
+        if destination.is_frozen:
+            raise AccountFrozenError(destination_account_id)
+
+        # Currency check
+        if source.currency != destination.currency:
+            raise CurrencyMismatchError(source.currency, destination.currency)
+
+        # Create the transaction record
+        transaction = Transaction(
+            source_account_id=source_account_id,
+            destination_account_id=destination_account_id,
+            amount=amount,
+            currency=source.currency,
+            initiated_by=initiated_by,
+            reason=reason,
+        )
+        self._transaction_repo.save(transaction)
+
+        self._audit_service.log(
+            action=AuditAction.TRANSFER_INITIATED,
+            actor=initiated_by,
+            resource_type="transaction",
+            resource_id=transaction.id,
+            details={
+                "source_account_id": source_account_id,
+                "destination_account_id": destination_account_id,
+                "amount": str(amount),
+                "currency": source.currency,
+            },
+        )
+
+        # Balance check
+        if source.balance < amount:
+            transaction.status = TransactionStatus.FAILED
+            transaction.failure_reason = (
+                f"Insufficient funds: available={source.balance}, requested={amount}"
+            )
+            transaction.completed_at = datetime.now(timezone.utc)
+            self._transaction_repo.save(transaction)
+
+            self._audit_service.log(
+                action=AuditAction.TRANSFER_FAILED,
+                actor=initiated_by,
+                resource_type="transaction",
+                resource_id=transaction.id,
+                details={"reason": transaction.failure_reason},
+            )
+
+            raise InsufficientFundsError(
+                source_account_id,
+                str(source.balance),
+                str(amount),
+            )
+
+        # Execute the transfer
+        source.balance -= amount
+        destination.balance += amount
+
+        self._account_repo.save(source)
+        self._account_repo.save(destination)
+
+        transaction.status = TransactionStatus.COMPLETED
+        transaction.completed_at = datetime.now(timezone.utc)
+        self._transaction_repo.save(transaction)
+
+        self._audit_service.log(
+            action=AuditAction.TRANSFER_COMPLETED,
+            actor=initiated_by,
+            resource_type="transaction",
+            resource_id=transaction.id,
+            details={
+                "source_balance_after": str(source.balance),
+                "destination_balance_after": str(destination.balance),
+            },
+        )
+
+        return transaction
+
+    def get_transaction(self, transaction_id: str) -> Transaction | None:
+        return self._transaction_repo.find_by_id(transaction_id)
+
+    def get_account_transactions(self, account_id: str) -> list[Transaction]:
+        return self._transaction_repo.find_by_account(account_id)
+
+--- FILE: baseline/tests/conftest.py ---
+from __future__ import annotations
+
+import pytest
+from fastapi.testclient import TestClient
+
+from banking.api.app import create_app
+from banking.api.routes import _account_service, _audit_service, _transfer_service
+from banking.repositories.account_repository import InMemoryAccountRepository
+from banking.repositories.audit_repository import InMemoryAuditRepository
+from banking.repositories.transaction_repository import InMemoryTransactionRepository
+from banking.services.account_service import AccountService
+from banking.services.audit_service import AuditService
+from banking.services.transfer_service import TransferService
+
+
+@pytest.fixture
+def audit_repo() -> InMemoryAuditRepository:
+    return InMemoryAuditRepository()
+
+
+@pytest.fixture
+def account_repo() -> InMemoryAccountRepository:
+    return InMemoryAccountRepository()
+
+
+@pytest.fixture
+def transaction_repo() -> InMemoryTransactionRepository:
+    return InMemoryTransactionRepository()
+
+
+@pytest.fixture
+def audit_service(audit_repo: InMemoryAuditRepository) -> AuditService:
+    return AuditService(audit_repo)
+
+
+@pytest.fixture
+def account_service(
+    account_repo: InMemoryAccountRepository,
+    audit_service: AuditService,
+) -> AccountService:
+    return AccountService(account_repo, audit_service)
+
+
+@pytest.fixture
+def transfer_service(
+    account_repo: InMemoryAccountRepository,
+    transaction_repo: InMemoryTransactionRepository,
+    audit_service: AuditService,
+) -> TransferService:
+    return TransferService(account_repo, transaction_repo, audit_service)
+
+
+@pytest.fixture
+def client() -> TestClient:
+    app = create_app()
+    return TestClient(app)
+
+--- FILE: baseline/tests/__init__.py ---
+
+--- FILE: baseline/tests/test_api.py ---
+from __future__ import annotations
+
+from decimal import Decimal
+
+from fastapi.testclient import TestClient
+
+
+class TestAccountAPI:
+    def test_create_account(self, client: TestClient) -> None:
+        resp = client.post(
+            "/api/v1/accounts",
+            json={"owner": "Alice", "initial_balance": "1000.00"},
+        )
+        assert resp.status_code == 201
+        data = resp.json()
+        assert data["owner"] == "Alice"
+        assert Decimal(data["balance"]) == Decimal("1000.00")
+        assert data["is_frozen"] is False
+
+    def test_get_account(self, client: TestClient) -> None:
+        create_resp = client.post(
+            "/api/v1/accounts",
+            json={"owner": "Alice", "initial_balance": "500.00"},
+        )
+        account_id = create_resp.json()["id"]
+
+        resp = client.get(f"/api/v1/accounts/{account_id}")
+        assert resp.status_code == 200
+        assert resp.json()["owner"] == "Alice"
+
+    def test_get_nonexistent_account(self, client: TestClient) -> None:
+        resp = client.get("/api/v1/accounts/nonexistent")
+        assert resp.status_code == 404
+
+    def test_list_accounts(self, client: TestClient) -> None:
+        client.post("/api/v1/accounts", json={"owner": "Alice"})
+        client.post("/api/v1/accounts", json={"owner": "Bob"})
+        resp = client.get("/api/v1/accounts")
+        assert resp.status_code == 200
+        assert len(resp.json()) == 2
+
+    def test_freeze_account(self, client: TestClient) -> None:
+        create_resp = client.post(
+            "/api/v1/accounts",
+            json={"owner": "Alice", "initial_balance": "1000.00"},
+        )
+        account_id = create_resp.json()["id"]
+
+        resp = client.post(
+            f"/api/v1/accounts/{account_id}/freeze",
+            json={"actor": "Admin"},
+        )
+        assert resp.status_code == 200
+        assert resp.json()["is_frozen"] is True
+
+    def test_unfreeze_account(self, client: TestClient) -> None:
+        create_resp = client.post(
+            "/api/v1/accounts",
+            json={"owner": "Alice", "initial_balance": "1000.00"},
+        )
+        account_id = create_resp.json()["id"]
+
+        client.post(f"/api/v1/accounts/{account_id}/freeze", json={"actor": "Admin"})
+        resp = client.post(
+            f"/api/v1/accounts/{account_id}/unfreeze",
+            json={"actor": "Admin"},
+        )
+        assert resp.status_code == 200
+        assert resp.json()["is_frozen"] is False
+
+
+class TestTransferAPI:
+    def _create_two_accounts(self, client: TestClient) -> tuple[str, str]:
+        r1 = client.post(
+            "/api/v1/accounts",
+            json={"owner": "Alice", "initial_balance": "1000.00"},
+        )
+        r2 = client.post(
+            "/api/v1/accounts",
+            json={"owner": "Bob", "initial_balance": "500.00"},
+        )
+        return r1.json()["id"], r2.json()["id"]
+
+    def test_successful_transfer(self, client: TestClient) -> None:
+        src_id, dst_id = self._create_two_accounts(client)
+
+        resp = client.post(
+            "/api/v1/transfers",
+            json={
+                "source_account_id": src_id,
+                "destination_account_id": dst_id,
+                "amount": "200.00",
+                "initiated_by": "Alice",
+            },
+        )
+        assert resp.status_code == 201
+        data = resp.json()
+        assert data["status"] == "completed"
+        assert Decimal(data["amount"]) == Decimal("200.00")
+
+        # Verify balances
+        src = client.get(f"/api/v1/accounts/{src_id}").json()
+        dst = client.get(f"/api/v1/accounts/{dst_id}").json()
+        assert Decimal(src["balance"]) == Decimal("800.00")
+        assert Decimal(dst["balance"]) == Decimal("700.00")
+
+    def test_transfer_insufficient_funds(self, client: TestClient) -> None:
+        src_id, dst_id = self._create_two_accounts(client)
+
+        resp = client.post(
+            "/api/v1/transfers",
+            json={
+                "source_account_id": src_id,
+                "destination_account_id": dst_id,
+                "amount": "5000.00",
+                "initiated_by": "Alice",
+            },
+        )
+        assert resp.status_code == 422
+
+    def test_transfer_self_rejected(self, client: TestClient) -> None:
+        r = client.post(
+            "/api/v1/accounts",
+            json={"owner": "Alice", "initial_balance": "1000.00"},
+        )
+        acct_id = r.json()["id"]
+
+        resp = client.post(
+            "/api/v1/transfers",
+            json={
+                "source_account_id": acct_id,
+                "destination_account_id": acct_id,
+                "amount": "100.00",
+                "initiated_by": "Alice",
+            },
+        )
+        assert resp.status_code == 400
+
+    def test_transfer_frozen_account_rejected(self, client: TestClient) -> None:
+        src_id, dst_id = self._create_two_accounts(client)
+        client.post(f"/api/v1/accounts/{src_id}/freeze", json={"actor": "Admin"})
+
+        resp = client.post(
+            "/api/v1/transfers",
+            json={
+                "source_account_id": src_id,
+                "destination_account_id": dst_id,
+                "amount": "100.00",
+                "initiated_by": "Alice",
+            },
+        )
+        assert resp.status_code == 403
+
+    def test_list_account_transactions(self, client: TestClient) -> None:
+        src_id, dst_id = self._create_two_accounts(client)
+        client.post(
+            "/api/v1/transfers",
+            json={
+                "source_account_id": src_id,
+                "destination_account_id": dst_id,
+                "amount": "100.00",
+                "initiated_by": "Alice",
+            },
+        )
+
+        resp = client.get(f"/api/v1/accounts/{src_id}/transactions")
+        assert resp.status_code == 200
+        assert len(resp.json()) == 1
+
+
+class TestAuditAPI:
+    def test_audit_log_populated(self, client: TestClient) -> None:
+        client.post(
+            "/api/v1/accounts",
+            json={"owner": "Alice", "initial_balance": "1000.00"},
+        )
+        resp = client.get("/api/v1/audit")
+        assert resp.status_code == 200
+        entries = resp.json()
+        assert len(entries) >= 1
+        assert entries[0]["action"] == "account_created"
+        assert entries[0]["actor"] == "Alice"
+
+    def test_audit_trail_for_resource(self, client: TestClient) -> None:
+        create_resp = client.post(
+            "/api/v1/accounts",
+            json={"owner": "Alice", "initial_balance": "500.00"},
+        )
+        account_id = create_resp.json()["id"]
+
+        resp = client.get(f"/api/v1/audit/account/{account_id}")
+        assert resp.status_code == 200
+        entries = resp.json()
+        assert len(entries) == 1
+        assert entries[0]["resource_id"] == account_id
+
+    def test_transfer_generates_audit_entries(self, client: TestClient) -> None:
+        r1 = client.post(
+            "/api/v1/accounts",
+            json={"owner": "Alice", "initial_balance": "1000.00"},
+        )
+        r2 = client.post(
+            "/api/v1/accounts",
+            json={"owner": "Bob", "initial_balance": "0.00"},
+        )
+        src_id, dst_id = r1.json()["id"], r2.json()["id"]
+
+        txn_resp = client.post(
+            "/api/v1/transfers",
+            json={
+                "source_account_id": src_id,
+                "destination_account_id": dst_id,
+                "amount": "300.00",
+                "initiated_by": "Alice",
+            },
+        )
+        txn_id = txn_resp.json()["id"]
+
+        resp = client.get(f"/api/v1/audit/transaction/{txn_id}")
+        assert resp.status_code == 200
+        entries = resp.json()
+        actions = [e["action"] for e in entries]
+        assert "transfer_initiated" in actions
+        assert "transfer_completed" in actions
+        # All entries attributed to initiator
+        assert all(e["actor"] == "Alice" for e in entries)
+
+--- FILE: baseline/tests/test_audit_service.py ---
+from __future__ import annotations
+
+from decimal import Decimal
+
+from banking.domain.models import Account, AuditAction
+from banking.repositories.account_repository import InMemoryAccountRepository
+from banking.repositories.audit_repository import InMemoryAuditRepository
+from banking.services.account_service import AccountService
+from banking.services.audit_service import AuditService
+from banking.services.transfer_service import TransferService
+
+
+class TestAuditService:
+    def test_audit_log_is_append_only(self, audit_service: AuditService) -> None:
+        audit_service.log(
+            action=AuditAction.ACCOUNT_CREATED,
+            actor="Alice",
+            resource_type="account",
+            resource_id="acc-1",
+        )
+        audit_service.log(
+            action=AuditAction.ACCOUNT_FROZEN,
+            actor="Admin",
+            resource_type="account",
+            resource_id="acc-1",
+        )
+        entries = audit_service.get_full_log()
+        assert len(entries) == 2
+        assert entries[0].action == AuditAction.ACCOUNT_CREATED
+        assert entries[1].action == AuditAction.ACCOUNT_FROZEN
+
+    def test_audit_entries_attributed_to_actor(self, audit_service: AuditService) -> None:
+        audit_service.log(
+            action=AuditAction.TRANSFER_INITIATED,
+            actor="Alice",
+            resource_type="transaction",
+            resource_id="txn-1",
+            details={"amount": "100.00"},
+        )
+        history = audit_service.get_actor_history("Alice")
+        assert len(history) == 1
+        assert history[0].actor == "Alice"
+        assert history[0].details["amount"] == "100.00"
+
+    def test_audit_trail_per_resource(self, audit_service: AuditService) -> None:
+        audit_service.log(
+            action=AuditAction.ACCOUNT_CREATED,
+            actor="Alice",
+            resource_type="account",
+            resource_id="acc-1",
+        )
+        audit_service.log(
+            action=AuditAction.ACCOUNT_CREATED,
+            actor="Bob",
+            resource_type="account",
+            resource_id="acc-2",
+        )
+        trail = audit_service.get_audit_trail("account", "acc-1")
+        assert len(trail) == 1
+        assert trail[0].actor == "Alice"
+
+    def test_account_creation_audited(
+        self,
+        account_service: AccountService,
+        audit_service: AuditService,
+    ) -> None:
+        account = account_service.create_account("Alice", Decimal("500.00"))
+        trail = audit_service.get_audit_trail("account", account.id)
+        assert len(trail) == 1
+        assert trail[0].action == AuditAction.ACCOUNT_CREATED
+        assert trail[0].actor == "Alice"
+        assert trail[0].details["initial_balance"] == "500.00"
+
+    def test_freeze_unfreeze_audited(
+        self,
+        account_service: AccountService,
+        audit_service: AuditService,
+    ) -> None:
+        account = account_service.create_account("Alice", Decimal("500.00"))
+        account_service.freeze_account(account.id, actor="Admin")
+        account_service.unfreeze_account(account.id, actor="Admin")
+
+        trail = audit_service.get_audit_trail("account", account.id)
+        actions = [e.action for e in trail]
+        assert AuditAction.ACCOUNT_CREATED in actions
+        assert AuditAction.ACCOUNT_FROZEN in actions
+        assert AuditAction.ACCOUNT_UNFROZEN in actions
+
+    def test_transfer_full_audit_trail(
+        self,
+        account_repo: InMemoryAccountRepository,
+        transfer_service: TransferService,
+        audit_service: AuditService,
+    ) -> None:
+        src = Account(owner="Alice", balance=Decimal("1000.00"))
+        dst = Account(owner="Bob", balance=Decimal("0.00"))
+        account_repo.save(src)
+        account_repo.save(dst)
+
+        txn = transfer_service.transfer(
+            source_account_id=src.id,
+            destination_account_id=dst.id,
+            amount=Decimal("250.00"),
+            initiated_by="Alice",
+            reason="Payment for services",
+        )
+
+        trail = audit_service.get_audit_trail("transaction", txn.id)
+        assert len(trail) == 2
+        assert trail[0].action == AuditAction.TRANSFER_INITIATED
+        assert trail[0].details["amount"] == "250.00"
+        assert trail[1].action == AuditAction.TRANSFER_COMPLETED
+        assert trail[1].details["source_balance_after"] == "750.00"
+
+--- FILE: baseline/tests/test_models.py ---
+from __future__ import annotations
+
+from decimal import Decimal
+
+import pytest
+from pydantic import ValidationError
+
+from banking.domain.models import Account, AuditAction, AuditEntry, Transaction
+
+
+class TestAccount:
+    def test_create_account_defaults(self) -> None:
+        account = Account(owner="Alice")
+        assert account.owner == "Alice"
+        assert account.balance == Decimal("0.00")
+        assert account.currency == "USD"
+        assert account.is_frozen is False
+        assert account.id is not None
+
+    def test_create_account_with_balance(self) -> None:
+        account = Account(owner="Bob", balance=Decimal("1000.00"))
+        assert account.balance == Decimal("1000.00")
+
+    def test_negative_balance_rejected(self) -> None:
+        with pytest.raises(ValidationError, match="Balance cannot be negative"):
+            Account(owner="Charlie", balance=Decimal("-1.00"))
+
+    def test_empty_owner_rejected(self) -> None:
+        with pytest.raises(ValidationError, match="Owner cannot be empty"):
+            Account(owner="   ")
+
+    def test_owner_whitespace_stripped(self) -> None:
+        account = Account(owner="  Alice  ")
+        assert account.owner == "Alice"
+
+
+class TestTransaction:
+    def test_create_transaction(self) -> None:
+        txn = Transaction(
+            source_account_id="src",
+            destination_account_id="dst",
+            amount=Decimal("50.00"),
+            initiated_by="Alice",
+        )
+        assert txn.amount == Decimal("50.00")
+        assert txn.status.value == "pending"
+
+    def test_zero_amount_rejected(self) -> None:
+        with pytest.raises(ValidationError, match="Transfer amount must be positive"):
+            Transaction(
+                source_account_id="src",
+                destination_account_id="dst",
+                amount=Decimal("0"),
+                initiated_by="Alice",
+            )
+
+    def test_negative_amount_rejected(self) -> None:
+        with pytest.raises(ValidationError, match="Transfer amount must be positive"):
+            Transaction(
+                source_account_id="src",
+                destination_account_id="dst",
+                amount=Decimal("-10.00"),
+                initiated_by="Alice",
+            )
+
+
+class TestAuditEntry:
+    def test_create_audit_entry(self) -> None:
+        entry = AuditEntry(
+            action=AuditAction.ACCOUNT_CREATED,
+            actor="system",
+            resource_type="account",
+            resource_id="abc-123",
+            details={"initial_balance": "100.00"},
+        )
+        assert entry.action == AuditAction.ACCOUNT_CREATED
+        assert entry.actor == "system"
+        assert entry.details["initial_balance"] == "100.00"
+
+--- FILE: baseline/tests/test_transfer_service.py ---
+from __future__ import annotations
+
+from decimal import Decimal
+
+import pytest
+
+from banking.domain.exceptions import (
+    AccountFrozenError,
+    AccountNotFoundError,
+    CurrencyMismatchError,
+    InsufficientFundsError,
+    SelfTransferError,
+    UnauthorizedError,
+)
+from banking.domain.models import Account, TransactionStatus
+from banking.repositories.account_repository import InMemoryAccountRepository
+from banking.services.audit_service import AuditService
+from banking.services.transfer_service import TransferService
+
+
+class TestTransferService:
+    def test_successful_transfer(
+        self,
+        account_repo: InMemoryAccountRepository,
+        transfer_service: TransferService,
+        audit_service: AuditService,
+    ) -> None:
+        src = Account(owner="Alice", balance=Decimal("1000.00"))
+        dst = Account(owner="Bob", balance=Decimal("500.00"))
+        account_repo.save(src)
+        account_repo.save(dst)
+
+        txn = transfer_service.transfer(
+            source_account_id=src.id,
+            destination_account_id=dst.id,
+            amount=Decimal("200.00"),
+            initiated_by="Alice",
+        )
+
+        assert txn.status == TransactionStatus.COMPLETED
+        assert txn.amount == Decimal("200.00")
+
+        updated_src = account_repo.find_by_id(src.id)
+        updated_dst = account_repo.find_by_id(dst.id)
+        assert updated_src is not None
+        assert updated_dst is not None
+        assert updated_src.balance == Decimal("800.00")
+        assert updated_dst.balance == Decimal("700.00")
+
+    def test_transfer_creates_audit_entries(
+        self,
+        account_repo: InMemoryAccountRepository,
+        transfer_service: TransferService,
+        audit_service: AuditService,
+    ) -> None:
+        src = Account(owner="Alice", balance=Decimal("1000.00"))
+        dst = Account(owner="Bob", balance=Decimal("0.00"))
+        account_repo.save(src)
+        account_repo.save(dst)
+
+        txn = transfer_service.transfer(
+            source_account_id=src.id,
+            destination_account_id=dst.id,
+            amount=Decimal("100.00"),
+            initiated_by="Alice",
+        )
+
+        trail = audit_service.get_audit_trail("transaction", txn.id)
+        actions = [e.action.value for e in trail]
+        assert "transfer_initiated" in actions
+        assert "transfer_completed" in actions
+        # All entries attributed to the initiator
+        assert all(e.actor == "Alice" for e in trail)
+
+    def test_insufficient_funds(
+        self,
+        account_repo: InMemoryAccountRepository,
+        transfer_service: TransferService,
+        audit_service: AuditService,
+    ) -> None:
+        src = Account(owner="Alice", balance=Decimal("50.00"))
+        dst = Account(owner="Bob", balance=Decimal("0.00"))
+        account_repo.save(src)
+        account_repo.save(dst)
+
+        with pytest.raises(InsufficientFundsError):
+            transfer_service.transfer(
+                source_account_id=src.id,
+                destination_account_id=dst.id,
+                amount=Decimal("100.00"),
+                initiated_by="Alice",
+            )
+
+        # Balance unchanged
+        assert account_repo.find_by_id(src.id).balance == Decimal("50.00")
+
+        # Failure recorded in audit
+        full_log = audit_service.get_full_log()
+        failed_entries = [e for e in full_log if e.action.value == "transfer_failed"]
+        assert len(failed_entries) == 1
+
+    def test_self_transfer_rejected(
+        self,
+        account_repo: InMemoryAccountRepository,
+        transfer_service: TransferService,
+    ) -> None:
+        acct = Account(owner="Alice", balance=Decimal("1000.00"))
+        account_repo.save(acct)
+
+        with pytest.raises(SelfTransferError):
+            transfer_service.transfer(
+                source_account_id=acct.id,
+                destination_account_id=acct.id,
+                amount=Decimal("100.00"),
+                initiated_by="Alice",
+            )
+
+    def test_source_account_not_found(
+        self,
+        account_repo: InMemoryAccountRepository,
+        transfer_service: TransferService,
+    ) -> None:
+        dst = Account(owner="Bob", balance=Decimal("0.00"))
+        account_repo.save(dst)
+
+        with pytest.raises(AccountNotFoundError):
+            transfer_service.transfer(
+                source_account_id="nonexistent",
+                destination_account_id=dst.id,
+                amount=Decimal("100.00"),
+                initiated_by="Alice",
+            )
+
+    def test_destination_account_not_found(
+        self,
+        account_repo: InMemoryAccountRepository,
+        transfer_service: TransferService,
+    ) -> None:
+        src = Account(owner="Alice", balance=Decimal("1000.00"))
+        account_repo.save(src)
+
+        with pytest.raises(AccountNotFoundError):
+            transfer_service.transfer(
+                source_account_id=src.id,
+                destination_account_id="nonexistent",
+                amount=Decimal("100.00"),
+                initiated_by="Alice",
+            )
+
+    def test_frozen_source_account_rejected(
+        self,
+        account_repo: InMemoryAccountRepository,
+        transfer_service: TransferService,
+    ) -> None:
+        src = Account(owner="Alice", balance=Decimal("1000.00"), is_frozen=True)
+        dst = Account(owner="Bob", balance=Decimal("0.00"))
+        account_repo.save(src)
+        account_repo.save(dst)
+
+        with pytest.raises(AccountFrozenError):
+            transfer_service.transfer(
+                source_account_id=src.id,
+                destination_account_id=dst.id,
+                amount=Decimal("100.00"),
+                initiated_by="Alice",
+            )
+
+    def test_frozen_destination_account_rejected(
+        self,
+        account_repo: InMemoryAccountRepository,
+        transfer_service: TransferService,
+    ) -> None:
+        src = Account(owner="Alice", balance=Decimal("1000.00"))
+        dst = Account(owner="Bob", balance=Decimal("0.00"), is_frozen=True)
+        account_repo.save(src)
+        account_repo.save(dst)
+
+        with pytest.raises(AccountFrozenError):
+            transfer_service.transfer(
+                source_account_id=src.id,
+                destination_account_id=dst.id,
+                amount=Decimal("100.00"),
+                initiated_by="Alice",
+            )
+
+    def test_currency_mismatch_rejected(
+        self,
+        account_repo: InMemoryAccountRepository,
+        transfer_service: TransferService,
+    ) -> None:
+        src = Account(owner="Alice", balance=Decimal("1000.00"), currency="USD")
+        dst = Account(owner="Bob", balance=Decimal("0.00"), currency="EUR")
+        account_repo.save(src)
+        account_repo.save(dst)
+
+        with pytest.raises(CurrencyMismatchError):
+            transfer_service.transfer(
+                source_account_id=src.id,
+                destination_account_id=dst.id,
+                amount=Decimal("100.00"),
+                initiated_by="Alice",
+            )
+
+    def test_unauthorized_transfer_rejected(
+        self,
+        transfer_service: TransferService,
+    ) -> None:
+        with pytest.raises(UnauthorizedError):
+            transfer_service.transfer(
+                source_account_id="src",
+                destination_account_id="dst",
+                amount=Decimal("100.00"),
+                initiated_by="",
+            )
+
+    def test_transfer_exact_balance(
+        self,
+        account_repo: InMemoryAccountRepository,
+        transfer_service: TransferService,
+    ) -> None:
+        src = Account(owner="Alice", balance=Decimal("100.00"))
+        dst = Account(owner="Bob", balance=Decimal("0.00"))
+        account_repo.save(src)
+        account_repo.save(dst)
+
+        txn = transfer_service.transfer(
+            source_account_id=src.id,
+            destination_account_id=dst.id,
+            amount=Decimal("100.00"),
+            initiated_by="Alice",
+        )
+
+        assert txn.status == TransactionStatus.COMPLETED
+        assert account_repo.find_by_id(src.id).balance == Decimal("0.00")
+        assert account_repo.find_by_id(dst.id).balance == Decimal("100.00")

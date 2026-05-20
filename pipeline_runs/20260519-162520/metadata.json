@@ -1,0 +1,6 @@
+{
+  "timestamp": "20260519-162520",
+  "run_dir": "/home/radaan/Projects/Specification-Led-Development/runs/005-a-banking-transfer-system-with-audit-logging",
+  "goal": "A banking transfer system with audit logging",
+  "pipeline_version": "1.0.0"
+}

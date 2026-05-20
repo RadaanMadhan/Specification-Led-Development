@@ -1,0 +1,115 @@
+{
+  "feature_id": "005-a-banking-transfer-system-with-audit-logging",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuthRequiredEverywhere",
+    "NoSelfMutation",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "ConservationOfValue",
+    "NoInformationLeakage"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AtomicTransfer",
+    "FR_002_SufficientFunds",
+    "FR_003_UniqueTransactionRef",
+    "FR_004_AuditForEveryEvent",
+    "FR_005_HashChain",
+    "FR_006_DailyLimit",
+    "FR_008_BalanceConsistency",
+    "FR_009_ReversalCompensating",
+    "FR_010_FailClosedAudit"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AtomicTransfer",
+      "ConservationOfValue"
+    ],
+    "FR-002": [
+      "FR_002_SufficientFunds"
+    ],
+    "FR-003": [
+      "FR_003_UniqueTransactionRef"
+    ],
+    "FR-004": [
+      "FR_004_AuditForEveryEvent",
+      "AuditCompleteness",
+      "AppendOnly"
+    ],
+    "FR-005": [
+      "FR_005_HashChain"
+    ],
+    "FR-006": [
+      "FR_006_DailyLimit"
+    ],
+    "FR-007": [
+      "LeastPrivilege"
+    ],
+    "FR-008": [
+      "FR_008_BalanceConsistency"
+    ],
+    "FR-009": [
+      "FR_009_ReversalCompensating"
+    ],
+    "FR-010": [
+      "FR_010_FailClosedAudit",
+      "AuthRequiredEverywhere"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_NoSelfTransfer",
+      "asserts_violated": [
+        "NoSelfMutation"
+      ],
+      "rationale": "Removing F_NoSelfTransfer allows a Transfer where source = destination, which directly violates the NoSelfMutation assertion. The injection forces such a transfer to exist.",
+      "inject_violation": "fact MUTATE_SelfTransfer { some t: Transfer | t.source = t.destination }"
+    },
+    {
+      "fact_name": "F_AuditCompleteness",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_004_AuditForEveryEvent",
+        "FR_010_FailClosedAudit"
+      ],
+      "rationale": "Removing F_AuditCompleteness allows a Transfer with no AuditEntry. The injection forces such an orphan transfer to exist, violating audit completeness and fail-closed assertions.",
+      "inject_violation": "fact MUTATE_NoAudit { some t: Transfer | no ae: AuditEntry | ae.transaction = t }"
+    },
+    {
+      "fact_name": "F_AppendOnlyAuditEntries",
+      "asserts_violated": [
+        "AppendOnly"
+      ],
+      "rationale": "Removing F_AppendOnlyAuditEntries allows two distinct AuditEntry atoms to share the same seqNum, violating the append-only uniqueness invariant. The injection forces duplicate sequence numbers.",
+      "inject_violation": "fact MUTATE_DuplicateSeq { some disj ae1, ae2: AuditEntry | ae1.seqNum = ae2.seqNum }"
+    },
+    {
+      "fact_name": "F_OwnershipBasedAccess",
+      "asserts_violated": [
+        "OwnershipBasedAccess"
+      ],
+      "rationale": "Removing F_OwnershipBasedAccess allows a Customer to initiate a transfer from an account they don't own. The injection forces this scenario.",
+      "inject_violation": "fact MUTATE_OwnershipBypass { some t: Transfer | Customer in t.initiatedBy.roles and t.source not in t.initiatedBy.owns }"
+    },
+    {
+      "fact_name": "F_AuthRequiredEverywhere",
+      "asserts_violated": [
+        "AuthRequiredEverywhere"
+      ],
+      "rationale": "Removing F_AuthRequiredEverywhere allows unauthenticated users to initiate transfers. The injection forces a transfer initiated by an unauthenticated user.",
+      "inject_violation": "fact MUTATE_UnauthTransfer { some t: Transfer | t.initiatedBy.authStatus = Unauthenticated }"
+    },
+    {
+      "fact_name": "F_AttributionCorrectness",
+      "asserts_violated": [
+        "AttributionCorrectness"
+      ],
+      "rationale": "Removing F_AttributionCorrectness allows an audit entry's actor to differ from the transfer's initiator. The injection forces misattribution.",
+      "inject_violation": "fact MUTATE_Misattribution { some ae: AuditEntry | ae.actor != ae.transaction.initiatedBy }"
+    }
+  ]
+}

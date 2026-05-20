@@ -1,0 +1,171 @@
+{
+  "feature_id": "A-L3",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "NoSelfMutation"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_RoleExclusivity",
+    "FR_003_ApplicantScope",
+    "FR_005_AuditorReadOnly",
+    "FR_008_OneInFlightPerApplicant",
+    "FR_009_ValidTransitions",
+    "FR_011_NoSelfAssignment",
+    "FR_012_OnlyAssignedOfficerPatch",
+    "FR_013_NoSelfApproval",
+    "FR_015_TerminalImmutable",
+    "FR_016_AuditEntryFields",
+    "FR_018_AppendOnlyLog",
+    "FR_020_ByteEquivNotFound",
+    "FR_023_AuditEndpointAuditorOnly",
+    "FR_024_ApplicantCannotModifyPostSubmission"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_RoleExclusivity"
+    ],
+    "FR-003": [
+      "FR_003_ApplicantScope",
+      "LeastPrivilege"
+    ],
+    "FR-004": [
+      "LeastPrivilege",
+      "FR_012_OnlyAssignedOfficerPatch"
+    ],
+    "FR-005": [
+      "FR_005_AuditorReadOnly",
+      "LeastPrivilege"
+    ],
+    "FR-006": [
+      "FR_003_ApplicantScope"
+    ],
+    "FR-007": [
+      "FR_001_AuthRequired"
+    ],
+    "FR-008": [
+      "FR_008_OneInFlightPerApplicant"
+    ],
+    "FR-009": [
+      "FR_009_ValidTransitions"
+    ],
+    "FR-010": [
+      "FR_011_NoSelfAssignment"
+    ],
+    "FR-011": [
+      "FR_011_NoSelfAssignment"
+    ],
+    "FR-012": [
+      "FR_012_OnlyAssignedOfficerPatch"
+    ],
+    "FR-013": [
+      "FR_013_NoSelfApproval",
+      "NoSelfMutation"
+    ],
+    "FR-014": [
+      "AuditCompleteness"
+    ],
+    "FR-015": [
+      "FR_015_TerminalImmutable"
+    ],
+    "FR-016": [
+      "FR_016_AuditEntryFields",
+      "AuditCompleteness",
+      "AttributionCorrectness"
+    ],
+    "FR-017": [
+      "AuditCompleteness"
+    ],
+    "FR-018": [
+      "AppendOnly",
+      "FR_018_AppendOnlyLog"
+    ],
+    "FR-019": [
+      "AppendOnly",
+      "FR_018_AppendOnlyLog"
+    ],
+    "FR-020": [
+      "NoInformationLeakage",
+      "FR_020_ByteEquivNotFound"
+    ],
+    "FR-021": [
+      "NoInformationLeakage",
+      "FR_020_ByteEquivNotFound"
+    ],
+    "FR-022": [
+      "NoInformationLeakage"
+    ],
+    "FR-023": [
+      "FR_023_AuditEndpointAuditorOnly"
+    ],
+    "FR-024": [
+      "FR_024_ApplicantCannotModifyPostSubmission"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_LeastPrivilege",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_005_AuditorReadOnly"
+      ],
+      "rationale": "Clearing F_LeastPrivilege removes the constraint that a successful operation requires a permitted role. The injection forces an auditor-only user to succeed at PostApplications, which LeastPrivilege must catch because RApplicant -> PostApplications is in Allowed but RAuditor -> PostApplications is not.",
+      "inject_violation": "fact MUTATE_LeastPrivilegeViolation { some op: Operation | RAuditor in op.opCaller.userRoles and ROfficer not in op.opCaller.userRoles and RApplicant not in op.opCaller.userRoles and op.opKind = PostApplications and op.opOutcome = Success }"
+    },
+    {
+      "fact_name": "F_AppendOnlyAuditEntries",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_018_AppendOnlyLog"
+      ],
+      "rationale": "Clearing F_AppendOnlyAuditEntries allows two AuditEntry atoms to share the same (app, prevStatus, newStatus, actor) tuple, modelling a 'replaced' entry \u2014 exactly what an UPDATE on audit_entries would produce. The injection forces such a duplicate to exist.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some disj e1, e2: AuditEntry | e1.entryApp = e2.entryApp and e1.entryPrevStatus = e2.entryPrevStatus and e1.entryNewStatus = e2.entryNewStatus and e1.entryActor = e2.entryActor }"
+    },
+    {
+      "fact_name": "F_NoSelfApproval",
+      "asserts_violated": [
+        "NoSelfMutation",
+        "FR_013_NoSelfApproval"
+      ],
+      "rationale": "Clearing F_NoSelfApproval allows an officer to successfully PATCH an application where they are also the applicant. The injection forces exactly that configuration, which NoSelfMutation must detect.",
+      "inject_violation": "fact MUTATE_SelfApprovalViolation { some op: Operation | op.opKind = PatchApplicationStatus and op.opOutcome = Success and (one a: op.opApp | a.appApplicant = op.opCaller and a.appOfficer = op.opCaller) }"
+    },
+    {
+      "fact_name": "F_AuthRequiredEverywhere",
+      "asserts_violated": [
+        "AuthRequiredEverywhere",
+        "FR_001_AuthRequired"
+      ],
+      "rationale": "Clearing F_AuthRequiredEverywhere allows an unauthenticated caller (userRoles = empty) to receive Success. The injection forces a user with no roles to have a successful operation, which the auth assertions must catch.",
+      "inject_violation": "fact MUTATE_AuthBypassViolation { some op: Operation | no op.opCaller.userRoles and op.opOutcome = Success }"
+    },
+    {
+      "fact_name": "F_AuditCompleteness",
+      "asserts_violated": [
+        "AuditCompleteness"
+      ],
+      "rationale": "Clearing F_AuditCompleteness allows a successful state-changing operation to exist with no corresponding audit entry. The injection forces a successful PatchApplicationStatus with no AuditEntry linking to the same (app, caller) pair.",
+      "inject_violation": "fact MUTATE_AuditCompletenessViolation { some op: Operation | op.opKind = PatchApplicationStatus and op.opOutcome = Success and (no e: AuditEntry | e.entryApp = op.opApp and e.entryActor = op.opCaller) }"
+    },
+    {
+      "fact_name": "F_NoInformationLeakage",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "FR_020_ByteEquivNotFound"
+      ],
+      "rationale": "Clearing F_NoInformationLeakage allows an authenticated non-success GET /applications/{id} to return Forbidden instead of NotFound, which distinguishes 'exists but denied' from 'not found' and violates the byte-equivalence invariant.",
+      "inject_violation": "fact MUTATE_InfoLeakViolation { some op: Operation | op.opKind = GetApplicationById and some op.opCaller.userRoles and op.opOutcome = Forbidden }"
+    }
+  ]
+}

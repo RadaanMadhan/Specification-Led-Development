@@ -1,0 +1,172 @@
+{
+  "feature_id": "A-L3",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "NoSelfMutation"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_RoleMutualExclusion",
+    "FR_003_ApplicantLimitedAccess",
+    "FR_004_OfficerLimitedAccess",
+    "FR_005_AuditorReadOnly",
+    "FR_008_OneInFlightPerApplicant",
+    "FR_009_ValidTransitions",
+    "FR_011_NoSelfAssignment",
+    "FR_012_OnlyAssignedOfficerCanPatch",
+    "FR_013_NoSelfApproval",
+    "FR_015_TerminalStatusFinal",
+    "FR_016_AuditEntryCompleteness",
+    "FR_018_AuditImmutability",
+    "FR_023_AuditEndpointAuditorOnly",
+    "FR_024_ApplicantCannotModify"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_RoleMutualExclusion"
+    ],
+    "FR-003": [
+      "FR_003_ApplicantLimitedAccess",
+      "LeastPrivilege"
+    ],
+    "FR-004": [
+      "FR_004_OfficerLimitedAccess",
+      "LeastPrivilege"
+    ],
+    "FR-005": [
+      "FR_005_AuditorReadOnly",
+      "LeastPrivilege"
+    ],
+    "FR-006": [
+      "OwnershipExclusivity"
+    ],
+    "FR-007": [
+      "OwnershipExclusivity"
+    ],
+    "FR-008": [
+      "FR_008_OneInFlightPerApplicant"
+    ],
+    "FR-009": [
+      "FR_009_ValidTransitions"
+    ],
+    "FR-010": [
+      "FR_011_NoSelfAssignment",
+      "OwnershipBasedAccess"
+    ],
+    "FR-011": [
+      "FR_011_NoSelfAssignment"
+    ],
+    "FR-012": [
+      "FR_012_OnlyAssignedOfficerCanPatch",
+      "OwnershipBasedAccess"
+    ],
+    "FR-013": [
+      "FR_013_NoSelfApproval",
+      "NoSelfMutation"
+    ],
+    "FR-014": [
+      "AuditCompleteness"
+    ],
+    "FR-015": [
+      "FR_015_TerminalStatusFinal"
+    ],
+    "FR-016": [
+      "FR_016_AuditEntryCompleteness",
+      "AuditCompleteness",
+      "AttributionCorrectness"
+    ],
+    "FR-017": [
+      "AuditCompleteness",
+      "FR_016_AuditEntryCompleteness"
+    ],
+    "FR-018": [
+      "FR_018_AuditImmutability",
+      "AppendOnly"
+    ],
+    "FR-019": [
+      "AppendOnly",
+      "FR_018_AuditImmutability"
+    ],
+    "FR-020": [
+      "NoInformationLeakage"
+    ],
+    "FR-021": [
+      "NoInformationLeakage"
+    ],
+    "FR-022": [
+      "NoInformationLeakage"
+    ],
+    "FR-023": [
+      "FR_023_AuditEndpointAuditorOnly",
+      "NoInformationLeakage"
+    ],
+    "FR-024": [
+      "FR_024_ApplicantCannotModify"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_AppendOnlyAuditEntries",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_018_AuditImmutability"
+      ],
+      "rationale": "Removing F_AppendOnlyAuditEntries allows two AuditEntry atoms for the same application to share identical (prevStatus, newStatus) pairs, which models a duplicate/overwritten chain position \u2014 exactly what AppendOnly and FR_018_AuditImmutability forbid. The injection forces such a duplicate to exist.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some disj e1, e2: AuditEntry | e1.forApp = e2.forApp and e1.prevStatus = e2.prevStatus and e1.newStatus = e2.newStatus }"
+    },
+    {
+      "fact_name": "F_NoSelfDecision",
+      "asserts_violated": [
+        "NoSelfMutation",
+        "FR_013_NoSelfApproval"
+      ],
+      "rationale": "Removing F_NoSelfDecision allows a non-initial AuditEntry's actor to equal the application's applicant \u2014 i.e., an officer self-approves their own loan. The injection forces this to exist, which NoSelfMutation and FR_013_NoSelfApproval must catch.",
+      "inject_violation": "fact MUTATE_SelfDecisionViolation { some e: AuditEntry | some e.prevStatus and e.actor = e.forApp.applicant }"
+    },
+    {
+      "fact_name": "F_NoSelfAssignment",
+      "asserts_violated": [
+        "FR_011_NoSelfAssignment"
+      ],
+      "rationale": "Removing F_NoSelfAssignment allows the assignedOfficer of an application to be the same user as the applicant. The injection forces a self-assigned application into the model, directly violating FR_011_NoSelfAssignment.",
+      "inject_violation": "fact MUTATE_SelfAssignmentViolation { some a: LoanApplication | some a.assignedOfficer and a.assignedOfficer = a.applicant }"
+    },
+    {
+      "fact_name": "F_AuditEndpointAuditorOnly",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "FR_023_AuditEndpointAuditorOnly"
+      ],
+      "rationale": "Removing F_AuditEndpointAuditorOnly allows a non-auditor (e.g., an officer or applicant) to issue a GetAuditLog call, violating the audit-endpoint auditor-only restriction and the NoInformationLeakage invariant. The injection forces such a call to exist.",
+      "inject_violation": "fact MUTATE_AuditLeakViolation { some c: ApiCall | c.opKind = GetAuditLog and c.callRole = RApplicant and RApplicant in c.caller.userRoles }"
+    },
+    {
+      "fact_name": "F_RoleMutualExclusion",
+      "asserts_violated": [
+        "FR_002_RoleMutualExclusion"
+      ],
+      "rationale": "Removing F_RoleMutualExclusion allows a User to simultaneously hold both ROfficer and RAuditor, which is explicitly forbidden by FR-002. The injection creates such a user, which FR_002_RoleMutualExclusion must catch.",
+      "inject_violation": "fact MUTATE_RoleMutualExclusionViolation { some u: User | ROfficer in u.userRoles and RAuditor in u.userRoles }"
+    },
+    {
+      "fact_name": "F_OneInFlightPerApplicant",
+      "asserts_violated": [
+        "FR_008_OneInFlightPerApplicant"
+      ],
+      "rationale": "Removing F_OneInFlightPerApplicant allows a single applicant to have two in-flight (Pending or UnderReview) applications simultaneously. The injection forces exactly this scenario, which FR_008_OneInFlightPerApplicant must catch.",
+      "inject_violation": "fact MUTATE_MultipleInFlightViolation { some disj a1, a2: LoanApplication | a1.applicant = a2.applicant and a1.status = Pending and a2.status = UnderReview }"
+    }
+  ]
+}

@@ -1,0 +1,52 @@
+{
+  "F_AuditCompleteness": {
+    "targeted_asserts": {
+      "AuditCompleteness": "BIT",
+      "FR_008_AlwaysAudit": "BIT",
+      "FR_012_NoDeletePath": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_CareTeamGated": {
+    "targeted_asserts": {
+      "OwnershipBasedAccess": "BIT",
+      "FR_006_CareTeamGated": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_LeastPrivilege": {
+    "targeted_asserts": {
+      "LeastPrivilege": "BIT",
+      "FR_011_AuditByIGOnly": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_AuditAttribution": {
+    "targeted_asserts": {
+      "AttributionCorrectness": "BIT",
+      "FR_009_AuditFieldsSnapshot": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_ResponseShape": {
+    "targeted_asserts": {
+      "NoInformationLeakage": "BIT",
+      "FR_007_ByteEquivalentDenial": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AppendOnlyAudit": {
+    "targeted_asserts": {
+      "AppendOnly": "VACUOUS_OVERCONSTRAINT",
+      "FR_010_AuditImmutable": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_AuthRequired": {
+    "targeted_asserts": {
+      "AuthRequiredEverywhere": "BIT",
+      "FR_001_AuthRequired": "BIT"
+    },
+    "all_bit": true
+  }
+}

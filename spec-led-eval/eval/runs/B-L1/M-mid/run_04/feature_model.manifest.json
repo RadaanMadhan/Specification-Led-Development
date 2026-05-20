@@ -1,0 +1,144 @@
+{
+  "feature_id": "B-L1",
+  "patterns_applied": [
+    "AuthRequiredEverywhere",
+    "PermissionCompleteness",
+    "AppendOnly",
+    "AuditCompleteness",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "ValidationBeforeMutation"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_IdentityFromAuthContext",
+    "FR_004_FlatPermissions",
+    "FR_008_AssigneeMustBeMember",
+    "FR_009_CreatorAlwaysPresent",
+    "FR_010_ValidStatusSet",
+    "FR_011_ClosedTaskEditRule",
+    "FR_012_PermanentDeletion",
+    "FR_018_DeletionLogRecord",
+    "FR_003_FR_004_No403PermissionDenied"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_IdentityFromAuthContext",
+      "AttributionCorrectness"
+    ],
+    "FR-003": [
+      "FR_003_FR_004_No403PermissionDenied",
+      "PermissionCompleteness"
+    ],
+    "FR-004": [
+      "FR_004_FlatPermissions",
+      "FR_003_FR_004_No403PermissionDenied",
+      "PermissionCompleteness"
+    ],
+    "FR-005": [
+      "ValidationBeforeMutation"
+    ],
+    "FR-006": [
+      "ValidationBeforeMutation"
+    ],
+    "FR-007": [
+      "ValidationBeforeMutation"
+    ],
+    "FR-008": [
+      "FR_008_AssigneeMustBeMember",
+      "OwnershipExclusivity"
+    ],
+    "FR-009": [
+      "FR_009_CreatorAlwaysPresent",
+      "AttributionCorrectness"
+    ],
+    "FR-010": [
+      "FR_010_ValidStatusSet"
+    ],
+    "FR-011": [
+      "FR_011_ClosedTaskEditRule"
+    ],
+    "FR-012": [
+      "FR_012_PermanentDeletion"
+    ],
+    "FR-013": [
+      "PermissionCompleteness"
+    ],
+    "FR-014": [
+      "FR_003_FR_004_No403PermissionDenied"
+    ],
+    "FR-015": [
+      "FR_003_FR_004_No403PermissionDenied"
+    ],
+    "FR-016": [
+      "FR_003_FR_004_No403PermissionDenied"
+    ],
+    "FR-017": [
+      "FR_009_CreatorAlwaysPresent",
+      "AttributionCorrectness"
+    ],
+    "FR-018": [
+      "FR_018_DeletionLogRecord",
+      "AppendOnly",
+      "AuditCompleteness"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_AuthRequiredEverywhere",
+      "asserts_violated": [
+        "AuthRequiredEverywhere",
+        "FR_001_AuthRequired"
+      ],
+      "rationale": "Removing this fact allows the model to produce an Operation with no performer and outcome OutSuccess, directly violating FR-001 and the AuthRequiredEverywhere predicate.",
+      "inject_violation": "fact MUTATE_AuthBypass { some op: Operation | no op.performer and op.outcome = OutSuccess }"
+    },
+    {
+      "fact_name": "F_DeletionLogCompleteness",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_018_DeletionLogRecord"
+      ],
+      "rationale": "Removing this fact allows a successful OpDelete to exist with no corresponding DeletionRecord, breaking the audit-completeness invariant from FR-018.",
+      "inject_violation": "fact MUTATE_MissingDeletionLog { some op: Operation | op.kind = OpDelete and op.outcome = OutSuccess and (no dr: DeletionRecord | dr.loggedTask = op.targetTask) }"
+    },
+    {
+      "fact_name": "F_DeletionLogAppendOnly",
+      "asserts_violated": [
+        "AppendOnly"
+      ],
+      "rationale": "Removing this fact allows two DeletionRecords to share the same (loggedTask, loggedDeleter) pair, simulating a mutated or duplicated log entry.",
+      "inject_violation": "fact MUTATE_DuplicateDeletionRecord { some disj dr1, dr2: DeletionRecord | dr1.loggedTask = dr2.loggedTask and dr1.loggedDeleter = dr2.loggedDeleter }"
+    },
+    {
+      "fact_name": "F_ClosedTaskEditRule",
+      "asserts_violated": [
+        "FR_011_ClosedTaskEditRule"
+      ],
+      "rationale": "Removing this fact allows a PATCH on a Done task to succeed without providing a non-Done requestedStatus, which is precisely what FR-011 forbids.",
+      "inject_violation": "fact MUTATE_ClosedTaskBypass { some op: Operation | op.kind = OpPatch and some op.targetTask and op.targetTask.status = Done and op.outcome = OutSuccess and op.requestedStatus = Done }"
+    },
+    {
+      "fact_name": "F_FlatPermissions",
+      "asserts_violated": [
+        "FR_004_FlatPermissions",
+        "FR_003_FR_004_No403PermissionDenied"
+      ],
+      "rationale": "Removing this fact allows an authenticated caller to receive OutAuthFail even when their operation kind is in the allowed set, violating the flat-peer permission model.",
+      "inject_violation": "fact MUTATE_FlatPermissionViolation { some op: Operation | one op.performer and op.kind in PermMatrix.Allowed and op.outcome = OutAuthFail }"
+    },
+    {
+      "fact_name": "F_DeletionLogAttributionCorrect",
+      "asserts_violated": [
+        "AttributionCorrectness",
+        "FR_018_DeletionLogRecord"
+      ],
+      "rationale": "Removing this fact allows a DeletionRecord to exist whose loggedDeleter does not match the performer of any corresponding OpDelete, breaking attribution correctness.",
+      "inject_violation": "fact MUTATE_WrongAttribution { some dr: DeletionRecord | all op: Operation | not (op.kind = OpDelete and op.outcome = OutSuccess and op.targetTask = dr.loggedTask and op.performer = dr.loggedDeleter) }"
+    }
+  ]
+}

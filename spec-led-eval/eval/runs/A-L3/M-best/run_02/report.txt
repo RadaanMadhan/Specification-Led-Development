@@ -1,0 +1,142 @@
+==============================================================================
+  Design Compliance Report  (Phase 3 — feature_model.als)
+  feature       : A-L3
+  spec source   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/eval/specs/A-L3
+  alloy model   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/A-L3/feature_model.als
+  patterns      : LeastPrivilege, PermissionCompleteness, AuthRequiredEverywhere, AuditCompleteness, AppendOnly, AttributionCorrectness, OwnershipExclusivity, OwnershipBasedAccess, NoInformationLeakage, NoSelfMutation, ValidationBeforeMutation
+  fr count      : 24 declared in spec.md
+  assertions    : 28 total (26/28 PASS via Alloy)
+==============================================================================
+
+  Compliance matrix
+  ----------------------------------------------------------------------------
+  Assertion                   Verdict   Anchor
+  ----------------------------------------------------------------
+  LeastPrivilege              PASS      PATTERN LeastPrivilege: contracts/http-api.md permission matrix; spec.md FR-003..FR-005
+  PermissionCompleteness      PASS      PATTERN PermissionCompleteness: contracts/http-api.md permission matrix
+  AuthRequiredEverywhere      PASS      PATTERN AuthRequiredEverywhere: spec.md FR-001; contracts/http-api.md Authentication
+  AuditCompleteness           FAIL      PATTERN AuditCompleteness: spec.md FR-016, FR-017; data-model.md audit_entries
+  AppendOnly                  PASS      PATTERN AppendOnly: spec.md FR-018; data-model.md "no UPDATE/DELETE on audit_entries"
+  AttributionCorrectness      PASS      PATTERN AttributionCorrectness: spec.md FR-016; data-model.md audit_entries.actor_role
+  OwnershipExclusivity        PASS      PATTERN OwnershipExclusivity: data-model.md loan_applications.applicant_id
+  OwnershipBasedAccess        PASS      PATTERN OwnershipBasedAccess: spec.md FR-003, FR-004, FR-020; contracts/http-api.md GET /applications/{id}
+  NoInformationLeakage        PASS      PATTERN NoInformationLeakage: spec.md FR-020, FR-021, FR-022, FR-023
+  NoSelfMutation              PASS      PATTERN NoSelfMutation: spec.md FR-011, FR-013; data-model.md CHECK(assigned_officer_id != applicant_id)
+  ValidationBeforeMutation    PASS      PATTERN ValidationBeforeMutation: spec.md FR-007, FR-014; data-model.md atomicity contract
+  FR_001_AuthRequired         PASS      FEATURE-SPECIFIC: FR-001 OAuth required, 401 before business logic
+  FR_002_RoleExclusivity      PASS      FEATURE-SPECIFIC: FR-002 role multiplicity (officer XOR auditor)
+  FR_003_ApplicantScope       PASS      FEATURE-SPECIFIC: FR-003 applicants can submit/read own, nothing else
+  FR_004_OfficerAssignedOnly  PASS      FEATURE-SPECIFIC: FR-004 officer can only PATCH applications assigned to them
+  FR_005_AuditorReadOnly      PASS      FEATURE-SPECIFIC: FR-005 auditor read-only (no writes)
+  FR_008_OneInFlight          PASS      FEATURE-SPECIFIC: FR-008 at most one in-flight application per applicant
+  FR_009_ValidTransitions     PASS      FEATURE-SPECIFIC: FR-009 status transitions
+  FR_010_AssignedIsOfficer    PASS      FEATURE-SPECIFIC: FR-010 assigned officer is an officer-role user
+  FR_011_NoSelfAssignment     PASS      FEATURE-SPECIFIC: FR-011 no self-assignment
+  FR_012_OnlyAssignedOfficer  PASS      FEATURE-SPECIFIC: FR-012 only assigned officer can PATCH
+  FR_013_NoSelfDecision       PASS      FEATURE-SPECIFIC: FR-013 no self-decision (officer cannot decide own application)
+  FR_015_TerminalNoFurther    PASS      FEATURE-SPECIFIC: FR-015 no PATCH out of terminal states
+  FR_016_AuditFields          PASS      FEATURE-SPECIFIC: FR-016 audit entry fields and attribution
+  FR_018_AppendOnly           FAIL      FEATURE-SPECIFIC: FR-018 audit append-only / no duplicates
+  FR_020_ByteEquivalent       PASS      FEATURE-SPECIFIC: FR-020/021/022 byte-equivalent unauthorised read
+  FR_023_AuditAuditorOnly     PASS      FEATURE-SPECIFIC: FR-023 audit endpoint is auditor-only
+  FR_024_NoApplicantMutation  PASS      FEATURE-SPECIFIC: FR-024 applicant cannot mutate post-submission
+
+  Counterexamples (Alloy SAT)
+  ----------------------------------------------------------------------------
+  AuditCompleteness  [PATTERN AuditCompleteness: spec.md FR-016, FR-017; data-model.md audit_entries]
+    Alloy: 03. check AuditCompleteness        0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR_018_AppendOnly  [FEATURE-SPECIFIC: FR-018 audit append-only / no duplicates]
+    Alloy: 24. check FR_018_AppendOnly        0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR coverage
+  ----------------------------------------------------------------------------
+  FR-001  →  FR_001_AuthRequired=PASS, AuthRequiredEverywhere=PASS
+  FR-002  →  FR_002_RoleExclusivity=PASS
+  FR-003  →  FR_003_ApplicantScope=PASS, LeastPrivilege=PASS
+  FR-004  →  FR_004_OfficerAssignedOnly=PASS, LeastPrivilege=PASS
+  FR-005  →  FR_005_AuditorReadOnly=PASS, LeastPrivilege=PASS
+  FR-006  →  AttributionCorrectness=PASS
+  FR-007  →  ValidationBeforeMutation=PASS
+  FR-008  →  FR_008_OneInFlight=PASS
+  FR-009  →  FR_009_ValidTransitions=PASS
+  FR-010  →  FR_010_AssignedIsOfficer=PASS, AuditCompleteness=FAIL
+  FR-011  →  FR_011_NoSelfAssignment=PASS, NoSelfMutation=PASS
+  FR-012  →  FR_012_OnlyAssignedOfficer=PASS, OwnershipBasedAccess=PASS
+  FR-013  →  FR_013_NoSelfDecision=PASS, NoSelfMutation=PASS
+  FR-014  →  ValidationBeforeMutation=PASS
+  FR-015  →  FR_015_TerminalNoFurther=PASS
+  FR-016  →  FR_016_AuditFields=PASS, AttributionCorrectness=PASS, AuditCompleteness=FAIL
+  FR-017  →  AuditCompleteness=FAIL
+  FR-018  →  FR_018_AppendOnly=FAIL, AppendOnly=PASS
+  FR-019  →  AppendOnly=PASS
+  FR-020  →  FR_020_ByteEquivalent=PASS, NoInformationLeakage=PASS
+  FR-021  →  FR_020_ByteEquivalent=PASS, NoInformationLeakage=PASS
+  FR-022  →  NoInformationLeakage=PASS
+  FR-023  →  FR_023_AuditAuditorOnly=PASS, NoInformationLeakage=PASS
+  FR-024  →  FR_024_NoApplicantMutation=PASS
+
+  All FRs have at least one matching assertion.
+
+==============================================================================
+  Mutation tests  (assertion-strength validation)
+==============================================================================
+
+  Strategy: replace each named fact's body with `{}` (no constraint),
+  then re-run Alloy. Each listed assertion should now FAIL on the
+  mutated model. If it still PASSes, the assertion is vacuous and
+  must be strengthened.
+
+  - MUTATE F_LeastPrivilegeEnforced  → runs/A-L3/mutated_F_LeastPrivilegeEnforced.als
+    rationale: Removing the enforcement that successful operations require an allowed role lets the model construct a Success operation whose caller's role set has no cell in the permission matrix for the op kind (e.g., an auditor-only user successfully POSTing).
+    expected to FAIL: LeastPrivilege, FR_005_AuditorReadOnly
+      - LeastPrivilege: FAIL (expected)
+      - FR_005_AuditorReadOnly: FAIL (expected)
+
+  - MUTATE F_AuthRequiredBeforeBusinessLogic  → runs/A-L3/mutated_F_AuthRequiredBeforeBusinessLogic.als
+    rationale: Removing the auth-before-business-logic fact lets the model invent an unauthenticated operation that nonetheless succeeds, which AuthRequiredEverywhere is meant to catch.
+    expected to FAIL: AuthRequiredEverywhere, FR_001_AuthRequired
+      - AuthRequiredEverywhere: PASS (vacuous?)
+      - FR_001_AuthRequired: PASS (vacuous?)
+
+  - MUTATE F_AuditCompletenessForTransitions  → runs/A-L3/mutated_F_AuditCompletenessForTransitions.als
+    rationale: Removing the audit-completeness fact allows a successful state-changing operation to exist without a paired audit entry, which AuditCompleteness must flag.
+    expected to FAIL: AuditCompleteness
+      - AuditCompleteness: FAIL (expected)
+
+  - MUTATE F_AppendOnlyAuditEntries  → runs/A-L3/mutated_F_AppendOnlyAuditEntries.als
+    rationale: Without the append-only fact, two distinct audit entries can record the same transition on the same application, which is exactly the duplication AppendOnly forbids.
+    expected to FAIL: AppendOnly, FR_018_AppendOnly
+      - AppendOnly: FAIL (expected)
+      - FR_018_AppendOnly: FAIL (expected)
+
+  - MUTATE F_NoSelfAssignment  → runs/A-L3/mutated_F_NoSelfAssignment.als
+    rationale: Removing no-self-assignment lets an application be assigned to its own applicant; combined with the assigned-officer-patches rule, this yields a successful PATCH where caller == applicant, violating no-self-mutation.
+    expected to FAIL: NoSelfMutation, FR_011_NoSelfAssignment, FR_013_NoSelfDecision
+      - NoSelfMutation: FAIL (expected)
+      - FR_011_NoSelfAssignment: FAIL (expected)
+      - FR_013_NoSelfDecision: FAIL (expected)
+
+  - MUTATE F_NoInformationLeakageOnRead  → runs/A-L3/mutated_F_NoInformationLeakageOnRead.als
+    rationale: Removing the not-found-on-denial fact lets the model expose a Forbidden outcome for an authenticated GET denial, which leaks resource existence and is exactly what NoInformationLeakage forbids.
+    expected to FAIL: NoInformationLeakage, FR_020_ByteEquivalent
+      - NoInformationLeakage: FAIL (expected)
+      - FR_020_ByteEquivalent: FAIL (expected)
+
+  - MUTATE F_OwnershipBasedReadAccess  → runs/A-L3/mutated_F_OwnershipBasedReadAccess.als
+    rationale: Removing ownership-gated read access lets a stranger (not applicant, not assigned officer, not auditor) successfully GET an application, which OwnershipBasedAccess must catch.
+    expected to FAIL: OwnershipBasedAccess
+      - OwnershipBasedAccess: FAIL (expected)
+
+  Mutation summary
+  ----------------------------------------------------------------------------
+  - F_LeastPrivilegeEnforced: ASSERTIONS BIT (LeastPrivilege, FR_005_AuditorReadOnly)
+  - F_AuthRequiredBeforeBusinessLogic: ASSERTION VACUOUS (AuthRequiredEverywhere, FR_001_AuthRequired)
+  - F_AuditCompletenessForTransitions: ASSERTIONS BIT (AuditCompleteness)
+  - F_AppendOnlyAuditEntries: ASSERTIONS BIT (AppendOnly, FR_018_AppendOnly)
+  - F_NoSelfAssignment: ASSERTIONS BIT (NoSelfMutation, FR_011_NoSelfAssignment, FR_013_NoSelfDecision)
+  - F_NoInformationLeakageOnRead: ASSERTIONS BIT (NoInformationLeakage, FR_020_ByteEquivalent)
+  - F_OwnershipBasedReadAccess: ASSERTIONS BIT (OwnershipBasedAccess)
+

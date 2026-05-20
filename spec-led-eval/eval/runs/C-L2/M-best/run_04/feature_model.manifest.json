@@ -1,0 +1,138 @@
+{
+  "feature_id": "012-hospital-clinical-records",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "PermissionGrounding",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_FiveRoleCatalogue",
+    "FR_004_CareTeamGating",
+    "FR_005_AdminAuditOnly",
+    "FR_006_DenialNoLeakage",
+    "FR_009_NoteAuthorIsClinical",
+    "FR_010_NoteAuthorMatchesOperation",
+    "FR_011_NotesAppendOnly",
+    "FR_012_OneAuditPerOperation",
+    "FR_013_AuditNoteFieldGating",
+    "FR_014_AuditImmutable",
+    "FR_017_AdminOnlyAuditEndpoint",
+    "FR_018_AdminAuditCarriesOnlyOpaquePointer"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired"
+    ],
+    "FR-002": [
+      "FR_002_FiveRoleCatalogue"
+    ],
+    "FR-004": [
+      "FR_004_CareTeamGating",
+      "OwnershipBasedAccess"
+    ],
+    "FR-005": [
+      "FR_005_AdminAuditOnly",
+      "LeastPrivilege",
+      "PermissionGrounding"
+    ],
+    "FR-006": [
+      "FR_006_DenialNoLeakage",
+      "NoInformationLeakage"
+    ],
+    "FR-009": [
+      "FR_009_NoteAuthorIsClinical"
+    ],
+    "FR-010": [
+      "FR_010_NoteAuthorMatchesOperation"
+    ],
+    "FR-011": [
+      "FR_011_NotesAppendOnly",
+      "AppendOnly"
+    ],
+    "FR-012": [
+      "FR_012_OneAuditPerOperation",
+      "AuditCompleteness"
+    ],
+    "FR-013": [
+      "FR_013_AuditNoteFieldGating",
+      "AttributionCorrectness"
+    ],
+    "FR-014": [
+      "FR_014_AuditImmutable",
+      "AuditCompleteness"
+    ],
+    "FR-017": [
+      "FR_017_AdminOnlyAuditEndpoint",
+      "LeastPrivilege",
+      "PermissionGrounding"
+    ],
+    "FR-018": [
+      "FR_018_AdminAuditCarriesOnlyOpaquePointer"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_LeastPrivilegeRule",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_005_AdminAuditOnly",
+        "FR_017_AdminOnlyAuditEndpoint"
+      ],
+      "rationale": "Clearing F_LeastPrivilegeRule removes the rule that a permitted operation must be inside the documented permission matrix. The injection forces a Doctor to use PostAuditSearch with outcome Permitted \u2014 a cell the matrix does NOT grant. F_CareTeamGating is bypassed because PostAuditSearch is not in its scope, so the injection is satisfiable and the LeastPrivilege / admin-only assertions must fail.",
+      "inject_violation": "fact MUTATE_DoctorPermittedAudit { some op: Operation | op.callerRoleSnapshot = Doctor and op.kind = PostAuditSearch and op.outcome = Permitted }"
+    },
+    {
+      "fact_name": "F_OneAuditPerOperation",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_012_OneAuditPerOperation",
+        "FR_014_AuditImmutable"
+      ],
+      "rationale": "Clearing F_OneAuditPerOperation removes audit-entry uniqueness across operations. The injection forces two distinct Operation atoms to share the same AuditEntry, breaking the bijection that audit-completeness and audit-immutability rely on.",
+      "inject_violation": "fact MUTATE_SharedAudit { some disj o1, o2: Operation | o1.audit = o2.audit }"
+    },
+    {
+      "fact_name": "F_NoteCreatedByOneOperation",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_011_NotesAppendOnly"
+      ],
+      "rationale": "Clearing F_NoteCreatedByOneOperation lets the model invent a ClinicalNote not produced by any Operation \u2014 an 'orphan' append, which violates the append-only invariant's bijection from Operation to ClinicalNote.",
+      "inject_violation": "fact MUTATE_OrphanNote { some n: ClinicalNote | no op: Operation | op.createdNote = n }"
+    },
+    {
+      "fact_name": "F_CareTeamGating",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_004_CareTeamGating"
+      ],
+      "rationale": "Clearing F_CareTeamGating drops the requirement that a permitted record-lookup or note-addition trace through an active care-team-membership row. The injection forces a Doctor to obtain a permitted PostRecordsLookup against a patient with no matching active CareTeamMembership \u2014 exactly the bug the care-team predicate is supposed to catch.",
+      "inject_violation": "fact MUTATE_NoCareTeamPermitted { some op: Operation | op.callerRoleSnapshot = Doctor and op.kind = PostRecordsLookup and op.outcome = Permitted and (no ctm: CareTeamMembership | ctm.clinician = op.caller and ctm.member_patient = op.target and ctm.ctm_status = Active) }"
+    },
+    {
+      "fact_name": "F_AuditMirrorsOperation",
+      "asserts_violated": [
+        "AttributionCorrectness"
+      ],
+      "rationale": "Clearing F_AuditMirrorsOperation decouples the audit entry's snapshot fields from the operation they record. The injection produces an audit entry whose ae_user disagrees with op.caller \u2014 a misattributed audit, exactly the failure mode AttributionCorrectness names.",
+      "inject_violation": "fact MUTATE_MisattributedAudit { some op: Operation | op.audit.ae_user != op.caller }"
+    },
+    {
+      "fact_name": "F_NoteOnlyOnPermittedAddNote",
+      "asserts_violated": [
+        "FR_006_DenialNoLeakage",
+        "FR_013_AuditNoteFieldGating",
+        "NoInformationLeakage",
+        "FR_018_AdminAuditCarriesOnlyOpaquePointer"
+      ],
+      "rationale": "Clearing F_NoteOnlyOnPermittedAddNote removes the iff that pins note creation to permitted add_note operations. The injection forces a PostRecordsLookup operation to have a createdNote, which (via F_AuditNoteIsOperationNote + F_AuditMirrorsOperation) propagates to an AuditEntry with ae_kind = PostRecordsLookup and a non-empty ae_note \u2014 violating the note_id gating rule, the denial-no-leakage rule, and the admin-response opaque-pointer rule.",
+      "inject_violation": "fact MUTATE_ReadOpHasNote { some op: Operation | op.kind = PostRecordsLookup and op.outcome = Permitted and some op.createdNote }"
+    }
+  ]
+}

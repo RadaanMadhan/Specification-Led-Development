@@ -1,0 +1,148 @@
+{
+  "feature_id": "A-L1",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuthRequiredEverywhere",
+    "AppendOnly",
+    "AuditCompleteness",
+    "AttributionCorrectness",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthenticatedSubmission",
+    "FR_004_UniqueReferenceAndPendingOnSubmit",
+    "FR_005_OnePendingPerCustomer",
+    "FR_009_DecisionHasDecider",
+    "FR_010_AtMostOneDecisionPerApp",
+    "FR_011_DecidedStatusImmutable",
+    "FR_012_NoDuplicateDecisions",
+    "FR_013_CustomerSeesOwnOnly",
+    "FR_015_RoleSeparation",
+    "FR_016_AuditTrailComplete",
+    "FR_017_NoApplicationDeletion"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthenticatedSubmission",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_004_UniqueReferenceAndPendingOnSubmit"
+    ],
+    "FR-003": [
+      "FR_004_UniqueReferenceAndPendingOnSubmit"
+    ],
+    "FR-004": [
+      "FR_004_UniqueReferenceAndPendingOnSubmit"
+    ],
+    "FR-005": [
+      "FR_005_OnePendingPerCustomer"
+    ],
+    "FR-006": [
+      "FR_004_UniqueReferenceAndPendingOnSubmit"
+    ],
+    "FR-007": [
+      "FR_015_RoleSeparation",
+      "LeastPrivilege"
+    ],
+    "FR-008": [
+      "FR_015_RoleSeparation",
+      "LeastPrivilege"
+    ],
+    "FR-009": [
+      "FR_009_DecisionHasDecider"
+    ],
+    "FR-010": [
+      "FR_010_AtMostOneDecisionPerApp",
+      "FR_011_DecidedStatusImmutable"
+    ],
+    "FR-011": [
+      "FR_011_DecidedStatusImmutable"
+    ],
+    "FR-012": [
+      "FR_012_NoDuplicateDecisions"
+    ],
+    "FR-013": [
+      "FR_013_CustomerSeesOwnOnly",
+      "NoInformationLeakage",
+      "OwnershipBasedAccess"
+    ],
+    "FR-014": [
+      "FR_016_AuditTrailComplete"
+    ],
+    "FR-015": [
+      "FR_015_RoleSeparation",
+      "LeastPrivilege"
+    ],
+    "FR-016": [
+      "FR_016_AuditTrailComplete",
+      "AuditCompleteness",
+      "AppendOnly",
+      "AttributionCorrectness"
+    ],
+    "FR-017": [
+      "FR_017_NoApplicationDeletion"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "PermissionCompleteness",
+        "FR_015_RoleSeparation"
+      ],
+      "rationale": "Clearing F_PermissionMatrix leaves PermMatrix.Allowed unconstrained. Alloy can then assign Customer -> PostDecision or BankStaff -> PostApplications to Allowed, which violates LeastPrivilege, PermissionCompleteness, and FR_015_RoleSeparation. The injection forces a forbidden cell into Allowed.",
+      "inject_violation": "fact MUTATE_PermissionMatrixViolation { Customer -> PostDecision in PermMatrix.Allowed }"
+    },
+    {
+      "fact_name": "F_AppendOnlyAuditEvents",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_016_AuditTrailComplete",
+        "FR_017_NoApplicationDeletion"
+      ],
+      "rationale": "Clearing F_AppendOnlyAuditEvents removes the constraint that decided applications retain their submission events. The injection forces a decided application with no EvtSubmitted event, directly violating AppendOnly and FR_016_AuditTrailComplete.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some a: LoanApplication | (a.status = ApprvdStatus or a.status = RejectedStatus) and (no e: ApplicationEvent | e.evtApp = a and e.etype = EvtSubmitted) }"
+    },
+    {
+      "fact_name": "F_AuditCompleteness",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_016_AuditTrailComplete"
+      ],
+      "rationale": "Clearing F_AuditCompleteness lets an approved application exist without a corresponding EvtApproved event. The injection forces exactly this state, causing AuditCompleteness and FR_016_AuditTrailComplete to find counterexamples.",
+      "inject_violation": "fact MUTATE_AuditCompletenessViolation { some a: LoanApplication | a.status = ApprvdStatus and (no e: ApplicationEvent | e.evtApp = a and e.etype = EvtApproved) }"
+    },
+    {
+      "fact_name": "F_AttributionCorrectness",
+      "asserts_violated": [
+        "AttributionCorrectness"
+      ],
+      "rationale": "Clearing F_AttributionCorrectness allows a EvtSubmitted event to be attributed to a different user than the application's own customer, or to a BankStaff user. The injection forces a submission event whose actor is a staff member, not the customer.",
+      "inject_violation": "fact MUTATE_AttributionViolation { some e: ApplicationEvent | e.etype = EvtSubmitted and e.actor.role = BankStaff }"
+    },
+    {
+      "fact_name": "F_NoLeakOnNonOwnerAccess",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "OwnershipBasedAccess",
+        "FR_013_CustomerSeesOwnOnly"
+      ],
+      "rationale": "Clearing F_NoLeakOnNonOwnerAccess removes the prohibition on a Customer GetApplicationByRef operation resolving to another customer's application. The injection forces exactly this configuration, violating NoInformationLeakage.",
+      "inject_violation": "fact MUTATE_LeakageViolation { some op: Operation, a: LoanApplication | op.opCaller.role = Customer and op.opKind = GetApplicationByRef and a in op.opTarget and a.appCustomer != op.opCaller }"
+    },
+    {
+      "fact_name": "F_DecisionPresenceMatchesStatus",
+      "asserts_violated": [
+        "FR_011_DecidedStatusImmutable",
+        "FR_010_AtMostOneDecisionPerApp",
+        "FR_012_NoDuplicateDecisions"
+      ],
+      "rationale": "Clearing F_DecisionPresenceMatchesStatus allows a PendingReview application to have a Decision, or a decided application to have no Decision. The injection forces two distinct Decision atoms to share the same application, directly violating FR_012_NoDuplicateDecisions.",
+      "inject_violation": "fact MUTATE_DuplicateDecisionViolation { some disj d1, d2: Decision | d1.decApp = d2.decApp }"
+    }
+  ]
+}

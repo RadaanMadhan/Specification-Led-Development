@@ -1,0 +1,151 @@
+{
+  "feature_id": "003-loan-application",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_CustomerSubmits",
+    "FR_002_StructuralValidation",
+    "FR_003_StatusEnumClosed",
+    "FR_004_AppHasOwnerAndStatus",
+    "FR_005_OnePendingPerCustomer",
+    "FR_006_SubmissionYieldsPending",
+    "FR_007_StaffCanList",
+    "FR_008_StaffCanGetApp",
+    "FR_009_DecisionHasReason",
+    "FR_010_DecisionStatusAligned",
+    "FR_011_DecidedImmutable",
+    "FR_012_OneDecisionPerApp",
+    "FR_013_CustomerOnlySeesOwn",
+    "FR_014_DecisionEventRecorded",
+    "FR_015_OnlyStaffCanDecide",
+    "FR_016_AuditTrailComplete",
+    "FR_017_RetentionAppendOnly"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_CustomerSubmits",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_StructuralValidation"
+    ],
+    "FR-003": [
+      "FR_003_StatusEnumClosed"
+    ],
+    "FR-004": [
+      "FR_004_AppHasOwnerAndStatus",
+      "OwnershipExclusivity"
+    ],
+    "FR-005": [
+      "FR_005_OnePendingPerCustomer"
+    ],
+    "FR-006": [
+      "FR_006_SubmissionYieldsPending"
+    ],
+    "FR-007": [
+      "FR_007_StaffCanList",
+      "PermissionCompleteness"
+    ],
+    "FR-008": [
+      "FR_008_StaffCanGetApp",
+      "PermissionCompleteness"
+    ],
+    "FR-009": [
+      "FR_009_DecisionHasReason"
+    ],
+    "FR-010": [
+      "FR_010_DecisionStatusAligned"
+    ],
+    "FR-011": [
+      "FR_011_DecidedImmutable"
+    ],
+    "FR-012": [
+      "FR_012_OneDecisionPerApp"
+    ],
+    "FR-013": [
+      "FR_013_CustomerOnlySeesOwn",
+      "OwnershipBasedAccess",
+      "NoInformationLeakage"
+    ],
+    "FR-014": [
+      "FR_014_DecisionEventRecorded"
+    ],
+    "FR-015": [
+      "FR_015_OnlyStaffCanDecide",
+      "LeastPrivilege"
+    ],
+    "FR-016": [
+      "FR_016_AuditTrailComplete",
+      "AuditCompleteness",
+      "AttributionCorrectness"
+    ],
+    "FR-017": [
+      "FR_017_RetentionAppendOnly",
+      "AppendOnly"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_AccessControlOnOperations",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_015_OnlyStaffCanDecide"
+      ],
+      "rationale": "Clearing the access-control fact lets the model invent a successful operation by a caller whose role does not grant the operation. The injection forces a Customer to successfully invoke OpDecide, which the permission matrix denies, so both LeastPrivilege and FR-015 must surface a counterexample.",
+      "inject_violation": "fact MUTATE_LeastPrivilege { some op: Operation, u: User | op.invoker = u and u.role = CustomerRole and op.kind = OpDecide and op.outcome = OutAllow }"
+    },
+    {
+      "fact_name": "F_AuditEventsExist",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_016_AuditTrailComplete",
+        "FR_014_DecisionEventRecorded"
+      ],
+      "rationale": "Without the audit-events-exist fact, an application can reach Approved status without a corresponding EvApproved entry. The injection forces such a state, so audit-completeness assertions must fail.",
+      "inject_violation": "fact MUTATE_AuditCompleteness { some a: LoanApplication | a.status = StApproved and (no e: ApplicationEvent | e.application = a and e.eventType = EvApproved) }"
+    },
+    {
+      "fact_name": "F_AppendOnlyAuditLog",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_017_RetentionAppendOnly"
+      ],
+      "rationale": "Clearing the append-only fact removes the uniqueness constraint on (application, eventType). The injection forces two distinct audit events with the same application and eventType, which is exactly what AppendOnly forbids.",
+      "inject_violation": "fact MUTATE_AppendOnly { some disj e1, e2: ApplicationEvent | e1.application = e2.application and e1.eventType = e2.eventType }"
+    },
+    {
+      "fact_name": "F_OnePendingPerCustomer",
+      "asserts_violated": [
+        "FR_005_OnePendingPerCustomer"
+      ],
+      "rationale": "Clearing the single-pending-per-customer fact allows the partial unique index's invariant to be violated. The injection forces two distinct Pending Review applications for the same customer.",
+      "inject_violation": "fact MUTATE_OnePending { some disj a1, a2: LoanApplication | a1.customer = a2.customer and a1.status = StPending and a2.status = StPending }"
+    },
+    {
+      "fact_name": "F_OwnershipForCustomerRead",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_013_CustomerOnlySeesOwn"
+      ],
+      "rationale": "Removing the ownership-check fact lets a customer's GetApp succeed against an application they do not own. The injection forces this exact instance. F_NoLeakOnNonOwnedRead does not block it because that fact's antecedent excludes outcome=OutAllow.",
+      "inject_violation": "fact MUTATE_OwnershipBased { some op: Operation, c: User, a: LoanApplication | op.invoker = c and c.role = CustomerRole and op.kind = OpGetApp and op.target = a and a.customer != c and op.outcome = OutAllow }"
+    },
+    {
+      "fact_name": "F_NoLeakOnNonOwnedRead",
+      "asserts_violated": [
+        "NoInformationLeakage"
+      ],
+      "rationale": "Removing the no-leak fact lets a non-owned-read be denied with OutDeny (revealing existence) rather than OutNotFound. The injection forces this leaky outcome. F_OwnershipForCustomerRead does not block it because outcome != OutAllow.",
+      "inject_violation": "fact MUTATE_NoInformationLeakage { some op: Operation, c: User, a: LoanApplication | op.invoker = c and c.role = CustomerRole and op.kind = OpGetApp and op.target = a and a.customer != c and op.outcome = OutDeny }"
+    }
+  ]
+}

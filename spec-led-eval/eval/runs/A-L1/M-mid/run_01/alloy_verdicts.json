@@ -1,0 +1,23 @@
+{
+  "LeastPrivilege": "PASS",
+  "PermissionCompleteness": "PASS",
+  "AuthRequiredEverywhere": "PASS",
+  "AuditCompleteness": "PASS",
+  "AppendOnly": "PASS",
+  "AttributionCorrectness": "FAIL",
+  "OwnershipExclusivity": "PASS",
+  "OwnershipBasedAccess": "FAIL",
+  "NoInformationLeakage": "FAIL",
+  "FR_004_UniqueReference": "PASS",
+  "FR_005_OnePendingPerCustomer": "FAIL",
+  "FR_009_ReasonRequired": "PASS",
+  "FR_010_DecisionPersisted": "PASS",
+  "FR_011_DecidedApplicationImmutable": "PASS",
+  "FR_012_ConcurrencySafety": "PASS",
+  "FR_013_CustomerIsolation": "PASS",
+  "FR_015_StaffOnlyDecisionAudit": "PASS",
+  "FR_016_AuditTrailComplete": "PASS",
+  "FR_017_NoApplicationDeletion": "PASS",
+  "FR_001_CustomerSubmitOnly": "PASS",
+  "FR_002_ValidationBeforeMutation": "PASS"
+}

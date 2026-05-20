@@ -1,0 +1,135 @@
+==============================================================================
+  Design Compliance Report  (Phase 3 — feature_model.als)
+  feature       : C-L2
+  spec source   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/eval/specs/C-L2
+  alloy model   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/C-L2/feature_model.als
+  patterns      : LeastPrivilege, PermissionCompleteness, PermissionGrounding, AuditCompleteness, AppendOnly, AttributionCorrectness, OwnershipBasedAccess, NoInformationLeakage, AuthRequiredEverywhere
+  fr count      : 20 declared in spec.md
+  assertions    : 29 total (29/29 PASS via Alloy)
+==============================================================================
+
+  Compliance matrix
+  ----------------------------------------------------------------------------
+  Assertion                      Verdict   Anchor
+  -------------------------------------------------------------------
+  LeastPrivilege                 PASS      PATTERN LeastPrivilege: contracts/http-api.md auth tables; spec.md FR-004, FR-005, FR-017
+  PermissionCompleteness         PASS      PATTERN PermissionCompleteness: contracts/http-api.md permission matrix
+  PermissionGrounding            PASS      PATTERN PermissionGrounding: spec.md FR-004 (conditional), FR-017 (admin)
+  AuditCompleteness              PASS      PATTERN AuditCompleteness: spec.md FR-012; data-model.md audit_entries
+  AppendOnly                     PASS      PATTERN AppendOnly: spec.md FR-011, FR-014
+  AttributionCorrectness         PASS      PATTERN AttributionCorrectness: spec.md FR-013; data-model.md audit_entries snapshot fields
+  OwnershipBasedAccess           PASS      PATTERN OwnershipBasedAccess: spec.md FR-004 (care-team-conditional permission)
+  NoInformationLeakage           PASS      PATTERN NoInformationLeakage: spec.md FR-006; contracts/http-api.md byte-equivalent 404
+  AuthRequiredEverywhere         PASS      PATTERN AuthRequiredEverywhere: spec.md FR-001
+  FR_001_AuthRequired            PASS      FEATURE-SPECIFIC: FR-001 (authentication required at boundary)
+  FR_002_RoleCatalogue           PASS      FEATURE-SPECIFIC: FR-002 (five-role catalogue)
+  FR_003_PatientIdInBody         PASS      FEATURE-SPECIFIC: FR-003 (patient identifier in body, not URL)
+  FR_004_CareTeamGating          PASS      FEATURE-SPECIFIC: FR-004 (care-team gating for clinicians)
+  FR_005_AdminNoClinicalContent  PASS      FEATURE-SPECIFIC: FR-005 (administrator never sees clinical content)
+  FR_006_ByteEquivalentDenied    PASS      FEATURE-SPECIFIC: FR-006 (byte-equivalent unauthorised envelope)
+  FR_007_ClinicalReadShape       PASS      FEATURE-SPECIFIC: FR-007 (fixed clinical-read response shape)
+  FR_008_PatientSummary          PASS      FEATURE-SPECIFIC: FR-008 (patient summary content)
+  FR_009_NoteValidation          PASS      FEATURE-SPECIFIC: FR-009 (note submission validation)
+  FR_010_NoteProvenance          PASS      FEATURE-SPECIFIC: FR-010 (note persistence fields + provenance)
+  FR_011_NotesAppendOnly         PASS      FEATURE-SPECIFIC: FR-011 (notes append-only)
+  FR_012_AlwaysOnAudit           PASS      FEATURE-SPECIFIC: FR-012 (always-on audit for clinical endpoints)
+  FR_013_AuditFields             PASS      FEATURE-SPECIFIC: FR-013 (audit-entry shape, note_id pairing)
+  FR_014_AuditImmutable          PASS      FEATURE-SPECIFIC: FR-014 (audit entries immutable)
+  FR_015_AuditSLA                PASS      FEATURE-SPECIFIC: FR-015 (2-second audit SLA → no state change without audit)
+  FR_016_AuditRetention          PASS      FEATURE-SPECIFIC: FR-016 (audit retention ≥ 7 years; no delete path)
+  FR_017_AdminOnlyAudit          PASS      FEATURE-SPECIFIC: FR-017 (administrator-only audit-listing endpoint)
+  FR_018_AdminContentBlind       PASS      FEATURE-SPECIFIC: FR-018 (administrator response carries no clinical content)
+  FR_019_SafetyFieldsFirst       PASS      FEATURE-SPECIFIC: FR-019 (safety fields placed first in read response)
+  FR_020_NotesCount              PASS      FEATURE-SPECIFIC: FR-020 (notes count appears in read response)
+
+  FR coverage
+  ----------------------------------------------------------------------------
+  FR-001  →  FR_001_AuthRequired=PASS, AuthRequiredEverywhere=PASS
+  FR-002  →  FR_002_RoleCatalogue=PASS
+  FR-003  →  FR_003_PatientIdInBody=PASS
+  FR-004  →  FR_004_CareTeamGating=PASS, OwnershipBasedAccess=PASS
+  FR-005  →  FR_005_AdminNoClinicalContent=PASS
+  FR-006  →  FR_006_ByteEquivalentDenied=PASS, NoInformationLeakage=PASS
+  FR-007  →  FR_007_ClinicalReadShape=PASS
+  FR-008  →  FR_008_PatientSummary=PASS
+  FR-009  →  FR_009_NoteValidation=PASS
+  FR-010  →  FR_010_NoteProvenance=PASS
+  FR-011  →  FR_011_NotesAppendOnly=PASS, AppendOnly=PASS
+  FR-012  →  FR_012_AlwaysOnAudit=PASS, AuditCompleteness=PASS
+  FR-013  →  FR_013_AuditFields=PASS, AttributionCorrectness=PASS
+  FR-014  →  FR_014_AuditImmutable=PASS, AppendOnly=PASS
+  FR-015  →  FR_015_AuditSLA=PASS
+  FR-016  →  FR_016_AuditRetention=PASS
+  FR-017  →  FR_017_AdminOnlyAudit=PASS, LeastPrivilege=PASS
+  FR-018  →  FR_018_AdminContentBlind=PASS, FR_005_AdminNoClinicalContent=PASS
+  FR-019  →  FR_019_SafetyFieldsFirst=PASS
+  FR-020  →  FR_020_NotesCount=PASS
+
+  All FRs have at least one matching assertion.
+
+==============================================================================
+  Mutation tests  (assertion-strength validation)
+==============================================================================
+
+  Strategy: replace each named fact's body with `{}` (no constraint),
+  then re-run Alloy. Each listed assertion should now FAIL on the
+  mutated model. If it still PASSes, the assertion is vacuous and
+  must be strengthened.
+
+  - MUTATE F_AccessControl  → runs/C-L2/mutated_F_AccessControl.als
+    rationale: Clearing the access-control fact lets the model invent a Permitted operation whose (role, kind) pair is not in the policy matrix — e.g., a hospital_administrator reading a clinical record — which is exactly what LeastPrivilege, FR_005, and FR_017 are meant to catch.
+    expected to FAIL: LeastPrivilege, FR_005_AdminNoClinicalContent, FR_017_AdminOnlyAudit, OwnershipBasedAccess, FR_004_CareTeamGating
+      - LeastPrivilege: FAIL (expected)
+      - FR_005_AdminNoClinicalContent: FAIL (expected)
+      - FR_017_AdminOnlyAudit: FAIL (expected)
+      - OwnershipBasedAccess: FAIL (expected)
+      - FR_004_CareTeamGating: FAIL (expected)
+
+  - MUTATE F_NotesAppendOnly  → runs/C-L2/mutated_F_NotesAppendOnly.als
+    rationale: Clearing the no-NoteEdit fact lets the model invent a clinical-note mutation event, which the append-only invariant exists to forbid.
+    expected to FAIL: AppendOnly, FR_011_NotesAppendOnly
+      - AppendOnly: FAIL (expected)
+      - FR_011_NotesAppendOnly: FAIL (expected)
+
+  - MUTATE F_AuditAppendOnly  → runs/C-L2/mutated_F_AuditAppendOnly.als
+    rationale: Clearing the no-AuditMutation fact lets the model invent an audit-entry mutation, violating immutability (FR-014) and the 7-year retention floor (FR-016).
+    expected to FAIL: AppendOnly, FR_014_AuditImmutable, FR_016_AuditRetention
+      - AppendOnly: FAIL (expected)
+      - FR_014_AuditImmutable: FAIL (expected)
+      - FR_016_AuditRetention: FAIL (expected)
+
+  - MUTATE F_AuditCompleteness  → runs/C-L2/mutated_F_AuditCompleteness.als
+    rationale: Clearing audit completeness lets a Read/AddNote operation occur with no audit entry, violating the always-on-audit invariant and the SLA-enforced rollback rule.
+    expected to FAIL: AuditCompleteness, FR_012_AlwaysOnAudit, FR_015_AuditSLA
+      - AuditCompleteness: FAIL (expected)
+      - FR_012_AlwaysOnAudit: FAIL (expected)
+      - FR_015_AuditSLA: FAIL (expected)
+
+  - MUTATE F_Attribution  → runs/C-L2/mutated_F_Attribution.als
+    rationale: Clearing attribution lets an audit entry record an accessor different from the actual operation caller, violating audit-entry correctness.
+    expected to FAIL: AttributionCorrectness, FR_013_AuditFields
+      - AttributionCorrectness: FAIL (expected)
+      - FR_013_AuditFields: PASS (vacuous?)
+
+  - MUTATE F_NonPermittedResponseIs404  → runs/C-L2/mutated_F_NonPermittedResponseIs404.als
+    rationale: Clearing the byte-equivalent-404 invariant lets a denied operation return a clinical-content response, distinguishing denial from not-found and leaking patient existence.
+    expected to FAIL: NoInformationLeakage, FR_006_ByteEquivalentDenied
+      - NoInformationLeakage: FAIL (expected)
+      - FR_006_ByteEquivalentDenied: FAIL (expected)
+
+  - MUTATE F_AdminResponseNoClinicalContent  → runs/C-L2/mutated_F_AdminResponseNoClinicalContent.als
+    rationale: Clearing admin content-blindness lets a ListAudit response carry a clinical-read shape, exactly the FR-018 forbidden case.
+    expected to FAIL: FR_018_AdminContentBlind, FR_005_AdminNoClinicalContent
+      - FR_018_AdminContentBlind: FAIL (expected)
+      - FR_005_AdminNoClinicalContent: FAIL (expected)
+
+  Mutation summary
+  ----------------------------------------------------------------------------
+  - F_AccessControl: ASSERTIONS BIT (LeastPrivilege, FR_005_AdminNoClinicalContent, FR_017_AdminOnlyAudit, OwnershipBasedAccess, FR_004_CareTeamGating)
+  - F_NotesAppendOnly: ASSERTIONS BIT (AppendOnly, FR_011_NotesAppendOnly)
+  - F_AuditAppendOnly: ASSERTIONS BIT (AppendOnly, FR_014_AuditImmutable, FR_016_AuditRetention)
+  - F_AuditCompleteness: ASSERTIONS BIT (AuditCompleteness, FR_012_AlwaysOnAudit, FR_015_AuditSLA)
+  - F_Attribution: ASSERTION VACUOUS (AttributionCorrectness, FR_013_AuditFields)
+  - F_NonPermittedResponseIs404: ASSERTIONS BIT (NoInformationLeakage, FR_006_ByteEquivalentDenied)
+  - F_AdminResponseNoClinicalContent: ASSERTIONS BIT (FR_018_AdminContentBlind, FR_005_AdminNoClinicalContent)
+

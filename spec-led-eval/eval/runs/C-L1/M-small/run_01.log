@@ -1,0 +1,110 @@
+$ /Users/leonhausmann/opt/anaconda3/bin/python3 -m speceval.cli verify-design --no-cache --model M-small --java-bin /Users/leonhausmann/opt/anaconda3/lib/python3.9/site-packages/jdk4py/java-runtime/bin/java /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/eval/specs/C-L1
+
+[parse]   feature 'C-L1', 15 FRs, 2 user stories
+[lift]    calling LLM (anthropic: tier=M-small, model=claude-haiku-4-5)...
+[lift]    fresh lift (sha=bd803dd85990)
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/C-L1/feature_model.als
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/C-L1/cost_log.json
+[alloy]   running alloy.jar on feature_model.als...
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/C-L1/alloy_verdicts.json
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/C-L1/mutation_outcomes.json
+
+==============================================================================
+  Design Compliance Report  (Phase 3 — feature_model.als)
+  feature       : C-L1
+  spec source   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/eval/specs/C-L1
+  alloy model   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/C-L1/feature_model.als
+  patterns      : LeastPrivilege, AuthRequiredEverywhere, AuditCompleteness, AppendOnly, OwnershipBasedAccess, NoInformationLeakage, AttributionCorrectness
+  fr count      : 15 declared in spec.md
+  assertions    : 12 total (12/12 PASS via Alloy)
+==============================================================================
+
+  Compliance matrix
+  ----------------------------------------------------------------------------
+  Assertion                          Verdict   Anchor
+  -----------------------------------------------------------------------
+  LeastPrivilege                     PASS      PATTERN LeastPrivilege: contracts/http-api.md
+  AuthRequiredEverywhere             PASS      PATTERN AuthRequiredEverywhere: FR-001
+  AuditCompleteness                  PASS      PATTERN AuditCompleteness: FR-008, FR-009
+  AppendOnly                         PASS      PATTERN AppendOnly: FR-010, FR-012
+  OwnershipBasedAccess               PASS      PATTERN OwnershipBasedAccess: FR-006
+  NoInformationLeakage               PASS      PATTERN NoInformationLeakage: FR-007
+  AttributionCorrectness             PASS      PATTERN AttributionCorrectness: FR-009
+  FR_005_ReadOnlyScope               PASS      FEATURE-SPECIFIC: FR-005
+  FR_006_CareTeamRequirement         PASS      FEATURE-SPECIFIC: FR-006
+  FR_007_DenialIndistinguishability  PASS      FEATURE-SPECIFIC: FR-007
+  FR_011_AuditOfficerRecordAccess    PASS      FEATURE-SPECIFIC: FR-011
+  FR_010_AuditImmutability           PASS      FEATURE-SPECIFIC: FR-010, FR-012
+
+  FR coverage
+  ----------------------------------------------------------------------------
+  FR-001  →  AuthRequiredEverywhere=PASS
+  FR-002  [uncovered]
+  FR-003  [uncovered]
+  FR-004  [uncovered]
+  FR-005  →  FR_005_ReadOnlyScope=PASS
+  FR-006  →  OwnershipBasedAccess=PASS, FR_006_CareTeamRequirement=PASS
+  FR-007  →  NoInformationLeakage=PASS, FR_007_DenialIndistinguishability=PASS
+  FR-008  →  AuditCompleteness=PASS
+  FR-009  →  AuditCompleteness=PASS, AttributionCorrectness=PASS
+  FR-010  →  AppendOnly=PASS, FR_010_AuditImmutability=PASS
+  FR-011  →  FR_011_AuditOfficerRecordAccess=PASS
+  FR-012  →  AppendOnly=PASS
+  FR-013  [uncovered]
+  FR-014  [uncovered]
+  FR-015  [uncovered]
+
+  WARNING: 6 FR(s) without any matching assertion: FR-002, FR-003, FR-004, FR-013, FR-014, FR-015
+
+==============================================================================
+  Mutation tests  (assertion-strength validation)
+==============================================================================
+
+  Strategy: replace each named fact's body with `{}` (no constraint),
+  then re-run Alloy. Each listed assertion should now FAIL on the
+  mutated model. If it still PASSes, the assertion is vacuous and
+  must be strengthened.
+
+  - MUTATE F_PermissionMatrixDef  → runs/C-L1/mutated_F_PermissionMatrixDef.als
+    rationale: Removing the permission-matrix definition allows the model to assign arbitrary role-op pairs, which directly contradicts the LeastPrivilege assertion that enforces only explicitly allowed pairs.
+    expected to FAIL: LeastPrivilege
+      - LeastPrivilege: PASS (vacuous?)
+
+  - MUTATE F_CareTeamGating  → runs/C-L1/mutated_F_CareTeamGating.als
+    rationale: Removing the care-team gating fact allows an access attempt to succeed (Permitted outcome) without the clinician being on the patient's care team, directly violating the ownership-based access control invariant.
+    expected to FAIL: OwnershipBasedAccess, FR_006_CareTeamRequirement
+      - OwnershipBasedAccess: FAIL (expected)
+      - FR_006_CareTeamRequirement: FAIL (expected)
+
+  - MUTATE F_AuditCompleteness  → runs/C-L1/mutated_F_AuditCompleteness.als
+    rationale: Removing the audit-completeness constraint allows an access attempt to exist without a corresponding audit entry with matching clinician, role, and outcome, violating the one-to-one audit obligation.
+    expected to FAIL: AuditCompleteness
+      - AuditCompleteness: FAIL (expected)
+
+  - MUTATE F_NoInfoLeakage  → runs/C-L1/mutated_F_NoInfoLeakage.als
+    rationale: Removing the no-information-leakage fact allows denied and not-found outcomes to occur when the clinician IS on the care team, which would leak information about patient existence.
+    expected to FAIL: NoInformationLeakage, FR_007_DenialIndistinguishability
+      - NoInformationLeakage: PASS (vacuous?)
+      - FR_007_DenialIndistinguishability: PASS (vacuous?)
+
+  - MUTATE F_AttributionCorrect  → runs/C-L1/mutated_F_AttributionCorrect.als
+    rationale: Removing the attribution-correctness constraint allows an audit entry to record a different clinician role than the one who actually performed the access, violating the snapshot semantics requirement.
+    expected to FAIL: AttributionCorrectness
+      - AttributionCorrectness: PASS (vacuous?)
+
+  - MUTATE F_AuditOfficerCannotAccessRecords  → runs/C-L1/mutated_F_AuditOfficerCannotAccessRecords.als
+    rationale: Removing this constraint allows the audit officer to attempt record lookups, which violates the role-based segregation (audit officers can only use the audit-search endpoint).
+    expected to FAIL: FR_011_AuditOfficerRecordAccess
+      - FR_011_AuditOfficerRecordAccess: PASS (vacuous?)
+
+  Mutation summary
+  ----------------------------------------------------------------------------
+  - F_PermissionMatrixDef: ASSERTION VACUOUS (LeastPrivilege)
+  - F_CareTeamGating: ASSERTIONS BIT (OwnershipBasedAccess, FR_006_CareTeamRequirement)
+  - F_AuditCompleteness: ASSERTIONS BIT (AuditCompleteness)
+  - F_NoInfoLeakage: ASSERTION VACUOUS (NoInformationLeakage, FR_007_DenialIndistinguishability)
+  - F_AttributionCorrect: ASSERTION VACUOUS (AttributionCorrectness)
+  - F_AuditOfficerCannotAccessRecords: ASSERTION VACUOUS (FR_011_AuditOfficerRecordAccess)
+
+
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/C-L1/report.txt

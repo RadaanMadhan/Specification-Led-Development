@@ -1,0 +1,47 @@
+{
+  "F_LeastPrivilege": {
+    "targeted_asserts": {
+      "LeastPrivilege": "BIT",
+      "FR_002_CustomerScope": "BIT",
+      "FR_004_ComplianceReadOnly": "BIT",
+      "FR_023_ComplianceNoWrites": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AuthRequired": {
+    "targeted_asserts": {
+      "AuthRequiredEverywhere": "BIT",
+      "FR_001_AuthRequired": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_EventTransitionUniqueness": {
+    "targeted_asserts": {
+      "AppendOnly": "BIT",
+      "FR_018_AppendOnly": "BIT",
+      "FR_019_ExactlyOnePerChange": "BIT",
+      "FR_012_OneClaimWins": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_DecisionByAssignedOfficer": {
+    "targeted_asserts": {
+      "FR_013_OnlyAssignedDecides": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_OfficerIdentityHiddenFromCustomer": {
+    "targeted_asserts": {
+      "FR_021_OfficerHidden": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_CustomerOwnsAppOnRead": {
+    "targeted_asserts": {
+      "OwnershipBasedAccess": "BIT",
+      "NoInformationLeakage": "BIT",
+      "FR_020_CustomerOwnOnly": "BIT"
+    },
+    "all_bit": true
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "F_AuthRequired": {
+    "targeted_asserts": {
+      "AuthRequiredEverywhere": "BIT",
+      "FR_001_AuthRequired": "BIT",
+      "FR_002_IdentityFromAuth": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_DeletionCompleteness": {
+    "targeted_asserts": {
+      "AuditCompleteness": "BIT",
+      "FR_018_DeletionLogged": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AttributionCorrectness": {
+    "targeted_asserts": {
+      "AttributionCorrectness": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_DeletionUniqueOrigin": {
+    "targeted_asserts": {
+      "AppendOnly": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_ClosedTaskRule": {
+    "targeted_asserts": {
+      "FR_011_ClosedTaskRule": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_ValidationBeforeMutation": {
+    "targeted_asserts": {
+      "ValidationBeforeMutation": "BIT",
+      "FR_005_TitleValidated": "BIT"
+    },
+    "all_bit": true
+  }
+}

@@ -1,0 +1,148 @@
+$ /Users/leonhausmann/opt/anaconda3/bin/python3 -m speceval.cli verify-design --no-cache --model M-mid --java-bin /Users/leonhausmann/opt/anaconda3/lib/python3.9/site-packages/jdk4py/java-runtime/bin/java /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/eval/specs/B-L3
+
+[parse]   feature 'B-L3', 21 FRs, 7 user stories
+[lift]    calling LLM (anthropic: tier=M-mid, model=claude-sonnet-4-6)...
+[lift]    fresh lift (sha=758eeb6479d7)
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/B-L3/feature_model.als
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/B-L3/cost_log.json
+[alloy]   running alloy.jar on feature_model.als...
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/B-L3/alloy_verdicts.json
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/B-L3/mutation_outcomes.json
+
+==============================================================================
+  Design Compliance Report  (Phase 3 — feature_model.als)
+  feature       : B-L3
+  spec source   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/eval/specs/B-L3
+  alloy model   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/B-L3/feature_model.als
+  patterns      : LeastPrivilege, PermissionCompleteness, AuthRequiredEverywhere, AuditCompleteness, AppendOnly, AttributionCorrectness, OwnershipExclusivity, OwnershipBasedAccess, NoInformationLeakage, PrivilegeMonotonicity
+  fr count      : 21 declared in spec.md
+  assertions    : 24 total (21/24 PASS via Alloy)
+==============================================================================
+
+  Compliance matrix
+  ----------------------------------------------------------------------------
+  Assertion                               Verdict   Anchor
+  ----------------------------------------------------------------------------
+  LeastPrivilege                          PASS      (no anchor comment found)
+  PermissionCompleteness                  PASS      (no anchor comment found)
+  AuthRequiredEverywhere                  PASS      (no anchor comment found)
+  AuditCompleteness                       PASS      (no anchor comment found)
+  AppendOnly                              PASS      (no anchor comment found)
+  AttributionCorrectness                  FAIL      (no anchor comment found)
+  OwnershipExclusivity                    PASS      (no anchor comment found)
+  OwnershipBasedAccess                    PASS      (no anchor comment found)
+  NoInformationLeakage                    PASS      (no anchor comment found)
+  FR_001_AuthRequired                     PASS      FEATURE-SPECIFIC: FR-001 — all endpoints require auth; 401 precedes business logic
+  FR_002_OneTeamPerUser                   PASS      FEATURE-SPECIFIC: FR-002 — user belongs to exactly one team
+  FR_004_MemberCannotSeeUnrelatedTasks    PASS      FEATURE-SPECIFIC: FR-004 — member cannot see tasks they don't own/share
+  FR_005_AdminFullAccessInTeam            PASS      FEATURE-SPECIFIC: FR-005 — team admin can view/edit/delete any task in their team
+  FR_006_CrossTeamIsolation               PASS      FEATURE-SPECIFIC: FR-006 — no user accesses tasks in a different team
+  FR_009_ImmutableOwnerAndTeam            PASS      FEATURE-SPECIFIC: FR-009 — owner_id and team_id are immutable
+  FR_010_OnlyOwnerChangesSharedWith       PASS      FEATURE-SPECIFIC: FR-010 / SC-011 — only owner can change shared_with
+  FR_011_ShareeCannotDelete               FAIL      FEATURE-SPECIFIC: FR-011 / Q3=B — sharee may view/edit but not delete
+  FR_012_NoSameTeamSharing                PASS      FEATURE-SPECIFIC: FR-012 — cross-team sharing forbidden
+  FR_013_ShareAuditEntries                PASS      FEATURE-SPECIFIC: FR-013 — share and unshare events produce audit entries
+  FR_015_MutationAuditBijection           PASS      FEATURE-SPECIFIC: FR-015 — no state change without audit entry; no audit without state change
+  FR_017_AuditOutlivesTask                FAIL      FEATURE-SPECIFIC: FR-017 — audit entries are immutable and outlive deleted tasks
+  FR_019_AuditAccessMirrorsReadAccess     PASS      FEATURE-SPECIFIC: FR-019 — audit endpoint access mirrors task read access
+  PrivilegeMonotonicity                   PASS      (no anchor comment found)
+  FR_006_AdminPrivilegeDoesNotCrossTeams  PASS      FEATURE-SPECIFIC: FR-006 / FR-014 — admin privilege does not cross team boundary
+
+  Counterexamples (Alloy SAT)
+  ----------------------------------------------------------------------------
+  AttributionCorrectness  [(no anchor)]
+    Alloy: 05. check AttributionCorrectness     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR_011_ShareeCannotDelete  [FEATURE-SPECIFIC: FR-011 / Q3=B — sharee may view/edit but not delete]
+    Alloy: 16. check FR_011_ShareeCannotDelete     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR_017_AuditOutlivesTask  [FEATURE-SPECIFIC: FR-017 — audit entries are immutable and outlive deleted tasks]
+    Alloy: 20. check FR_017_AuditOutlivesTask     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR coverage
+  ----------------------------------------------------------------------------
+  FR-001  →  FR_001_AuthRequired=PASS, AuthRequiredEverywhere=PASS
+  FR-002  →  FR_002_OneTeamPerUser=PASS
+  FR-003  →  OwnershipBasedAccess=PASS, LeastPrivilege=PASS
+  FR-004  →  FR_004_MemberCannotSeeUnrelatedTasks=PASS, LeastPrivilege=PASS
+  FR-005  →  FR_005_AdminFullAccessInTeam=PASS, PrivilegeMonotonicity=PASS
+  FR-006  →  FR_006_CrossTeamIsolation=PASS, FR_006_AdminPrivilegeDoesNotCrossTeams=PASS, NoInformationLeakage=PASS
+  FR-007  →  FR_001_AuthRequired=PASS
+  FR-008  →  OwnershipBasedAccess=PASS
+  FR-009  →  FR_009_ImmutableOwnerAndTeam=PASS, OwnershipExclusivity=PASS
+  FR-010  →  FR_010_OnlyOwnerChangesSharedWith=PASS, LeastPrivilege=PASS
+  FR-011  →  FR_011_ShareeCannotDelete=FAIL, LeastPrivilege=PASS
+  FR-012  →  FR_012_NoSameTeamSharing=PASS
+  FR-013  →  FR_013_ShareAuditEntries=PASS, AuditCompleteness=PASS
+  FR-014  →  NoInformationLeakage=PASS, FR_006_CrossTeamIsolation=PASS
+  FR-015  →  FR_015_MutationAuditBijection=PASS, AuditCompleteness=PASS
+  FR-016  →  AttributionCorrectness=FAIL, FR_013_ShareAuditEntries=PASS
+  FR-017  →  FR_017_AuditOutlivesTask=FAIL, AppendOnly=PASS
+  FR-018  →  FR_015_MutationAuditBijection=PASS
+  FR-019  →  FR_019_AuditAccessMirrorsReadAccess=PASS
+  FR-020  →  AppendOnly=PASS, FR_017_AuditOutlivesTask=FAIL
+  FR-021  [uncovered]
+
+  WARNING: 1 FR(s) without any matching assertion: FR-021
+
+==============================================================================
+  Mutation tests  (assertion-strength validation)
+==============================================================================
+
+  Strategy: replace each named fact's body with `{}` (no constraint),
+  then re-run Alloy. Each listed assertion should now FAIL on the
+  mutated model. If it still PASSes, the assertion is vacuous and
+  must be strengthened.
+
+  - MUTATE F_PermissionMatrix  → runs/B-L3/mutated_F_PermissionMatrix.als
+    rationale: Clearing the permission matrix fact removes the closed-world assignment of PermMatrix.Allowed. Injecting a row that grants Outsider access to GetTask forces a world in which a cross-team caller can read a task, directly violating LeastPrivilege and NoInformationLeakage.
+    expected to FAIL: LeastPrivilege, NoInformationLeakage, FR_006_CrossTeamIsolation, PermissionCompleteness
+      - LeastPrivilege: FAIL (expected)
+      - NoInformationLeakage: FAIL (expected)
+      - FR_006_CrossTeamIsolation: FAIL (expected)
+      - PermissionCompleteness: FAIL (expected)
+
+  - MUTATE F_AppendOnlyAuditEntries  → runs/B-L3/mutated_F_AppendOnlyAuditEntries.als
+    rationale: Clearing F_AppendOnlyAuditEntries removes the uniqueness constraint on (aeTask, aeActor, aeOp, aeActorRole) tuples. Injecting two AuditEntries with identical (task, actor, operation, actorRole) forces a duplicate that models an 'edit' of an existing entry, violating append-only immutability.
+    expected to FAIL: AppendOnly, FR_017_AuditOutlivesTask
+      - AppendOnly: FAIL (expected)
+      - FR_017_AuditOutlivesTask: FAIL (expected)
+
+  - MUTATE F_AttributionCorrectness  → runs/B-L3/mutated_F_AttributionCorrectness.als
+    rationale: Clearing F_AttributionCorrectness allows an AuditEntry's aeActorRole to differ from the actor's actual userRole. Injecting an entry where a Member actor has aeActorRole = TeamAdmin forces a misattribution counterexample.
+    expected to FAIL: AttributionCorrectness
+      - AttributionCorrectness: FAIL (expected)
+
+  - MUTATE F_ShareesSameTeam  → runs/B-L3/mutated_F_ShareesSameTeam.als
+    rationale: Clearing F_ShareesSameTeam removes the constraint that sharedWith users must be in the task's team. Injecting a task where a user from a different team appears in sharedWith forces a cross-team share, violating FR-012.
+    expected to FAIL: FR_012_NoSameTeamSharing, OwnershipBasedAccess
+      - FR_012_NoSameTeamSharing: FAIL (expected)
+      - OwnershipBasedAccess: PASS (vacuous?)
+
+  - MUTATE F_TaskOwnerSameTeam  → runs/B-L3/mutated_F_TaskOwnerSameTeam.als
+    rationale: Clearing F_TaskOwnerSameTeam allows a task owner to be in a different team than the task. Injecting such a task violates the ownership-team consistency invariant that cross-team isolation depends on.
+    expected to FAIL: OwnershipExclusivity, FR_009_ImmutableOwnerAndTeam, FR_006_CrossTeamIsolation
+      - OwnershipExclusivity: FAIL (expected)
+      - FR_009_ImmutableOwnerAndTeam: PASS (vacuous?)
+      - FR_006_CrossTeamIsolation: FAIL (expected)
+
+  - MUTATE F_DeletedTaskHasDeletedEntry  → runs/B-L3/mutated_F_DeletedTaskHasDeletedEntry.als
+    rationale: Clearing F_DeletedTaskHasDeletedEntry allows a DeletedTask to exist without any OpDeleted AuditEntry, breaking the invariant that task deletion is always recorded in the audit log.
+    expected to FAIL: FR_017_AuditOutlivesTask, AppendOnly
+      - FR_017_AuditOutlivesTask: FAIL (expected)
+      - AppendOnly: FAIL (expected)
+
+  Mutation summary
+  ----------------------------------------------------------------------------
+  - F_PermissionMatrix: ASSERTIONS BIT (LeastPrivilege, NoInformationLeakage, FR_006_CrossTeamIsolation, PermissionCompleteness)
+  - F_AppendOnlyAuditEntries: ASSERTIONS BIT (AppendOnly, FR_017_AuditOutlivesTask)
+  - F_AttributionCorrectness: ASSERTIONS BIT (AttributionCorrectness)
+  - F_ShareesSameTeam: ASSERTION VACUOUS (FR_012_NoSameTeamSharing, OwnershipBasedAccess)
+  - F_TaskOwnerSameTeam: ASSERTION VACUOUS (OwnershipExclusivity, FR_009_ImmutableOwnerAndTeam, FR_006_CrossTeamIsolation)
+  - F_DeletedTaskHasDeletedEntry: ASSERTIONS BIT (FR_017_AuditOutlivesTask, AppendOnly)
+
+
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/B-L3/report.txt

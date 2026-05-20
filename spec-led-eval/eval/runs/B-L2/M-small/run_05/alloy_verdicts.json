@@ -1,0 +1,19 @@
+{
+  "OwnershipExclusivity": "PASS",
+  "OwnershipBasedAccess": "PASS",
+  "NoInformationLeakage": "PASS",
+  "AuditCompleteness": "PASS",
+  "AppendOnly": "PASS",
+  "AttributionCorrectness": "PASS",
+  "AuthRequiredEverywhere": "PASS",
+  "LeastPrivilege": "PASS",
+  "PermissionCompleteness": "PASS",
+  "FR_001_AuthRequired": "PASS",
+  "FR_003_004_TeamContextRequired": "PASS",
+  "FR_005_TaskTeamImmutable": "PASS",
+  "FR_006_OwnerImmutable": "PASS",
+  "FR_007_PerTeamRole": "FAIL",
+  "FR_014_CrossTeamIsolation": "PASS",
+  "FR_015_PerEditEventAudit": "PASS",
+  "FR_016_AuditAppendOnly": "PASS"
+}

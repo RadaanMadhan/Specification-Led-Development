@@ -1,0 +1,43 @@
+{
+  "F_AppendOnlyAudit": {
+    "targeted_asserts": {
+      "AppendOnly": "BIT",
+      "FR_015_AuditImmutable": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_ClinicianCareTeamRequired": {
+    "targeted_asserts": {
+      "OwnershipBasedAccess": "BIT",
+      "FR_004_ClinicianCareTeam": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_PatientSelfOnly": {
+    "targeted_asserts": {
+      "OwnershipBasedAccess": "BIT",
+      "FR_006_PatientOwnOnly": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_NoteAuthorIsClinician": {
+    "targeted_asserts": {
+      "FR_011_NoteAuthorClinician": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AuthRequiredForPermitted": {
+    "targeted_asserts": {
+      "AuthRequiredEverywhere": "BIT",
+      "FR_001_AuthRequired": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_ComplianceCannotReadRecord": {
+    "targeted_asserts": {
+      "LeastPrivilege": "BIT",
+      "FR_007_ComplianceNoClinicalRead": "BIT"
+    },
+    "all_bit": true
+  }
+}

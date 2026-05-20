@@ -1,0 +1,45 @@
+{
+  "F_NoSelfApproval": {
+    "targeted_asserts": {
+      "NoSelfMutation": "VACUOUS_OVERCONSTRAINT",
+      "FR_013_NoSelfApproval": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_AppendOnlyAuditEntries": {
+    "targeted_asserts": {
+      "AppendOnly": "BIT",
+      "FR_018_AuditImmutable": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AuditCompleteness": {
+    "targeted_asserts": {
+      "AuditCompleteness": "VACUOUS_OVERCONSTRAINT",
+      "FR_016_InitialAuditEntry": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_PermissionMatrix": {
+    "targeted_asserts": {
+      "LeastPrivilege": "BIT",
+      "PermissionCompleteness": "BIT",
+      "PermissionGrounding": "BIT",
+      "FR_005_AuditorReadOnly": "BIT",
+      "FR_023_AuditEndpointAuditorOnly": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_RoleMutualExclusivity": {
+    "targeted_asserts": {
+      "FR_002_RoleMutualExclusivity": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_NoInformationLeakage": {
+    "targeted_asserts": {
+      "NoInformationLeakage": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  }
+}

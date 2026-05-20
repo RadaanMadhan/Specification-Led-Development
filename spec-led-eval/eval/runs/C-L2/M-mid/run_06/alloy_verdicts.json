@@ -1,0 +1,22 @@
+{
+  "LeastPrivilege": "PASS",
+  "PermissionCompleteness": "PASS",
+  "AuthRequiredEverywhere": "PASS",
+  "AuditCompleteness": "PASS",
+  "AppendOnly": "PASS",
+  "AttributionCorrectness": "PASS",
+  "OwnershipBasedAccess": "PASS",
+  "NoInformationLeakage": "PASS",
+  "FR_001_AuthRequired": "PASS",
+  "FR_002_OneRolePerUser": "PASS",
+  "FR_004_CareTeamGating": "PASS",
+  "FR_005_AdminContentBlindness": "PASS",
+  "FR_009_ValidationBeforeMutation": "FAIL",
+  "FR_011_NotesAppendOnly": "PASS",
+  "FR_012_AuditAlwaysOn": "PASS",
+  "FR_013_NoteRefConstraint": "PASS",
+  "FR_014_AuditImmutability": "PASS",
+  "FR_017_AuditSearchAdminOnly": "PASS",
+  "FR_018_AdminResponseNoClinicalContent": "PASS",
+  "FR_004_ActiveMembershipShape": "PASS"
+}

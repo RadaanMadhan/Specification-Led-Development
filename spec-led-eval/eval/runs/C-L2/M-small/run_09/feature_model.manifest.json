@@ -1,0 +1,113 @@
+{
+  "feature_id": "C-L2",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AppendOnly",
+    "OwnershipBasedAccess",
+    "AuditCompleteness",
+    "AuthRequiredEverywhere",
+    "AttributionCorrectness",
+    "NoInformationLeakage"
+  ],
+  "feature_specific_predicates": [
+    "FR_004_CareTeamGating",
+    "FR_005_AdminNoClinicialOps",
+    "FR_006_ByteEquivalentResponse",
+    "FR_011_NotesAppendOnly",
+    "FR_012_AuditCompleteness",
+    "FR_014_AuditImmutable",
+    "FR_017_AdminOnlyAuditEndpoint"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "AuthRequiredEverywhere"
+    ],
+    "FR-004": [
+      "OwnershipBasedAccess",
+      "FR_004_CareTeamGating"
+    ],
+    "FR-005": [
+      "FR_005_AdminNoClinicialOps"
+    ],
+    "FR-006": [
+      "FR_006_ByteEquivalentResponse"
+    ],
+    "FR-011": [
+      "AppendOnly",
+      "FR_011_NotesAppendOnly"
+    ],
+    "FR-012": [
+      "AuditCompleteness",
+      "FR_012_AuditCompleteness"
+    ],
+    "FR-013": [
+      "AttributionCorrectness"
+    ],
+    "FR-014": [
+      "AppendOnly",
+      "FR_014_AuditImmutable"
+    ],
+    "FR-017": [
+      "LeastPrivilege",
+      "FR_017_AdminOnlyAuditEndpoint"
+    ],
+    "FR-018": [
+      "FR_005_AdminNoClinicialOps"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_LeastPrivilege",
+      "asserts_violated": [
+        "LeastPrivilege"
+      ],
+      "rationale": "Removing this fact allows the permission matrix to contain illegal role-operation pairs (e.g., admin accessing RecordRead), which the LeastPrivilege assertion directly checks.",
+      "inject_violation": "fact MUTATE_PermissionViolation { HospitalAdministrator -> RecordRead in PermMatrix.Allowed }"
+    },
+    {
+      "fact_name": "F_AppendOnlyNotes",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_011_NotesAppendOnly"
+      ],
+      "rationale": "Removing this fact allows two distinct notes to share the same note_id, violating the append-only uniqueness constraint that AppendOnly checks.",
+      "inject_violation": "fact MUTATE_NoteDuplicateId { some disj n1, n2: ClinicalNote | n1.note_id = n2.note_id }"
+    },
+    {
+      "fact_name": "F_AppendOnlyAudit",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_014_AuditImmutable"
+      ],
+      "rationale": "Removing this fact allows two audit entries to share the same audit_id, violating immutability.",
+      "inject_violation": "fact MUTATE_AuditDuplicateId { some disj ae1, ae2: AuditEntry | ae1.audit_id = ae2.audit_id }"
+    },
+    {
+      "fact_name": "F_OwnershipBasedAccessNotes",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_004_CareTeamGating"
+      ],
+      "rationale": "Removing this fact allows clinicians to author notes without care-team membership, violating the ownership-based access invariant.",
+      "inject_violation": "fact MUTATE_NoCareteamRequired { some note: ClinicalNote | note.author.user_role in ClinicalRole and no ctm: CareTeamMembership | ctm.clinician = note.author and ctm.patient = note.patient }"
+    },
+    {
+      "fact_name": "F_AuditCompleteness",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_012_AuditCompleteness"
+      ],
+      "rationale": "Removing this fact allows notes to exist without matching audit entries, violating the always-on audit invariant.",
+      "inject_violation": "fact MUTATE_NoAuditForNote { some note: ClinicalNote | no ae: AuditEntry | ae.operation = AddNote and ae.patient = note.patient }"
+    },
+    {
+      "fact_name": "F_AdminContentBlindness",
+      "asserts_violated": [
+        "FR_005_AdminNoClinicialOps"
+      ],
+      "rationale": "Removing this fact allows administrators to author notes or access clinical operations, violating the admin-content-blindness invariant.",
+      "inject_violation": "fact MUTATE_AdminAuthoredNote { some note: ClinicalNote | note.author.user_role = HospitalAdministrator }"
+    }
+  ]
+}

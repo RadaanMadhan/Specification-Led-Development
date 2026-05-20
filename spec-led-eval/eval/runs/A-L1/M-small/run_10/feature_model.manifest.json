@@ -1,0 +1,115 @@
+{
+  "feature_id": "A-L1",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_ValidationRequired",
+    "FR_003_AmountAndTermLimits",
+    "FR_004_UniqueReference",
+    "FR_005_OnePendingPerCustomer",
+    "FR_009_ReasonRequired",
+    "FR_010_DecisionPersisted",
+    "FR_011_NoDecisionChanges",
+    "FR_012_ConcurrentResolution",
+    "FR_013_CustomerDataIsolation",
+    "FR_015_RoleBasedAccess",
+    "FR_016_AuditTrail"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired"
+    ],
+    "FR-002": [
+      "FR_002_ValidationRequired"
+    ],
+    "FR-003": [
+      "FR_003_AmountAndTermLimits"
+    ],
+    "FR-004": [
+      "FR_004_UniqueReference"
+    ],
+    "FR-005": [
+      "FR_005_OnePendingPerCustomer"
+    ],
+    "FR-009": [
+      "FR_009_ReasonRequired"
+    ],
+    "FR-010": [
+      "FR_010_DecisionPersisted"
+    ],
+    "FR-011": [
+      "FR_011_NoDecisionChanges"
+    ],
+    "FR-012": [
+      "FR_012_ConcurrentResolution"
+    ],
+    "FR-013": [
+      "FR_013_CustomerDataIsolation"
+    ],
+    "FR-015": [
+      "FR_015_RoleBasedAccess"
+    ],
+    "FR-016": [
+      "FR_016_AuditTrail"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege"
+      ],
+      "rationale": "Removing the permission matrix fact allows Customer to acquire PostDecision and GetAudit permissions, which the LeastPrivilege assertion explicitly forbids. This tests that the permission matrix is the load-bearing constraint for role-based access control.",
+      "inject_violation": "fact MUTATE_PermissionViolation { Customer -> PostDecision in PermMatrix.Allowed }"
+    },
+    {
+      "fact_name": "F_AuditIsConsistent",
+      "asserts_violated": [
+        "AppendOnly"
+      ],
+      "rationale": "Removing this fact allows decisions to exist without corresponding audit events, or with mismatched event types. This directly violates the append-only property, which requires every decision to be immutably recorded in the audit log.",
+      "inject_violation": "fact MUTATE_AuditViolation { some dec: Decision, event: ApplicationEvent | dec.application = event.application and dec.decisionType = ApprovedDecision and event.eventType = RejectedEvent }"
+    },
+    {
+      "fact_name": "F_OnePendingPerCustomer",
+      "asserts_violated": [
+        "FR_005_OnePendingPerCustomer"
+      ],
+      "rationale": "Removing this constraint allows a customer to have multiple pending applications simultaneously, violating FR-005 which is critical to preventing the same customer from submitting duplicate loan requests while one is under review.",
+      "inject_violation": "fact MUTATE_MultiplePending { some disj app1, app2: LoanApplication, customer: User | app1.customer = customer and app2.customer = customer and app1.status = PendingReview and app2.status = PendingReview }"
+    },
+    {
+      "fact_name": "F_OneDecisionPerApplication",
+      "asserts_violated": [
+        "FR_012_ConcurrentResolution"
+      ],
+      "rationale": "Removing this fact allows multiple decisions per application, directly violating the concurrent resolution constraint that only the first decision should be recorded (SC-005).",
+      "inject_violation": "fact MUTATE_MultipleDecisions { some app: LoanApplication, disj dec1, dec2: Decision | dec1.application = app and dec2.application = app }"
+    },
+    {
+      "fact_name": "F_SubmissionAuditEntry",
+      "asserts_violated": [
+        "AuditCompleteness"
+      ],
+      "rationale": "Removing this fact allows applications to exist without submission audit events, breaking the audit completeness requirement (FR-016) that every status change must be recorded.",
+      "inject_violation": "fact MUTATE_MissingSubmissionEvent { some app: LoanApplication | no event: ApplicationEvent | event.application = app and event.eventType = Submitted }"
+    },
+    {
+      "fact_name": "F_OnlyStaffCanDecide",
+      "asserts_violated": [
+        "FR_015_RoleBasedAccess"
+      ],
+      "rationale": "Removing this fact allows customers to appear as decision makers, directly violating the role-based access control requirement (FR-015) that only bank staff can approve or reject applications.",
+      "inject_violation": "fact MUTATE_CustomerCanDecide { some dec: Decision, customer: User | customer.role = Customer and dec.decidedByUser = customer }"
+    }
+  ]
+}

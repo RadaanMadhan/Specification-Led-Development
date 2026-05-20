@@ -1,0 +1,49 @@
+{
+  "F_PermissionMatrix": {
+    "targeted_asserts": {
+      "LeastPrivilege": "VACUOUS_OVERCONSTRAINT",
+      "FR_001_AuthRequired": "VACUOUS_OVERCONSTRAINT",
+      "FR_009_NonOwnerMemberCannotEditDelete": "VACUOUS_OVERCONSTRAINT",
+      "FR_011_CrossTeamIsolation": "VACUOUS_OVERCONSTRAINT",
+      "NoInformationLeakage": "VACUOUS_OVERCONSTRAINT",
+      "AuthRequiredEverywhere": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_AppendOnlyAuditEntries": {
+    "targeted_asserts": {
+      "AppendOnly": "VACUOUS_OVERCONSTRAINT",
+      "FR_016_AuditAppendOnly": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_AuditCreatedEntry": {
+    "targeted_asserts": {
+      "AuditCompleteness": "BIT",
+      "FR_015_AuditPerSave": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AuditTeamMatchesTask": {
+    "targeted_asserts": {
+      "AppendOnly": "VACUOUS_OVERCONSTRAINT",
+      "FR_015_AuditPerSave": "VACUOUS_OVERCONSTRAINT",
+      "NoInformationLeakage": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_AuditActorAttributed": {
+    "targeted_asserts": {
+      "AttributionCorrectness": "BIT",
+      "FR_015_ActorRoleSnapshotted": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_OwnerImmutableViaMatrix": {
+    "targeted_asserts": {
+      "ValidationBeforeMutation": "VACUOUS_OVERCONSTRAINT",
+      "FR_006_OwnerImmutable": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  }
+}

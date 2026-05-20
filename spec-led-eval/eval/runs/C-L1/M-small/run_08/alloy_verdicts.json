@@ -1,0 +1,15 @@
+{
+  "LeastPrivilege": "PASS",
+  "PermissionCompleteness": "PASS",
+  "PermissionGrounding": "PASS",
+  "AuthRequiredEverywhere": "PASS",
+  "OwnershipBasedAccess": "PASS",
+  "AuditCompleteness": "PASS",
+  "AppendOnly": "PASS",
+  "AttributionCorrectness": "PASS",
+  "NoInformationLeakage": "PASS",
+  "FR_002_RoleResolution": "PASS",
+  "FR_005_ReadOnlyAccessScope": "PASS",
+  "FR_008_AllAccessesAudited": "PASS",
+  "FR_011_ClinicalRolesInAudit": "PASS"
+}

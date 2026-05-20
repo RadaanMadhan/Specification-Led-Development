@@ -1,0 +1,157 @@
+{
+  "feature_id": "C-L2",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "ValidationBeforeMutation"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_004_CareTeamGating",
+    "FR_005_AdminContentBlindness",
+    "FR_010_NoteAuthorClinical",
+    "FR_011_NotesAppendOnly",
+    "FR_012_AuditEveryAccess",
+    "FR_013_AuditNoteIdConsistency",
+    "FR_013_AttributionIntegrity",
+    "FR_014_AuditImmutable",
+    "FR_015_AuditAtomicWithAccess",
+    "FR_017_AuditSearchAdminOnly"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "PermissionCompleteness"
+    ],
+    "FR-003": [
+      "NoInformationLeakage"
+    ],
+    "FR-004": [
+      "FR_004_CareTeamGating",
+      "OwnershipBasedAccess"
+    ],
+    "FR-005": [
+      "FR_005_AdminContentBlindness",
+      "NoInformationLeakage"
+    ],
+    "FR-006": [
+      "NoInformationLeakage",
+      "LeastPrivilege"
+    ],
+    "FR-007": [
+      "FR_005_AdminContentBlindness"
+    ],
+    "FR-008": [
+      "FR_005_AdminContentBlindness"
+    ],
+    "FR-009": [
+      "ValidationBeforeMutation"
+    ],
+    "FR-010": [
+      "FR_010_NoteAuthorClinical",
+      "FR_005_AdminContentBlindness"
+    ],
+    "FR-011": [
+      "FR_011_NotesAppendOnly",
+      "AppendOnly",
+      "ValidationBeforeMutation"
+    ],
+    "FR-012": [
+      "FR_012_AuditEveryAccess",
+      "AuditCompleteness"
+    ],
+    "FR-013": [
+      "FR_013_AuditNoteIdConsistency",
+      "FR_013_AttributionIntegrity",
+      "AttributionCorrectness"
+    ],
+    "FR-014": [
+      "FR_014_AuditImmutable",
+      "AppendOnly"
+    ],
+    "FR-015": [
+      "FR_015_AuditAtomicWithAccess"
+    ],
+    "FR-016": [
+      "FR_014_AuditImmutable"
+    ],
+    "FR-017": [
+      "FR_017_AuditSearchAdminOnly",
+      "LeastPrivilege"
+    ],
+    "FR-018": [
+      "FR_005_AdminContentBlindness"
+    ],
+    "FR-019": [
+      "FR_005_AdminContentBlindness"
+    ],
+    "FR-020": [
+      "FR_012_AuditEveryAccess"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_CareTeamGating",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_004_CareTeamGating"
+      ],
+      "rationale": "Clearing this fact removes the constraint that a Permitted clinical-endpoint outcome requires an active care-team membership. The injected violation forces a Permitted RecordsLookup operation with no matching ActiveMembership, which both OwnershipBasedAccess and FR_004_CareTeamGating check for.",
+      "inject_violation": "fact MUTATE_CareTeamViolation { some op: Operation | op.opKind = RecordsLookup and op.opOutcome = Permitted and (no m: ActiveMembership | m.member = op.opCaller and m.memberPatient = op.opPatient) }"
+    },
+    {
+      "fact_name": "F_AuditInjective",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_014_AuditImmutable",
+        "AuditCompleteness"
+      ],
+      "rationale": "Clearing this fact allows two distinct Operations to share a single AuditEntry atom, simulating an audit-log entry being 'overwritten' or 'reused'. The injection forces exactly this sharing, which AppendOnly and FR_014_AuditImmutable directly check.",
+      "inject_violation": "fact MUTATE_AuditInjectiveViolation { some disj op1, op2: Operation | op1.opAudit = op2.opAudit }"
+    },
+    {
+      "fact_name": "F_NoteAuthorIsClinical",
+      "asserts_violated": [
+        "FR_005_AdminContentBlindness",
+        "FR_010_NoteAuthorClinical"
+      ],
+      "rationale": "Clearing this fact removes the structural constraint that clinical notes must be authored by clinical-role users. The injection forces a ClinicalNote authored by a HospitalAdministrator, violating both FR_005_AdminContentBlindness and FR_010_NoteAuthorClinical.",
+      "inject_violation": "fact MUTATE_AdminAuthorViolation { some n: ClinicalNote | n.noteAuthor.userRole = HospitalAdministrator }"
+    },
+    {
+      "fact_name": "F_AuditNoteIdRule",
+      "asserts_violated": [
+        "FR_013_AuditNoteIdConsistency"
+      ],
+      "rationale": "Clearing this fact removes the biconditional that auditNote is set iff the access type is AddNote and the outcome is Permitted. The injection forces an AuditEntry with accessType=Read to carry a non-null auditNote, directly violating FR_013_AuditNoteIdConsistency.",
+      "inject_violation": "fact MUTATE_AuditNoteIdViolation { some ae: AuditEntry | ae.auditAccessType = Read and one ae.auditNote }"
+    },
+    {
+      "fact_name": "F_AuditSearchAdminOnly",
+      "asserts_violated": [
+        "FR_017_AuditSearchAdminOnly",
+        "NoInformationLeakage"
+      ],
+      "rationale": "Clearing this fact allows a non-administrator (e.g., a Doctor) to appear as the caller of an AuditSearch Operation. The injection forces this, violating both FR_017_AuditSearchAdminOnly and NoInformationLeakage (which requires that clinical callers never reach the AuditSearch handler).",
+      "inject_violation": "fact MUTATE_AuditSearchRoleViolation { some op: Operation | op.opKind = AuditSearch and op.opCaller.userRole = Doctor }"
+    },
+    {
+      "fact_name": "F_AuditAttribution",
+      "asserts_violated": [
+        "AttributionCorrectness",
+        "FR_013_AttributionIntegrity"
+      ],
+      "rationale": "Clearing this fact allows an AuditEntry's auditUser to differ from the Operation's opCaller, simulating misattribution. The injection forces an operation whose audit entry records a different user, violating both AttributionCorrectness and FR_013_AttributionIntegrity.",
+      "inject_violation": "fact MUTATE_AttributionViolation { some op: Operation | some u: User | u != op.opCaller and op.opAudit.auditUser = u }"
+    }
+  ]
+}

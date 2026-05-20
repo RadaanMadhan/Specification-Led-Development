@@ -1,0 +1,44 @@
+{
+  "F_CareTeamMembershipGates": {
+    "targeted_asserts": {
+      "FR_006_CareTeamMembershipGating": "BIT",
+      "LeastPrivilege": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AuditEntriesMatchAttempts": {
+    "targeted_asserts": {
+      "AuditCompleteness": "BIT",
+      "AttributionCorrectness": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AuthorisationBasisConsistency": {
+    "targeted_asserts": {
+      "FR_008_AlwaysOnAudit": "BIT",
+      "FR_009_AuditEntryShape": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_NonEmptyUniverse": {
+    "targeted_asserts": {
+      "AuditCompleteness": "BIT",
+      "AppendOnly": "VACUOUS_TAUTOLOGY",
+      "AuthRequiredEverywhere": "VACUOUS_TAUTOLOGY"
+    },
+    "all_bit": false
+  },
+  "LeastPrivilege": {
+    "targeted_asserts": {},
+    "all_bit": false,
+    "skipped": true,
+    "skip_reason": "mutation target fact `LeastPrivilege` not found in feature_model.als"
+  },
+  "F_AllOutcomesCovered": {
+    "targeted_asserts": {
+      "FR_008_AlwaysOnAudit": "VACUOUS_OVERCONSTRAINT",
+      "AuditCompleteness": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  }
+}

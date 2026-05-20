@@ -1,0 +1,148 @@
+$ /Users/leonhausmann/opt/anaconda3/bin/python3 -m speceval.cli verify-design --no-cache --model M-mid --java-bin /Users/leonhausmann/opt/anaconda3/lib/python3.9/site-packages/jdk4py/java-runtime/bin/java /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/eval/specs/C-L2
+
+[parse]   feature 'C-L2', 20 FRs, 3 user stories
+[lift]    calling LLM (anthropic: tier=M-mid, model=claude-sonnet-4-6)...
+[lift]    fresh lift (sha=91e017c324dd)
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/C-L2/feature_model.als
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/C-L2/cost_log.json
+[alloy]   running alloy.jar on feature_model.als...
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/C-L2/alloy_verdicts.json
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/C-L2/mutation_outcomes.json
+
+==============================================================================
+  Design Compliance Report  (Phase 3 — feature_model.als)
+  feature       : C-L2
+  spec source   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/eval/specs/C-L2
+  alloy model   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/C-L2/feature_model.als
+  patterns      : LeastPrivilege, PermissionCompleteness, AuditCompleteness, AppendOnly, AttributionCorrectness, OwnershipBasedAccess, NoInformationLeakage
+  fr count      : 20 declared in spec.md
+  assertions    : 19 total (15/19 PASS via Alloy)
+==============================================================================
+
+  Compliance matrix
+  ----------------------------------------------------------------------------
+  Assertion                                    Verdict   Anchor
+  ---------------------------------------------------------------------------------
+  LeastPrivilege                               PASS      PATTERN LeastPrivilege: contracts/http-api.md; spec.md FR-004, FR-005, FR-017
+  PermissionCompleteness                       PASS      PATTERN PermissionCompleteness: contracts/http-api.md permission tables
+  AuditCompleteness                            PASS      PATTERN AuditCompleteness: spec.md FR-012, SC-001, SC-002; data-model.md AuditEntry
+  AppendOnly                                   PASS      (no anchor comment found)
+  AttributionCorrectness                       PASS      PATTERN AttributionCorrectness: spec.md FR-013; data-model.md AuditEntry snapshot fields
+  OwnershipBasedAccess                         FAIL      PATTERN OwnershipBasedAccess: spec.md FR-004; data-model.md CareTeamMembership
+  NoInformationLeakage                         PASS      PATTERN NoInformationLeakage: spec.md FR-006, SC-003; contracts/http-api.md byte-equivalent response
+  FR_001_AuthRequired                          PASS      FEATURE-SPECIFIC: FR-001; contracts/http-api.md authentication boundary
+  FR_002_OneRolePerUser                        PASS      FEATURE-SPECIFIC: FR-002; data-model.md UserRole enum
+  FR_004_CareTeamGating                        FAIL      FEATURE-SPECIFIC: FR-004; data-model.md CareTeamMembership; contracts/http-api.md FR-004
+  FR_005_AdminContentBlindness                 FAIL      FEATURE-SPECIFIC: FR-005, FR-018; spec.md administrator content-blindness
+  FR_010_NoteAuthorIsClinicalRole              PASS      FEATURE-SPECIFIC: FR-010, FR-011; data-model.md ClinicalNote author_role CHECK
+  FR_011_NotesAppendOnly                       PASS      FEATURE-SPECIFIC: FR-011, SC-007; data-model.md ClinicalNote append-only enforcement
+  FR_012_AlwaysOnAudit                         PASS      FEATURE-SPECIFIC: FR-012, SC-001, SC-002; data-model.md always-on audit
+  FR_013_NoteIdInAuditOnlyForPermittedAddNote  PASS      FEATURE-SPECIFIC: FR-013; data-model.md AuditEntry note_id CHECK constraint
+  FR_014_AuditEntriesImmutable                 PASS      FEATURE-SPECIFIC: FR-014, FR-016, SC-008; data-model.md AuditEntry append-only enforcement
+  FR_017_ListAuditAdminOnly                    FAIL      FEATURE-SPECIFIC: FR-017; contracts/http-api.md POST /audit/search authorisation
+  FR_009_ValidationBeforeMutation              PASS      FEATURE-SPECIFIC: FR-009; spec.md validation before mutation; contracts/http-api.md 400 validation_error
+  FR_013_AttributionCorrectness                PASS      FEATURE-SPECIFIC: FR-013; data-model.md AuditEntry attribution fields snapshot
+
+  Counterexamples (Alloy SAT)
+  ----------------------------------------------------------------------------
+  OwnershipBasedAccess  [PATTERN OwnershipBasedAccess: spec.md FR-004; data-model.md CareTeamMembership]
+    Alloy: 05. check OwnershipBasedAccess     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR_004_CareTeamGating  [FEATURE-SPECIFIC: FR-004; data-model.md CareTeamMembership; contracts/http-api.md FR-004]
+    Alloy: 09. check FR_004_CareTeamGating     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR_005_AdminContentBlindness  [FEATURE-SPECIFIC: FR-005, FR-018; spec.md administrator content-blindness]
+    Alloy: 10. check FR_005_AdminContentBlindness     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR_017_ListAuditAdminOnly  [FEATURE-SPECIFIC: FR-017; contracts/http-api.md POST /audit/search authorisation]
+    Alloy: 16. check FR_017_ListAuditAdminOnly     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR coverage
+  ----------------------------------------------------------------------------
+  FR-001  →  FR_001_AuthRequired=PASS
+  FR-002  →  FR_002_OneRolePerUser=PASS
+  FR-003  →  NoInformationLeakage=PASS
+  FR-004  →  FR_004_CareTeamGating=FAIL, OwnershipBasedAccess=FAIL
+  FR-005  →  FR_005_AdminContentBlindness=FAIL, LeastPrivilege=PASS
+  FR-006  →  NoInformationLeakage=PASS
+  FR-007  →  FR_005_AdminContentBlindness=FAIL
+  FR-008  →  FR_005_AdminContentBlindness=FAIL
+  FR-009  →  FR_009_ValidationBeforeMutation=PASS
+  FR-010  →  FR_010_NoteAuthorIsClinicalRole=PASS, AppendOnly=PASS
+  FR-011  →  FR_011_NotesAppendOnly=PASS, AppendOnly=PASS
+  FR-012  →  FR_012_AlwaysOnAudit=PASS, AuditCompleteness=PASS
+  FR-013  →  FR_013_NoteIdInAuditOnlyForPermittedAddNote=PASS, FR_013_AttributionCorrectness=PASS, AttributionCorrectness=PASS
+  FR-014  →  FR_014_AuditEntriesImmutable=PASS
+  FR-015  →  FR_012_AlwaysOnAudit=PASS
+  FR-016  →  FR_014_AuditEntriesImmutable=PASS
+  FR-017  →  FR_017_ListAuditAdminOnly=FAIL, LeastPrivilege=PASS
+  FR-018  →  FR_005_AdminContentBlindness=FAIL
+  FR-019  →  FR_005_AdminContentBlindness=FAIL
+  FR-020  →  FR_005_AdminContentBlindness=FAIL
+
+  All FRs have at least one matching assertion.
+
+==============================================================================
+  Mutation tests  (assertion-strength validation)
+==============================================================================
+
+  Strategy: replace each named fact's body with `{}` (no constraint),
+  then re-run Alloy. Each listed assertion should now FAIL on the
+  mutated model. If it still PASSes, the assertion is vacuous and
+  must be strengthened.
+
+  - MUTATE F_AppendOnlyNotes  → runs/C-L2/mutated_F_AppendOnlyNotes.als
+    rationale: Removing this fact allows ClinicalNote atoms to exist without any corresponding permitted AddNote operation, breaking the append-only invariant. The injection forces a note that has no creating operation, exactly the state the AppendOnly predicate forbids.
+    expected to FAIL: AppendOnly, FR_011_NotesAppendOnly, FR_009_ValidationBeforeMutation
+      - AppendOnly: FAIL (expected)
+      - FR_011_NotesAppendOnly: FAIL (expected)
+      - FR_009_ValidationBeforeMutation: FAIL (expected)
+
+  - MUTATE F_AuditOneToOneWithOperation  → runs/C-L2/mutated_F_AuditOneToOneWithOperation.als
+    rationale: Removing this fact allows an Operation to share its AuditEntry with another Operation, and allows AuditEntry atoms to exist with no owning Operation. The injection creates an orphan AuditEntry, violating the one-to-one correspondence the AuditCompleteness assertion requires.
+    expected to FAIL: AuditCompleteness, FR_012_AlwaysOnAudit, FR_014_AuditEntriesImmutable
+      - AuditCompleteness: FAIL (expected)
+      - FR_012_AlwaysOnAudit: FAIL (expected)
+      - FR_014_AuditEntriesImmutable: FAIL (expected)
+
+  - MUTATE F_RoleOperationPermission  → runs/C-L2/mutated_F_RoleOperationPermission.als
+    rationale: Removing this fact lifts the constraint that every operation's caller holds an allowed role for that operation kind. The injection forces a HospitalAdministrator to perform a permitted RecordLookup, which the LeastPrivilege assertion directly forbids.
+    expected to FAIL: LeastPrivilege, PermissionCompleteness, FR_017_ListAuditAdminOnly, FR_005_AdminContentBlindness
+      - LeastPrivilege: FAIL (expected)
+      - PermissionCompleteness: PASS (vacuous?)
+      - FR_017_ListAuditAdminOnly: FAIL (expected)
+      - FR_005_AdminContentBlindness: FAIL (expected)
+
+  - MUTATE F_CareTeamGatingForClinicalOps  → runs/C-L2/mutated_F_CareTeamGatingForClinicalOps.als
+    rationale: Removing this fact allows a clinical operation to be permitted even when no CareTeamMembership row links the caller to the patient. The injection forces a permitted RecordLookup where no membership exists, which is exactly the ownership-based-access violation.
+    expected to FAIL: OwnershipBasedAccess, FR_004_CareTeamGating
+      - OwnershipBasedAccess: FAIL (expected)
+      - FR_004_CareTeamGating: FAIL (expected)
+
+  - MUTATE F_ClinicalNoteAuthorMustBeClinicalRole  → runs/C-L2/mutated_F_ClinicalNoteAuthorMustBeClinicalRole.als
+    rationale: Removing this fact allows a ClinicalNote to be authored by a HospitalAdministrator. The injection forces such a note to exist, violating the structural CHECK that no administrator role may appear as an author.
+    expected to FAIL: FR_010_NoteAuthorIsClinicalRole, FR_005_AdminContentBlindness
+      - FR_010_NoteAuthorIsClinicalRole: PASS (vacuous?)
+      - FR_005_AdminContentBlindness: PASS (vacuous?)
+
+  - MUTATE F_NoteRefAuditConstraint  → runs/C-L2/mutated_F_NoteRefAuditConstraint.als
+    rationale: Removing this fact allows an AuditEntry of kind AuditRead (or denied AddNote) to carry a non-null noteRef, breaking the constraint that note_id is set only for permitted add_note events. The injection forces this invalid state.
+    expected to FAIL: FR_013_NoteIdInAuditOnlyForPermittedAddNote, AttributionCorrectness
+      - FR_013_NoteIdInAuditOnlyForPermittedAddNote: PASS (vacuous?)
+      - AttributionCorrectness: PASS (vacuous?)
+
+  Mutation summary
+  ----------------------------------------------------------------------------
+  - F_AppendOnlyNotes: ASSERTIONS BIT (AppendOnly, FR_011_NotesAppendOnly, FR_009_ValidationBeforeMutation)
+  - F_AuditOneToOneWithOperation: ASSERTIONS BIT (AuditCompleteness, FR_012_AlwaysOnAudit, FR_014_AuditEntriesImmutable)
+  - F_RoleOperationPermission: ASSERTION VACUOUS (LeastPrivilege, PermissionCompleteness, FR_017_ListAuditAdminOnly, FR_005_AdminContentBlindness)
+  - F_CareTeamGatingForClinicalOps: ASSERTIONS BIT (OwnershipBasedAccess, FR_004_CareTeamGating)
+  - F_ClinicalNoteAuthorMustBeClinicalRole: ASSERTION VACUOUS (FR_010_NoteAuthorIsClinicalRole, FR_005_AdminContentBlindness)
+  - F_NoteRefAuditConstraint: ASSERTION VACUOUS (FR_013_NoteIdInAuditOnlyForPermittedAddNote, AttributionCorrectness)
+
+
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/C-L2/report.txt

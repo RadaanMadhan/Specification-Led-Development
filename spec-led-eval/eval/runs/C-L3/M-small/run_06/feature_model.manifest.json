@@ -1,0 +1,104 @@
+{
+  "feature_id": "C-L3",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "AppendOnly",
+    "AuditCompleteness",
+    "AuthRequiredEverywhere",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_004_CareTeamMembershipGates",
+    "FR_006_PatientSelfAccessOnly",
+    "FR_007_ComplianceContentBlind",
+    "FR_012_NotesAppendOnly",
+    "FR_013_AuditAlwaysOn",
+    "FR_015_AuditImmutable"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "SingleRolePerUser"
+    ],
+    "FR-003": [
+      "OwnershipExclusivity"
+    ],
+    "FR-004": [
+      "FR_004_CareTeamMembershipGates",
+      "OwnershipBasedAccess"
+    ],
+    "FR-006": [
+      "FR_006_PatientSelfAccessOnly"
+    ],
+    "FR-007": [
+      "FR_007_ComplianceContentBlind"
+    ],
+    "FR-012": [
+      "FR_012_NotesAppendOnly",
+      "AppendOnlyNotes"
+    ],
+    "FR-013": [
+      "FR_013_AuditAlwaysOn",
+      "AuditCompleteness"
+    ],
+    "FR-015": [
+      "FR_015_AuditImmutable",
+      "AppendOnlyAudit"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_PermissionMatrixDefinition",
+      "asserts_violated": [
+        "LeastPrivilege"
+      ],
+      "rationale": "Removing the permission matrix definition allows the model to invent permissions not in the spec (e.g., Patient -> PostNotes), which violates least-privilege. LeastPrivilege assertion checks that any permitted operation respects the matrix.",
+      "inject_violation": "fact MUTATE_PermissionViolation { some ae: AuditEntry | ae.user.role = Patient and ae.operation = PostNotes and ae.outcome = Permitted }"
+    },
+    {
+      "fact_name": "F_AppendOnlyNotes",
+      "asserts_violated": [
+        "AppendOnlyNotes"
+      ],
+      "rationale": "Removing the structural constraint on notes allows the model to construct notes with empty or malformed state, which the assertion catches by requiring at least one well-formed note to exist.",
+      "inject_violation": "fact MUTATE_MalformedNote { some n: ClinicalNote | n.body = \"\" }"
+    },
+    {
+      "fact_name": "F_AppendOnlyAudit",
+      "asserts_violated": [
+        "AppendOnlyAudit"
+      ],
+      "rationale": "Removing the structural constraint on audit entries allows entries with missing fields, which the assertion catches by requiring well-formed entries.",
+      "inject_violation": "fact MUTATE_MalformedAudit { some ae: AuditEntry | no ae.user }"
+    },
+    {
+      "fact_name": "F_AuditCompleteness",
+      "asserts_violated": [
+        "AuditCompleteness"
+      ],
+      "rationale": "Removing the uniqueness constraint allows duplicate audit entries for the same (user, record, operation) triple, which the assertion explicitly forbids.",
+      "inject_violation": "fact MUTATE_DuplicateAudit { some disj ae1, ae2: AuditEntry | ae1.user = ae2.user and ae1.record = ae2.record and ae1.operation = ae2.operation }"
+    },
+    {
+      "fact_name": "F_AuthRequired",
+      "asserts_violated": [
+        "AuthRequiredEverywhere"
+      ],
+      "rationale": "Removing the authentication boundary check allows audit entries with no associated user, which violates the assertion that every operation is by an authenticated user.",
+      "inject_violation": "fact MUTATE_NoAuth { some ae: AuditEntry | all u: User | ae.user != u }"
+    },
+    {
+      "fact_name": "F_CareTeamMembershipGates",
+      "asserts_violated": [
+        "OwnershipBasedAccess"
+      ],
+      "rationale": "Removing the care-team gate allows clinicians to read/append without membership, violating the ownership-based access rule that clinician operations require active care-team membership.",
+      "inject_violation": "fact MUTATE_CareTeamBypass { some ae: AuditEntry, u: Clinician | ae.user = u and ae.operation in (GetRecords + PostNotes) and ae.outcome = Permitted and no m: CareTeamMembership | m.clinician = u and m.record = ae.record }"
+    }
+  ]
+}

@@ -1,0 +1,191 @@
+{
+  "feature_id": "A-L3",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "PermissionGrounding",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoSelfMutation",
+    "NoInformationLeakage",
+    "ValidationBeforeMutation"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_RoleMultiplicity",
+    "FR_003_ApplicantScope",
+    "FR_004_OfficerScope",
+    "FR_005_AuditorReadOnly",
+    "FR_006_ApplicantIdentity",
+    "FR_007_StatusDomain",
+    "FR_008_OneInFlight",
+    "FR_009_AllowedTransitions",
+    "FR_010_AtomicAssignment",
+    "FR_011_NoSelfAssignment",
+    "FR_012_OnlyAssignedOfficerPatches",
+    "FR_013_NoSelfDecision",
+    "FR_014_ReasonRequired",
+    "FR_015_TerminalStatuses",
+    "FR_016_AuditFields",
+    "FR_017_AuditAtomic",
+    "FR_018_AuditAppendOnly",
+    "FR_019_Retention",
+    "FR_020_ByteEquivalentNotFound",
+    "FR_021_ByteEquivalentAcrossApplicants",
+    "FR_022_NoLeakViaPost",
+    "FR_023_AuditEndpointAuditorOnly",
+    "FR_024_ApplicantImmutablePostSubmit"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_RoleMultiplicity"
+    ],
+    "FR-003": [
+      "FR_003_ApplicantScope",
+      "LeastPrivilege"
+    ],
+    "FR-004": [
+      "FR_004_OfficerScope",
+      "LeastPrivilege"
+    ],
+    "FR-005": [
+      "FR_005_AuditorReadOnly",
+      "LeastPrivilege"
+    ],
+    "FR-006": [
+      "FR_006_ApplicantIdentity"
+    ],
+    "FR-007": [
+      "FR_007_StatusDomain"
+    ],
+    "FR-008": [
+      "FR_008_OneInFlight"
+    ],
+    "FR-009": [
+      "FR_009_AllowedTransitions"
+    ],
+    "FR-010": [
+      "FR_010_AtomicAssignment"
+    ],
+    "FR-011": [
+      "FR_011_NoSelfAssignment",
+      "NoSelfMutation"
+    ],
+    "FR-012": [
+      "FR_012_OnlyAssignedOfficerPatches",
+      "OwnershipBasedAccess"
+    ],
+    "FR-013": [
+      "FR_013_NoSelfDecision",
+      "NoSelfMutation"
+    ],
+    "FR-014": [
+      "FR_014_ReasonRequired",
+      "ValidationBeforeMutation"
+    ],
+    "FR-015": [
+      "FR_015_TerminalStatuses"
+    ],
+    "FR-016": [
+      "FR_016_AuditFields",
+      "AttributionCorrectness",
+      "AuditCompleteness"
+    ],
+    "FR-017": [
+      "FR_017_AuditAtomic",
+      "AuditCompleteness"
+    ],
+    "FR-018": [
+      "FR_018_AuditAppendOnly",
+      "AppendOnly"
+    ],
+    "FR-019": [
+      "FR_019_Retention",
+      "AppendOnly"
+    ],
+    "FR-020": [
+      "FR_020_ByteEquivalentNotFound",
+      "NoInformationLeakage"
+    ],
+    "FR-021": [
+      "FR_021_ByteEquivalentAcrossApplicants",
+      "NoInformationLeakage"
+    ],
+    "FR-022": [
+      "FR_022_NoLeakViaPost"
+    ],
+    "FR-023": [
+      "FR_023_AuditEndpointAuditorOnly",
+      "NoInformationLeakage"
+    ],
+    "FR-024": [
+      "FR_024_ApplicantImmutablePostSubmit"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_LeastPrivilegeFact",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_003_ApplicantScope"
+      ],
+      "rationale": "Clearing the least-privilege fact lets the model build an instance where an applicant-only caller succeeds on PatchStatus, which the LeastPrivilege predicate must catch via the permission matrix.",
+      "inject_violation": "fact MUTATE_LeastPrivilegeViolation { some op: Operation | op.outcome = Success and op.kind = PatchStatus and op.caller.roles = Applicant and Officer not in op.caller.roles }"
+    },
+    {
+      "fact_name": "F_AppendOnlyAuditChain",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_018_AuditAppendOnly",
+        "FR_019_Retention"
+      ],
+      "rationale": "Clearing the append-only chain fact lets the model produce two distinct initial entries (or branched chain) for the same application, which the AppendOnly predicate must reject.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some disj e1, e2: AuditEntry | e1.application = e2.application and no e1.prev and no e2.prev }"
+    },
+    {
+      "fact_name": "F_NoSelfAssignment",
+      "asserts_violated": [
+        "NoSelfMutation",
+        "FR_011_NoSelfAssignment"
+      ],
+      "rationale": "Clearing the no-self-assignment fact lets the model assign an application's applicant as its own assigned officer, which NoSelfMutation must reject.",
+      "inject_violation": "fact MUTATE_SelfAssignmentViolation { some a: LoanApplication | a.assignedOfficer = a.applicant }"
+    },
+    {
+      "fact_name": "F_NoSelfDecisionInAudit",
+      "asserts_violated": [
+        "NoSelfMutation",
+        "FR_013_NoSelfDecision"
+      ],
+      "rationale": "Clearing the no-self-decision-in-audit fact lets an officer-actor audit entry exist whose actor equals the application's applicant, violating FR-013.",
+      "inject_violation": "fact MUTATE_SelfDecisionViolation { some e: AuditEntry | e.actorRole = Officer and e.actor = e.application.applicant }"
+    },
+    {
+      "fact_name": "F_ByteEquivalentNotFound",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "FR_020_ByteEquivalentNotFound",
+        "FR_021_ByteEquivalentAcrossApplicants"
+      ],
+      "rationale": "Clearing the byte-equivalent-not-found fact lets the model emit a 403 PermissionDenied on a GET, which leaks existence; NoInformationLeakage and FR-020/021 must catch this.",
+      "inject_violation": "fact MUTATE_LeakViaForbidden { some op: Operation | op.kind = GetApplication and op.authenticated = TrueB and op.outcome = PermissionDenied403 }"
+    },
+    {
+      "fact_name": "F_AuditCompletenessFact",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_017_AuditAtomic"
+      ],
+      "rationale": "Clearing the audit-completeness fact lets the model produce an application with no audit entry, violating the invariant that every state change has a corresponding audit record.",
+      "inject_violation": "fact MUTATE_MissingAuditEntry { some a: LoanApplication | no application.a }"
+    }
+  ]
+}

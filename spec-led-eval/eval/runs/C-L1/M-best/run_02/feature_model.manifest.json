@@ -1,0 +1,144 @@
+{
+  "feature_id": "009-clinician-record-access",
+  "patterns_applied": [
+    "AuthRequiredEverywhere",
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_RoleFromCatalogue",
+    "FR_003_AuditQueryablePerPatient",
+    "FR_004_PidInBodyNotPath",
+    "FR_005_ReadOnly",
+    "FR_006_CareTeamGating",
+    "FR_007_ByteEquivalentDenial",
+    "FR_008_AlwaysAudit",
+    "FR_009_AuditEntryShape",
+    "FR_010_AuditImmutability",
+    "FR_011_IGOnly",
+    "FR_012_NoDeletion",
+    "FR_013_NoRecordWithoutAudit",
+    "FR_014_SafetyContentOnRecordView",
+    "FR_015_VerificationBlockOnRecordView"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "AuthRequiredEverywhere",
+      "FR_001_AuthRequired"
+    ],
+    "FR-002": [
+      "FR_002_RoleFromCatalogue"
+    ],
+    "FR-003": [
+      "FR_003_AuditQueryablePerPatient"
+    ],
+    "FR-004": [
+      "FR_004_PidInBodyNotPath"
+    ],
+    "FR-005": [
+      "FR_005_ReadOnly",
+      "LeastPrivilege"
+    ],
+    "FR-006": [
+      "OwnershipBasedAccess",
+      "FR_006_CareTeamGating"
+    ],
+    "FR-007": [
+      "NoInformationLeakage",
+      "FR_007_ByteEquivalentDenial"
+    ],
+    "FR-008": [
+      "AuditCompleteness",
+      "FR_008_AlwaysAudit"
+    ],
+    "FR-009": [
+      "AttributionCorrectness",
+      "FR_009_AuditEntryShape"
+    ],
+    "FR-010": [
+      "AppendOnly",
+      "FR_010_AuditImmutability"
+    ],
+    "FR-011": [
+      "FR_011_IGOnly",
+      "LeastPrivilege"
+    ],
+    "FR-012": [
+      "FR_012_NoDeletion",
+      "AppendOnly"
+    ],
+    "FR-013": [
+      "FR_013_NoRecordWithoutAudit"
+    ],
+    "FR-014": [
+      "FR_014_SafetyContentOnRecordView"
+    ],
+    "FR-015": [
+      "FR_015_VerificationBlockOnRecordView"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_AuthRequired",
+      "asserts_violated": [
+        "AuthRequiredEverywhere",
+        "FR_001_AuthRequired"
+      ],
+      "rationale": "Clearing F_AuthRequired removes the boundary check; injecting an Operation that is unauthenticated yet Permitted forces a counterexample within the Alloy scope.",
+      "inject_violation": "fact MUTATE_AuthBypass { some op: Operation | no op.authenticated and op.outcome = Permitted }"
+    },
+    {
+      "fact_name": "F_CareTeamGating",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_006_CareTeamGating"
+      ],
+      "rationale": "Clearing F_CareTeamGating lets a clinician obtain Permitted on records-lookup without an active care-team membership; the injection constructs exactly that situation.",
+      "inject_violation": "fact MUTATE_NoCareTeam { some op: Operation | op.kind = PostRecordsLookup and op.outcome = Permitted and (no m: CareTeamMembership | m.member = op.caller and m.forPatient = op.resolvedPatient and some m.isActive) }"
+    },
+    {
+      "fact_name": "F_ByteEquivalentNotFound",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "FR_007_ByteEquivalentDenial"
+      ],
+      "rationale": "Clearing the byte-equivalence fact and injecting a Denied operation whose response is not the canonical NotFoundShape exposes a leakage path.",
+      "inject_violation": "fact MUTATE_LeakResponse { some op: Operation | op.outcome = Denied and op.response != NotFoundShape }"
+    },
+    {
+      "fact_name": "F_AuditOnClinicalAccess",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_008_AlwaysAudit"
+      ],
+      "rationale": "Removing the always-on-audit constraint and injecting an authenticated records-lookup with no audit entry breaks SC-001/SC-002.",
+      "inject_violation": "fact MUTATE_MissingAudit { some op: Operation | op.kind = PostRecordsLookup and some op.authenticated and no op.auditEntry }"
+    },
+    {
+      "fact_name": "F_AuditAttribution",
+      "asserts_violated": [
+        "AttributionCorrectness",
+        "AppendOnly",
+        "FR_009_AuditEntryShape",
+        "FR_010_AuditImmutability"
+      ],
+      "rationale": "Clearing the attribution pin lets the recorded clinician drift away from the operation's caller \u2014 structurally indistinguishable from a post-hoc mutation of the audit row.",
+      "inject_violation": "fact MUTATE_BadAttribution { some op: Operation | some op.auditEntry and op.auditEntry.recordedClinician != op.caller }"
+    },
+    {
+      "fact_name": "F_IGOnlyAuditEndpoint",
+      "asserts_violated": [
+        "FR_011_IGOnly",
+        "LeastPrivilege"
+      ],
+      "rationale": "Without F_IGOnlyAuditEndpoint, a clinical-role caller could obtain a Permitted on /audit/search, leaking the endpoint's existence to non-IG users.",
+      "inject_violation": "fact MUTATE_NonIGAuditAccess { some op: Operation | op.kind = PostAuditSearch and op.caller.role != AuditOfficer and op.outcome = Permitted }"
+    }
+  ]
+}

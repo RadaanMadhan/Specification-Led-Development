@@ -1,0 +1,167 @@
+{
+  "feature_id": "C-L3",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "ValidationBeforeMutation",
+    "PrivilegeMonotonicity"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_SingleRolePerUser",
+    "FR_002_CareTeamMemberRoleConstraint",
+    "FR_003_PatientAssignedRecord",
+    "FR_004_CareTeamGating",
+    "FR_005_ClinicianAuditAccess",
+    "FR_006_PatientSelfAccess",
+    "FR_007_ComplianceContentBlindness",
+    "FR_008_ByteEquivalent403",
+    "FR_011_NoteAuthorSnapshot",
+    "FR_012_NotesAppendOnly",
+    "FR_013_AlwaysOnAudit",
+    "FR_014_AuditEntryShape",
+    "FR_015_AuditImmutability",
+    "FR_016_NoAccessWithoutAudit",
+    "FR_018_AccessLogComplianceOnly",
+    "FR_019_ComplianceNoClinicalContent",
+    "FR_020_OpaqueRecordId"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_SingleRolePerUser",
+      "FR_002_CareTeamMemberRoleConstraint"
+    ],
+    "FR-003": [
+      "FR_003_PatientAssignedRecord"
+    ],
+    "FR-004": [
+      "FR_004_CareTeamGating",
+      "LeastPrivilege"
+    ],
+    "FR-005": [
+      "FR_005_ClinicianAuditAccess"
+    ],
+    "FR-006": [
+      "FR_006_PatientSelfAccess",
+      "OwnershipBasedAccess"
+    ],
+    "FR-007": [
+      "FR_007_ComplianceContentBlindness",
+      "FR_019_ComplianceNoClinicalContent"
+    ],
+    "FR-008": [
+      "FR_008_ByteEquivalent403",
+      "NoInformationLeakage"
+    ],
+    "FR-009": [
+      "FR_004_CareTeamGating"
+    ],
+    "FR-010": [
+      "ValidationBeforeMutation"
+    ],
+    "FR-011": [
+      "FR_011_NoteAuthorSnapshot"
+    ],
+    "FR-012": [
+      "FR_012_NotesAppendOnly",
+      "AppendOnly"
+    ],
+    "FR-013": [
+      "FR_013_AlwaysOnAudit",
+      "AuditCompleteness"
+    ],
+    "FR-014": [
+      "FR_014_AuditEntryShape",
+      "AttributionCorrectness"
+    ],
+    "FR-015": [
+      "FR_015_AuditImmutability",
+      "AppendOnlyAudit"
+    ],
+    "FR-016": [
+      "FR_016_NoAccessWithoutAudit"
+    ],
+    "FR-017": [
+      "AppendOnlyAudit",
+      "FR_015_AuditImmutability"
+    ],
+    "FR-018": [
+      "FR_018_AccessLogComplianceOnly"
+    ],
+    "FR-019": [
+      "FR_019_ComplianceNoClinicalContent",
+      "FR_007_ComplianceContentBlindness"
+    ],
+    "FR-020": [
+      "FR_020_OpaqueRecordId"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_CareTeamGatingGetRecord",
+      "asserts_violated": [
+        "FR_004_CareTeamGating",
+        "LeastPrivilege"
+      ],
+      "rationale": "Removing the care-team gating fact allows the model to construct a Permitted GetRecord operation for a clinician with no CareTeamMembership row, directly violating FR-004 and the LeastPrivilege invariant.",
+      "inject_violation": "fact MUTATE_CareTeamGatingViolation { some op: Operation, u: User, r: Record | op.opCaller = u and u.role = Clinician and op.opKind = GetRecord and op.opOutcome = Permitted and (no m: CareTeamMembership | m.ctmClinician = u and m.ctmRecord = r) }"
+    },
+    {
+      "fact_name": "F_AuditEntryLinkedToOperation",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_013_AlwaysOnAudit"
+      ],
+      "rationale": "Removing the backward-link fact allows AuditEntry atoms that do not correspond to any Operation, breaking the one-to-one audit completeness invariant required by FR-013 and SC-002.",
+      "inject_violation": "fact MUTATE_OrphanAuditEntry { some ae: AuditEntry | no op: Operation | op.opAuditEntry = ae }"
+    },
+    {
+      "fact_name": "F_ComplianceContentBlindness",
+      "asserts_violated": [
+        "FR_007_ComplianceContentBlindness",
+        "FR_019_ComplianceNoClinicalContent",
+        "LeastPrivilege"
+      ],
+      "rationale": "Removing the compliance content-blindness fact allows a Permitted GetRecord operation for a ComplianceOfficer, violating FR-007 and the structural content-blindness guarantee of FR-019.",
+      "inject_violation": "fact MUTATE_ComplianceCanReadRecord { some op: Operation | op.opCaller.role = ComplianceOfficer and op.opKind = GetRecord and op.opOutcome = Permitted }"
+    },
+    {
+      "fact_name": "F_PatientSelfAccessOnly",
+      "asserts_violated": [
+        "FR_006_PatientSelfAccess",
+        "OwnershipBasedAccess"
+      ],
+      "rationale": "Removing the patient self-access constraint allows a Patient to have a Permitted GetRecord operation on a record other than their assignedRecord, violating FR-006 and the ownership-based access invariant.",
+      "inject_violation": "fact MUTATE_PatientCrossRecordAccess { some op: Operation, u: User, r: Record | op.opCaller = u and u.role = Patient and op.opKind = GetRecord and op.opOutcome = Permitted and u.assignedRecord != r and op.opRecord = r }"
+    },
+    {
+      "fact_name": "F_NotePersistOnPermittedAppendOnly",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_012_NotesAppendOnly",
+        "ValidationBeforeMutation"
+      ],
+      "rationale": "Removing this fact allows a ClinicalNote to exist without any matching Permitted PostNote operation \u2014 i.e., a note that was never written through a legitimate, authorised operation, violating the append-only guarantee and the validation-before-mutation invariant.",
+      "inject_violation": "fact MUTATE_UnauthorisedNote { some n: ClinicalNote | no op: Operation | op.opKind = PostNote and op.opOutcome = Permitted and op.opRecord = n.noteRecord and op.opCaller = n.noteAuthor }"
+    },
+    {
+      "fact_name": "F_AccessLogComplianceOnly",
+      "asserts_violated": [
+        "FR_018_AccessLogComplianceOnly",
+        "LeastPrivilege"
+      ],
+      "rationale": "Removing the access-log gating fact allows a non-ComplianceOfficer (Clinician or Patient) to have a Permitted GetAccessLog operation, violating the compliance-officer-only rule of FR-018 and the least-privilege invariant.",
+      "inject_violation": "fact MUTATE_NonComplianceAccessLog { some op: Operation | op.opCaller.role = Clinician and op.opKind = GetAccessLog and op.opOutcome = Permitted }"
+    }
+  ]
+}

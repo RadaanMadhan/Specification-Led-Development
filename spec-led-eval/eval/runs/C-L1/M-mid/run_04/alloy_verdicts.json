@@ -1,0 +1,18 @@
+{
+  "LeastPrivilege": "PASS",
+  "PermissionCompleteness": "PASS",
+  "FR_001_AuthRequired": "PASS",
+  "FR_002_RoleFromIdentity": "PASS",
+  "FR_005_ReadOnly": "PASS",
+  "FR_006_CareTeamGating": "PASS",
+  "FR_006_NoBreakGlass": "PASS",
+  "FR_007_NoInformationLeakage": "PASS",
+  "FR_008_AlwaysOnAudit": "PASS",
+  "FR_009_AuditEntryFields": "PASS",
+  "FR_010_AuditImmutable": "PASS",
+  "FR_011_AuditIGOnly": "PASS",
+  "FR_013_NoRecordWithoutAudit": "PASS",
+  "AttributionCorrectness": "PASS",
+  "AppendOnly": "PASS",
+  "SC_011_AuditEndpointHidden": "PASS"
+}

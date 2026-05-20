@@ -1,0 +1,40 @@
+{
+  "F_RoleMultiplicity": {
+    "targeted_asserts": {
+      "FR_002_RoleMultiplicity": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_OneInFlightPerApplicant": {
+    "targeted_asserts": {
+      "FR_008_OneInFlightPerApplicant": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_NoSelfAssignment": {
+    "targeted_asserts": {
+      "FR_010_AutoAssignmentExcludesApplicant": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_AppendOnlyAuditLog": {
+    "targeted_asserts": {
+      "AppendOnly": "VACUOUS_OVERCONSTRAINT",
+      "FR_018_AuditImmutableTamperDetectable": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_NoSelfApprovalStructural": {
+    "targeted_asserts": {
+      "FR_013_NoSelfApproval": "VACUOUS_OVERCONSTRAINT",
+      "NoSelfMutation": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_AllowedTransitions": {
+    "targeted_asserts": {
+      "FR_009_AllowedStatusTransitions": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  }
+}

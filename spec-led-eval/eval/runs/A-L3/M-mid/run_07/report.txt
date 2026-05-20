@@ -1,0 +1,222 @@
+==============================================================================
+  Design Compliance Report  (Phase 3 — feature_model.als)
+  feature       : A-L3
+  spec source   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/eval/specs/A-L3
+  alloy model   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/A-L3/feature_model.als
+  patterns      : LeastPrivilege, PermissionCompleteness, PrivilegeMonotonicity, AuthRequiredEverywhere, AuditCompleteness, AppendOnly, AttributionCorrectness, OwnershipExclusivity, OwnershipBasedAccess, NoInformationLeakage, NoSelfMutation, ValidationBeforeMutation
+  fr count      : 24 declared in spec.md
+  assertions    : 28 total (4/28 PASS via Alloy)
+==============================================================================
+
+  Compliance matrix
+  ----------------------------------------------------------------------------
+  Assertion                                       Verdict   Anchor
+  ------------------------------------------------------------------------------------
+  LeastPrivilege                                  FAIL      (no anchor comment found)
+  PermissionCompleteness                          PASS      (no anchor comment found)
+  PrivilegeMonotonicity                           FAIL      (no anchor comment found)
+  AuthRequiredEverywhere                          FAIL      (no anchor comment found)
+  AuditCompleteness                               FAIL      (no anchor comment found)
+  AppendOnly                                      FAIL      (no anchor comment found)
+  AttributionCorrectness                          FAIL      (no anchor comment found)
+  OwnershipExclusivity                            PASS      (no anchor comment found)
+  OwnershipBasedAccess                            FAIL      (no anchor comment found)
+  NoInformationLeakage                            FAIL      (no anchor comment found)
+  NoSelfMutation                                  FAIL      (no anchor comment found)
+  ValidationBeforeMutation                        FAIL      (no anchor comment found)
+  FR_002_RoleMultiplicity                         FAIL      FEATURE-SPECIFIC: FR-002 — officer and auditor mutually exclusive
+  FR_003_ApplicantRestrictions                    FAIL      FEATURE-SPECIFIC: FR-003 — applicants cannot PATCH and cannot read audit
+  FR_005_AuditorReadOnly                          FAIL      FEATURE-SPECIFIC: FR-005 — auditor has no write access
+  FR_008_OneInFlightPerApplicant                  FAIL      FEATURE-SPECIFIC: FR-008 — at most one in-flight application per applicant
+  FR_009_ValidTransitions                         PASS      FEATURE-SPECIFIC: FR-009 — only allowed status transitions in audit log
+  FR_011_NoSelfAssignment                         FAIL      FEATURE-SPECIFIC: FR-011 — assigned officer ≠ applicant (no self-assignment)
+  FR_012_OnlyAssignedOfficerCanPatch              FAIL      FEATURE-SPECIFIC: FR-012 — only assigned officer can successfully PATCH
+  FR_013_NoSelfApproval                           FAIL      FEATURE-SPECIFIC: FR-013 — officer cannot decide their own application
+  FR_015_TerminalStatesFinal                      FAIL      FEATURE-SPECIFIC: FR-015 — terminal states (approved/rejected) cannot be patched
+  FR_016_AuditEntryPerTransition                  FAIL      FEATURE-SPECIFIC: FR-016/FR-017 — every observable state has an audit entry
+  FR_018_AuditImmutable                           FAIL      FEATURE-SPECIFIC: FR-018 — audit log is append-only; no duplicate transitions
+  FR_023_AuditEndpointAuditorOnly                 FAIL      FEATURE-SPECIFIC: FR-023 — GET audit endpoint restricted to auditors only
+  FR_024_ApplicantCannotModifyPostSubmission      FAIL      FEATURE-SPECIFIC: FR-024 — applicant cannot modify application post-submission
+  FR_002_OfficerAuditorMutuallyExclusive          FAIL      FEATURE-SPECIFIC: FR-002/spec.md §Role assignment — no user holds officer+auditor
+  FR_009_NoSelfLoopTransitions                    PASS      FEATURE-SPECIFIC: FR-009 — no-op (self-loop) transitions are forbidden
+  FR_010_SubmissionAttributedToApplicantOrSystem  FAIL      FEATURE-SPECIFIC: FR-010 — on submission audit entry actor = applicant (or system)
+
+  Counterexamples (Alloy SAT)
+  ----------------------------------------------------------------------------
+  LeastPrivilege  [(no anchor)]
+    Alloy: 00. check LeastPrivilege           0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  PrivilegeMonotonicity  [(no anchor)]
+    Alloy: 02. check PrivilegeMonotonicity     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  AuthRequiredEverywhere  [(no anchor)]
+    Alloy: 03. check AuthRequiredEverywhere     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  AuditCompleteness  [(no anchor)]
+    Alloy: 04. check AuditCompleteness        0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  AppendOnly  [(no anchor)]
+    Alloy: 05. check AppendOnly               0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  AttributionCorrectness  [(no anchor)]
+    Alloy: 06. check AttributionCorrectness     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  OwnershipBasedAccess  [(no anchor)]
+    Alloy: 08. check OwnershipBasedAccess     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  NoInformationLeakage  [(no anchor)]
+    Alloy: 09. check NoInformationLeakage     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  NoSelfMutation  [(no anchor)]
+    Alloy: 10. check NoSelfMutation           0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  ValidationBeforeMutation  [(no anchor)]
+    Alloy: 11. check ValidationBeforeMutation     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR_002_RoleMultiplicity  [FEATURE-SPECIFIC: FR-002 — officer and auditor mutually exclusive]
+    Alloy: 12. check FR_002_RoleMultiplicity     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR_003_ApplicantRestrictions  [FEATURE-SPECIFIC: FR-003 — applicants cannot PATCH and cannot read audit]
+    Alloy: 13. check FR_003_ApplicantRestrictions     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR_005_AuditorReadOnly  [FEATURE-SPECIFIC: FR-005 — auditor has no write access]
+    Alloy: 14. check FR_005_AuditorReadOnly     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR_008_OneInFlightPerApplicant  [FEATURE-SPECIFIC: FR-008 — at most one in-flight application per applicant]
+    Alloy: 15. check FR_008_OneInFlightPerApplicant     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR_011_NoSelfAssignment  [FEATURE-SPECIFIC: FR-011 — assigned officer ≠ applicant (no self-assignment)]
+    Alloy: 17. check FR_011_NoSelfAssignment     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR_012_OnlyAssignedOfficerCanPatch  [FEATURE-SPECIFIC: FR-012 — only assigned officer can successfully PATCH]
+    Alloy: 18. check FR_012_OnlyAssignedOfficerCanPatch     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR_013_NoSelfApproval  [FEATURE-SPECIFIC: FR-013 — officer cannot decide their own application]
+    Alloy: 19. check FR_013_NoSelfApproval     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR_015_TerminalStatesFinal  [FEATURE-SPECIFIC: FR-015 — terminal states (approved/rejected) cannot be patched]
+    Alloy: 20. check FR_015_TerminalStatesFinal     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR_016_AuditEntryPerTransition  [FEATURE-SPECIFIC: FR-016/FR-017 — every observable state has an audit entry]
+    Alloy: 21. check FR_016_AuditEntryPerTransition     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR_018_AuditImmutable  [FEATURE-SPECIFIC: FR-018 — audit log is append-only; no duplicate transitions]
+    Alloy: 22. check FR_018_AuditImmutable     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR_023_AuditEndpointAuditorOnly  [FEATURE-SPECIFIC: FR-023 — GET audit endpoint restricted to auditors only]
+    Alloy: 23. check FR_023_AuditEndpointAuditorOnly     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR_024_ApplicantCannotModifyPostSubmission  [FEATURE-SPECIFIC: FR-024 — applicant cannot modify application post-submission]
+    Alloy: 24. check FR_024_ApplicantCannotModifyPostSubmission     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR_002_OfficerAuditorMutuallyExclusive  [FEATURE-SPECIFIC: FR-002/spec.md §Role assignment — no user holds officer+auditor]
+    Alloy: 25. check FR_002_OfficerAuditorMutuallyExclusive     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR_010_SubmissionAttributedToApplicantOrSystem  [FEATURE-SPECIFIC: FR-010 — on submission audit entry actor = applicant (or system)]
+    Alloy: 27. check FR_010_SubmissionAttributedToApplicantOrSystem     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR coverage
+  ----------------------------------------------------------------------------
+  FR-001  →  AuthRequiredEverywhere=FAIL
+  FR-002  →  FR_002_RoleMultiplicity=FAIL, FR_002_OfficerAuditorMutuallyExclusive=FAIL
+  FR-003  →  FR_003_ApplicantRestrictions=FAIL, OwnershipBasedAccess=FAIL
+  FR-004  →  LeastPrivilege=FAIL, FR_012_OnlyAssignedOfficerCanPatch=FAIL
+  FR-005  →  FR_005_AuditorReadOnly=FAIL
+  FR-006  →  OwnershipExclusivity=PASS
+  FR-007  →  ValidationBeforeMutation=FAIL
+  FR-008  →  FR_008_OneInFlightPerApplicant=FAIL
+  FR-009  →  FR_009_ValidTransitions=PASS, FR_009_NoSelfLoopTransitions=PASS
+  FR-010  →  FR_010_SubmissionAttributedToApplicantOrSystem=FAIL
+  FR-011  →  FR_011_NoSelfAssignment=FAIL
+  FR-012  →  FR_012_OnlyAssignedOfficerCanPatch=FAIL
+  FR-013  →  FR_013_NoSelfApproval=FAIL, NoSelfMutation=FAIL
+  FR-014  →  ValidationBeforeMutation=FAIL
+  FR-015  →  FR_015_TerminalStatesFinal=FAIL
+  FR-016  →  AuditCompleteness=FAIL, FR_016_AuditEntryPerTransition=FAIL, AttributionCorrectness=FAIL
+  FR-017  →  AuditCompleteness=FAIL, FR_016_AuditEntryPerTransition=FAIL
+  FR-018  →  AppendOnly=FAIL, FR_018_AuditImmutable=FAIL
+  FR-019  →  AppendOnly=FAIL
+  FR-020  →  NoInformationLeakage=FAIL
+  FR-021  →  NoInformationLeakage=FAIL, OwnershipBasedAccess=FAIL
+  FR-022  →  NoInformationLeakage=FAIL
+  FR-023  →  FR_023_AuditEndpointAuditorOnly=FAIL
+  FR-024  →  FR_024_ApplicantCannotModifyPostSubmission=FAIL
+
+  All FRs have at least one matching assertion.
+
+==============================================================================
+  Mutation tests  (assertion-strength validation)
+==============================================================================
+
+  Strategy: replace each named fact's body with `{}` (no constraint),
+  then re-run Alloy. Each listed assertion should now FAIL on the
+  mutated model. If it still PASSes, the assertion is vacuous and
+  must be strengthened.
+
+  - MUTATE F_AppendOnlyAuditEntries  → runs/A-L3/mutated_F_AppendOnlyAuditEntries.als
+    rationale: Removing F_AppendOnlyAuditEntries allows two AuditEntry atoms for the same application to share an identical (entryPrevStatus, entryNewStatus) pair, simulating a duplicate/mutated entry that the append-only invariant forbids. The injection forces exactly that scenario.
+    expected to FAIL: AppendOnly, FR_018_AuditImmutable
+      - AppendOnly: FAIL (expected)
+      - FR_018_AuditImmutable: FAIL (expected)
+
+  - MUTATE F_NoSelfApproval  → runs/A-L3/mutated_F_NoSelfApproval.als
+    rationale: Removing F_NoSelfApproval allows a successful PATCH operation where the caller is also the application's applicant. The injection forces an Operation with kind=PatchApplicationStatus, outcome=Success, and opCaller equal to the application's appApplicant, directly violating FR-013.
+    expected to FAIL: NoSelfMutation, FR_013_NoSelfApproval
+      - NoSelfMutation: PASS (vacuous?)
+      - FR_013_NoSelfApproval: PASS (vacuous?)
+
+  - MUTATE F_OneInFlightPerApplicant  → runs/A-L3/mutated_F_OneInFlightPerApplicant.als
+    rationale: Removing F_OneInFlightPerApplicant allows two LoanApplication atoms to exist with the same appApplicant and both in a Pending/UnderReview status, violating the one-in-flight invariant from FR-008.
+    expected to FAIL: FR_008_OneInFlightPerApplicant
+      - FR_008_OneInFlightPerApplicant: PASS (vacuous?)
+
+  - MUTATE F_AuditEndpointAuditorOnly  → runs/A-L3/mutated_F_AuditEndpointAuditorOnly.als
+    rationale: Removing F_AuditEndpointAuditorOnly allows a non-auditor caller (e.g., a pure applicant) to successfully access GetApplicationAudit, leaking audit log existence to non-auditors in violation of FR-023.
+    expected to FAIL: FR_023_AuditEndpointAuditorOnly
+      - FR_023_AuditEndpointAuditorOnly: PASS (vacuous?)
+
+  - MUTATE F_OwnershipBasedAccess  → runs/A-L3/mutated_F_OwnershipBasedAccess.als
+    rationale: Removing F_OwnershipBasedAccess permits a pure applicant (no officer, no auditor role) to successfully GET an application they do not own, breaking the byte-equivalent no-leakage guarantee from FR-020/FR-021.
+    expected to FAIL: OwnershipBasedAccess, NoInformationLeakage
+      - OwnershipBasedAccess: FAIL (expected)
+      - NoInformationLeakage: FAIL (expected)
+
+  - MUTATE F_OnlyAssignedOfficerCanPatch  → runs/A-L3/mutated_F_OnlyAssignedOfficerCanPatch.als
+    rationale: Removing F_OnlyAssignedOfficerCanPatch allows an officer who is NOT the assigned officer to successfully PATCH an application's status, violating the core assignment-control invariant of FR-012.
+    expected to FAIL: FR_012_OnlyAssignedOfficerCanPatch, LeastPrivilege
+      - FR_012_OnlyAssignedOfficerCanPatch: FAIL (expected)
+      - LeastPrivilege: PASS (vacuous?)
+
+  Mutation summary
+  ----------------------------------------------------------------------------
+  - F_AppendOnlyAuditEntries: ASSERTIONS BIT (AppendOnly, FR_018_AuditImmutable)
+  - F_NoSelfApproval: ASSERTION VACUOUS (NoSelfMutation, FR_013_NoSelfApproval)
+  - F_OneInFlightPerApplicant: ASSERTION VACUOUS (FR_008_OneInFlightPerApplicant)
+  - F_AuditEndpointAuditorOnly: ASSERTION VACUOUS (FR_023_AuditEndpointAuditorOnly)
+  - F_OwnershipBasedAccess: ASSERTIONS BIT (OwnershipBasedAccess, NoInformationLeakage)
+  - F_OnlyAssignedOfficerCanPatch: ASSERTION VACUOUS (FR_012_OnlyAssignedOfficerCanPatch, LeastPrivilege)
+

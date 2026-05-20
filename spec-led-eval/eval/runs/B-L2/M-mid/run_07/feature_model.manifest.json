@@ -1,0 +1,179 @@
+{
+  "feature_id": "B-L2",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "PrivilegeMonotonicity",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "ValidationBeforeMutation"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_003_TeamContextRequired",
+    "FR_005_TaskTeamImmutable",
+    "FR_006_OwnerImmutable",
+    "FR_007_PerTeamRole",
+    "FR_008_MemberCreateView",
+    "FR_009_NonOwnerMemberDeniedWrite",
+    "FR_010_AdminWriteAnyTask",
+    "FR_011_CrossTeamIsolation",
+    "FR_012_AssigneeTeamMembership",
+    "FR_013_ValidTaskStatus",
+    "FR_014_ByteEquivalent404",
+    "FR_015_PerEditEventAudit",
+    "FR_015_ActorRoleSnapshot",
+    "FR_016_AuditSurvivesTaskDeletion",
+    "FR_016_AuditAppendOnly",
+    "FR_017_AuditReadableByTeamMembers",
+    "FR_018_AuditRetention",
+    "FR_019_TeamScopedList"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_001_AuthRequired"
+    ],
+    "FR-003": [
+      "FR_003_TeamContextRequired"
+    ],
+    "FR-004": [
+      "FR_003_TeamContextRequired",
+      "FR_011_CrossTeamIsolation"
+    ],
+    "FR-005": [
+      "FR_005_TaskTeamImmutable"
+    ],
+    "FR-006": [
+      "FR_006_OwnerImmutable",
+      "OwnershipExclusivity"
+    ],
+    "FR-007": [
+      "FR_007_PerTeamRole"
+    ],
+    "FR-008": [
+      "FR_008_MemberCreateView",
+      "LeastPrivilege"
+    ],
+    "FR-009": [
+      "FR_009_NonOwnerMemberDeniedWrite",
+      "LeastPrivilege"
+    ],
+    "FR-010": [
+      "FR_010_AdminWriteAnyTask",
+      "PrivilegeMonotonicity"
+    ],
+    "FR-011": [
+      "FR_011_CrossTeamIsolation",
+      "NoInformationLeakage"
+    ],
+    "FR-012": [
+      "FR_012_AssigneeTeamMembership"
+    ],
+    "FR-013": [
+      "FR_013_ValidTaskStatus"
+    ],
+    "FR-014": [
+      "FR_014_ByteEquivalent404",
+      "NoInformationLeakage",
+      "FR_011_CrossTeamIsolation"
+    ],
+    "FR-015": [
+      "FR_015_PerEditEventAudit",
+      "FR_015_ActorRoleSnapshot",
+      "AuditCompleteness",
+      "AttributionCorrectness"
+    ],
+    "FR-016": [
+      "FR_016_AuditSurvivesTaskDeletion",
+      "FR_016_AuditAppendOnly",
+      "AppendOnly"
+    ],
+    "FR-017": [
+      "FR_017_AuditReadableByTeamMembers"
+    ],
+    "FR-018": [
+      "FR_018_AuditRetention",
+      "AppendOnly"
+    ],
+    "FR-019": [
+      "FR_019_TeamScopedList"
+    ],
+    "FR-020": [
+      "FR_019_TeamScopedList"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "PermissionCompleteness",
+        "PrivilegeMonotonicity",
+        "FR_008_MemberCreateView"
+      ],
+      "rationale": "Clearing F_PermissionMatrix removes all constraints on PermMatrix.Allowed, allowing Alloy to pick a matrix where MemberRole -> PatchTask is allowed, directly violating LeastPrivilege. The injection forces exactly that forbidden entry into the matrix.",
+      "inject_violation": "fact MUTATE_PermissionMatrixViolation { MemberRole -> PatchTask in PermMatrix.Allowed }"
+    },
+    {
+      "fact_name": "F_OwnershipBasedWriteGrant",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_009_NonOwnerMemberDeniedWrite",
+        "FR_010_AdminWriteAnyTask"
+      ],
+      "rationale": "Clearing F_OwnershipBasedWriteGrant decouples wrGranted from ownership and role, allowing a write request where a non-owner member is granted access. The injection forces a concrete counterexample where a MemberRole non-owner has wrGranted = BTrue.",
+      "inject_violation": "fact MUTATE_OwnershipGrantViolation { some wr : WriteRequest | wr.wrCallerRole = MemberRole and wr.wrTask.taskOwner != wr.wrCaller and wr.wrGranted = BTrue }"
+    },
+    {
+      "fact_name": "F_DeletedAuditExists",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_016_AuditSurvivesTaskDeletion",
+        "FR_016_AuditAppendOnly"
+      ],
+      "rationale": "Removing F_DeletedAuditExists allows a DeletedTask to exist with no CKDeleted audit entry, directly violating AuditCompleteness and FR_016_AuditSurvivesTaskDeletion. The injection forces a deleted task with no deleted audit entry.",
+      "inject_violation": "fact MUTATE_DeletedAuditMissing { some t : DeletedTask | no ae : AuditEntry | ae.aeTask = t and ae.aeChangeKind = CKDeleted }"
+    },
+    {
+      "fact_name": "F_AuditTeamConsistency",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "FR_014_ByteEquivalent404",
+        "FR_011_CrossTeamIsolation",
+        "AttributionCorrectness"
+      ],
+      "rationale": "Clearing F_AuditTeamConsistency allows an audit entry to reference a team different from the task's team, meaning a cross-team access left a trace. The injection forces an audit entry whose aeTeam differs from its task's team.",
+      "inject_violation": "fact MUTATE_CrossTeamAuditLeak { some ae : AuditEntry, t : Team | ae.aeTeam = t and t != ae.aeTask.taskTeam }"
+    },
+    {
+      "fact_name": "F_CreatedAuditExists",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "AppendOnly",
+        "FR_015_PerEditEventAudit"
+      ],
+      "rationale": "Removing F_CreatedAuditExists allows a task to exist without a CKCreated audit entry, violating the invariant that every task has a creation record. The injection forces a task with no CKCreated entry at all.",
+      "inject_violation": "fact MUTATE_CreatedAuditMissing { some t : Task | no ae : AuditEntry | ae.aeTask = t and ae.aeChangeKind = CKCreated }"
+    },
+    {
+      "fact_name": "F_AuditActorMembership",
+      "asserts_violated": [
+        "AttributionCorrectness",
+        "AuthRequiredEverywhere",
+        "FR_001_AuthRequired",
+        "ValidationBeforeMutation"
+      ],
+      "rationale": "Clearing F_AuditActorMembership allows an audit entry whose actor has no membership in the entry's team, meaning an unauthenticated or cross-team caller left a trace. The injection forces an audit entry with an actor who has no TeamMembership at all.",
+      "inject_violation": "fact MUTATE_UnauthoredAuditEntry { some ae : AuditEntry | no m : TeamMembership | m.mbUser = ae.aeActor and m.mbTeam = ae.aeTeam }"
+    }
+  ]
+}

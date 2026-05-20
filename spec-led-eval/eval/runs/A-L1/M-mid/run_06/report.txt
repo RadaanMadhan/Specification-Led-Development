@@ -1,0 +1,132 @@
+==============================================================================
+  Design Compliance Report  (Phase 3 — feature_model.als)
+  feature       : A-L1
+  spec source   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/eval/specs/A-L1
+  alloy model   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/A-L1/feature_model.als
+  patterns      : LeastPrivilege, PermissionCompleteness, AuditCompleteness, AppendOnly, AttributionCorrectness, OwnershipExclusivity, OwnershipBasedAccess, NoInformationLeakage, ValidationBeforeMutation, ConcurrencySafety
+  fr count      : 17 declared in spec.md
+  assertions    : 22 total (18/22 PASS via Alloy)
+==============================================================================
+
+  Compliance matrix
+  ----------------------------------------------------------------------------
+  Assertion                        Verdict   Anchor
+  ---------------------------------------------------------------------
+  LeastPrivilege                   PASS      PATTERN LeastPrivilege: contracts/http-api.md permission matrix; spec.md FR-015
+  PermissionCompleteness           PASS      PATTERN PermissionCompleteness: contracts/http-api.md permission matrix
+  AuditCompleteness                PASS      PATTERN AuditCompleteness: spec.md FR-016; data-model.md ApplicationEvent
+  AppendOnly                       FAIL      PATTERN AppendOnly: spec.md FR-016; data-model.md "No UPDATE/DELETE … application_events"
+  AttributionCorrectness           PASS      PATTERN AttributionCorrectness: spec.md FR-016; data-model.md actor_user_id
+  OwnershipExclusivity             PASS      PATTERN OwnershipExclusivity: data-model.md LoanApplication.customer_id
+  OwnershipBasedAccess             PASS      PATTERN OwnershipBasedAccess: spec.md FR-013; contracts/http-api.md GetApplicationByRef
+  NoInformationLeakage             PASS      PATTERN NoInformationLeakage: spec.md FR-013; contracts/http-api.md 404-not-403 rule
+  ValidationBeforeMutation         PASS      PATTERN ValidationBeforeMutation: spec.md FR-002; data-model.md validation.py
+  ConcurrencySafety                PASS      PATTERN ConcurrencySafety: spec.md FR-012, SC-005; data-model.md conditional UPDATE
+  FR_001_CustomerCanSubmit         PASS      FEATURE-SPECIFIC: FR-001 authenticated customer submits application
+  FR_004_UniqueReferenceAndStatus  PASS      FEATURE-SPECIFIC: FR-004 unique reference and submitted status
+  FR_005_OnePendingPerCustomer     PASS      FEATURE-SPECIFIC: FR-005 one pending application per customer
+  FR_009_DecisionRequiresReason    FAIL      FEATURE-SPECIFIC: FR-009 non-empty reason required on decision
+  FR_010_DecisionPersisted         PASS      FEATURE-SPECIFIC: FR-010 decision persisted with all required fields
+  FR_011_NoReDecision              PASS      FEATURE-SPECIFIC: FR-011 no further decision changes once decided
+  FR_012_ConcurrentDecisionSafety  PASS      FEATURE-SPECIFIC: FR-012 concurrent decisions resolved — only first wins
+  FR_013_CustomerSeesOwnOnly       PASS      FEATURE-SPECIFIC: FR-013 customer sees only own applications; SC-004
+  FR_014_NotificationOnDecision    PASS      FEATURE-SPECIFIC: FR-014 customer notified on status change
+  FR_015_StaffOnlyDecisions        PASS      FEATURE-SPECIFIC: FR-015 decision actions restricted to bank_staff; SC-004
+  FR_016_AuditTrail                FAIL      FEATURE-SPECIFIC: FR-016 audit trail of all status changes
+  FR_017_RetentionAfterDecision    FAIL      FEATURE-SPECIFIC: FR-017 retention — decided applications are not deleted
+
+  Counterexamples (Alloy SAT)
+  ----------------------------------------------------------------------------
+  AppendOnly  [PATTERN AppendOnly: spec.md FR-016; data-model.md "No UPDATE/DELETE … application_events"]
+    Alloy: 03. check AppendOnly               0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR_009_DecisionRequiresReason  [FEATURE-SPECIFIC: FR-009 non-empty reason required on decision]
+    Alloy: 13. check FR_009_DecisionRequiresReason     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR_016_AuditTrail  [FEATURE-SPECIFIC: FR-016 audit trail of all status changes]
+    Alloy: 20. check FR_016_AuditTrail        0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR_017_RetentionAfterDecision  [FEATURE-SPECIFIC: FR-017 retention — decided applications are not deleted]
+    Alloy: 21. check FR_017_RetentionAfterDecision     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR coverage
+  ----------------------------------------------------------------------------
+  FR-001  →  FR_001_CustomerCanSubmit=PASS, LeastPrivilege=PASS
+  FR-002  →  ValidationBeforeMutation=PASS
+  FR-003  →  ValidationBeforeMutation=PASS
+  FR-004  →  FR_004_UniqueReferenceAndStatus=PASS
+  FR-005  →  FR_005_OnePendingPerCustomer=PASS
+  FR-006  →  FR_004_UniqueReferenceAndStatus=PASS
+  FR-007  →  LeastPrivilege=PASS, PermissionCompleteness=PASS
+  FR-008  →  LeastPrivilege=PASS, PermissionCompleteness=PASS
+  FR-009  →  FR_009_DecisionRequiresReason=FAIL, ValidationBeforeMutation=PASS
+  FR-010  →  FR_010_DecisionPersisted=PASS, AttributionCorrectness=PASS
+  FR-011  →  FR_011_NoReDecision=PASS
+  FR-012  →  FR_012_ConcurrentDecisionSafety=PASS, ConcurrencySafety=PASS
+  FR-013  →  FR_013_CustomerSeesOwnOnly=PASS, OwnershipBasedAccess=PASS, NoInformationLeakage=PASS
+  FR-014  →  FR_014_NotificationOnDecision=PASS
+  FR-015  →  FR_015_StaffOnlyDecisions=PASS, LeastPrivilege=PASS
+  FR-016  →  FR_016_AuditTrail=FAIL, AuditCompleteness=PASS, AppendOnly=FAIL, AttributionCorrectness=PASS
+  FR-017  →  FR_017_RetentionAfterDecision=FAIL
+
+  All FRs have at least one matching assertion.
+
+==============================================================================
+  Mutation tests  (assertion-strength validation)
+==============================================================================
+
+  Strategy: replace each named fact's body with `{}` (no constraint),
+  then re-run Alloy. Each listed assertion should now FAIL on the
+  mutated model. If it still PASSes, the assertion is vacuous and
+  must be strengthened.
+
+  - MUTATE F_PermissionMatrix  → runs/A-L1/mutated_F_PermissionMatrix.als
+    rationale: Clearing F_PermissionMatrix removes the closed-world definition of the allowed set; injecting a violation that adds Customer->PostDecision to the allowed set directly contradicts the LeastPrivilege and FR_015_StaffOnlyDecisions assertions, which check that customers cannot record decisions.
+    expected to FAIL: LeastPrivilege, FR_001_CustomerCanSubmit, FR_015_StaffOnlyDecisions
+      - LeastPrivilege: FAIL (expected)
+      - FR_001_CustomerCanSubmit: FAIL (expected)
+      - FR_015_StaffOnlyDecisions: FAIL (expected)
+
+  - MUTATE F_OnePendingPerCustomer  → runs/A-L1/mutated_F_OnePendingPerCustomer.als
+    rationale: Clearing F_OnePendingPerCustomer removes the constraint that prevents two PendingReview applications from sharing the same owner. Injecting two distinct applications in PendingReview with the same owner forces the FR_005 assertion to find a counterexample.
+    expected to FAIL: FR_005_OnePendingPerCustomer
+      - FR_005_OnePendingPerCustomer: FAIL (expected)
+
+  - MUTATE F_AuditSubmitEvent  → runs/A-L1/mutated_F_AuditSubmitEvent.als
+    rationale: Clearing F_AuditSubmitEvent allows a LoanApplication to exist with no EvSubmitted audit event. Injecting an application that has no corresponding submission event forces the AuditCompleteness and FR_016_AuditTrail assertions to fail.
+    expected to FAIL: AuditCompleteness, AppendOnly, FR_016_AuditTrail
+      - AuditCompleteness: FAIL (expected)
+      - AppendOnly: FAIL (expected)
+      - FR_016_AuditTrail: FAIL (expected)
+
+  - MUTATE F_DecisionByStaff  → runs/A-L1/mutated_F_DecisionByStaff.als
+    rationale: Clearing F_DecisionByStaff allows a Customer-role User to appear as decidedBy on a Decision. Injecting such a Decision forces FR_015_StaffOnlyDecisions and AttributionCorrectness to fail because they assert all decisions are made by BankStaff.
+    expected to FAIL: FR_015_StaffOnlyDecisions, AttributionCorrectness
+      - FR_015_StaffOnlyDecisions: FAIL (expected)
+      - AttributionCorrectness: PASS (vacuous?)
+
+  - MUTATE F_DecisionInjectivity  → runs/A-L1/mutated_F_DecisionInjectivity.als
+    rationale: Clearing F_DecisionInjectivity removes the constraint that a Decision object can belong to at most one LoanApplication. Injecting two distinct applications that share the same Decision atom simulates the dual-decision scenario that FR-012 forbids.
+    expected to FAIL: ConcurrencySafety, FR_012_ConcurrentDecisionSafety
+      - ConcurrencySafety: FAIL (expected)
+      - FR_012_ConcurrentDecisionSafety: FAIL (expected)
+
+  - MUTATE F_AuditSubmitActorIsOwner  → runs/A-L1/mutated_F_AuditSubmitActorIsOwner.als
+    rationale: Clearing F_AuditSubmitActorIsOwner allows a EvSubmitted event to be attributed to a User who is not the application's owner. Injecting such a misattribution directly violates AttributionCorrectness and FR_013_CustomerSeesOwnOnly, which assert the submit-event actor is always the owning customer.
+    expected to FAIL: AttributionCorrectness, FR_013_CustomerSeesOwnOnly
+      - AttributionCorrectness: FAIL (expected)
+      - FR_013_CustomerSeesOwnOnly: FAIL (expected)
+
+  Mutation summary
+  ----------------------------------------------------------------------------
+  - F_PermissionMatrix: ASSERTIONS BIT (LeastPrivilege, FR_001_CustomerCanSubmit, FR_015_StaffOnlyDecisions)
+  - F_OnePendingPerCustomer: ASSERTIONS BIT (FR_005_OnePendingPerCustomer)
+  - F_AuditSubmitEvent: ASSERTIONS BIT (AuditCompleteness, AppendOnly, FR_016_AuditTrail)
+  - F_DecisionByStaff: ASSERTION VACUOUS (FR_015_StaffOnlyDecisions, AttributionCorrectness)
+  - F_DecisionInjectivity: ASSERTIONS BIT (ConcurrencySafety, FR_012_ConcurrentDecisionSafety)
+  - F_AuditSubmitActorIsOwner: ASSERTIONS BIT (AttributionCorrectness, FR_013_CustomerSeesOwnOnly)
+

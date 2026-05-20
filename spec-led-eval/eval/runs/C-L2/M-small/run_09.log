@@ -1,0 +1,41 @@
+$ /Users/leonhausmann/opt/anaconda3/bin/python3 -m speceval.cli verify-design --no-cache --model M-small --java-bin /Users/leonhausmann/opt/anaconda3/lib/python3.9/site-packages/jdk4py/java-runtime/bin/java /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/eval/specs/C-L2
+
+[parse]   feature 'C-L2', 20 FRs, 3 user stories
+[lift]    calling LLM (anthropic: tier=M-small, model=claude-haiku-4-5)...
+[lift]    fresh lift (sha=c62c500ceec9)
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/C-L2/feature_model.als
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/C-L2/cost_log.json
+[alloy]   running alloy.jar on feature_model.als...
+[error]   Alloy produced no parseable verdicts. Raw output:
+--- alloy stdout ---
+
+--- alloy stderr ---
+[main] ERROR alloy - excuting sub command CLI:exec error Syntax error in /private/var/folders/fj/1zqdpxbj0b1g_r10m_bwm16m0000gn/T/speceval_3iu6jsmb/model.als at line 40 column 18:
+The name "Bool" cannot be found.
+Syntax error in /private/var/folders/fj/1zqdpxbj0b1g_r10m_bwm16m0000gn/T/speceval_3iu6jsmb/model.als at line 40 column 18:
+The name "Bool" cannot be found.
+	at edu.mit.csail.sdg.parser.CompModule.hint(CompModule.java:975)
+	at edu.mit.csail.sdg.parser.CompModule$Context.resolve(CompModule.java:404)
+	at edu.mit.csail.sdg.parser.CompModule$Context.visit(CompModule.java:658)
+	at edu.mit.csail.sdg.parser.CompModule$Context.visit(CompModule.java:269)
+	at edu.mit.csail.sdg.ast.ExprVar.accept(ExprVar.java:87)
+	at edu.mit.csail.sdg.ast.VisitReturn.visitThis(VisitReturn.java:35)
+	at edu.mit.csail.sdg.parser.CompModule$Context.visit(CompModule.java:672)
+	at edu.mit.csail.sdg.parser.CompModule$Context.visit(CompModule.java:269)
+	at edu.mit.csail.sdg.ast.ExprUnary.accept(ExprUnary.java:526)
+	at edu.mit.csail.sdg.ast.VisitReturn.visitThis(VisitReturn.java:35)
+	at edu.mit.csail.sdg.parser.CompModule$Context.check(CompModule.java:410)
+	at edu.mit.csail.sdg.parser.CompModule.resolveFieldDecl(CompModule.java:2099)
+	at edu.mit.csail.sdg.parser.CompModule.resolveAll(CompModule.java:2272)
+	at edu.mit.csail.sdg.parser.CompUtil.parseEverything_fromFile(CompUtil.java:385)
+	at org.alloytools.alloy.cli.CLI._exec(CLI.java:176)
+	at aQute.lib.getopt.CommandLine.execute(CommandLine.java:158)
+	at org.alloytools.alloy.core.infra.AlloyDispatcher.__alloy(AlloyDispatcher.java:154)
+	at aQute.lib.getopt.CommandLine.execute(CommandLine.java:158)
+	at org.alloytools.alloy.core.infra.AlloyDispatcher.main(AlloyDispatcher.java:110)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(Unknown Source)
+	at java.base/java.lang.reflect.Method.invoke(Unknown Source)
+	at org.alloytools.alloy.core.infra.Alloy.main(Alloy.java:85)
+Error
+  0. [CompModule.hint] executing CLI:exec
+

@@ -1,0 +1,169 @@
+{
+  "feature_id": "B-L2",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "PermissionGrounding",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage"
+  ],
+  "feature_specific_predicates": [
+    "FR_005_TaskTeamImmutable",
+    "FR_006_OwnerImmutable",
+    "FR_007_OneRolePerUserPerTeam",
+    "FR_012_TaskFieldsRequired",
+    "FR_013_ValidTaskStatus",
+    "FR_015_AuditTrailShape",
+    "FR_016_AuditOutliveTask",
+    "FR_017_AuditVisibleToTeamMembers",
+    "SC_004_NoCrossTenantAccess",
+    "SC_005_EditDeleteOnlyOwnerAdmin",
+    "SC_007_CompleteAuditTrail",
+    "SC_008_AuditImmutability"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "AuthRequiredEverywhere"
+    ],
+    "FR-003": [
+      "NoInformationLeakage",
+      "SC_004_NoCrossTenantAccess"
+    ],
+    "FR-004": [
+      "NoInformationLeakage",
+      "SC_004_NoCrossTenantAccess"
+    ],
+    "FR-005": [
+      "FR_005_TaskTeamImmutable"
+    ],
+    "FR-006": [
+      "FR_006_OwnerImmutable",
+      "OwnershipExclusivity"
+    ],
+    "FR-007": [
+      "FR_007_OneRolePerUserPerTeam"
+    ],
+    "FR-008": [
+      "LeastPrivilege",
+      "OwnershipBasedAccess"
+    ],
+    "FR-009": [
+      "OwnershipBasedAccess",
+      "SC_005_EditDeleteOnlyOwnerAdmin"
+    ],
+    "FR-010": [
+      "LeastPrivilege",
+      "OwnershipBasedAccess"
+    ],
+    "FR-011": [
+      "NoInformationLeakage",
+      "SC_004_NoCrossTenantAccess"
+    ],
+    "FR-012": [
+      "FR_012_TaskFieldsRequired"
+    ],
+    "FR-013": [
+      "FR_013_ValidTaskStatus"
+    ],
+    "FR-014": [
+      "NoInformationLeakage",
+      "SC_004_NoCrossTenantAccess"
+    ],
+    "FR-015": [
+      "AuditCompleteness",
+      "AppendOnly",
+      "AttributionCorrectness",
+      "FR_015_AuditTrailShape"
+    ],
+    "FR-016": [
+      "AppendOnly",
+      "FR_016_AuditOutliveTask"
+    ],
+    "FR-017": [
+      "FR_017_AuditVisibleToTeamMembers"
+    ],
+    "FR-018": [
+      "AppendOnly",
+      "SC_008_AuditImmutability"
+    ],
+    "SC-004": [
+      "NoInformationLeakage",
+      "SC_004_NoCrossTenantAccess"
+    ],
+    "SC-005": [
+      "SC_005_EditDeleteOnlyOwnerAdmin"
+    ],
+    "SC-006": [
+      "AuthRequiredEverywhere"
+    ],
+    "SC-007": [
+      "AuditCompleteness",
+      "SC_007_CompleteAuditTrail"
+    ],
+    "SC-008": [
+      "AppendOnly",
+      "SC_008_AuditImmutability"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "PermissionCompleteness",
+        "PermissionGrounding"
+      ],
+      "rationale": "Removing the permission matrix definition allows Alloy to invent unauthorized (Role -> OperationKind) pairs, violating the least-privilege and permission-grounding invariants. This fact is load-bearing for the authorization model.",
+      "inject_violation": "fact MUTATE_PermissionMatrixViolation { Member -> EditTask in PermMatrix.Allowed }"
+    },
+    {
+      "fact_name": "F_OwnershipExclusivity",
+      "asserts_violated": [
+        "OwnershipExclusivity"
+      ],
+      "rationale": "Removing this fact allows a Task to have multiple owners or no owner, which directly violates the OwnershipExclusivity assertion that every task has exactly one owner.",
+      "inject_violation": "fact MUTATE_MultipleOwnersViolation { some t: Task | #(t.owner) > 1 }"
+    },
+    {
+      "fact_name": "F_OwnershipBasedAccess",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "SC_005_EditDeleteOnlyOwnerAdmin"
+      ],
+      "rationale": "Removing this fact removes the constraint that members can only edit/delete their own tasks. The assertion will then find a counterexample where a non-owner member can edit a task they don't own.",
+      "inject_violation": "fact MUTATE_NonOwnerEditViolation { some t: Task, u: User, m: TeamMembership | m.user = u and m.team = t.team and m.role = Member and u != t.owner and EditTask -> u in PermMatrix.Allowed }"
+    },
+    {
+      "fact_name": "F_AuditCompleteness",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "SC_007_CompleteAuditTrail"
+      ],
+      "rationale": "Removing this fact allows Tasks to exist without any audit entry. The AuditCompleteness assertion will then fail to find an audit entry for some task.",
+      "inject_violation": "fact MUTATE_MissingAuditEntryViolation { some t: Task | no ae: AuditEntry | ae.task = t }"
+    },
+    {
+      "fact_name": "F_AppendOnlyAuditEntries",
+      "asserts_violated": [
+        "AppendOnly",
+        "SC_008_AuditImmutability"
+      ],
+      "rationale": "Removing this fact removes the constraint that audit entries are uniquely identified and immutable. The AppendOnly assertion will find duplicate audit entries for the same task at the same time by the same actor.",
+      "inject_violation": "fact MUTATE_DuplicateAuditViolation { some disj ae1, ae2: AuditEntry | ae1.task = ae2.task and ae1.occurred_at = ae2.occurred_at and ae1.actor = ae2.actor }"
+    },
+    {
+      "fact_name": "F_CrossTeamIsolation",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "SC_004_NoCrossTenantAccess"
+      ],
+      "rationale": "Removing this fact removes the constraint that users can only access tasks in teams they belong to. The NoInformationLeakage assertion will then find a user from one team accessing (via audit entry actor role) a task from a different team.",
+      "inject_violation": "fact MUTATE_CrossTeamLeakViolation { some t: Task, u: User, ae: AuditEntry | ae.task = t and ae.actor = u and no m: TeamMembership | m.user = u and m.team = t.team }"
+    }
+  ]
+}

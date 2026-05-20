@@ -1,0 +1,157 @@
+{
+  "feature_id": "A-L2",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_CustomerLeastPriv",
+    "FR_003_OfficerOperations",
+    "FR_004_ComplianceReadOnly",
+    "FR_005_CustomerSubmits",
+    "FR_008_OneInFlight",
+    "FR_009_InitialAuditEntry",
+    "FR_011_ClaimTransition",
+    "FR_012_OneOfficerPerApp",
+    "FR_013_OnlyAssignedDecides",
+    "FR_015_AtomicDecisionAudit",
+    "FR_016_NoFurtherChanges",
+    "FR_017_AuditEntryPerChange",
+    "FR_018_AuditAppendOnly",
+    "FR_019_ExactlyOnePerChange",
+    "FR_020_CustomerOwnAppsOnly",
+    "FR_021_OfficerHiddenFromCustomer",
+    "FR_023_ComplianceNoWrite"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "LeastPrivilege"
+    ],
+    "FR-002": [
+      "FR_002_CustomerLeastPriv",
+      "LeastPrivilege"
+    ],
+    "FR-003": [
+      "FR_003_OfficerOperations",
+      "LeastPrivilege"
+    ],
+    "FR-004": [
+      "FR_004_ComplianceReadOnly",
+      "LeastPrivilege"
+    ],
+    "FR-005": [
+      "FR_005_CustomerSubmits"
+    ],
+    "FR-008": [
+      "FR_008_OneInFlight"
+    ],
+    "FR-009": [
+      "FR_009_InitialAuditEntry",
+      "AuditCompleteness"
+    ],
+    "FR-011": [
+      "FR_011_ClaimTransition"
+    ],
+    "FR-012": [
+      "FR_012_OneOfficerPerApp"
+    ],
+    "FR-013": [
+      "FR_013_OnlyAssignedDecides"
+    ],
+    "FR-015": [
+      "FR_015_AtomicDecisionAudit"
+    ],
+    "FR-016": [
+      "FR_016_NoFurtherChanges"
+    ],
+    "FR-017": [
+      "FR_017_AuditEntryPerChange",
+      "AttributionCorrectness",
+      "AuditCompleteness"
+    ],
+    "FR-018": [
+      "FR_018_AuditAppendOnly",
+      "AppendOnly"
+    ],
+    "FR-019": [
+      "FR_019_ExactlyOnePerChange",
+      "AppendOnly"
+    ],
+    "FR-020": [
+      "FR_020_CustomerOwnAppsOnly",
+      "OwnershipBasedAccess"
+    ],
+    "FR-021": [
+      "FR_021_OfficerHiddenFromCustomer"
+    ],
+    "FR-023": [
+      "FR_023_ComplianceNoWrite",
+      "LeastPrivilege"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_LeastPrivilegeOutcome",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_001_AuthRequired",
+        "FR_002_CustomerLeastPriv",
+        "FR_023_ComplianceNoWrite"
+      ],
+      "rationale": "F_LeastPrivilegeOutcome is the load-bearing fact that maps disallowed (role,kind) pairs to a Denied outcome. Clearing it removes the deny-side enforcement; the injection forces an Operation whose (caller.role -> kind) is not in PermMatrix.Allowed yet whose outcome is OK, directly contradicting LeastPrivilege's 'outcome=OK implies in matrix' clause.",
+      "inject_violation": "fact MUTATE_LeastPrivilegeViolation { some op: Operation | (op.caller.role -> op.kind) not in PermMatrix.Allowed and op.outcome = OK }"
+    },
+    {
+      "fact_name": "F_AppendOnlyAuditEntries",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_018_AuditAppendOnly",
+        "FR_019_ExactlyOnePerChange"
+      ],
+      "rationale": "F_AppendOnlyAuditEntries forbids two AuditEntry atoms recording the same (application, prev, new) triple \u2014 the structural encoding of 'no duplicates, no mutation through replacement'. Removing it lets the model invent a duplicate entry, and the injection forces exactly that, which the AppendOnly assertion is supposed to catch.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some disj e1, e2: AuditEntry | e1.application = e2.application and e1.previousStatus = e2.previousStatus and e1.newStatus = e2.newStatus }"
+    },
+    {
+      "fact_name": "F_CustomerOwnershipForGet",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_020_CustomerOwnAppsOnly"
+      ],
+      "rationale": "F_CustomerOwnershipForGet enforces that a customer's GetApp against an application they don't own is denied (matching the contract's 404 no-existence-leak rule). Clearing it allows successful cross-customer reads; the injection produces a customer Operation with OK outcome on someone else's application, violating OwnershipBasedAccess.",
+      "inject_violation": "fact MUTATE_OwnershipViolation { some op: Operation | op.caller.role = Customer and op.kind = OpGetApp and op.outcome = OK and some op.target and op.target.customer != op.caller }"
+    },
+    {
+      "fact_name": "F_OneInFlightPerCustomer",
+      "asserts_violated": [
+        "FR_008_OneInFlight"
+      ],
+      "rationale": "F_OneInFlightPerCustomer is the Alloy encoding of the partial unique index idx_one_in_flight_per_customer. Clearing it lets two in-flight applications coexist for the same customer; the injection forces such a pair, which the FR-008 assertion explicitly forbids.",
+      "inject_violation": "fact MUTATE_OneInFlightViolation { some disj a1, a2: LoanApplication | a1.customer = a2.customer and a1.status = Submitted and a2.status = Submitted }"
+    },
+    {
+      "fact_name": "F_DecideRequiresAssignedOfficer",
+      "asserts_violated": [
+        "FR_013_OnlyAssignedDecides"
+      ],
+      "rationale": "F_DecideRequiresAssignedOfficer ties a successful OpDecide to the application's assigned officer (matching the conditional UPDATE \u2026 WHERE assigned_officer_id=?). Clearing it lets a non-assigned officer decide; the injection produces an OpDecide with OK outcome whose caller is not the assigned officer, breaking FR-013.",
+      "inject_violation": "fact MUTATE_DecideAssignedViolation { some op: Operation | op.kind = OpDecide and op.outcome = OK and some op.target and some op.target.assignedOfficer and op.target.assignedOfficer != op.caller }"
+    },
+    {
+      "fact_name": "F_AuditAttribution",
+      "asserts_violated": [
+        "AttributionCorrectness",
+        "FR_009_InitialAuditEntry",
+        "FR_017_AuditEntryPerChange"
+      ],
+      "rationale": "F_AuditAttribution forces each audit entry's actor to match the responsible party (customer for initial, assigned officer for claim/decide). Clearing it permits misattribution; the injection creates an initial entry whose actor is not the application's customer, directly contradicting AttributionCorrectness.",
+      "inject_violation": "fact MUTATE_AttributionViolation { some e: AuditEntry | no e.previousStatus and e.newStatus = Submitted and e.actor != e.application.customer }"
+    }
+  ]
+}

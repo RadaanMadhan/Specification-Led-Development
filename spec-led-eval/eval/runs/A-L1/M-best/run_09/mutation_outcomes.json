@@ -1,0 +1,42 @@
+{
+  "F_LeastPrivilege": {
+    "targeted_asserts": {
+      "LeastPrivilege": "BIT",
+      "FR_015_OnlyStaffDecides": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_OnePendingPerCustomer": {
+    "targeted_asserts": {
+      "FR_005_OnePendingPerCustomer": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_OneSubmittedEventPerApp": {
+    "targeted_asserts": {
+      "AuditCompleteness": "BIT",
+      "FR_016_AuditTrail": "BIT",
+      "AppendOnly": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_OwnershipBasedAccess": {
+    "targeted_asserts": {
+      "OwnershipBasedAccess": "BIT",
+      "FR_013_CustomerOwnAccess": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_SubmittedEventAttribution": {
+    "targeted_asserts": {
+      "AttributionCorrectness": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_DecisionReasonNonEmpty": {
+    "targeted_asserts": {
+      "FR_009_DecisionReasonRequired": "BIT"
+    },
+    "all_bit": true
+  }
+}

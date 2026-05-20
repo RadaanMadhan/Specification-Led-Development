@@ -1,0 +1,128 @@
+==============================================================================
+  Design Compliance Report  (Phase 3 — feature_model.als)
+  feature       : A-L3
+  spec source   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/eval/specs/A-L3
+  alloy model   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/A-L3/feature_model.als
+  patterns      : LeastPrivilege, PermissionCompleteness, AuthRequiredEverywhere, AuditCompleteness, AppendOnly, AttributionCorrectness, OwnershipExclusivity, OwnershipBasedAccess, NoInformationLeakage, NoSelfMutation, ValidationBeforeMutation
+  fr count      : 24 declared in spec.md
+  assertions    : 28 total (28/28 PASS via Alloy)
+==============================================================================
+
+  Compliance matrix
+  ----------------------------------------------------------------------------
+  Assertion                                    Verdict   Anchor
+  ---------------------------------------------------------------------------------
+  LeastPrivilege                               PASS      PATTERN LeastPrivilege: contracts/http-api.md permission table; spec.md FR-003, FR-004, FR-005
+  PermissionCompleteness                       PASS      PATTERN PermissionCompleteness: contracts/http-api.md permission table
+  AuthRequiredEverywhere                       PASS      PATTERN AuthRequiredEverywhere: spec.md FR-001; contracts/http-api.md auth section
+  AuditCompleteness                            PASS      PATTERN AuditCompleteness: spec.md FR-016, FR-017; data-model.md UNIQUE(initial entry per app)
+  AppendOnly                                   PASS      PATTERN AppendOnly: spec.md FR-018, FR-019; data-model.md "no UPDATE/DELETE" notes
+  AttributionCorrectness                       PASS      PATTERN AttributionCorrectness: spec.md FR-016; data-model.md audit-entry fields
+  OwnershipExclusivity                         PASS      PATTERN OwnershipExclusivity: data-model.md LoanApplication.applicant_id; spec.md FR-006
+  OwnershipBasedAccess                         PASS      PATTERN OwnershipBasedAccess: spec.md FR-003, FR-020; contracts/http-api.md permission table
+  NoInformationLeakage                         PASS      PATTERN NoInformationLeakage: spec.md FR-020, FR-021, FR-022; contracts/http-api.md byte-equiv not-found
+  NoSelfMutation                               PASS      (no anchor comment found)
+  ValidationBeforeMutation                     PASS      PATTERN ValidationBeforeMutation: spec.md FR-001, FR-006, FR-014; data-model.md atomicity
+  FR_001_AuthRequired                          PASS      FEATURE-SPECIFIC: FR-001
+  FR_002_RoleMutualExclusion                   PASS      FEATURE-SPECIFIC: FR-002
+  FR_003_ApplicantPermissions                  PASS      FEATURE-SPECIFIC: FR-003
+  FR_004_OfficerPermissions                    PASS      FEATURE-SPECIFIC: FR-004
+  FR_005_AuditorReadOnly                       PASS      FEATURE-SPECIFIC: FR-005
+  FR_008_OneInFlightPerApplicant               PASS      FEATURE-SPECIFIC: FR-008
+  FR_009_ValidTransitions                      PASS      FEATURE-SPECIFIC: FR-009
+  FR_011_NoSelfAssignment                      PASS      FEATURE-SPECIFIC: FR-011
+  FR_012_OnlyAssignedOfficerCanPatch           PASS      FEATURE-SPECIFIC: FR-012
+  FR_013_NoSelfApproval                        PASS      FEATURE-SPECIFIC: FR-013
+  FR_015_NoTransitionFromTerminal              PASS      FEATURE-SPECIFIC: FR-015
+  FR_016_AuditEntryFields                      PASS      FEATURE-SPECIFIC: FR-016; data-model.md audit-entry fields
+  FR_018_AuditImmutable                        PASS      FEATURE-SPECIFIC: FR-018; data-model.md append-only invariant
+  FR_019_AuditRetention                        PASS      FEATURE-SPECIFIC: FR-019; spec.md 6-year retention
+  FR_020_ByteEquivalentUnauthorized            PASS      FEATURE-SPECIFIC: FR-020, FR-021; contracts/http-api.md byte-equivalent not-found
+  FR_023_AuditEndpointAuditorOnly              PASS      FEATURE-SPECIFIC: FR-023; contracts/http-api.md audit endpoint
+  FR_024_ApplicantCannotModifyAfterSubmission  PASS      FEATURE-SPECIFIC: FR-024; spec.md immutability of applicant-submitted data
+
+  FR coverage
+  ----------------------------------------------------------------------------
+  FR-001  →  FR_001_AuthRequired=PASS, AuthRequiredEverywhere=PASS
+  FR-002  →  FR_002_RoleMutualExclusion=PASS
+  FR-003  →  FR_003_ApplicantPermissions=PASS, LeastPrivilege=PASS
+  FR-004  →  FR_004_OfficerPermissions=PASS, LeastPrivilege=PASS
+  FR-005  →  FR_005_AuditorReadOnly=PASS, LeastPrivilege=PASS
+  FR-006  →  OwnershipExclusivity=PASS
+  FR-007  →  ValidationBeforeMutation=PASS
+  FR-008  →  FR_008_OneInFlightPerApplicant=PASS
+  FR-009  →  FR_009_ValidTransitions=PASS
+  FR-010  →  FR_011_NoSelfAssignment=PASS, AttributionCorrectness=PASS
+  FR-011  →  FR_011_NoSelfAssignment=PASS
+  FR-012  →  FR_012_OnlyAssignedOfficerCanPatch=PASS
+  FR-013  →  FR_013_NoSelfApproval=PASS, NoSelfMutation=PASS
+  FR-014  →  ValidationBeforeMutation=PASS
+  FR-015  →  FR_015_NoTransitionFromTerminal=PASS
+  FR-016  →  FR_016_AuditEntryFields=PASS, AuditCompleteness=PASS, AttributionCorrectness=PASS
+  FR-017  →  AuditCompleteness=PASS, ValidationBeforeMutation=PASS
+  FR-018  →  FR_018_AuditImmutable=PASS, AppendOnly=PASS
+  FR-019  →  FR_019_AuditRetention=PASS, AppendOnly=PASS
+  FR-020  →  FR_020_ByteEquivalentUnauthorized=PASS, NoInformationLeakage=PASS
+  FR-021  →  FR_020_ByteEquivalentUnauthorized=PASS, NoInformationLeakage=PASS
+  FR-022  →  NoInformationLeakage=PASS
+  FR-023  →  FR_023_AuditEndpointAuditorOnly=PASS
+  FR-024  →  FR_024_ApplicantCannotModifyAfterSubmission=PASS
+
+  All FRs have at least one matching assertion.
+
+==============================================================================
+  Mutation tests  (assertion-strength validation)
+==============================================================================
+
+  Strategy: replace each named fact's body with `{}` (no constraint),
+  then re-run Alloy. Each listed assertion should now FAIL on the
+  mutated model. If it still PASSes, the assertion is vacuous and
+  must be strengthened.
+
+  - MUTATE F_NoSelfApproval  → runs/A-L3/mutated_F_NoSelfApproval.als
+    rationale: Removing F_NoSelfApproval allows the model to construct an AuditEntry whose entryActor equals the application's appApplicant on a non-initial transition, directly violating the no-self-approval invariant. The injected fact forces exactly such a counterexample to exist.
+    expected to FAIL: NoSelfMutation, FR_013_NoSelfApproval
+      - NoSelfMutation: PASS (vacuous?)
+      - FR_013_NoSelfApproval: PASS (vacuous?)
+
+  - MUTATE F_PermissionMatrix  → runs/A-L3/mutated_F_PermissionMatrix.als
+    rationale: Clearing F_PermissionMatrix allows PermMatrix.Allowed to take any value, so a pure-officer user could appear to have unconditional POST permission and an auditor could have PATCH permission, breaking LeastPrivilege. The injection forces an officer→OpPost cell into PermMatrix.Allowed, which is exactly the cell that must be absent.
+    expected to FAIL: LeastPrivilege, PermissionCompleteness, FR_005_AuditorReadOnly, FR_004_OfficerPermissions
+      - LeastPrivilege: PASS (vacuous?)
+      - PermissionCompleteness: PASS (vacuous?)
+      - FR_005_AuditorReadOnly: PASS (vacuous?)
+      - FR_004_OfficerPermissions: PASS (vacuous?)
+
+  - MUTATE F_OneInFlightPerApplicant  → runs/A-L3/mutated_F_OneInFlightPerApplicant.als
+    rationale: Removing F_OneInFlightPerApplicant allows two LoanApplication atoms to share the same appApplicant while both are in Pending or UnderReview status. The injection creates exactly that scenario.
+    expected to FAIL: FR_008_OneInFlightPerApplicant
+      - FR_008_OneInFlightPerApplicant: PASS (vacuous?)
+
+  - MUTATE F_UniqueInitialAuditEntry  → runs/A-L3/mutated_F_UniqueInitialAuditEntry.als
+    rationale: Removing F_UniqueInitialAuditEntry allows either zero or two initial (none→pending) audit entries for a single application. The injection forces two distinct AuditEntry atoms to both be initial entries for the same application, violating uniqueness and the append-only deduplication invariant.
+    expected to FAIL: AuditCompleteness, FR_018_AuditImmutable, AppendOnly
+      - AuditCompleteness: PASS (vacuous?)
+      - FR_018_AuditImmutable: PASS (vacuous?)
+      - AppendOnly: PASS (vacuous?)
+
+  - MUTATE F_ValidAuditTransitions  → runs/A-L3/mutated_F_ValidAuditTransitions.als
+    rationale: Clearing F_ValidAuditTransitions allows an AuditEntry to record a forbidden transition such as Approved→UnderReview or Pending→Rejected. The injection forces a Rejected→Pending audit entry, violating both the valid-transitions invariant and terminal-status immutability.
+    expected to FAIL: FR_009_ValidTransitions, FR_015_NoTransitionFromTerminal
+      - FR_009_ValidTransitions: PASS (vacuous?)
+      - FR_015_NoTransitionFromTerminal: PASS (vacuous?)
+
+  - MUTATE F_AuditEndpointAuditorOnly  → runs/A-L3/mutated_F_AuditEndpointAuditorOnly.als
+    rationale: Removing F_AuditEndpointAuditorOnly permits a non-auditor (e.g., a pure applicant) to have a successful OpAudit operation, breaking the auditor-only gate on the audit endpoint. The injection forces such a successful non-auditor audit call to exist.
+    expected to FAIL: FR_023_AuditEndpointAuditorOnly, LeastPrivilege
+      - FR_023_AuditEndpointAuditorOnly: PASS (vacuous?)
+      - LeastPrivilege: PASS (vacuous?)
+
+  Mutation summary
+  ----------------------------------------------------------------------------
+  - F_NoSelfApproval: ASSERTION VACUOUS (NoSelfMutation, FR_013_NoSelfApproval)
+  - F_PermissionMatrix: ASSERTION VACUOUS (LeastPrivilege, PermissionCompleteness, FR_005_AuditorReadOnly, FR_004_OfficerPermissions)
+  - F_OneInFlightPerApplicant: ASSERTION VACUOUS (FR_008_OneInFlightPerApplicant)
+  - F_UniqueInitialAuditEntry: ASSERTION VACUOUS (AuditCompleteness, FR_018_AuditImmutable, AppendOnly)
+  - F_ValidAuditTransitions: ASSERTION VACUOUS (FR_009_ValidTransitions, FR_015_NoTransitionFromTerminal)
+  - F_AuditEndpointAuditorOnly: ASSERTION VACUOUS (FR_023_AuditEndpointAuditorOnly, LeastPrivilege)
+

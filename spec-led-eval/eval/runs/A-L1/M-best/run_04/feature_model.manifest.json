@@ -1,0 +1,126 @@
+{
+  "feature_id": "003-loan-application",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_004_SubmitterRecorded",
+    "FR_005_OnePendingPerCustomer",
+    "FR_008_StaffCanView",
+    "FR_009_NonEmptyReason",
+    "FR_010_DecisionRecorded",
+    "FR_011_DecidedImmutable",
+    "FR_012_AtMostOneDecision",
+    "FR_013_CustomerOwnAccess",
+    "FR_015_StaffOnlyDecision",
+    "FR_016_AuditAppendOnly"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-004": [
+      "FR_004_SubmitterRecorded",
+      "OwnershipExclusivity"
+    ],
+    "FR-005": [
+      "FR_005_OnePendingPerCustomer"
+    ],
+    "FR-008": [
+      "FR_008_StaffCanView"
+    ],
+    "FR-009": [
+      "FR_009_NonEmptyReason"
+    ],
+    "FR-010": [
+      "FR_010_DecisionRecorded"
+    ],
+    "FR-011": [
+      "FR_011_DecidedImmutable"
+    ],
+    "FR-012": [
+      "FR_012_AtMostOneDecision"
+    ],
+    "FR-013": [
+      "FR_013_CustomerOwnAccess",
+      "OwnershipBasedAccess",
+      "NoInformationLeakage"
+    ],
+    "FR-015": [
+      "FR_015_StaffOnlyDecision",
+      "LeastPrivilege"
+    ],
+    "FR-016": [
+      "FR_016_AuditAppendOnly",
+      "AuditCompleteness",
+      "AppendOnly",
+      "AttributionCorrectness"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_AppendOnlyAuditEntries",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_016_AuditAppendOnly"
+      ],
+      "rationale": "Removing this fact lifts the no-duplicate-per-(application,eventType) constraint; injecting two indistinguishable audit entries for the same application+event forces a counterexample within the Alloy scope, which both append-only assertions must detect.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some disj e1, e2: AuditEntry | e1.application = e2.application and e1.eventType = e2.eventType }"
+    },
+    {
+      "fact_name": "F_LeastPrivilege",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_015_StaffOnlyDecision"
+      ],
+      "rationale": "Removing this fact lets Alloy invent an Operation whose (role, kind) is not in the permission matrix; the injection forces a customer-issued PostDecision, which is a denied cell, so both the catalogue LeastPrivilege check and the staff-only-decision FR must fail.",
+      "inject_violation": "fact MUTATE_LeastPrivilegeViolation { some op: Operation | op.caller.role = Customer and op.kind = PostDecision }"
+    },
+    {
+      "fact_name": "F_AuditCompleteness",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_016_AuditAppendOnly"
+      ],
+      "rationale": "Removing this fact lets an application exist without a Submitted audit entry; injection forces such an application into existence within scope, so both the per-application Submitted-event check and the audit-completeness pattern must fail.",
+      "inject_violation": "fact MUTATE_AuditCompletenessViolation { some a: LoanApplication | (no e: AuditEntry | e.application = a and e.eventType = Submitted) }"
+    },
+    {
+      "fact_name": "F_OwnershipBasedAccess",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "NoInformationLeakage",
+        "FR_013_CustomerOwnAccess"
+      ],
+      "rationale": "Removing this fact lifts the customer/own-resource gate on GetApplicationById; the injection constructs an Operation where a customer successfully sees another customer's application, which is exactly the leak FR-013 and the two patterns must catch.",
+      "inject_violation": "fact MUTATE_OwnershipViolation { some op: Operation | op.caller.role = Customer and op.kind = GetApplicationById and some op.target and op.target.customer != op.caller and op.visibleResult = True }"
+    },
+    {
+      "fact_name": "F_AuthRequired",
+      "asserts_violated": [
+        "AuthRequiredEverywhere",
+        "FR_001_AuthRequired"
+      ],
+      "rationale": "Removing this fact lets an unauthenticated Operation reach a handler; the injection forces existence of an op with authenticated=False, which both auth-required assertions must reject.",
+      "inject_violation": "fact MUTATE_AuthViolation { some op: Operation | op.authenticated = False }"
+    },
+    {
+      "fact_name": "F_OnePendingPerCustomer",
+      "asserts_violated": [
+        "FR_005_OnePendingPerCustomer"
+      ],
+      "rationale": "Removing this fact lets one customer hold two simultaneous Pending Review applications; the injection makes two such applications co-exist for the same customer, which violates the partial unique index and so the FR-005 assertion.",
+      "inject_violation": "fact MUTATE_OnePendingViolation { some disj a1, a2: LoanApplication | a1.customer = a2.customer and a1.status = PendingReview and a2.status = PendingReview }"
+    }
+  ]
+}

@@ -1,0 +1,116 @@
+{
+  "feature_id": "A-L1",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AppendOnly",
+    "AuditCompleteness",
+    "AttributionCorrectness"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthenticatedCustomerSubmission",
+    "FR_002_FieldValidation",
+    "FR_003_AmountTermRange",
+    "FR_004_UniqueReferenceMetadata",
+    "FR_005_OnePendingPerCustomer",
+    "FR_009_NonEmptyReason",
+    "FR_010_DecisionRecording",
+    "FR_011_ImmutableDecision",
+    "FR_012_ConcurrentDecisionSafety",
+    "FR_013_CustomerIsolation",
+    "FR_015_StaffOnlyDecision",
+    "FR_016_AuditTrail"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthenticatedCustomerSubmission"
+    ],
+    "FR-002": [
+      "FR_002_FieldValidation"
+    ],
+    "FR-003": [
+      "FR_003_AmountTermRange"
+    ],
+    "FR-004": [
+      "FR_004_UniqueReferenceMetadata"
+    ],
+    "FR-005": [
+      "FR_005_OnePendingPerCustomer"
+    ],
+    "FR-009": [
+      "FR_009_NonEmptyReason"
+    ],
+    "FR-010": [
+      "FR_010_DecisionRecording"
+    ],
+    "FR-011": [
+      "FR_011_ImmutableDecision"
+    ],
+    "FR-012": [
+      "FR_012_ConcurrentDecisionSafety"
+    ],
+    "FR-013": [
+      "FR_013_CustomerIsolation"
+    ],
+    "FR-015": [
+      "FR_015_StaffOnlyDecision"
+    ],
+    "FR-016": [
+      "FR_016_AuditTrail"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_OnePendingPerCustomer",
+      "asserts_violated": [
+        "FR_005_OnePendingPerCustomer"
+      ],
+      "rationale": "Removing this fact eliminates the constraint that at most one application per customer can have PendingReview status. The injection forces a counterexample with two pending applications from the same customer, directly violating the assertion.",
+      "inject_violation": "fact MUTATE_TwoPendingApps { some disj a1, a2: LoanApplication | a1.status = PendingReview and a2.status = PendingReview and a1.customer = a2.customer }"
+    },
+    {
+      "fact_name": "F_AppendOnlyAuditLog",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_016_AuditTrail"
+      ],
+      "rationale": "Removing this fact removes the structural guarantee that every audit entry references an application. The injection creates orphaned events, violating both the append-only pattern (events should be immutable and tied to valid applications) and the audit trail assertion.",
+      "inject_violation": "fact MUTATE_MutableAuditLog { some e: ApplicationEvent | no e.application }"
+    },
+    {
+      "fact_name": "F_AuditCompleteness",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_016_AuditTrail"
+      ],
+      "rationale": "Removing this fact removes the requirement that every application have a submitted event and every decided application have a corresponding approved/rejected event. The injection creates applications without any audit trail, violating audit completeness.",
+      "inject_violation": "fact MUTATE_MissingAuditEntry { some a: LoanApplication | no e: ApplicationEvent | e.application = a and e.event_type = SubmittedEvent }"
+    },
+    {
+      "fact_name": "F_DecisionByStaff",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_015_StaffOnlyDecision"
+      ],
+      "rationale": "Removing this fact allows any user role to make decisions. The injection forces a customer to record a decision, directly violating the LeastPrivilege and staff-only decision control assertions.",
+      "inject_violation": "fact MUTATE_CustomerDecision { some d: Decision | d.decided_by.role = CustomerRole }"
+    },
+    {
+      "fact_name": "F_StatusDecisionCorrespondence",
+      "asserts_violated": [
+        "FR_010_DecisionRecording",
+        "FR_011_ImmutableDecision"
+      ],
+      "rationale": "Removing this fact allows the application status to diverge from its decision type (e.g., status=Approved but decision=Rejected). The injection creates this inconsistency, violating the atomic decision recording and immutability guarantees.",
+      "inject_violation": "fact MUTATE_InconsistentStatus { some d: Decision | d.decision_type = ApprovedDecision and d.application.status = Rejected }"
+    },
+    {
+      "fact_name": "F_AtMostOneDecisionPerApp",
+      "asserts_violated": [
+        "FR_012_ConcurrentDecisionSafety"
+      ],
+      "rationale": "Removing this fact allows multiple decisions to be recorded for the same application. The injection creates two conflicting decisions on the same application, violating the concurrent safety invariant that ensures only the first decision is persisted.",
+      "inject_violation": "fact MUTATE_MultipleDecisions { some disj d1, d2: Decision | d1.application = d2.application }"
+    }
+  ]
+}

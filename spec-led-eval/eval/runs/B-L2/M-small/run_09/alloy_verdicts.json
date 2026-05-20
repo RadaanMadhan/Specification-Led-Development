@@ -1,0 +1,12 @@
+{
+  "OwnershipBasedAccess": "PASS",
+  "NoInformationLeakage": "PASS",
+  "LeastPrivilege": "PASS",
+  "FR_014_CrossTeamIsolation": "PASS",
+  "FR_017_AuditVisibilityToMembers": "PASS",
+  "AuditCompleteness": "PASS",
+  "AppendOnly": "PASS",
+  "AttributionCorrectness": "PASS",
+  "AuthRequiredEverywhere": "PASS",
+  "OwnershipExclusivity": "PASS"
+}

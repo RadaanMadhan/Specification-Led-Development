@@ -1,0 +1,117 @@
+{
+  "feature_id": "C-L3",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_SingleRolePerUser",
+    "FR_003_PatientAssignedRecord",
+    "FR_004_ClinicianCareTeamGating",
+    "FR_006_PatientSelfAccessOnly",
+    "FR_007_ComplianceOfficerContentBlind",
+    "FR_012_NotesImmutable",
+    "FR_013_AuditCompleteness",
+    "FR_018_SystemAccessLogComplianceOnly"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_SingleRolePerUser"
+    ],
+    "FR-003": [
+      "FR_003_PatientAssignedRecord",
+      "OwnershipExclusivity"
+    ],
+    "FR-004": [
+      "FR_004_ClinicianCareTeamGating",
+      "LeastPrivilege"
+    ],
+    "FR-006": [
+      "FR_006_PatientSelfAccessOnly",
+      "OwnershipBasedAccess"
+    ],
+    "FR-007": [
+      "FR_007_ComplianceOfficerContentBlind"
+    ],
+    "FR-012": [
+      "FR_012_NotesImmutable",
+      "AppendOnly"
+    ],
+    "FR-013": [
+      "FR_013_AuditCompleteness",
+      "AuditCompleteness"
+    ],
+    "FR-014": [
+      "AttributionCorrectness"
+    ],
+    "FR-018": [
+      "FR_018_SystemAccessLogComplianceOnly"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_ClinicianReadRequiresCareTeam",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_004_ClinicianCareTeamGating"
+      ],
+      "rationale": "Removing this fact eliminates the structural requirement that clinicians must be on a care team to read a record. The assertions should fail because Alloy will find audit entries where a clinician reads a record without being in the care team, violating the access control invariant.",
+      "inject_violation": "fact MUTATE_ClinicianBypassesCareTeam { some ae: AuditEntry, u: User, r: Record | ae.accessor_user_id = u.id and ae.record_id = r.id and ae.accessor_role = Clinician and ae.operation = Read and ae.outcome = Permitted and no ctm: CareTeamMembership | ctm.clinician_id = u.id and ctm.record_id = r.id and ctm.status = Active }"
+    },
+    {
+      "fact_name": "F_PatientAccessOwnRecordOnly",
+      "asserts_violated": [
+        "FR_006_PatientSelfAccessOnly",
+        "OwnershipBasedAccess"
+      ],
+      "rationale": "Removing this fact allows patients to access records they do not own. The assertions should fail because Alloy will construct audit entries where a patient successfully accesses a record that is not their assigned_record_id.",
+      "inject_violation": "fact MUTATE_PatientAccessOtherRecord { some ae: AuditEntry, u: User | ae.accessor_user_id = u.id and ae.accessor_role = Patient and ae.outcome = Permitted and ae.record_id != u.assigned_record_id }"
+    },
+    {
+      "fact_name": "F_UserRoleAndRecordAssignment",
+      "asserts_violated": [
+        "FR_003_PatientAssignedRecord",
+        "OwnershipExclusivity"
+      ],
+      "rationale": "Removing this fact permits users with non-Patient roles to have assigned_record_id values, and patients to lack them. The assertions should fail because Alloy will find users whose role and record assignment are misaligned.",
+      "inject_violation": "fact MUTATE_RoleRecordMismatch { some u: User | u.role = Clinician and one u.assigned_record_id }"
+    },
+    {
+      "fact_name": "F_ComplianceOfficerNoReadAccess",
+      "asserts_violated": [
+        "FR_007_ComplianceOfficerContentBlind"
+      ],
+      "rationale": "Removing this fact allows compliance officers to perform Read operations. The assertion should fail because Alloy will find an audit entry with a ComplianceOfficer accessor and a Read operation.",
+      "inject_violation": "fact MUTATE_ComplianceOfficerRead { some ae: AuditEntry | ae.accessor_role = ComplianceOfficer and ae.operation = Read }"
+    },
+    {
+      "fact_name": "F_AuditEntryForEveryAccess",
+      "asserts_violated": [
+        "FR_013_AuditCompleteness",
+        "AuditCompleteness"
+      ],
+      "rationale": "Removing this fact eliminates the requirement that every (user, record, operation) triple has a corresponding audit entry. The assertions should fail because Alloy will find users and records that have no audit trace for some operation.",
+      "inject_violation": "fact MUTATE_MissingAuditEntry { some u: User, r: Record, op: Operation | no ae: AuditEntry | ae.accessor_user_id = u.id and ae.record_id = r.id and ae.operation = op }"
+    },
+    {
+      "fact_name": "F_NotesAppendOnlyByDesign",
+      "asserts_violated": [
+        "FR_012_NotesImmutable",
+        "AppendOnly"
+      ],
+      "rationale": "Removing this fact allows notes to exist without corresponding append audit entries, or to be created outside the audit trail. The assertions should fail because Alloy will find notes that do not have a matching permitted-append audit entry.",
+      "inject_violation": "fact MUTATE_NoteWithoutAudit { some cn: ClinicalNote | no ae: AuditEntry | ae.note_id = cn.id and ae.operation = Append and ae.outcome = Permitted }"
+    }
+  ]
+}

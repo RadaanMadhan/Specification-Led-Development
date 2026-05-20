@@ -1,0 +1,22 @@
+{
+  "LeastPrivilege": "PASS",
+  "PermissionCompleteness": "PASS",
+  "PrivilegeMonotonicity": "FAIL",
+  "AuthRequiredEverywhere": "PASS",
+  "AuditCompleteness": "PASS",
+  "AppendOnly": "PASS",
+  "AttributionCorrectness": "PASS",
+  "OwnershipBasedAccess": "FAIL",
+  "NoInformationLeakage": "PASS",
+  "FR_001_AuthRequired": "PASS",
+  "FR_002_OneRolePerUser": "PASS",
+  "FR_004_CareTeamGating": "FAIL",
+  "FR_005_AdminContentBlindness": "FAIL",
+  "FR_006_ByteEquivalentUnauthorised": "PASS",
+  "FR_011_NotesAppendOnly": "PASS",
+  "FR_012_AlwaysOnAudit": "PASS",
+  "FR_013_NoteIdConsistency": "PASS",
+  "FR_014_AuditImmutability": "PASS",
+  "FR_017_AuditSearchAdminOnly": "FAIL",
+  "FR_018_AdminResponseContentBlind": "FAIL"
+}

@@ -1,0 +1,170 @@
+{
+  "feature_id": "013-hipaa-clinical-records",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "ValidationBeforeMutation"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_OneRolePerUser",
+    "FR_003_PatientAssignedRecord",
+    "FR_004_CareTeamGating",
+    "FR_005_ClinicianNoAccessLog",
+    "FR_006_PatientSelfAccess",
+    "FR_007_ComplianceNoClinical",
+    "FR_008_ByteEquivalentDenial",
+    "FR_009_DenialAudited",
+    "FR_010_NoteAuthorIsClinician",
+    "FR_011_NoteAttribution",
+    "FR_012_NotesAppendOnly",
+    "FR_013_OneAuditPerAccess",
+    "FR_014_AuditFields",
+    "FR_015_AuditImmutable",
+    "FR_016_AuditSLA",
+    "FR_017_AuditRetention",
+    "FR_018_AccessLogComplianceOnly",
+    "FR_019_ComplianceContentBlind",
+    "FR_020_RecordIdOpaque"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_OneRolePerUser"
+    ],
+    "FR-003": [
+      "FR_003_PatientAssignedRecord"
+    ],
+    "FR-004": [
+      "FR_004_CareTeamGating",
+      "OwnershipBasedAccess"
+    ],
+    "FR-005": [
+      "FR_005_ClinicianNoAccessLog",
+      "LeastPrivilege"
+    ],
+    "FR-006": [
+      "FR_006_PatientSelfAccess",
+      "OwnershipBasedAccess"
+    ],
+    "FR-007": [
+      "FR_007_ComplianceNoClinical",
+      "LeastPrivilege"
+    ],
+    "FR-008": [
+      "FR_008_ByteEquivalentDenial",
+      "NoInformationLeakage"
+    ],
+    "FR-009": [
+      "FR_009_DenialAudited"
+    ],
+    "FR-010": [
+      "FR_010_NoteAuthorIsClinician",
+      "ValidationBeforeMutation"
+    ],
+    "FR-011": [
+      "FR_011_NoteAttribution",
+      "AttributionCorrectness"
+    ],
+    "FR-012": [
+      "FR_012_NotesAppendOnly",
+      "AppendOnly"
+    ],
+    "FR-013": [
+      "FR_013_OneAuditPerAccess",
+      "AuditCompleteness"
+    ],
+    "FR-014": [
+      "FR_014_AuditFields",
+      "AttributionCorrectness"
+    ],
+    "FR-015": [
+      "FR_015_AuditImmutable",
+      "AppendOnly"
+    ],
+    "FR-016": [
+      "FR_016_AuditSLA"
+    ],
+    "FR-017": [
+      "FR_017_AuditRetention"
+    ],
+    "FR-018": [
+      "FR_018_AccessLogComplianceOnly",
+      "LeastPrivilege"
+    ],
+    "FR-019": [
+      "FR_019_ComplianceContentBlind"
+    ],
+    "FR-020": [
+      "FR_020_RecordIdOpaque"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_LeastPrivilegeMatrix",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_005_ClinicianNoAccessLog",
+        "FR_018_AccessLogComplianceOnly"
+      ],
+      "rationale": "Removing this fact lets the model invent a Permitted access whose (role, endpoint) cell is denied in the matrix; the injection forces exactly such a Patient->GetAccessLog Permitted access.",
+      "inject_violation": "fact MUTATE_LeastPrivilegeViolation { some a: Access | a.caller.role = Patient and a.endpoint = GetAccessLog and a.result = Permitted }"
+    },
+    {
+      "fact_name": "F_OneAuditPerAccess",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_013_OneAuditPerAccess",
+        "FR_016_AuditSLA"
+      ],
+      "rationale": "Removing this fact (audit is declared lone) lets an Access exist without a matching AuditEntry; the injection forces such an orphaned access.",
+      "inject_violation": "fact MUTATE_MissingAudit { some a: Access | no a.audit }"
+    },
+    {
+      "fact_name": "F_AuditAttribution",
+      "asserts_violated": [
+        "AttributionCorrectness",
+        "FR_014_AuditFields"
+      ],
+      "rationale": "Removing this fact severs the link between Access.caller and AuditEntry.accessor; the injection forces a misattributed audit entry.",
+      "inject_violation": "fact MUTATE_MisattributedAudit { some a: Access | some a.audit and a.audit.accessor != a.caller }"
+    },
+    {
+      "fact_name": "F_PatientOnlyOwnRecord",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_006_PatientSelfAccess"
+      ],
+      "rationale": "Removing this fact allows a Patient to be Permitted on a record that is not their assigned_record_id; the injection forces such a cross-patient access.",
+      "inject_violation": "fact MUTATE_PatientCrossRecord { some a: Access | a.caller.role = Patient and a.result = Permitted and some a.target and a.target != a.caller.assignedRecord }"
+    },
+    {
+      "fact_name": "F_ClinicianRequiresCareTeam",
+      "asserts_violated": [
+        "FR_004_CareTeamGating",
+        "OwnershipBasedAccess"
+      ],
+      "rationale": "Removing this fact lets a clinician obtain Permitted record access without any care-team-membership row; the injection forces a clinician GetRecord Permitted access with no covering CareTeam.",
+      "inject_violation": "fact MUTATE_ClinicianNoCareTeam { some a: Access | a.caller.role = Clinician and a.endpoint = GetRecord and a.result = Permitted and some a.target and (no ct: CareTeam | ct.clinician = a.caller and ct.ctRecord = a.target) }"
+    },
+    {
+      "fact_name": "F_NoteCreationLink",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_012_NotesAppendOnly",
+        "FR_011_NoteAttribution"
+      ],
+      "rationale": "Removing this fact allows orphan ClinicalNotes that are not tied to any Permitted PostNote access; the injection materialises one such orphan note.",
+      "inject_violation": "fact MUTATE_OrphanNote { some n: ClinicalNote | (no a: Access | a.noteCreated = n) }"
+    }
+  ]
+}

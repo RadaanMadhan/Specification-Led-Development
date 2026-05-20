@@ -1,0 +1,112 @@
+{
+  "feature_id": "C-L1",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_006_CareTeamMembership",
+    "FR_007_ByteEquivalent",
+    "FR_008_AlwaysAudit",
+    "FR_009_AuditShape",
+    "FR_010_AuditImmutable",
+    "FR_011_IgOnlyAccess",
+    "FR_013_AuditSLA"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-006": [
+      "FR_006_CareTeamMembership",
+      "OwnershipBasedAccess"
+    ],
+    "FR-007": [
+      "FR_007_ByteEquivalent",
+      "NoInformationLeakage"
+    ],
+    "FR-008": [
+      "FR_008_AlwaysAudit",
+      "AuditCompleteness"
+    ],
+    "FR-009": [
+      "FR_009_AuditShape",
+      "AuditCompleteness"
+    ],
+    "FR-010": [
+      "FR_010_AuditImmutable",
+      "AppendOnly"
+    ],
+    "FR-011": [
+      "FR_011_IgOnlyAccess",
+      "LeastPrivilege"
+    ],
+    "FR-013": [
+      "FR_013_AuditSLA"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_LeastPrivilege",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_011_IgOnlyAccess"
+      ],
+      "rationale": "Removing F_LeastPrivilege allows the model to invent states where clinical roles can access AuditSearch or AuditOfficer can access RecordsLookup, violating the permission matrix. This is exactly what the LeastPrivilege and FR_011 assertions are designed to catch.",
+      "inject_violation": "fact MUTATE_LeastPrivilegeViolation { (Doctor -> AuditSearch in PermMatrix.Allowed) or (AuditOfficer -> RecordsLookup not in PermMatrix.Allowed) }"
+    },
+    {
+      "fact_name": "F_AppendOnlyAuditEntries",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_010_AuditImmutable"
+      ],
+      "rationale": "Removing F_AppendOnlyAuditEntries allows two distinct audit entries to record the same clinician, patient, and outcome, simulating a mutation or duplicate. AppendOnly and FR_010_AuditImmutable both expect all audit entries to be distinguishable.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some disj ae1, ae2: AuditEntry | ae1.clinician = ae2.clinician and ae1.patient_ref = ae2.patient_ref and ae1.outcome = ae2.outcome }"
+    },
+    {
+      "fact_name": "F_OwnershipBasedAccess",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_006_CareTeamMembership"
+      ],
+      "rationale": "Removing F_OwnershipBasedAccess allows audit entries with outcome=Permitted to exist without any active care-team membership. This violates the core access-control invariant that permitted access requires care-team membership.",
+      "inject_violation": "fact MUTATE_OwnershipViolation { some ae: AuditEntry | ae.outcome = Permitted and no ctm: CareTeamMembership | ctm.clinician = ae.clinician and ctm.patient = ae.patient_ref and ctm.status = Active }"
+    },
+    {
+      "fact_name": "F_NoInformationLeakage",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "FR_007_ByteEquivalent"
+      ],
+      "rationale": "Removing F_NoInformationLeakage allows audit entries with outcome=Denied to have authorisation_basis=PatientNotFound (and vice versa), or with outcome=Permitted but basis=NotCareTeamMember, revealing whether the patient exists to the requester.",
+      "inject_violation": "fact MUTATE_InformationLeakageViolation { some ae: AuditEntry | (ae.outcome = Denied and ae.authorisation_basis = PatientNotFound) or (ae.outcome = Permitted and ae.authorisation_basis = NotCareTeamMember) }"
+    },
+    {
+      "fact_name": "F_AttributionCorrectness",
+      "asserts_violated": [
+        "AttributionCorrectness",
+        "FR_009_AuditShape"
+      ],
+      "rationale": "Removing F_AttributionCorrectness allows an audit entry to record a clinician_role that does not match the clinician's actual role, causing misattribution in the audit log.",
+      "inject_violation": "fact MUTATE_AttributionViolation { some ae: AuditEntry, u: User | ae.clinician = u and ae.clinician_role != u.role }"
+    },
+    {
+      "fact_name": "F_FR_006_CareTeamMembership",
+      "asserts_violated": [
+        "FR_006_CareTeamMembership",
+        "OwnershipBasedAccess"
+      ],
+      "rationale": "Removing F_FR_006_CareTeamMembership allows Permitted outcomes to exist without corresponding active care-team memberships, or allows permitted outcomes to be granted to users not on the care team.",
+      "inject_violation": "fact MUTATE_CareTeamViolation { some ae: AuditEntry, u: User | ae.clinician = u and ae.outcome = Permitted and no ctm: CareTeamMembership | ctm.clinician = ae.clinician and ctm.patient = ae.patient_ref and ctm.status = Active }"
+    }
+  ]
+}

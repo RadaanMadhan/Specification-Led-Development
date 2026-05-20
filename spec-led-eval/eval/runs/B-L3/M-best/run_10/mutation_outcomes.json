@@ -1,0 +1,44 @@
+{
+  "F_AppendOnlyAuditEntries": {
+    "targeted_asserts": {
+      "AppendOnly": "BIT",
+      "FR_017_AuditAppendOnly": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AuthRequiredBeforeBusinessLogic": {
+    "targeted_asserts": {
+      "AuthRequiredEverywhere": "BIT",
+      "FR_001_AuthRequired": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_ByteEquiv404ForUnauthorisedAccess": {
+    "targeted_asserts": {
+      "NoInformationLeakage": "BIT",
+      "FR_014_ByteEquiv404": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AuditAttributionCorrect": {
+    "targeted_asserts": {
+      "AttributionCorrectness": "BIT",
+      "FR_002_RoleFromToken": "BIT",
+      "FR_016_AuditFieldsComplete": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_MutationProducesAudit": {
+    "targeted_asserts": {
+      "AuditCompleteness": "BIT",
+      "FR_015_AuditPerEvent": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_ShareesSameTeam": {
+    "targeted_asserts": {
+      "FR_012_SharesSameTeam": "BIT"
+    },
+    "all_bit": true
+  }
+}

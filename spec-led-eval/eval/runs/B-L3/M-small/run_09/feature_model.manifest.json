@@ -1,0 +1,129 @@
+{
+  "feature_id": "B-L3",
+  "patterns_applied": [
+    "AuthRequiredEverywhere",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness"
+  ],
+  "feature_specific_predicates": [
+    "FR_009_OwnerImmutable",
+    "FR_010_OwnerControlledSharing",
+    "FR_012_SameTeamSharingOnly",
+    "FR_002_IdentityFromToken",
+    "FR_006_CrossTeamIsolation",
+    "FR_014_ByteEquivalentCrossTeamIsolation",
+    "FR_015_PerEventAuditSemantics",
+    "FR_017_AuditImmutability",
+    "FR_001_AuthRequired"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "AuthRequiredEverywhere",
+      "FR_001_AuthRequired"
+    ],
+    "FR-002": [
+      "FR_002_IdentityFromToken"
+    ],
+    "FR-003": [
+      "OwnershipBasedAccess"
+    ],
+    "FR-004": [
+      "OwnershipBasedAccess"
+    ],
+    "FR-005": [
+      "OwnershipBasedAccess"
+    ],
+    "FR-006": [
+      "NoInformationLeakage",
+      "FR_006_CrossTeamIsolation"
+    ],
+    "FR-009": [
+      "OwnershipExclusivity",
+      "FR_009_OwnerImmutable"
+    ],
+    "FR-010": [
+      "FR_010_OwnerControlledSharing"
+    ],
+    "FR-011": [
+      "OwnershipBasedAccess"
+    ],
+    "FR-012": [
+      "FR_012_SameTeamSharingOnly"
+    ],
+    "FR-014": [
+      "NoInformationLeakage",
+      "FR_014_ByteEquivalentCrossTeamIsolation"
+    ],
+    "FR-015": [
+      "AuditCompleteness",
+      "FR_015_PerEventAuditSemantics"
+    ],
+    "FR-016": [
+      "AttributionCorrectness"
+    ],
+    "FR-017": [
+      "AppendOnly",
+      "FR_017_AuditImmutability"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_OwnershipExclusivity",
+      "asserts_violated": [
+        "OwnershipExclusivity",
+        "FR_009_OwnerImmutable"
+      ],
+      "rationale": "Removing this fact allows tasks to have zero or multiple owners, directly violating the OwnershipExclusivity assertion and the FR-009 requirement that every task has exactly one immutable owner.",
+      "inject_violation": "fact MUTATE_MultipleOwners { some t: Task, disj o1, o2: User | o1.team = t.team and o2.team = t.team }"
+    },
+    {
+      "fact_name": "F_AppendOnlyAuditEntries",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_017_AuditImmutability"
+      ],
+      "rationale": "Removing this fact allows audit entries to be mutated (operation field changed), violating the append-only immutability constraint that is core to FR-017 compliance.",
+      "inject_violation": "fact MUTATE_AuditMutable { some disj ae1, ae2: AuditEntry | ae1.task = ae2.task and ae1.actor = ae2.actor and ae1.operation != ae2.operation }"
+    },
+    {
+      "fact_name": "F_AuditCompleteness",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_015_PerEventAuditSemantics"
+      ],
+      "rationale": "Removing this fact allows tasks to exist without any audit trail, directly violating FR-015 (every mutation must produce an audit entry) and the completeness requirement.",
+      "inject_violation": "fact MUTATE_NoAudit { some t: Task | no ae: AuditEntry | ae.task = t }"
+    },
+    {
+      "fact_name": "F_CrossTeamIsolation",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "FR_006_CrossTeamIsolation",
+        "FR_014_ByteEquivalentCrossTeamIsolation"
+      ],
+      "rationale": "Removing this fact allows cross-team users to appear as owner or sharee of tasks in other teams, enabling information leakage that violates the absolute cross-team isolation requirement (FR-014, SC-003).",
+      "inject_violation": "fact MUTATE_CrossTeamLeakage { some t: Task, u: User | u.team != t.team and (u = t.owner or u in t.shared_with) }"
+    },
+    {
+      "fact_name": "F_OwnerControlsSharing",
+      "asserts_violated": [
+        "FR_010_OwnerControlledSharing"
+      ],
+      "rationale": "Removing this fact allows the task owner to be in the shared_with list (consequence of not enforcing sharee != owner), violating the constraint that only non-owners can be sharees.",
+      "inject_violation": "fact MUTATE_OwnerAsSharee { some t: Task | t.owner in t.shared_with }"
+    },
+    {
+      "fact_name": "F_TaskOwnerInTeam",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_002_IdentityFromToken"
+      ],
+      "rationale": "Removing this fact allows tasks to have owners in different teams, violating the requirement that owner_id and team_id must be consistent (FR-002 derivation from token claims).",
+      "inject_violation": "fact MUTATE_OrphanOwner { some t: Task | t.owner.team != t.team }"
+    }
+  ]
+}

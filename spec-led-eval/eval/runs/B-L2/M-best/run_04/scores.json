@@ -1,0 +1,330 @@
+{
+  "run_id": "B-L2/M-best/run_04",
+  "cell": "B-L2",
+  "model": "M-best",
+  "rep": 4,
+  "D1": 1.0,
+  "D2": 1.0,
+  "D3": 0.9166666666666666,
+  "D4": 0.975,
+  "aqs_partial": 0.9729166666666667,
+  "scored_at": "2026-05-20T04:29:04.403517+00:00",
+  "details": {
+    "D1": {
+      "n_assertions": 29,
+      "n_verdicts": 29
+    },
+    "D2": {
+      "patterns_applied": [
+        "LeastPrivilege",
+        "PermissionCompleteness",
+        "AuthRequiredEverywhere",
+        "AuditCompleteness",
+        "AppendOnly",
+        "AttributionCorrectness",
+        "OwnershipExclusivity",
+        "OwnershipBasedAccess",
+        "NoInformationLeakage"
+      ],
+      "per_pattern": {
+        "LeastPrivilege": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "PermissionCompleteness": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "AuthRequiredEverywhere": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "AuditCompleteness": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "AppendOnly": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "AttributionCorrectness": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "OwnershipExclusivity": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "OwnershipBasedAccess": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "NoInformationLeakage": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        }
+      }
+    },
+    "D3": {
+      "per_target": {
+        "F_OwnerOrAdminForMutation": {
+          "targeted_asserts": {
+            "OwnershipBasedAccess": "BIT",
+            "FR_008_OwnerCanMutate": "BIT",
+            "FR_009_NonOwnerMemberDenied": "BIT"
+          },
+          "score": 1.0
+        },
+        "F_CrossTeamIsolation": {
+          "targeted_asserts": {
+            "NoInformationLeakage": "BIT",
+            "FR_011_CrossTeamIsolation": "BIT",
+            "FR_014_ByteEquivalentNotFound": "BIT"
+          },
+          "score": 1.0
+        },
+        "F_PermissionMatrix": {
+          "targeted_asserts": {
+            "PermissionCompleteness": "VACUOUS_OVERCONSTRAINT"
+          },
+          "score": 0.5
+        },
+        "F_AuditEntryForStateChange": {
+          "targeted_asserts": {
+            "AuditCompleteness": "BIT",
+            "FR_015_AuditPerEdit": "BIT"
+          },
+          "score": 1.0
+        },
+        "F_AuditAppendOnlyKind": {
+          "targeted_asserts": {
+            "AppendOnly": "BIT",
+            "FR_016_AuditAppendOnly": "BIT"
+          },
+          "score": 1.0
+        },
+        "F_AuditAttribution": {
+          "targeted_asserts": {
+            "AttributionCorrectness": "BIT",
+            "FR_015_AuditPerEdit": "BIT"
+          },
+          "score": 1.0
+        }
+      },
+      "skipped": []
+    },
+    "D4": {
+      "per_fr": {
+        "FR-001": {
+          "covers": [
+            "FR_001_AuthRequired",
+            "AuthRequiredEverywhere"
+          ],
+          "verdicts": {
+            "FR_001_AuthRequired": "PASS",
+            "AuthRequiredEverywhere": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-002": {
+          "covers": [
+            "FR_002_IdentityFromAuthContext"
+          ],
+          "verdicts": {
+            "FR_002_IdentityFromAuthContext": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-003": {
+          "covers": [
+            "FR_003_TeamContextRequired"
+          ],
+          "verdicts": {
+            "FR_003_TeamContextRequired": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-004": {
+          "covers": [
+            "FR_004_CallerIsMember"
+          ],
+          "verdicts": {
+            "FR_004_CallerIsMember": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-005": {
+          "covers": [
+            "FR_005_TaskTeamImmutable"
+          ],
+          "verdicts": {
+            "FR_005_TaskTeamImmutable": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-006": {
+          "covers": [
+            "FR_006_OwnerImmutable",
+            "OwnershipExclusivity"
+          ],
+          "verdicts": {
+            "FR_006_OwnerImmutable": "PASS",
+            "OwnershipExclusivity": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-007": {
+          "covers": [
+            "FR_007_PerTeamRole"
+          ],
+          "verdicts": {
+            "FR_007_PerTeamRole": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-008": {
+          "covers": [
+            "FR_008_OwnerCanMutate",
+            "OwnershipBasedAccess"
+          ],
+          "verdicts": {
+            "FR_008_OwnerCanMutate": "PASS",
+            "OwnershipBasedAccess": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-009": {
+          "covers": [
+            "FR_009_NonOwnerMemberDenied",
+            "OwnershipBasedAccess"
+          ],
+          "verdicts": {
+            "FR_009_NonOwnerMemberDenied": "PASS",
+            "OwnershipBasedAccess": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-010": {
+          "covers": [
+            "FR_010_AdminCanMutateAnyInTeam",
+            "OwnershipBasedAccess"
+          ],
+          "verdicts": {
+            "FR_010_AdminCanMutateAnyInTeam": "PASS",
+            "OwnershipBasedAccess": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-011": {
+          "covers": [
+            "FR_011_CrossTeamIsolation",
+            "NoInformationLeakage"
+          ],
+          "verdicts": {
+            "FR_011_CrossTeamIsolation": "PASS",
+            "NoInformationLeakage": "FAIL"
+          },
+          "score": 1.0
+        },
+        "FR-012": {
+          "covers": [
+            "FR_012_AssigneeSameTeam"
+          ],
+          "verdicts": {
+            "FR_012_AssigneeSameTeam": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-013": {
+          "covers": [
+            "FR_013_StatusInSet"
+          ],
+          "verdicts": {
+            "FR_013_StatusInSet": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-014": {
+          "covers": [
+            "FR_014_ByteEquivalentNotFound",
+            "NoInformationLeakage"
+          ],
+          "verdicts": {
+            "FR_014_ByteEquivalentNotFound": "FAIL",
+            "NoInformationLeakage": "FAIL"
+          },
+          "score": 0.5
+        },
+        "FR-015": {
+          "covers": [
+            "FR_015_AuditPerEdit",
+            "AuditCompleteness",
+            "AttributionCorrectness"
+          ],
+          "verdicts": {
+            "FR_015_AuditPerEdit": "PASS",
+            "AuditCompleteness": "PASS",
+            "AttributionCorrectness": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-016": {
+          "covers": [
+            "FR_016_AuditAppendOnly",
+            "AppendOnly"
+          ],
+          "verdicts": {
+            "FR_016_AuditAppendOnly": "PASS",
+            "AppendOnly": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-017": {
+          "covers": [
+            "FR_017_AuditTeamScoped"
+          ],
+          "verdicts": {
+            "FR_017_AuditTeamScoped": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-018": {
+          "covers": [
+            "FR_018_RetentionByCodePathAbsence"
+          ],
+          "verdicts": {
+            "FR_018_RetentionByCodePathAbsence": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-019": {
+          "covers": [
+            "FR_019_ListScopedToTeam"
+          ],
+          "verdicts": {
+            "FR_019_ListScopedToTeam": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-020": {
+          "covers": [
+            "FR_020_FilteredListScopedToTeam"
+          ],
+          "verdicts": {
+            "FR_020_FilteredListScopedToTeam": "PASS"
+          },
+          "score": 1.0
+        }
+      }
+    }
+  }
+}

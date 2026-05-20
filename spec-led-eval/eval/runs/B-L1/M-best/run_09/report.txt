@@ -1,0 +1,106 @@
+==============================================================================
+  Design Compliance Report  (Phase 3 — feature_model.als)
+  feature       : B-L1
+  spec source   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/eval/specs/B-L1
+  alloy model   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/B-L1/feature_model.als
+  patterns      : AuthRequiredEverywhere, PermissionCompleteness, LeastPrivilege, AppendOnly, AuditCompleteness, AttributionCorrectness, OwnershipExclusivity
+  fr count      : 18 declared in spec.md
+  assertions    : 18 total (18/18 PASS via Alloy)
+==============================================================================
+
+  Compliance matrix
+  ----------------------------------------------------------------------------
+  Assertion                  Verdict   Anchor
+  ---------------------------------------------------------------
+  AuthRequiredEverywhere     PASS      PATTERN AuthRequiredEverywhere: spec.md FR-001; contracts/http-api.md "Authentication (all endpoints)"
+  PermissionCompleteness     PASS      PATTERN PermissionCompleteness: contracts/http-api.md (no 403); FR-004
+  LeastPrivilege             PASS      PATTERN LeastPrivilege: FR-004; contracts/http-api.md (flat peers, no privilege escalation)
+  AppendOnly                 PASS      PATTERN AppendOnly: data-model.md "No UPDATE/DELETE code path targets task_deletions"; FR-018
+  AuditCompleteness          PASS      PATTERN AuditCompleteness: FR-018; data-model.md task_deletions
+  AttributionCorrectness     PASS      PATTERN AttributionCorrectness: FR-018 "deleter identity"
+  OwnershipExclusivity       PASS      PATTERN OwnershipExclusivity: data-model.md tasks.created_by NOT NULL; FR-009
+  FR_001_AuthRequired        PASS      FEATURE-SPECIFIC: FR-001 (auth required on every operation)
+  FR_002_IdentityFromAuth    PASS      FEATURE-SPECIFIC: FR-002 (caller from auth context, not payload)
+  FR_003_SingleWorkspace     PASS      FEATURE-SPECIFIC: FR-003 (single implicit workspace; every user is a member)
+  FR_004_FlatPermissions     PASS      FEATURE-SPECIFIC: FR-004 (flat permissions, all members peers)
+  FR_008_AtMostOneAssignee   PASS      FEATURE-SPECIFIC: FR-008 (at most one assignee per task)
+  FR_009_OneCreatorPerTask   PASS      FEATURE-SPECIFIC: FR-009 (creator immutable & exactly one per task)
+  FR_010_StatusInAllowedSet  PASS      FEATURE-SPECIFIC: FR-010 (status in {todo, in_progress, done})
+  FR_011_ClosedTaskEditRule  PASS      FEATURE-SPECIFIC: FR-011 (closed-task PATCH rule)
+  FR_012_NoOpAfterDeletion   PASS      FEATURE-SPECIFIC: FR-012 (permanent deletion; no resurrection)
+  FR_013_ScopeClosed         PASS      FEATURE-SPECIFIC: FR-013 (v1 manage scope is exactly create/view/list/edit/delete)
+  FR_018_DeletionLogged      PASS      FEATURE-SPECIFIC: FR-018 (operational deletion log records every deletion)
+
+  FR coverage
+  ----------------------------------------------------------------------------
+  FR-001  →  FR_001_AuthRequired=PASS, AuthRequiredEverywhere=PASS
+  FR-002  →  FR_002_IdentityFromAuth=PASS
+  FR-003  →  FR_003_SingleWorkspace=PASS
+  FR-004  →  FR_004_FlatPermissions=PASS, PermissionCompleteness=PASS, LeastPrivilege=PASS
+  FR-005  [uncovered]
+  FR-006  [uncovered]
+  FR-007  [uncovered]
+  FR-008  →  FR_008_AtMostOneAssignee=PASS
+  FR-009  →  FR_009_OneCreatorPerTask=PASS, OwnershipExclusivity=PASS
+  FR-010  →  FR_010_StatusInAllowedSet=PASS
+  FR-011  →  FR_011_ClosedTaskEditRule=PASS
+  FR-012  →  FR_012_NoOpAfterDeletion=PASS
+  FR-013  →  FR_013_ScopeClosed=PASS
+  FR-014  [uncovered]
+  FR-015  [uncovered]
+  FR-016  [uncovered]
+  FR-017  [uncovered]
+  FR-018  →  FR_018_DeletionLogged=PASS, AppendOnly=PASS, AuditCompleteness=PASS, AttributionCorrectness=PASS
+
+  WARNING: 7 FR(s) without any matching assertion: FR-005, FR-006, FR-007, FR-014, FR-015, FR-016, FR-017
+
+==============================================================================
+  Mutation tests  (assertion-strength validation)
+==============================================================================
+
+  Strategy: replace each named fact's body with `{}` (no constraint),
+  then re-run Alloy. Each listed assertion should now FAIL on the
+  mutated model. If it still PASSes, the assertion is vacuous and
+  must be strengthened.
+
+  - MUTATE F_AuthRequired  → runs/B-L1/mutated_F_AuthRequired.als
+    rationale: removing F_AuthRequired lets the model invent a successful operation that was never authenticated, which is exactly the auth-bypass counterexample these assertions catch.
+    expected to FAIL: AuthRequiredEverywhere, FR_001_AuthRequired
+      - AuthRequiredEverywhere: FAIL (expected)
+      - FR_001_AuthRequired: FAIL (expected)
+
+  - MUTATE F_AppendOnlyDeletions  → runs/B-L1/mutated_F_AppendOnlyDeletions.als
+    rationale: removing the uniqueness constraint on TaskDeletion.task allows two log rows to reference the same task, simulating an UPDATE/DELETE on the append-only deletion log.
+    expected to FAIL: AppendOnly
+      - AppendOnly: FAIL (expected)
+
+  - MUTATE F_AuditCompleteness  → runs/B-L1/mutated_F_AuditCompleteness.als
+    rationale: removing the completeness link allows a successful DeleteOp without a corresponding TaskDeletion row, which is the missing-audit-entry counterexample.
+    expected to FAIL: AuditCompleteness, FR_018_DeletionLogged
+      - AuditCompleteness: PASS (vacuous?)
+      - FR_018_DeletionLogged: PASS (vacuous?)
+
+  - MUTATE F_AttributionCorrectness  → runs/B-L1/mutated_F_AttributionCorrectness.als
+    rationale: removing the attribution constraint lets a deletion row record a different user than the operation's actual caller, the misattribution counterexample.
+    expected to FAIL: AttributionCorrectness
+      - AttributionCorrectness: FAIL (expected)
+
+  - MUTATE F_ClosedTaskRule  → runs/B-L1/mutated_F_ClosedTaskRule.als
+    rationale: removing the closed-task rule lets the model invent a successful PATCH on a Done task that doesn't simultaneously reopen it — the exact 409 task_closed scenario the contract is built to forbid.
+    expected to FAIL: FR_011_ClosedTaskEditRule
+      - FR_011_ClosedTaskEditRule: FAIL (expected)
+
+  - MUTATE F_NoOpOnDeletedTask  → runs/B-L1/mutated_F_NoOpOnDeletedTask.als
+    rationale: removing the no-op-after-deletion rule allows a non-delete operation to target a task that has already been logged as deleted, breaking the 'deletion is permanent' guarantee.
+    expected to FAIL: FR_012_NoOpAfterDeletion
+      - FR_012_NoOpAfterDeletion: FAIL (expected)
+
+  Mutation summary
+  ----------------------------------------------------------------------------
+  - F_AuthRequired: ASSERTIONS BIT (AuthRequiredEverywhere, FR_001_AuthRequired)
+  - F_AppendOnlyDeletions: ASSERTIONS BIT (AppendOnly)
+  - F_AuditCompleteness: ASSERTION VACUOUS (AuditCompleteness, FR_018_DeletionLogged)
+  - F_AttributionCorrectness: ASSERTIONS BIT (AttributionCorrectness)
+  - F_ClosedTaskRule: ASSERTIONS BIT (FR_011_ClosedTaskEditRule)
+  - F_NoOpOnDeletedTask: ASSERTIONS BIT (FR_012_NoOpAfterDeletion)
+

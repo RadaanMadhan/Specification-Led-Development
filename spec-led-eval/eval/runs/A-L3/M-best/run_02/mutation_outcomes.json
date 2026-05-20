@@ -1,0 +1,50 @@
+{
+  "F_LeastPrivilegeEnforced": {
+    "targeted_asserts": {
+      "LeastPrivilege": "BIT",
+      "FR_005_AuditorReadOnly": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AuthRequiredBeforeBusinessLogic": {
+    "targeted_asserts": {
+      "AuthRequiredEverywhere": "VACUOUS_OVERCONSTRAINT",
+      "FR_001_AuthRequired": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_AuditCompletenessForTransitions": {
+    "targeted_asserts": {
+      "AuditCompleteness": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AppendOnlyAuditEntries": {
+    "targeted_asserts": {
+      "AppendOnly": "BIT",
+      "FR_018_AppendOnly": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_NoSelfAssignment": {
+    "targeted_asserts": {
+      "NoSelfMutation": "BIT",
+      "FR_011_NoSelfAssignment": "BIT",
+      "FR_013_NoSelfDecision": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_NoInformationLeakageOnRead": {
+    "targeted_asserts": {
+      "NoInformationLeakage": "BIT",
+      "FR_020_ByteEquivalent": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_OwnershipBasedReadAccess": {
+    "targeted_asserts": {
+      "OwnershipBasedAccess": "BIT"
+    },
+    "all_bit": true
+  }
+}

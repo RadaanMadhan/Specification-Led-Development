@@ -1,0 +1,54 @@
+{
+  "F_RoleAllowsKind": {
+    "targeted_asserts": {
+      "LeastPrivilege": "BIT",
+      "FR_005_AuditorReadOnly": "BIT",
+      "FR_022_PostNoLeak": "BIT",
+      "FR_023_AuditAuditorOnly": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AuditExists": {
+    "targeted_asserts": {
+      "AuditCompleteness": "BIT",
+      "FR_017_AuditWithTransition": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AuditEntryHasSource": {
+    "targeted_asserts": {
+      "AppendOnly": "BIT",
+      "FR_018_AuditAppendOnly": "BIT",
+      "FR_019_NoDelete": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_NoSelfAssignment": {
+    "targeted_asserts": {
+      "NoSelfMutation": "BIT",
+      "FR_011_NoSelfAssignment": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_PatchStatusRules": {
+    "targeted_asserts": {
+      "OwnershipBasedAccess": "BIT",
+      "FR_012_AssignedOfficerOnly": "BIT",
+      "FR_013_NoSelfDecision": "BIT",
+      "FR_004_OfficerScope": "BIT",
+      "NoSelfMutation": "BIT",
+      "FR_009_AllowedTransitions": "BIT",
+      "FR_015_NoChangeAfterDecided": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_GetApplicationByIdAccess": {
+    "targeted_asserts": {
+      "NoInformationLeakage": "BIT",
+      "FR_020_NoLeakOnGet": "BIT",
+      "FR_021_SameForOwnership": "BIT",
+      "OwnershipBasedAccess": "BIT"
+    },
+    "all_bit": true
+  }
+}

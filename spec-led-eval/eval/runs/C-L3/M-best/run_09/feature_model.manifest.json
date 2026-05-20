@@ -1,0 +1,164 @@
+{
+  "feature_id": "013-hipaa-clinical-records",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "ValidationBeforeMutation"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_OneRolePerUser",
+    "FR_003_PatientAssignedRecord",
+    "FR_004_ClinicianCareTeam",
+    "FR_005_ClinicianNoAccessLog",
+    "FR_006_PatientOwnOnly",
+    "FR_007_ComplianceNoClinicalRead",
+    "FR_008_ByteEquivalent",
+    "FR_010_ValidationFirst",
+    "FR_011_NoteAuthorClinician",
+    "FR_012_NotesAppendOnly",
+    "FR_013_AuditAlways",
+    "FR_014_AuditFields",
+    "FR_015_AuditImmutable",
+    "FR_018_AccessLogComplianceOnly",
+    "FR_019_ComplianceContentBlind"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_OneRolePerUser"
+    ],
+    "FR-003": [
+      "FR_003_PatientAssignedRecord",
+      "OwnershipExclusivity"
+    ],
+    "FR-004": [
+      "FR_004_ClinicianCareTeam",
+      "OwnershipBasedAccess"
+    ],
+    "FR-005": [
+      "FR_005_ClinicianNoAccessLog",
+      "LeastPrivilege"
+    ],
+    "FR-006": [
+      "FR_006_PatientOwnOnly",
+      "OwnershipBasedAccess",
+      "LeastPrivilege"
+    ],
+    "FR-007": [
+      "FR_007_ComplianceNoClinicalRead",
+      "LeastPrivilege"
+    ],
+    "FR-008": [
+      "FR_008_ByteEquivalent",
+      "NoInformationLeakage"
+    ],
+    "FR-009": [
+      "FR_008_ByteEquivalent"
+    ],
+    "FR-010": [
+      "FR_010_ValidationFirst",
+      "ValidationBeforeMutation"
+    ],
+    "FR-011": [
+      "FR_011_NoteAuthorClinician",
+      "AttributionCorrectness"
+    ],
+    "FR-012": [
+      "FR_012_NotesAppendOnly",
+      "AppendOnly"
+    ],
+    "FR-013": [
+      "FR_013_AuditAlways",
+      "AuditCompleteness"
+    ],
+    "FR-014": [
+      "FR_014_AuditFields",
+      "AttributionCorrectness"
+    ],
+    "FR-015": [
+      "FR_015_AuditImmutable",
+      "AppendOnly"
+    ],
+    "FR-016": [
+      "FR_013_AuditAlways"
+    ],
+    "FR-017": [
+      "FR_015_AuditImmutable"
+    ],
+    "FR-018": [
+      "FR_018_AccessLogComplianceOnly"
+    ],
+    "FR-019": [
+      "FR_019_ComplianceContentBlind"
+    ],
+    "FR-020": [
+      "FR_004_ClinicianCareTeam"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_AppendOnlyAudit",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_015_AuditImmutable"
+      ],
+      "rationale": "Removing this fact lets the model invent a state in which two AuditEntry atoms are pinned to the same AccessEvent \u2014 exactly the duplicate/overwrite shape an append-only audit log must rule out.",
+      "inject_violation": "fact MUTATE_AppendOnlyAuditViolation { some disj a1, a2: AuditEntry | a1.auditEvent = a2.auditEvent }"
+    },
+    {
+      "fact_name": "F_ClinicianCareTeamRequired",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_004_ClinicianCareTeam"
+      ],
+      "rationale": "Clearing the care-team-gating fact lets a clinician's GetRecord be Permitted with no matching active CareTeamMembership row \u2014 the exact failure mode the care-team predicate is designed to catch.",
+      "inject_violation": "fact MUTATE_ClinicianCareTeamViolation { some e: AccessEvent | e.caller.role = Clinician and e.endpoint = GetRecord and e.outcome = Permitted and (no m: CareTeamMembership | m.ctClinician = e.caller and m.ctRecord = e.target and m.ctActive = BTrue) }"
+    },
+    {
+      "fact_name": "F_PatientSelfOnly",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_006_PatientOwnOnly"
+      ],
+      "rationale": "Without the patient-self-only fact, a Patient can have a Permitted GetRecord on a target that is not their assignedRecord, which is the exact cross-patient leak the OwnershipBasedAccess assertion checks for.",
+      "inject_violation": "fact MUTATE_PatientCrossRecordViolation { some e: AccessEvent | e.caller.role = Patient and e.endpoint = GetRecord and e.outcome = Permitted and e.target != e.caller.assignedRecord }"
+    },
+    {
+      "fact_name": "F_NoteAuthorIsClinician",
+      "asserts_violated": [
+        "FR_011_NoteAuthorClinician"
+      ],
+      "rationale": "Removing the snapshot-role constraint lets a ClinicalNote exist whose noteAuthorRoleSnapshot is Patient \u2014 i.e., misattribution at the snapshot field, exactly what FR-011's clinician-author snapshot rule forbids.",
+      "inject_violation": "fact MUTATE_NoteAuthorRoleViolation { some n: ClinicalNote | n.noteAuthorRoleSnapshot = Patient }"
+    },
+    {
+      "fact_name": "F_AuthRequiredForPermitted",
+      "asserts_violated": [
+        "AuthRequiredEverywhere",
+        "FR_001_AuthRequired"
+      ],
+      "rationale": "Clearing the auth-gating fact lets an unauthenticated AccessEvent end up Permitted \u2014 the bypass-the-auth-boundary scenario FR-001 explicitly rules out.",
+      "inject_violation": "fact MUTATE_UnauthenticatedPermittedViolation { some e: AccessEvent | e.authenticated = BFalse and e.outcome = Permitted }"
+    },
+    {
+      "fact_name": "F_ComplianceCannotReadRecord",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_007_ComplianceNoClinicalRead"
+      ],
+      "rationale": "Without the compliance-cannot-read-record fact, a ComplianceOfficer can produce a Permitted GetRecord \u2014 a (role, endpoint) cell the permission matrix denies, exactly what LeastPrivilege checks.",
+      "inject_violation": "fact MUTATE_ComplianceReadRecordViolation { some e: AccessEvent | e.caller.role = ComplianceOfficer and e.endpoint = GetRecord and e.outcome = Permitted }"
+    }
+  ]
+}

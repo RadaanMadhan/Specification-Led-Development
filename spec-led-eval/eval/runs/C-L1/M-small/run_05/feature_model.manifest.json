@@ -1,0 +1,126 @@
+{
+  "feature_id": "C-L1",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_RoleIdentity",
+    "FR_004_NoPatientIdInURL",
+    "FR_005_ReadOnly",
+    "FR_006_CareTeamGating",
+    "FR_007_ByteEquivalent",
+    "FR_008_AlwaysAudit",
+    "FR_009_AuditShape",
+    "FR_010_AuditImmutable",
+    "FR_011_AuditSearchGating",
+    "FR_012_RetentionFloor",
+    "FR_013_AuditSLA",
+    "FR_014_AllergiesWarningsTop",
+    "FR_015_PatientIdAndDoBTop"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_RoleIdentity"
+    ],
+    "FR-004": [
+      "FR_004_NoPatientIdInURL"
+    ],
+    "FR-005": [
+      "FR_005_ReadOnly"
+    ],
+    "FR-006": [
+      "FR_006_CareTeamGating",
+      "OwnershipBasedAccess"
+    ],
+    "FR-007": [
+      "FR_007_ByteEquivalent",
+      "NoInformationLeakage"
+    ],
+    "FR-008": [
+      "FR_008_AlwaysAudit",
+      "AuditCompleteness"
+    ],
+    "FR-009": [
+      "FR_009_AuditShape",
+      "AttributionCorrectness"
+    ],
+    "FR-010": [
+      "FR_010_AuditImmutable",
+      "AppendOnly"
+    ],
+    "FR-011": [
+      "FR_011_AuditSearchGating"
+    ],
+    "FR-012": [
+      "FR_012_RetentionFloor"
+    ],
+    "FR-013": [
+      "FR_013_AuditSLA"
+    ],
+    "FR-014": [
+      "FR_014_AllergiesWarningsTop"
+    ],
+    "FR-015": [
+      "FR_015_PatientIdAndDoBTop"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "PermissionCompleteness"
+      ],
+      "rationale": "Removing the permission matrix definition allows Alloy to introduce unauthorized (role, operation) pairs, which the LeastPrivilege and PermissionCompleteness assertions should catch.",
+      "inject_violation": "fact MUTATE_PermissionViolation { some r: ClinicianRole, op: OperationKind | r -> op in (Doctor -> AuditSearch) and not (r -> op in PermMatrix.Allowed) }"
+    },
+    {
+      "fact_name": "F_AuditCompleteness",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_008_AlwaysAudit"
+      ],
+      "rationale": "Removing the constraint that every access request produces exactly one audit entry allows Alloy to create access requests without corresponding audit entries, which violates the audit-completeness invariant.",
+      "inject_violation": "fact MUTATE_MissingAudit { some ar: AccessRequest | no ae: AuditEntry | ae = ar.result_audit }"
+    },
+    {
+      "fact_name": "F_AppendOnly",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_010_AuditImmutable"
+      ],
+      "rationale": "Removing the constraint that audit entry IDs are unique allows Alloy to create two audit entries with the same id, which violates the immutability invariant.",
+      "inject_violation": "fact MUTATE_DuplicateAuditId { some disj ae1, ae2: AuditEntry | ae1.id = ae2.id }"
+    },
+    {
+      "fact_name": "F_OwnershipBasedAccess",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_006_CareTeamGating"
+      ],
+      "rationale": "Removing the care-team-membership gating constraint allows Alloy to grant permitted access to a clinician who is not on the patient's care team, violating the ownership-based access control invariant.",
+      "inject_violation": "fact MUTATE_UnauthorizedAccess { some ar: AccessRequest | ar.operation = RecordsLookup and ar.result_audit.outcome = Permitted and no ctm: CareTeamMembership | ctm.clinician = ar.requester and ctm.patient.id = ar.patient_id and ctm.status = Active }"
+    },
+    {
+      "fact_name": "F_NoInformationLeakage",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "FR_007_ByteEquivalent"
+      ],
+      "rationale": "Removing the constraint that denied and not-found outcomes are byte-identical allows Alloy to distinguish between these outcomes, leaking information about patient existence.",
+      "inject_violation": "fact MUTATE_InformationLeakage { some ar: AccessRequest | ar.operation = RecordsLookup and ar.result_audit.outcome = Denied and some ar2: AccessRequest | ar2.operation = RecordsLookup and ar2.result_audit.outcome = NotFoundOrDenied and ar.result_audit != ar2.result_audit }"
+    }
+  ]
+}

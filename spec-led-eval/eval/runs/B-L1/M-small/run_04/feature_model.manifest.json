@@ -1,0 +1,104 @@
+{
+  "feature_id": "B-L1",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "PermissionGrounding",
+    "AuthRequiredEverywhere",
+    "OwnershipExclusivity",
+    "AttributionCorrectness",
+    "AppendOnly",
+    "ValidationBeforeMutation",
+    "AuditCompleteness"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_IdentityFromAuth",
+    "FR_004_FlatPermissions",
+    "FR_005_TitleValid",
+    "FR_006_DescriptionValid",
+    "FR_008_AssigneeIsMember",
+    "FR_009_CreatorImmutable",
+    "FR_010_StatusEnum",
+    "FR_012_DeletionPermanent",
+    "FR_014_ListOrdered",
+    "FR_018_DeletionLogged"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_IdentityFromAuth"
+    ],
+    "FR-004": [
+      "FR_004_FlatPermissions",
+      "LeastPrivilege"
+    ],
+    "FR-005": [
+      "FR_005_TitleValid"
+    ],
+    "FR-006": [
+      "FR_006_DescriptionValid"
+    ],
+    "FR-008": [
+      "FR_008_AssigneeIsMember"
+    ],
+    "FR-009": [
+      "FR_009_CreatorImmutable",
+      "OwnershipExclusivity"
+    ],
+    "FR-010": [
+      "FR_010_StatusEnum"
+    ],
+    "FR-012": [
+      "FR_012_DeletionPermanent",
+      "AppendOnly"
+    ],
+    "FR-014": [
+      "FR_014_ListOrdered"
+    ],
+    "FR-018": [
+      "FR_018_DeletionLogged",
+      "AuditCompleteness"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege"
+      ],
+      "rationale": "Removing this fact allows Alloy to invent a scenario where a Member lacks permission to perform an Operation, violating the flat peer model (FR-004) that LeastPrivilege asserts. The injected violation explicitly forbids at least one (Member, Operation) pair from the Allowed matrix.",
+      "inject_violation": "fact MUTATE_LeastPrivilegeViolation { some m: Member, o: OperationKind | (m -> o) not in PermMatrix.Allowed }"
+    },
+    {
+      "fact_name": "F_TaskDeletionUniqueness",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_012_DeletionPermanent"
+      ],
+      "rationale": "Removing this fact allows Alloy to construct multiple TaskDeletion entries for the same Task atom, violating the append-only invariant (each task deleted at most once) that AppendOnly asserts.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some disj d1, d2: TaskDeletion | d1.deleted_task = d2.deleted_task }"
+    },
+    {
+      "fact_name": "F_TitleLengthConstraint",
+      "asserts_violated": [
+        "ValidationBeforeMutation",
+        "FR_005_TitleValid"
+      ],
+      "rationale": "Removing this fact allows Alloy to invent a Task with title_length outside [1, 200], violating the input validation invariant (FR-005) that ValidationBeforeMutation asserts.",
+      "inject_violation": "fact MUTATE_ValidationTitleViolation { some t: Task | t.title_length < 1 or t.title_length > 200 }"
+    },
+    {
+      "fact_name": "F_DescriptionLengthConstraint",
+      "asserts_violated": [
+        "ValidationBeforeMutation",
+        "FR_006_DescriptionValid"
+      ],
+      "rationale": "Removing this fact allows Alloy to invent a Task with description_length outside [0, 4000], violating the input validation invariant (FR-006) that ValidationBeforeMutation asserts.",
+      "inject_violation": "fact MUTATE_ValidationDescriptionViolation { some t: Task | t.description_length < 0 or t.description_length > 4000 }"
+    }
+  ]
+}

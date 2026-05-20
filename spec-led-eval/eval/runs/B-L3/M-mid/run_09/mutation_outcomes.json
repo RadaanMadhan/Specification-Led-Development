@@ -1,0 +1,46 @@
+{
+  "F_PermissionMatrix": {
+    "targeted_asserts": {
+      "LeastPrivilege": "BIT",
+      "NoInformationLeakage": "BIT",
+      "FR_006_CrossTeamIsolation": "BIT",
+      "PermissionCompleteness": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AppendOnlyAuditEntries": {
+    "targeted_asserts": {
+      "AppendOnly": "BIT",
+      "FR_017_AuditOutlivesTask": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AttributionCorrectness": {
+    "targeted_asserts": {
+      "AttributionCorrectness": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_ShareesSameTeam": {
+    "targeted_asserts": {
+      "FR_012_NoSameTeamSharing": "BIT",
+      "OwnershipBasedAccess": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_TaskOwnerSameTeam": {
+    "targeted_asserts": {
+      "OwnershipExclusivity": "BIT",
+      "FR_006_CrossTeamIsolation": "BIT",
+      "FR_009_ImmutableOwnerAndTeam": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_DeletedTaskHasDeletedEntry": {
+    "targeted_asserts": {
+      "FR_017_AuditOutlivesTask": "BIT",
+      "AppendOnly": "BIT"
+    },
+    "all_bit": true
+  }
+}

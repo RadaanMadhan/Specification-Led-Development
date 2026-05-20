@@ -1,0 +1,144 @@
+{
+  "feature_id": "A-L3",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "NoSelfMutation",
+    "ValidationBeforeMutation"
+  ],
+  "feature_specific_predicates": [
+    "FR_002_NoOfficerAuditorCoexistence",
+    "FR_007_AmountAndPurposeValidation",
+    "FR_008_OneInFlightApplication",
+    "FR_009_StatusStateMachine",
+    "FR_010_AutoOfficerAssignment",
+    "FR_011_AssignmentExcludesApplicant",
+    "FR_012_OnlyAssignedOfficerCanPatch",
+    "FR_013_NoSelfApproval",
+    "FR_014_ReasonFieldRequired",
+    "FR_015_TerminalDecisionStates",
+    "FR_016_AuditEntryPerTransition",
+    "FR_018_AuditLogImmutable",
+    "FR_020_ByteEquivalentUnauthorized",
+    "FR_024_ApplicantFieldsImmutable"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_NoOfficerAuditorCoexistence"
+    ],
+    "FR-007": [
+      "FR_007_AmountAndPurposeValidation",
+      "ValidationBeforeMutation"
+    ],
+    "FR-008": [
+      "FR_008_OneInFlightApplication",
+      "OwnershipExclusivity"
+    ],
+    "FR-009": [
+      "FR_009_StatusStateMachine"
+    ],
+    "FR-010": [
+      "FR_010_AutoOfficerAssignment"
+    ],
+    "FR-011": [
+      "FR_011_AssignmentExcludesApplicant"
+    ],
+    "FR-012": [
+      "FR_012_OnlyAssignedOfficerCanPatch",
+      "OwnershipBasedAccess"
+    ],
+    "FR-013": [
+      "FR_013_NoSelfApproval",
+      "NoSelfMutation"
+    ],
+    "FR-014": [
+      "FR_014_ReasonFieldRequired"
+    ],
+    "FR-015": [
+      "FR_015_TerminalDecisionStates"
+    ],
+    "FR-016": [
+      "FR_016_AuditEntryPerTransition",
+      "AuditCompleteness",
+      "AttributionCorrectness"
+    ],
+    "FR-018": [
+      "FR_018_AuditLogImmutable",
+      "AppendOnly"
+    ],
+    "FR-020": [
+      "FR_020_ByteEquivalentUnauthorized",
+      "NoInformationLeakage"
+    ],
+    "FR-021": [
+      "FR_020_ByteEquivalentUnauthorized",
+      "NoInformationLeakage"
+    ],
+    "FR-024": [
+      "FR_024_ApplicantFieldsImmutable"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege"
+      ],
+      "rationale": "Removing the PermMatrix constraint allows non-allowed role-operation pairs to be claimed as valid, which the LeastPrivilege assertion checks directly.",
+      "inject_violation": "fact MUTATE_PermissionViolation { Applicant -> PatchApplicationsStatus in PermMatrix.allowed }"
+    },
+    {
+      "fact_name": "F_AppendOnlyAuditLog",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_018_AuditLogImmutable"
+      ],
+      "rationale": "Removing append-only enforcement allows duplicate audit entries for the same transition, which the assertions explicitly forbid.",
+      "inject_violation": "fact MUTATE_DuplicateAuditEntry { some disj ae1, ae2: AuditEntry | ae1.application = ae2.application and ae1.previous_status = ae2.previous_status and ae1.new_status = ae2.new_status and ae1 != ae2 }"
+    },
+    {
+      "fact_name": "F_NoSelfDecision",
+      "asserts_violated": [
+        "NoSelfMutation",
+        "FR_013_NoSelfApproval"
+      ],
+      "rationale": "Removing the no-self-decision constraint allows officers to decide their own applications, violating the conflict-of-interest rule.",
+      "inject_violation": "fact MUTATE_SelfDecision { some ae: AuditEntry | Officer in ae.actor.roles and ae.previous_status != none and ae.actor = ae.application.applicant }"
+    },
+    {
+      "fact_name": "F_OneInFlightPerApplicant",
+      "asserts_violated": [
+        "FR_008_OneInFlightApplication"
+      ],
+      "rationale": "Removing the in-flight constraint allows an applicant to have multiple pending or under-review applications simultaneously.",
+      "inject_violation": "fact MUTATE_MultipleInFlight { some disj app1, app2: LoanApplication | app1.applicant = app2.applicant and app1.status in (Pending + UnderReview) and app2.status in (Pending + UnderReview) }"
+    },
+    {
+      "fact_name": "F_OnlyAssignedOfficerCanPatch",
+      "asserts_violated": [
+        "FR_012_OnlyAssignedOfficerCanPatch",
+        "OwnershipBasedAccess"
+      ],
+      "rationale": "Removing this fact allows any officer to patch an application they are not assigned to, violating ownership-based access control.",
+      "inject_violation": "fact MUTATE_UnauthorizedPatch { some ae: AuditEntry | ae.previous_status != none and ae.actor != ae.application.assigned_officer }"
+    },
+    {
+      "fact_name": "F_AuditCompleteness",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_016_AuditEntryPerTransition"
+      ],
+      "rationale": "Removing audit completeness allows applications to change status without corresponding audit entries, breaking the audit invariant.",
+      "inject_violation": "fact MUTATE_MissingAudit { some app: LoanApplication | no ae: AuditEntry | ae.application = app and ae.new_status = app.status }"
+    }
+  ]
+}

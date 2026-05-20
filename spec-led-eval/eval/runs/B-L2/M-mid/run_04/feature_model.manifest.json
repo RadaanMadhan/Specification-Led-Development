@@ -1,0 +1,169 @@
+{
+  "feature_id": "B-L2",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "PrivilegeMonotonicity",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "NoSelfMutation",
+    "ValidationBeforeMutation"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_003_TeamContextRequired",
+    "FR_005_TaskTeamImmutable",
+    "FR_006_OwnerImmutable",
+    "FR_007_UniquePerTeamRole",
+    "FR_008_MemberCanCreateAndReadAny",
+    "FR_009_NonOwnerMemberDenied",
+    "FR_010_AdminCanMutateAnyTeamTask",
+    "FR_011_CrossTeamIsolationForAdmin",
+    "FR_015_OneCreatedAuditEntryPerTask",
+    "FR_015_ActorRoleSnapshot",
+    "FR_016_AuditOutlivesTask",
+    "FR_017_AuditReadableByAnyTeamMember",
+    "FR_017_AuditCrossTeamIsolation"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_001_AuthRequired"
+    ],
+    "FR-003": [
+      "FR_003_TeamContextRequired"
+    ],
+    "FR-004": [
+      "FR_003_TeamContextRequired",
+      "NoInformationLeakage"
+    ],
+    "FR-005": [
+      "FR_005_TaskTeamImmutable",
+      "OwnershipExclusivity"
+    ],
+    "FR-006": [
+      "FR_006_OwnerImmutable",
+      "NoSelfMutation"
+    ],
+    "FR-007": [
+      "FR_007_UniquePerTeamRole"
+    ],
+    "FR-008": [
+      "FR_008_MemberCanCreateAndReadAny",
+      "OwnershipBasedAccess",
+      "LeastPrivilege"
+    ],
+    "FR-009": [
+      "FR_009_NonOwnerMemberDenied",
+      "LeastPrivilege"
+    ],
+    "FR-010": [
+      "FR_010_AdminCanMutateAnyTeamTask",
+      "PrivilegeMonotonicity"
+    ],
+    "FR-011": [
+      "FR_011_CrossTeamIsolationForAdmin",
+      "NoInformationLeakage"
+    ],
+    "FR-012": [
+      "ValidationBeforeMutation"
+    ],
+    "FR-013": [
+      "OwnershipExclusivity"
+    ],
+    "FR-014": [
+      "NoInformationLeakage",
+      "FR_011_CrossTeamIsolationForAdmin",
+      "FR_017_AuditCrossTeamIsolation"
+    ],
+    "FR-015": [
+      "FR_015_OneCreatedAuditEntryPerTask",
+      "FR_015_ActorRoleSnapshot",
+      "AuditCompleteness",
+      "AttributionCorrectness"
+    ],
+    "FR-016": [
+      "AppendOnly",
+      "FR_016_AuditOutlivesTask"
+    ],
+    "FR-017": [
+      "FR_017_AuditReadableByAnyTeamMember",
+      "FR_017_AuditCrossTeamIsolation"
+    ],
+    "FR-018": [
+      "AppendOnly"
+    ],
+    "FR-019": [
+      "FR_008_MemberCanCreateAndReadAny"
+    ],
+    "FR-020": [
+      "FR_008_MemberCanCreateAndReadAny"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_OwnerOrAdminForMutation",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "OwnershipBasedAccess",
+        "FR_009_NonOwnerMemberDenied"
+      ],
+      "rationale": "Removing this fact allows a non-owner member to perform a successful PatchTask or DeleteTask, directly violating the owner-or-admin gate that FR-009 requires. The injection forces a concrete counterexample: a MemberRole operation on a task they do not own that succeeds.",
+      "inject_violation": "fact MUTATE_OwnerOrAdminViolation { some op : Operation | op.opKind = PatchTask and op.opCallerRole = MemberRole and op.opOutcome = Success and (all t : Task | t = op.opTask implies t.taskOwner != op.opCaller) }"
+    },
+    {
+      "fact_name": "F_CrossTeamOperationsReturnNotFound",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "FR_011_CrossTeamIsolationForAdmin",
+        "FR_017_AuditCrossTeamIsolation"
+      ],
+      "rationale": "Removing this fact permits a cross-team task access to succeed (outcome != NotFound404), which violates the byte-equivalent 404 isolation invariant from FR-014. The injection forces a cross-team operation to succeed, leaking the existence of a task in another team.",
+      "inject_violation": "fact MUTATE_CrossTeamLeakage { some op : Operation | op.opTask != none and op.opTask.taskTeam != op.opCallerTeam and op.opOutcome = Success }"
+    },
+    {
+      "fact_name": "F_ExactlyOneCreatedEntry",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_015_OneCreatedAuditEntryPerTask"
+      ],
+      "rationale": "Removing this fact allows a task to exist with zero or two CreatedChange audit entries, breaking the per-edit-event completeness invariant from FR-015. The injection creates a task for which no CreatedChange entry exists.",
+      "inject_violation": "fact MUTATE_MissingCreatedEntry { some t : Task | no ae : AuditEntry | ae.aeTask = t and ae.aeChange = CreatedChange }"
+    },
+    {
+      "fact_name": "F_DeletedChangeForDeletedTask",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_016_AuditOutlivesTask"
+      ],
+      "rationale": "Removing this fact disconnects the DeletedChange requirement from DeletedTask, allowing a deleted task to lack its final audit entry, which undermines the audit-outlives-task invariant from FR-016.",
+      "inject_violation": "fact MUTATE_MissingDeletedEntry { some t : DeletedTask | no ae : AuditEntry | ae.aeTask = t and ae.aeChange = DeletedChange }"
+    },
+    {
+      "fact_name": "F_ModifiedChangeLinkedToSuccessfulPatch",
+      "asserts_violated": [
+        "AttributionCorrectness",
+        "ValidationBeforeMutation"
+      ],
+      "rationale": "Removing this fact allows a ModifiedChange audit entry to exist without a corresponding successful PatchTask operation, breaking attribution correctness (FR-015). The injection creates an unanchored ModifiedChange entry whose actor has no matching successful operation.",
+      "inject_violation": "fact MUTATE_UnanchoredModifiedEntry { some ae : AuditEntry | ae.aeChange in ModifiedChange and (no op : Operation | op.opKind = PatchTask and op.opOutcome = Success and op.opTask = ae.aeTask and op.opCaller = ae.aeActor) }"
+    },
+    {
+      "fact_name": "F_NonOwnerNonAdminDenied",
+      "asserts_violated": [
+        "FR_009_NonOwnerMemberDenied",
+        "LeastPrivilege"
+      ],
+      "rationale": "Removing this fact allows a MemberRole non-owner caller to receive an outcome other than Denied403 on PatchTask/DeleteTask for a task they don't own, which contradicts the 403 permission_denied requirement in FR-009 and the permission matrix. The injection forces a non-owner member to get Success.",
+      "inject_violation": "fact MUTATE_NonOwnerNotDenied { some op : Operation | op.opKind = PatchTask and op.opCallerRole = MemberRole and op.opTask != none and op.opTask.taskTeam = op.opCallerTeam and op.opTask.taskOwner != op.opCaller and op.opOutcome = Success }"
+    }
+  ]
+}

@@ -1,0 +1,125 @@
+{
+  "feature_id": "B-L3",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "AppendOnly",
+    "AuditCompleteness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "AuthRequiredEverywhere",
+    "AttributionCorrectness",
+    "PermissionCompleteness",
+    "PermissionGrounding",
+    "ValidationBeforeMutation"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_TeamFromToken",
+    "FR_003_MemberPermissions",
+    "FR_005_AdminTeamAccess",
+    "FR_006_CrossTeamIsolation",
+    "FR_010_OwnerOnlyShareControl",
+    "FR_012_NoTeamSharing",
+    "FR_014_ByteEquivalentNotFound",
+    "FR_015_AuditCompleteness",
+    "FR_017_AuditImmutable",
+    "FR_019_AuditReadAccess"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_TeamFromToken"
+    ],
+    "FR-003": [
+      "FR_003_MemberPermissions"
+    ],
+    "FR-004": [
+      "FR_003_MemberPermissions"
+    ],
+    "FR-005": [
+      "FR_005_AdminTeamAccess"
+    ],
+    "FR-006": [
+      "FR_006_CrossTeamIsolation"
+    ],
+    "FR-009": [
+      "OwnershipExclusivity"
+    ],
+    "FR-010": [
+      "FR_010_OwnerOnlyShareControl",
+      "OwnershipBasedAccess"
+    ],
+    "FR-012": [
+      "FR_012_NoTeamSharing"
+    ],
+    "FR-014": [
+      "FR_014_ByteEquivalentNotFound",
+      "NoInformationLeakage"
+    ],
+    "FR-015": [
+      "FR_015_AuditCompleteness",
+      "AuditCompleteness"
+    ],
+    "FR-016": [
+      "AttributionCorrectness"
+    ],
+    "FR-017": [
+      "FR_017_AuditImmutable",
+      "AppendOnly"
+    ],
+    "FR-019": [
+      "FR_019_AuditReadAccess"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_AuditImmutable",
+      "asserts_violated": [
+        "FR_017_AuditImmutable",
+        "AppendOnly"
+      ],
+      "rationale": "Removing this fact allows the model to invent a state where an AuditEntry is modified (same task, actor, operation but different entry), which is exactly what the AppendOnly and AuditImmutable assertions are supposed to catch.",
+      "inject_violation": "fact MUTATE_AuditNotImmutable { some disj ae1, ae2: AuditEntry | ae1.task = ae2.task and ae1.actor = ae2.actor and ae1.operation = ae2.operation and ae1 != ae2 }"
+    },
+    {
+      "fact_name": "F_OwnerOnlyShareControl",
+      "asserts_violated": [
+        "FR_010_OwnerOnlyShareControl",
+        "OwnershipBasedAccess"
+      ],
+      "rationale": "Removing this fact lets the model invent a share where the sharee equals the owner, violating the ownership-based access control pattern. This tests that only the owner can control the share list.",
+      "inject_violation": "fact MUTATE_ShareeEqualsOwner { some ts: TaskShare, to: TaskOwnership | ts.task = to.task and ts.sharee = to.owner }"
+    },
+    {
+      "fact_name": "F_NoTeamSharing",
+      "asserts_violated": [
+        "FR_012_NoTeamSharing"
+      ],
+      "rationale": "Removing this fact allows the model to invent cross-team shares, violating FR-012. The assertion checks that all sharees belong to the same team as the task owner.",
+      "inject_violation": "fact MUTATE_CrossTeamShare { some ts: TaskShare, to: TaskOwnership, utaS: UserTeamAssignment, utaO: UserTeamAssignment | ts.task = to.task and utaS.user = ts.sharee and utaO.user = to.owner and utaS.team != utaO.team }"
+    },
+    {
+      "fact_name": "F_CrossTeamIsolation",
+      "asserts_violated": [
+        "FR_006_CrossTeamIsolation",
+        "NoInformationLeakage",
+        "FR_014_ByteEquivalentNotFound"
+      ],
+      "rationale": "Removing this fact lets the model invent a state where a user from a different team can access (share or ownership) a task, directly violating the cross-team isolation guarantee and byte-equivalent 404 requirements.",
+      "inject_violation": "fact MUTATE_CrossTeamAccess { some u: User, t: Task, utaU: UserTeamAssignment, to: TaskOwnership, ts: TaskShare | utaU.user = u and to.task = t and ts.task = t and ts.sharee = u and utaU.team != to.team }"
+    },
+    {
+      "fact_name": "F_AuditCompleteness",
+      "asserts_violated": [
+        "FR_015_AuditCompleteness",
+        "AuditCompleteness"
+      ],
+      "rationale": "Removing this fact lets the model invent a task with a TaskOwnership but no corresponding Created audit entry, violating the requirement that every task mutation produces an audit entry.",
+      "inject_violation": "fact MUTATE_NoAuditForCreation { some t: Task | (some to: TaskOwnership | to.task = t) and (no ae: AuditEntry | ae.task = t and ae.operation = Created) }"
+    }
+  ]
+}

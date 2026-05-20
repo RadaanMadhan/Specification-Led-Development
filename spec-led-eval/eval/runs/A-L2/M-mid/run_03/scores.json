@@ -1,0 +1,397 @@
+{
+  "run_id": "A-L2/M-mid/run_03",
+  "cell": "A-L2",
+  "model": "M-mid",
+  "rep": 3,
+  "D1": 1.0,
+  "D2": 1.0,
+  "D3": 0.75,
+  "D4": 0.9130434782608695,
+  "aqs_partial": 0.9157608695652174,
+  "scored_at": "2026-05-20T04:29:04.035686+00:00",
+  "details": {
+    "D1": {
+      "n_assertions": 29,
+      "n_verdicts": 29
+    },
+    "D2": {
+      "patterns_applied": [
+        "LeastPrivilege",
+        "PermissionCompleteness",
+        "AuthRequiredEverywhere",
+        "AuditCompleteness",
+        "AppendOnly",
+        "AttributionCorrectness",
+        "OwnershipExclusivity",
+        "OwnershipBasedAccess",
+        "NoInformationLeakage",
+        "ValidationBeforeMutation",
+        "ConcurrencySafety"
+      ],
+      "per_pattern": {
+        "LeastPrivilege": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "PermissionCompleteness": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "AuthRequiredEverywhere": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "AuditCompleteness": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "AppendOnly": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "AttributionCorrectness": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "OwnershipExclusivity": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "OwnershipBasedAccess": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "NoInformationLeakage": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "ValidationBeforeMutation": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "ConcurrencySafety": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        }
+      }
+    },
+    "D3": {
+      "per_target": {
+        "F_PermissionMatrix": {
+          "targeted_asserts": {
+            "LeastPrivilege": "VACUOUS_OVERCONSTRAINT",
+            "FR_002_CustomerPermissions": "VACUOUS_OVERCONSTRAINT",
+            "FR_003_LoanOfficerPermissions": "VACUOUS_OVERCONSTRAINT",
+            "FR_004_ComplianceReviewerPermissions": "VACUOUS_OVERCONSTRAINT",
+            "FR_023_ComplianceReadOnly": "VACUOUS_OVERCONSTRAINT",
+            "PermissionCompleteness": "VACUOUS_OVERCONSTRAINT"
+          },
+          "score": 0.5
+        },
+        "F_OneInFlightPerCustomer": {
+          "targeted_asserts": {
+            "FR_008_OneInFlightPerCustomer": "BIT",
+            "ConcurrencySafety": "BIT"
+          },
+          "score": 1.0
+        },
+        "F_DeciderIsAssignedOfficer": {
+          "targeted_asserts": {
+            "FR_013_OnlyAssignedOfficerDecides": "BIT",
+            "AttributionCorrectness": "BIT",
+            "ValidationBeforeMutation": "BIT"
+          },
+          "score": 1.0
+        },
+        "F_UniqueInitialAuditEntry": {
+          "targeted_asserts": {
+            "FR_009_AuditOnSubmission": "BIT",
+            "FR_019_ExactlyOneAuditPerTransition": "BIT",
+            "AppendOnly": "BIT",
+            "FR_018_AppendOnlyAudit": "BIT"
+          },
+          "score": 1.0
+        },
+        "F_AtMostOneDecisionPerApplication": {
+          "targeted_asserts": {
+            "FR_015_AtomicDecisionRecord": "VACUOUS_OVERCONSTRAINT",
+            "FR_016_TerminalStateImmutability": "VACUOUS_OVERCONSTRAINT",
+            "AuditCompleteness": "VACUOUS_OVERCONSTRAINT"
+          },
+          "score": 0.5
+        },
+        "F_AuditActorRolesMatchTransition": {
+          "targeted_asserts": {
+            "AttributionCorrectness": "VACUOUS_OVERCONSTRAINT",
+            "FR_021_OfficerIdentityHiddenFromCustomer": "VACUOUS_OVERCONSTRAINT",
+            "FR_017_AuditForEveryTransition": "VACUOUS_OVERCONSTRAINT"
+          },
+          "score": 0.5
+        }
+      },
+      "skipped": []
+    },
+    "D4": {
+      "per_fr": {
+        "FR-001": {
+          "covers": [
+            "FR_001_AuthRequired",
+            "AuthRequiredEverywhere"
+          ],
+          "verdicts": {
+            "FR_001_AuthRequired": "PASS",
+            "AuthRequiredEverywhere": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-002": {
+          "covers": [
+            "FR_002_CustomerPermissions",
+            "LeastPrivilege"
+          ],
+          "verdicts": {
+            "FR_002_CustomerPermissions": "PASS",
+            "LeastPrivilege": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-003": {
+          "covers": [
+            "FR_003_LoanOfficerPermissions",
+            "LeastPrivilege"
+          ],
+          "verdicts": {
+            "FR_003_LoanOfficerPermissions": "PASS",
+            "LeastPrivilege": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-004": {
+          "covers": [
+            "FR_004_ComplianceReviewerPermissions",
+            "FR_023_ComplianceReadOnly",
+            "LeastPrivilege"
+          ],
+          "verdicts": {
+            "FR_004_ComplianceReviewerPermissions": "PASS",
+            "FR_023_ComplianceReadOnly": "PASS",
+            "LeastPrivilege": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-005": {
+          "covers": [
+            "FR_005_CustomerIdentityFromAuth",
+            "OwnershipExclusivity"
+          ],
+          "verdicts": {
+            "FR_005_CustomerIdentityFromAuth": "PASS",
+            "OwnershipExclusivity": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-006": {
+          "covers": [
+            "ValidationBeforeMutation"
+          ],
+          "verdicts": {
+            "ValidationBeforeMutation": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-007": {
+          "covers": [
+            "ValidationBeforeMutation"
+          ],
+          "verdicts": {
+            "ValidationBeforeMutation": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-008": {
+          "covers": [
+            "FR_008_OneInFlightPerCustomer",
+            "ConcurrencySafety"
+          ],
+          "verdicts": {
+            "FR_008_OneInFlightPerCustomer": "PASS",
+            "ConcurrencySafety": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-009": {
+          "covers": [
+            "FR_009_AuditOnSubmission",
+            "AuditCompleteness"
+          ],
+          "verdicts": {
+            "FR_009_AuditOnSubmission": "PASS",
+            "AuditCompleteness": "FAIL"
+          },
+          "score": 1.0
+        },
+        "FR-010": {
+          "covers": [
+            "FR_003_LoanOfficerPermissions"
+          ],
+          "verdicts": {
+            "FR_003_LoanOfficerPermissions": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-011": {
+          "covers": [
+            "FR_011_ClaimTransitionAudit",
+            "AuditCompleteness"
+          ],
+          "verdicts": {
+            "FR_011_ClaimTransitionAudit": "FAIL",
+            "AuditCompleteness": "FAIL"
+          },
+          "score": 0.5
+        },
+        "FR-012": {
+          "covers": [
+            "FR_012_ExclusiveClaim",
+            "ConcurrencySafety"
+          ],
+          "verdicts": {
+            "FR_012_ExclusiveClaim": "PASS",
+            "ConcurrencySafety": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-013": {
+          "covers": [
+            "FR_013_OnlyAssignedOfficerDecides",
+            "ValidationBeforeMutation"
+          ],
+          "verdicts": {
+            "FR_013_OnlyAssignedOfficerDecides": "PASS",
+            "ValidationBeforeMutation": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-014": {
+          "covers": [
+            "ValidationBeforeMutation"
+          ],
+          "verdicts": {
+            "ValidationBeforeMutation": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-015": {
+          "covers": [
+            "FR_015_AtomicDecisionRecord",
+            "AttributionCorrectness"
+          ],
+          "verdicts": {
+            "FR_015_AtomicDecisionRecord": "PASS",
+            "AttributionCorrectness": "FAIL"
+          },
+          "score": 1.0
+        },
+        "FR-016": {
+          "covers": [
+            "FR_016_TerminalStateImmutability"
+          ],
+          "verdicts": {
+            "FR_016_TerminalStateImmutability": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-017": {
+          "covers": [
+            "FR_017_AuditForEveryTransition",
+            "AuditCompleteness",
+            "AttributionCorrectness"
+          ],
+          "verdicts": {
+            "FR_017_AuditForEveryTransition": "FAIL",
+            "AuditCompleteness": "FAIL",
+            "AttributionCorrectness": "FAIL"
+          },
+          "score": 0.5
+        },
+        "FR-018": {
+          "covers": [
+            "FR_018_AppendOnlyAudit",
+            "AppendOnly"
+          ],
+          "verdicts": {
+            "FR_018_AppendOnlyAudit": "FAIL",
+            "AppendOnly": "FAIL"
+          },
+          "score": 0.5
+        },
+        "FR-019": {
+          "covers": [
+            "FR_019_ExactlyOneAuditPerTransition",
+            "AuditCompleteness",
+            "AppendOnly"
+          ],
+          "verdicts": {
+            "FR_019_ExactlyOneAuditPerTransition": "FAIL",
+            "AuditCompleteness": "FAIL",
+            "AppendOnly": "FAIL"
+          },
+          "score": 0.5
+        },
+        "FR-020": {
+          "covers": [
+            "FR_020_CustomerOwnsApplication",
+            "OwnershipBasedAccess",
+            "NoInformationLeakage"
+          ],
+          "verdicts": {
+            "FR_020_CustomerOwnsApplication": "PASS",
+            "OwnershipBasedAccess": "PASS",
+            "NoInformationLeakage": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-021": {
+          "covers": [
+            "FR_021_OfficerIdentityHiddenFromCustomer"
+          ],
+          "verdicts": {
+            "FR_021_OfficerIdentityHiddenFromCustomer": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-022": {
+          "covers": [
+            "FR_016_TerminalStateImmutability"
+          ],
+          "verdicts": {
+            "FR_016_TerminalStateImmutability": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-023": {
+          "covers": [
+            "FR_023_ComplianceReadOnly",
+            "FR_004_ComplianceReviewerPermissions"
+          ],
+          "verdicts": {
+            "FR_023_ComplianceReadOnly": "PASS",
+            "FR_004_ComplianceReviewerPermissions": "PASS"
+          },
+          "score": 1.0
+        }
+      }
+    }
+  }
+}

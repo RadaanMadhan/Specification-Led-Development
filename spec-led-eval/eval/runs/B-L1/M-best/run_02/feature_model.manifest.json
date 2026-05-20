@@ -1,0 +1,152 @@
+{
+  "feature_id": "006-task-management",
+  "patterns_applied": [
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_IdentityFromAuth",
+    "FR_003_SingleWorkspace",
+    "FR_004_FlatPermissions",
+    "FR_005_TaskHasTitleAndStatus",
+    "FR_006_DescriptionStructural",
+    "FR_007_DueDateOptional",
+    "FR_008_AssigneeMember",
+    "FR_009_CreatorRecorded",
+    "FR_010_StatusEnum",
+    "FR_011_ClosedTaskEditRule",
+    "FR_012_DeletionLogged",
+    "FR_013_OperationScope",
+    "FR_014_UniversalVisibility",
+    "FR_015_FilterCombination",
+    "FR_016_ClearFilters",
+    "FR_017_Timestamps",
+    "FR_018_DeletionLog"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "AuthRequiredEverywhere",
+      "FR_001_AuthRequired"
+    ],
+    "FR-002": [
+      "FR_002_IdentityFromAuth"
+    ],
+    "FR-003": [
+      "FR_003_SingleWorkspace"
+    ],
+    "FR-004": [
+      "FR_004_FlatPermissions"
+    ],
+    "FR-005": [
+      "FR_005_TaskHasTitleAndStatus"
+    ],
+    "FR-006": [
+      "FR_006_DescriptionStructural"
+    ],
+    "FR-007": [
+      "FR_007_DueDateOptional"
+    ],
+    "FR-008": [
+      "FR_008_AssigneeMember"
+    ],
+    "FR-009": [
+      "FR_009_CreatorRecorded",
+      "OwnershipExclusivity"
+    ],
+    "FR-010": [
+      "FR_010_StatusEnum"
+    ],
+    "FR-011": [
+      "FR_011_ClosedTaskEditRule"
+    ],
+    "FR-012": [
+      "FR_012_DeletionLogged"
+    ],
+    "FR-013": [
+      "FR_013_OperationScope"
+    ],
+    "FR-014": [
+      "FR_014_UniversalVisibility"
+    ],
+    "FR-015": [
+      "FR_015_FilterCombination"
+    ],
+    "FR-016": [
+      "FR_016_ClearFilters"
+    ],
+    "FR-017": [
+      "FR_017_Timestamps"
+    ],
+    "FR-018": [
+      "FR_018_DeletionLog",
+      "AuditCompleteness",
+      "AttributionCorrectness",
+      "AppendOnly"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_AuthRequired",
+      "asserts_violated": [
+        "AuthRequiredEverywhere",
+        "FR_001_AuthRequired"
+      ],
+      "rationale": "F_AuthRequired is the sole fact that forbids a successful Operation from having no presented token. Removing it lets Alloy invent an Operation that succeeds with no auth, which the injection forces to exist; both auth predicates then find that counterexample.",
+      "inject_violation": "fact MUTATE_AuthRequiredViolation { some op: Operation | op.outcome = Success and no op.presentedToken }"
+    },
+    {
+      "fact_name": "F_TokenBinding",
+      "asserts_violated": [
+        "FR_002_IdentityFromAuth"
+      ],
+      "rationale": "F_TokenBinding is the only fact pinning caller to presentedToken.owner. With it removed, the injection forces an Operation whose caller is someone other than the token owner, violating FR-002's payload-vs-context rule.",
+      "inject_violation": "fact MUTATE_TokenBindingViolation { some op: Operation | some op.presentedToken and some op.caller and op.caller != op.presentedToken.owner }"
+    },
+    {
+      "fact_name": "F_ClosedTaskEditRule",
+      "asserts_violated": [
+        "FR_011_ClosedTaskEditRule"
+      ],
+      "rationale": "F_ClosedTaskEditRule is the sole encoder of the 409 task_closed contract. Removing it lets Alloy find a successful EditOp on a Done task whose request neither reopens it nor changes status \u2014 the injection forces exactly that shape.",
+      "inject_violation": "fact MUTATE_ClosedTaskRuleViolation { some op: Operation | op.kind = EditOp and op.outcome = Success and some op.target and op.target.status = Done and (no op.proposedNewStatus or op.proposedNewStatus = Done) }"
+    },
+    {
+      "fact_name": "F_DeletionLog",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_012_DeletionLogged"
+      ],
+      "rationale": "F_DeletionLog is the sole link between successful DeleteOps and TaskDeletion log entries. Removing it lets Alloy invent a successful delete with no corresponding log row; the injection forces that orphaned delete.",
+      "inject_violation": "fact MUTATE_DeletionLogViolation { some op: Operation | op.kind = DeleteOp and op.outcome = Success and (no td: TaskDeletion | td.fromOp = op) }"
+    },
+    {
+      "fact_name": "F_DeletionAttribution",
+      "asserts_violated": [
+        "AttributionCorrectness",
+        "FR_018_DeletionLog"
+      ],
+      "rationale": "F_DeletionAttribution is the sole fact tying td.deleter to the recording op's caller. Removing it allows misattribution; the injection forces a log entry whose recorded deleter differs from the actual operation caller.",
+      "inject_violation": "fact MUTATE_AttributionViolation { some td: TaskDeletion | td.deleter != td.fromOp.caller }"
+    },
+    {
+      "fact_name": "F_DeletionLogAppendOnly",
+      "asserts_violated": [
+        "AppendOnly"
+      ],
+      "rationale": "F_DeletionLogAppendOnly is the only fact that forbids two distinct TaskDeletion rows for the same delete event (duplicate / overwrite). The injection forces two log entries sharing a single source operation, which append-only must rule out.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some disj td1, td2: TaskDeletion | td1.fromOp = td2.fromOp }"
+    },
+    {
+      "fact_name": "F_FlatPermissions",
+      "asserts_violated": [
+        "FR_004_FlatPermissions"
+      ],
+      "rationale": "F_FlatPermissions is the only fact stating that outcome is invariant under caller identity (given same kind/target/args). Removing it lets two authenticated callers with identical requests reach different outcomes; the injection forces that role-discrimination shape.",
+      "inject_violation": "fact MUTATE_FlatPermissionsViolation { some disj op1, op2: Operation | op1.kind = op2.kind and op1.target = op2.target and op1.proposedNewStatus = op2.proposedNewStatus and some op1.caller and some op2.caller and op1.outcome != op2.outcome }"
+    }
+  ]
+}

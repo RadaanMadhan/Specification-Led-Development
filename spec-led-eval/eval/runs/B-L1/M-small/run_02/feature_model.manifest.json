@@ -1,0 +1,102 @@
+{
+  "feature_id": "B-L1",
+  "patterns_applied": [
+    "AuthRequiredEverywhere",
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity"
+  ],
+  "feature_specific_predicates": [
+    "FR_003_SingleWorkspace",
+    "FR_004_FlatPeerModel",
+    "FR_010_StatusTransitions",
+    "FR_011_ClosedTaskRule",
+    "FR_017_TimestampSemantics",
+    "FR_018_DeletionLogged"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "AuthRequiredEverywhere"
+    ],
+    "FR-003": [
+      "FR_003_SingleWorkspace"
+    ],
+    "FR-004": [
+      "LeastPrivilege",
+      "PermissionCompleteness",
+      "FR_004_FlatPeerModel"
+    ],
+    "FR-008": [
+      "AttributionCorrectness"
+    ],
+    "FR-009": [
+      "AttributionCorrectness",
+      "OwnershipExclusivity"
+    ],
+    "FR-010": [
+      "FR_010_StatusTransitions"
+    ],
+    "FR-011": [
+      "FR_011_ClosedTaskRule"
+    ],
+    "FR-017": [
+      "FR_017_TimestampSemantics"
+    ],
+    "FR-018": [
+      "AppendOnly",
+      "FR_018_DeletionLogged"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_AuthenticationRequired",
+      "asserts_violated": [
+        "AuthRequiredEverywhere"
+      ],
+      "rationale": "Removing this fact allows unauthenticated (non-AuthenticatedMember) members to be task creators and deleters. The assertion mandates that all creators and deleters are authenticated; without this fact, Alloy can model an instance where an unauthenticated member creates a task, directly violating the security boundary.",
+      "inject_violation": "fact MUTATE_UnauthenticatedCreator { some t: Task | t.creator not in AuthenticatedMember }"
+    },
+    {
+      "fact_name": "F_AppendOnlyDeletions",
+      "asserts_violated": [
+        "AppendOnly"
+      ],
+      "rationale": "Removing the unique-task-id constraint allows the same task_id to appear in multiple TaskDeletion records, violating the append-only invariant that each deletion log entry records a distinct task.",
+      "inject_violation": "fact MUTATE_DuplicateDeletion { some disj td1, td2: TaskDeletion | td1.deleted_task_id = td2.deleted_task_id }"
+    },
+    {
+      "fact_name": "F_LeastPrivilege",
+      "asserts_violated": [
+        "LeastPrivilege"
+      ],
+      "rationale": "Removing this fact allows unauthenticated members to hold operations in the permission matrix, violating the least-privilege principle that only authenticated members have any access rights.",
+      "inject_violation": "fact MUTATE_UnauthenticatedPermission { some m: Member - AuthenticatedMember, op: Operation | (m -> op) in PermMatrix.allowed }"
+    },
+    {
+      "fact_name": "F_FlatPeerModel",
+      "asserts_violated": [
+        "FR_004_FlatPeerModel"
+      ],
+      "rationale": "Removing this fact allows authenticated members to have differentiated permission sets, violating the specification's flat-peer-model requirement that all members have identical permissions.",
+      "inject_violation": "fact MUTATE_DifferentiatedPermissions { some m1, m2: AuthenticatedMember, op: Operation | ((m1 -> op) in PermMatrix.allowed) and ((m2 -> op) not in PermMatrix.allowed) }"
+    },
+    {
+      "fact_name": "F_PermissionComplete",
+      "asserts_violated": [
+        "PermissionCompleteness"
+      ],
+      "rationale": "Removing the explicit definition of the permission matrix allows it to be incomplete or inconsistent. The assertion checks that every authenticated member has all four operations; without this fact, Alloy can model a member lacking a permission.",
+      "inject_violation": "fact MUTATE_IncompletePermissions { some m: AuthenticatedMember | (m -> CreateOp) not in PermMatrix.allowed }"
+    },
+    {
+      "fact_name": "F_ValidStatus",
+      "asserts_violated": [
+        "FR_010_StatusTransitions"
+      ],
+      "rationale": "Removing the status constraint allows tasks to hold values outside {TODO, IN_PROGRESS, DONE}, violating the requirement that every task has a valid status from the allowed set.",
+      "inject_violation": "fact MUTATE_InvalidStatus { some t: Task | t.status not in (TODO + IN_PROGRESS + DONE) }"
+    }
+  ]
+}

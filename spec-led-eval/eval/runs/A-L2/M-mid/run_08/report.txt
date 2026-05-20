@@ -1,0 +1,131 @@
+==============================================================================
+  Design Compliance Report  (Phase 3 — feature_model.als)
+  feature       : A-L2
+  spec source   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/eval/specs/A-L2
+  alloy model   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/A-L2/feature_model.als
+  patterns      : LeastPrivilege, PermissionCompleteness, AuthRequiredEverywhere, AuditCompleteness, AppendOnly, AttributionCorrectness, OwnershipExclusivity, OwnershipBasedAccess, NoInformationLeakage, ValidationBeforeMutation, PrivilegeMonotonicity
+  fr count      : 23 declared in spec.md
+  assertions    : 27 total (25/27 PASS via Alloy)
+==============================================================================
+
+  Compliance matrix
+  ----------------------------------------------------------------------------
+  Assertion                                     Verdict   Anchor
+  ----------------------------------------------------------------------------------
+  LeastPrivilege                                PASS      (no anchor comment found)
+  PermissionCompleteness                        PASS      (no anchor comment found)
+  AuthRequiredEverywhere                        PASS      (no anchor comment found)
+  AuditCompleteness                             PASS      (no anchor comment found)
+  AppendOnly                                    PASS      (no anchor comment found)
+  AttributionCorrectness                        PASS      (no anchor comment found)
+  OwnershipExclusivity                          PASS      (no anchor comment found)
+  OwnershipBasedAccess                          PASS      (no anchor comment found)
+  NoInformationLeakage                          PASS      (no anchor comment found)
+  ValidationBeforeMutation                      PASS      (no anchor comment found)
+  PrivilegeMonotonicity                         PASS      (no anchor comment found)
+  FR_001_AuthRequired                           PASS      FEATURE-SPECIFIC: FR-001 — every request authenticated, one role per user
+  FR_002_CustomerActionsLimited                 PASS      FEATURE-SPECIFIC: FR-002 — customers cannot perform officer/reviewer actions
+  FR_003_LoanOfficerActionsLimited              PASS      FEATURE-SPECIFIC: FR-003 — loan officers cannot submit as customer
+  FR_004_ComplianceReadOnly                     PASS      FEATURE-SPECIFIC: FR-004 / FR-023 — compliance reviewer is entirely read-only
+  FR_008_OneInFlightPerCustomer                 PASS      FEATURE-SPECIFIC: FR-008 — at most one in-flight application per customer
+  FR_009_SubmissionAuditEntry                   PASS      FEATURE-SPECIFIC: FR-009 — on submission, status = Submitted and audit entry appended
+  FR_011_ClaimTransitionAndAudit                FAIL      FEATURE-SPECIFIC: FR-011 — claim produces Under Review + audit entry
+  FR_012_ExactlyOneClaim                        PASS      FEATURE-SPECIFIC: FR-012 — exactly one officer can claim (no duplicate claims)
+  FR_013_OnlyAssignedOfficerDecides             PASS      FEATURE-SPECIFIC: FR-013 — only the assigned officer can decide
+  FR_014_ReasonRequiredForDecision              PASS      FEATURE-SPECIFIC: FR-014 — every decision has a non-empty reason
+  FR_015_DecisionAtomic                         PASS      FEATURE-SPECIFIC: FR-015 — decision + status + audit are atomic
+  FR_016_DecidedApplicationImmutable            PASS      FEATURE-SPECIFIC: FR-016 — decided applications are immutable
+  FR_017_019_ExactlyOneAuditEntryPerTransition  PASS      FEATURE-SPECIFIC: FR-017/FR-019 — exactly one audit entry per status change
+  FR_020_CustomerSeesOnlyOwnApplications        FAIL      FEATURE-SPECIFIC: FR-020 — customer cannot see other customers' applications
+  FR_021_OfficerIdentityHiddenFromCustomer      PASS      FEATURE-SPECIFIC: FR-021 — officer identity not exposed to customer role
+  FR_022_DataRetention                          PASS      FEATURE-SPECIFIC: FR-022 — no DELETE paths; records persist
+
+  Counterexamples (Alloy SAT)
+  ----------------------------------------------------------------------------
+  FR_011_ClaimTransitionAndAudit  [FEATURE-SPECIFIC: FR-011 — claim produces Under Review + audit entry]
+    Alloy: 17. check FR_011_ClaimTransitionAndAudit     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR_020_CustomerSeesOnlyOwnApplications  [FEATURE-SPECIFIC: FR-020 — customer cannot see other customers' applications]
+    Alloy: 24. check FR_020_CustomerSeesOnlyOwnApplications     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR coverage
+  ----------------------------------------------------------------------------
+  FR-001  →  FR_001_AuthRequired=PASS, AuthRequiredEverywhere=PASS
+  FR-002  →  FR_002_CustomerActionsLimited=PASS, LeastPrivilege=PASS
+  FR-003  →  FR_003_LoanOfficerActionsLimited=PASS, LeastPrivilege=PASS
+  FR-004  →  FR_004_ComplianceReadOnly=PASS, LeastPrivilege=PASS
+  FR-005  →  FR_001_AuthRequired=PASS, FR_021_OfficerIdentityHiddenFromCustomer=PASS
+  FR-006  →  ValidationBeforeMutation=PASS
+  FR-007  →  ValidationBeforeMutation=PASS
+  FR-008  →  FR_008_OneInFlightPerCustomer=PASS, OwnershipExclusivity=PASS
+  FR-009  →  FR_009_SubmissionAuditEntry=PASS, AuditCompleteness=PASS
+  FR-010  →  LeastPrivilege=PASS
+  FR-011  →  FR_011_ClaimTransitionAndAudit=FAIL, AuditCompleteness=PASS
+  FR-012  →  FR_012_ExactlyOneClaim=PASS
+  FR-013  →  FR_013_OnlyAssignedOfficerDecides=PASS
+  FR-014  →  FR_014_ReasonRequiredForDecision=PASS, ValidationBeforeMutation=PASS
+  FR-015  →  FR_015_DecisionAtomic=PASS, AuditCompleteness=PASS
+  FR-016  →  FR_016_DecidedApplicationImmutable=PASS
+  FR-017  →  FR_017_019_ExactlyOneAuditEntryPerTransition=PASS, AuditCompleteness=PASS, AttributionCorrectness=PASS
+  FR-018  →  AppendOnly=PASS
+  FR-019  →  FR_017_019_ExactlyOneAuditEntryPerTransition=PASS, AppendOnly=PASS
+  FR-020  →  FR_020_CustomerSeesOnlyOwnApplications=FAIL, OwnershipBasedAccess=PASS, NoInformationLeakage=PASS
+  FR-021  →  FR_021_OfficerIdentityHiddenFromCustomer=PASS
+  FR-022  →  FR_022_DataRetention=PASS
+  FR-023  →  FR_004_ComplianceReadOnly=PASS, LeastPrivilege=PASS
+
+  All FRs have at least one matching assertion.
+
+==============================================================================
+  Mutation tests  (assertion-strength validation)
+==============================================================================
+
+  Strategy: replace each named fact's body with `{}` (no constraint),
+  then re-run Alloy. Each listed assertion should now FAIL on the
+  mutated model. If it still PASSes, the assertion is vacuous and
+  must be strengthened.
+
+  - MUTATE F_PermissionMatrix  → runs/A-L2/mutated_F_PermissionMatrix.als
+    rationale: Clearing this fact removes all permission-matrix cell assignments. Injecting a violation adds a cell that should be denied — CustomerRole allowed to ClaimApplication — which LeastPrivilege and FR_002 catch directly.
+    expected to FAIL: LeastPrivilege, FR_002_CustomerActionsLimited, FR_004_ComplianceReadOnly
+      - LeastPrivilege: FAIL (expected)
+      - FR_002_CustomerActionsLimited: FAIL (expected)
+      - FR_004_ComplianceReadOnly: FAIL (expected)
+
+  - MUTATE F_AuditEntryCompleteness: ERROR — mutation target fact `F_AuditEntryCompleteness` not found in feature_model.als
+
+  - MUTATE F_AuditEntryCounts  → runs/A-L2/mutated_F_AuditEntryCounts.als
+    rationale: Clearing the count fact allows duplicate audit entries per transition. Injecting a violation forces two distinct submission entries for one application, which AppendOnly and the exact-count assertion both catch.
+    expected to FAIL: AppendOnly, FR_017_019_ExactlyOneAuditEntryPerTransition
+      - AppendOnly: PASS (vacuous?)
+      - FR_017_019_ExactlyOneAuditEntryPerTransition: PASS (vacuous?)
+
+  - MUTATE F_DecisionByAssignedOfficer  → runs/A-L2/mutated_F_DecisionByAssignedOfficer.als
+    rationale: Clearing this fact removes the constraint tying a Decision's decidedBy to the application's assignedOfficer. Injecting a violation creates a Decision whose decidedBy is a different LoanOfficer than the one assigned, which FR_013 catches.
+    expected to FAIL: FR_013_OnlyAssignedOfficerDecides, AttributionCorrectness
+      - FR_013_OnlyAssignedOfficerDecides: FAIL (expected)
+      - AttributionCorrectness: PASS (vacuous?)
+
+  - MUTATE F_OneInFlightPerCustomer  → runs/A-L2/mutated_F_OneInFlightPerCustomer.als
+    rationale: Clearing this fact removes the one-in-flight constraint. Injecting a violation forces two applications owned by the same customer to both be in-flight simultaneously, which FR_008 catches.
+    expected to FAIL: FR_008_OneInFlightPerCustomer, OwnershipExclusivity
+      - FR_008_OneInFlightPerCustomer: PASS (vacuous?)
+      - OwnershipExclusivity: PASS (vacuous?)
+
+  - MUTATE F_ReasonRequired  → runs/A-L2/mutated_F_ReasonRequired.als
+    rationale: Clearing this fact allows Decisions to have no reason token. Injecting a violation creates a Decision with no decisionReason, which FR_014 and ValidationBeforeMutation both catch.
+    expected to FAIL: FR_014_ReasonRequiredForDecision, ValidationBeforeMutation
+      - FR_014_ReasonRequiredForDecision: FAIL (expected)
+      - ValidationBeforeMutation: FAIL (expected)
+
+  Mutation summary
+  ----------------------------------------------------------------------------
+  - F_PermissionMatrix: ASSERTIONS BIT (LeastPrivilege, FR_002_CustomerActionsLimited, FR_004_ComplianceReadOnly)
+  - MUTATE F_AuditEntryCompleteness: skipped (fact not found)
+  - F_AuditEntryCounts: ASSERTION VACUOUS (AppendOnly, FR_017_019_ExactlyOneAuditEntryPerTransition)
+  - F_DecisionByAssignedOfficer: ASSERTION VACUOUS (FR_013_OnlyAssignedOfficerDecides, AttributionCorrectness)
+  - F_OneInFlightPerCustomer: ASSERTION VACUOUS (FR_008_OneInFlightPerCustomer, OwnershipExclusivity)
+  - F_ReasonRequired: ASSERTIONS BIT (FR_014_ReasonRequiredForDecision, ValidationBeforeMutation)
+

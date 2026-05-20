@@ -1,0 +1,272 @@
+{
+  "run_id": "A-L2/M-small/run_02",
+  "cell": "A-L2",
+  "model": "M-small",
+  "rep": 2,
+  "D1": 0.0,
+  "D2": 1.0,
+  "D3": 0.0,
+  "D4": 0.30434782608695654,
+  "aqs_partial": 0.32608695652173914,
+  "scored_at": "2026-05-20T04:29:04.085330+00:00",
+  "details": {
+    "D1": {
+      "n_assertions": 20,
+      "n_verdicts": 0
+    },
+    "D2": {
+      "patterns_applied": [
+        "LeastPrivilege",
+        "PermissionCompleteness",
+        "AuthRequiredEverywhere",
+        "AppendOnly",
+        "AuditCompleteness",
+        "AttributionCorrectness",
+        "OwnershipExclusivity",
+        "OwnershipBasedAccess",
+        "NoInformationLeakage",
+        "ConcurrencySafety"
+      ],
+      "per_pattern": {
+        "LeastPrivilege": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "PermissionCompleteness": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "AuthRequiredEverywhere": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "AppendOnly": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "AuditCompleteness": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "AttributionCorrectness": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "OwnershipExclusivity": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "OwnershipBasedAccess": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "NoInformationLeakage": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "ConcurrencySafety": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        }
+      }
+    },
+    "D3": {
+      "per_target": {},
+      "skipped": [],
+      "note": "no scoreable mutation targets"
+    },
+    "D4": {
+      "per_fr": {
+        "FR-001": {
+          "covers": [
+            "AuthRequiredEverywhere"
+          ],
+          "verdicts": {
+            "AuthRequiredEverywhere": "MISSING"
+          },
+          "score": 0.5
+        },
+        "FR-002": {
+          "covers": [
+            "FR_002_CustomerCannotDecideOrClaim"
+          ],
+          "verdicts": {
+            "FR_002_CustomerCannotDecideOrClaim": "MISSING"
+          },
+          "score": 0.5
+        },
+        "FR-003": {
+          "covers": [
+            "FR_003_LoanOfficerCannotSubmit"
+          ],
+          "verdicts": {
+            "FR_003_LoanOfficerCannotSubmit": "MISSING"
+          },
+          "score": 0.5
+        },
+        "FR-004": {
+          "covers": [
+            "FR_004_ComplianceReviewerReadOnly"
+          ],
+          "verdicts": {
+            "FR_004_ComplianceReviewerReadOnly": "MISSING"
+          },
+          "score": 0.5
+        },
+        "FR-005": {
+          "covers": [],
+          "verdicts": {},
+          "score": 0.0
+        },
+        "FR-006": {
+          "covers": [],
+          "verdicts": {},
+          "score": 0.0
+        },
+        "FR-007": {
+          "covers": [],
+          "verdicts": {},
+          "score": 0.0
+        },
+        "FR-008": {
+          "covers": [
+            "FR_008_OneInFlightPerCustomer"
+          ],
+          "verdicts": {
+            "FR_008_OneInFlightPerCustomer": "MISSING"
+          },
+          "score": 0.5
+        },
+        "FR-009": {
+          "covers": [],
+          "verdicts": {},
+          "score": 0.0
+        },
+        "FR-010": {
+          "covers": [],
+          "verdicts": {},
+          "score": 0.0
+        },
+        "FR-011": {
+          "covers": [
+            "FR_011_ClaimChangesStatus"
+          ],
+          "verdicts": {
+            "FR_011_ClaimChangesStatus": "MISSING"
+          },
+          "score": 0.5
+        },
+        "FR-012": {
+          "covers": [
+            "ConcurrencySafety"
+          ],
+          "verdicts": {
+            "ConcurrencySafety": "MISSING"
+          },
+          "score": 0.5
+        },
+        "FR-013": {
+          "covers": [
+            "FR_013_OnlyAssignedOfficerDecides"
+          ],
+          "verdicts": {
+            "FR_013_OnlyAssignedOfficerDecides": "MISSING"
+          },
+          "score": 0.5
+        },
+        "FR-014": {
+          "covers": [],
+          "verdicts": {},
+          "score": 0.0
+        },
+        "FR-015": {
+          "covers": [],
+          "verdicts": {},
+          "score": 0.0
+        },
+        "FR-016": {
+          "covers": [
+            "FR_016_ImmutableDecidedApplications"
+          ],
+          "verdicts": {
+            "FR_016_ImmutableDecidedApplications": "MISSING"
+          },
+          "score": 0.5
+        },
+        "FR-017": {
+          "covers": [
+            "AuditCompleteness",
+            "AttributionCorrectness"
+          ],
+          "verdicts": {
+            "AuditCompleteness": "MISSING",
+            "AttributionCorrectness": "MISSING"
+          },
+          "score": 0.5
+        },
+        "FR-018": {
+          "covers": [
+            "AppendOnly",
+            "FR_018_AuditChronological"
+          ],
+          "verdicts": {
+            "AppendOnly": "MISSING",
+            "FR_018_AuditChronological": "MISSING"
+          },
+          "score": 0.5
+        },
+        "FR-019": {
+          "covers": [
+            "AuditCompleteness"
+          ],
+          "verdicts": {
+            "AuditCompleteness": "MISSING"
+          },
+          "score": 0.5
+        },
+        "FR-020": {
+          "covers": [
+            "OwnershipBasedAccess",
+            "NoInformationLeakage",
+            "FR_020_CustomerPrivacy"
+          ],
+          "verdicts": {
+            "OwnershipBasedAccess": "MISSING",
+            "NoInformationLeakage": "MISSING",
+            "FR_020_CustomerPrivacy": "MISSING"
+          },
+          "score": 0.5
+        },
+        "FR-021": {
+          "covers": [
+            "FR_021_OfficerIdentityHidden"
+          ],
+          "verdicts": {
+            "FR_021_OfficerIdentityHidden": "MISSING"
+          },
+          "score": 0.5
+        },
+        "FR-022": {
+          "covers": [],
+          "verdicts": {},
+          "score": 0.0
+        },
+        "FR-023": {
+          "covers": [],
+          "verdicts": {},
+          "score": 0.0
+        }
+      }
+    }
+  }
+}

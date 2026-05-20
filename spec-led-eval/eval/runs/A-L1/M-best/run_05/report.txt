@@ -1,0 +1,119 @@
+==============================================================================
+  Design Compliance Report  (Phase 3 — feature_model.als)
+  feature       : A-L1
+  spec source   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/eval/specs/A-L1
+  alloy model   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/A-L1/feature_model.als
+  patterns      : LeastPrivilege, PermissionCompleteness, PermissionGrounding, AuthRequiredEverywhere, AuditCompleteness, AppendOnly, AttributionCorrectness, OwnershipExclusivity, OwnershipBasedAccess, NoInformationLeakage
+  fr count      : 17 declared in spec.md
+  assertions    : 24 total (24/24 PASS via Alloy)
+==============================================================================
+
+  Compliance matrix
+  ----------------------------------------------------------------------------
+  Assertion                        Verdict   Anchor
+  ---------------------------------------------------------------------
+  LeastPrivilege                   PASS      PATTERN LeastPrivilege: contracts/http-api.md permission matrix; spec.md FR-015
+  PermissionCompleteness           PASS      PATTERN PermissionCompleteness: contracts/http-api.md permission matrix
+  PermissionGrounding              PASS      PATTERN PermissionGrounding: spec.md FR-001/008/009/015; contracts/http-api.md
+  AuthRequiredEverywhere           PASS      PATTERN AuthRequiredEverywhere: contracts/http-api.md "Authentication (all endpoints)"
+  AuditCompleteness                PASS      PATTERN AuditCompleteness: spec.md FR-016; data-model.md application_events
+  AppendOnly                       PASS      PATTERN AppendOnly: data-model.md "No UPDATE/DELETE code path… application_events"; FR-016
+  AttributionCorrectness           PASS      PATTERN AttributionCorrectness: data-model.md actor_user_id; spec.md FR-016
+  OwnershipExclusivity             PASS      PATTERN OwnershipExclusivity: data-model.md customer_id FK; spec.md "Loan Application" entity
+  OwnershipBasedAccess             PASS      PATTERN OwnershipBasedAccess: spec.md FR-013; contracts/http-api.md GET /applications/{reference}
+  NoInformationLeakage             PASS      PATTERN NoInformationLeakage: spec.md FR-013, SC-004; contracts/http-api.md "404, not 403"
+  FR_001_CustomerCanSubmit         PASS      FEATURE-SPECIFIC: FR-001 customer can submit
+  FR_002_ValidationBeforeMutation  PASS      FEATURE-SPECIFIC: FR-002 validation rejects bad submissions structurally
+  FR_003_StatusEnumClosed          PASS      FEATURE-SPECIFIC: FR-003 amount range and term set — structurally bracketed by enums
+  FR_004_NewAppPendingReview       PASS      FEATURE-SPECIFIC: FR-004 newly submitted applications start in Pending Review
+  FR_005_OnePendingPerCustomer     PASS      FEATURE-SPECIFIC: FR-005 at most one Pending Review per customer
+  FR_008_StaffViewAny              PASS      FEATURE-SPECIFIC: FR-008 staff can view any application (no ownership filter)
+  FR_009_NonEmptyReason            PASS      FEATURE-SPECIFIC: FR-009 decision requires non-empty reason
+  FR_010_DecisionChangesStatus     PASS      FEATURE-SPECIFIC: FR-010 decision persists status, decider, type
+  FR_011_DecidedImmutable          PASS      FEATURE-SPECIFIC: FR-011 decided applications are immutable
+  FR_012_AtMostOneDecision         PASS      FEATURE-SPECIFIC: FR-012 concurrent decisions — at most one recorded
+  FR_013_CustomerSeesOwnOnly       PASS      FEATURE-SPECIFIC: FR-013 customer only sees own; no leakage
+  FR_015_DecisionsStaffOnly        PASS      FEATURE-SPECIFIC: FR-015 decision actions restricted to staff
+  FR_016_AuditTrail                PASS      FEATURE-SPECIFIC: FR-016 audit trail of status changes
+  FR_017_AuditRetention            PASS      FEATURE-SPECIFIC: FR-017 retention — no audit entries are removed
+
+  FR coverage
+  ----------------------------------------------------------------------------
+  FR-001  →  FR_001_CustomerCanSubmit=PASS, PermissionCompleteness=PASS
+  FR-002  →  FR_002_ValidationBeforeMutation=PASS, FR_009_NonEmptyReason=PASS
+  FR-003  →  FR_003_StatusEnumClosed=PASS
+  FR-004  →  FR_004_NewAppPendingReview=PASS
+  FR-005  →  FR_005_OnePendingPerCustomer=PASS
+  FR-006  →  FR_004_NewAppPendingReview=PASS
+  FR-007  →  FR_008_StaffViewAny=PASS, PermissionCompleteness=PASS
+  FR-008  →  FR_008_StaffViewAny=PASS
+  FR-009  →  FR_009_NonEmptyReason=PASS
+  FR-010  →  FR_010_DecisionChangesStatus=PASS, AuditCompleteness=PASS
+  FR-011  →  FR_011_DecidedImmutable=PASS, AppendOnly=PASS
+  FR-012  →  FR_012_AtMostOneDecision=PASS
+  FR-013  →  FR_013_CustomerSeesOwnOnly=PASS, OwnershipBasedAccess=PASS, NoInformationLeakage=PASS
+  FR-014  →  AttributionCorrectness=PASS
+  FR-015  →  FR_015_DecisionsStaffOnly=PASS, LeastPrivilege=PASS
+  FR-016  →  FR_016_AuditTrail=PASS, AuditCompleteness=PASS, AttributionCorrectness=PASS
+  FR-017  →  FR_017_AuditRetention=PASS, AppendOnly=PASS
+
+  All FRs have at least one matching assertion.
+
+==============================================================================
+  Mutation tests  (assertion-strength validation)
+==============================================================================
+
+  Strategy: replace each named fact's body with `{}` (no constraint),
+  then re-run Alloy. Each listed assertion should now FAIL on the
+  mutated model. If it still PASSes, the assertion is vacuous and
+  must be strengthened.
+
+  - MUTATE F_PermissionMatrix  → runs/A-L1/mutated_F_PermissionMatrix.als
+    rationale: Removing the permission-matrix definition lets Alloy invent a matrix in which Customer -> DecideApp is allowed. The injected fact forces such a customer-decide operation to succeed, which violates the documented allow/deny grid (PermissionCompleteness), the least-privilege guard (LeastPrivilege), and the staff-only decision rule (FR_015).
+    expected to FAIL: PermissionCompleteness, LeastPrivilege, FR_015_DecisionsStaffOnly
+      - PermissionCompleteness: PASS (vacuous?)
+      - LeastPrivilege: PASS (vacuous?)
+      - FR_015_DecisionsStaffOnly: PASS (vacuous?)
+
+  - MUTATE F_AuditEntriesReflectLifecycle  → runs/A-L1/mutated_F_AuditEntriesReflectLifecycle.als
+    rationale: Removing the lifecycle-audit fact lets Alloy build an application with no submission audit entry, with a forged decision entry whose state is inconsistent, and with the wrong actor. The injection forces an application whose submission event is missing, immediately violating AuditCompleteness and FR_016.
+    expected to FAIL: AuditCompleteness, FR_016_AuditTrail, AppendOnly, AttributionCorrectness
+      - AuditCompleteness: FAIL (expected)
+      - FR_016_AuditTrail: FAIL (expected)
+      - AppendOnly: FAIL (expected)
+      - AttributionCorrectness: FAIL (expected)
+
+  - MUTATE F_DecisionApplicationCoupling  → runs/A-L1/mutated_F_DecisionApplicationCoupling.als
+    rationale: Removing the one-decision-per-application coupling lets two Decision rows attach to the same application — exactly the concurrent-double-decision race that FR-012 forbids and FR-011 (immutability) rules out.
+    expected to FAIL: FR_012_AtMostOneDecision, FR_011_DecidedImmutable
+      - FR_012_AtMostOneDecision: FAIL (expected)
+      - FR_011_DecidedImmutable: FAIL (expected)
+
+  - MUTATE F_OnePendingPerCustomer  → runs/A-L1/mutated_F_OnePendingPerCustomer.als
+    rationale: Removing the partial-unique-index analogue lets a single customer have two applications simultaneously in Pending Review, which FR-005 forbids.
+    expected to FAIL: FR_005_OnePendingPerCustomer
+      - FR_005_OnePendingPerCustomer: FAIL (expected)
+
+  - MUTATE F_AuthorizationSemantics  → runs/A-L1/mutated_F_AuthorizationSemantics.als
+    rationale: Removing the auth-semantics fact unties outcome from authentication, matrix, and ownership. The injection forces an unauthenticated customer to succeed at viewing a non-owned application, breaking the auth gate, ownership-based access, and FR-013 ownership scoping.
+    expected to FAIL: AuthRequiredEverywhere, OwnershipBasedAccess, FR_013_CustomerSeesOwnOnly
+      - AuthRequiredEverywhere: PASS (vacuous?)
+      - OwnershipBasedAccess: PASS (vacuous?)
+      - FR_013_CustomerSeesOwnOnly: PASS (vacuous?)
+
+  - MUTATE F_ResponseSemantics  → runs/A-L1/mutated_F_ResponseSemantics.als
+    rationale: Removing response semantics lets the externally visible status code drift. The injection forces a customer probing someone else's application to receive 403 Forbidden — which leaks existence, the exact failure FR-013 / SC-004 forbid.
+    expected to FAIL: NoInformationLeakage, FR_013_CustomerSeesOwnOnly, AuthRequiredEverywhere
+      - NoInformationLeakage: FAIL (expected)
+      - FR_013_CustomerSeesOwnOnly: FAIL (expected)
+      - AuthRequiredEverywhere: FAIL (expected)
+
+  Mutation summary
+  ----------------------------------------------------------------------------
+  - F_PermissionMatrix: ASSERTION VACUOUS (PermissionCompleteness, LeastPrivilege, FR_015_DecisionsStaffOnly)
+  - F_AuditEntriesReflectLifecycle: ASSERTIONS BIT (AuditCompleteness, FR_016_AuditTrail, AppendOnly, AttributionCorrectness)
+  - F_DecisionApplicationCoupling: ASSERTIONS BIT (FR_012_AtMostOneDecision, FR_011_DecidedImmutable)
+  - F_OnePendingPerCustomer: ASSERTIONS BIT (FR_005_OnePendingPerCustomer)
+  - F_AuthorizationSemantics: ASSERTION VACUOUS (AuthRequiredEverywhere, OwnershipBasedAccess, FR_013_CustomerSeesOwnOnly)
+  - F_ResponseSemantics: ASSERTIONS BIT (NoInformationLeakage, FR_013_CustomerSeesOwnOnly, AuthRequiredEverywhere)
+

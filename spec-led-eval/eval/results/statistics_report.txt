@@ -1,0 +1,216 @@
+============================================================================
+spec-led-eval — Stage 1 statistics report (E5)
+============================================================================
+Generated at:    2026-05-20T04:29:28+00:00
+α:               0.05
+N total runs:    267
+N per richness:  L1=89, L2=88, L3=90
+N per domain:    A=87, B=90, C=90
+
+----------------------------------------------------------------------------
+Section 1 — Overall richness effect (H1)
+----------------------------------------------------------------------------
+1.1 Overall AQS partial vs richness (pooled across domains)
+  Metric: aqs_partial
+    L1: n= 89  mean=0.7311  median=0.8833  sd=0.2845  min=0.2500  max=1.0000
+    L2: n= 88  mean=0.7605  median=0.9095  sd=0.2801  min=0.1750  max=1.0000
+    L3: n= 90  mean=0.7336  median=0.8750  sd=0.2813  min=0.2646  max=1.0000
+  Kruskal-Wallis: H = 0.1637, p = 0.9214, significant (α=0.05) = no
+
+----------------------------------------------------------------------------
+Section 2 — Per-domain richness effect (H1)
+----------------------------------------------------------------------------
+2.1 A (Banking)
+  Metric: aqs_partial
+    L1: n= 29  mean=0.7599  median=0.9154  sd=0.2944  min=0.2952  max=1.0000
+    L2: n= 28  mean=0.8329  median=0.9231  sd=0.2219  min=0.3098  max=0.9946
+    L3: n= 30  mean=0.7070  median=0.8542  sd=0.2838  min=0.2646  max=1.0000
+  Kruskal-Wallis: H = 2.3491, p = 0.3090, significant (α=0.05) = no
+
+2.2 B (SaaS)
+  Metric: aqs_partial
+    L1: n= 30  mean=0.7206  median=0.8750  sd=0.2978  min=0.2500  max=1.0000
+    L2: n= 30  mean=0.7603  median=0.9240  sd=0.2931  min=0.2625  max=1.0000
+    L3: n= 30  mean=0.7887  median=0.9360  sd=0.2606  min=0.3175  max=1.0000
+  Kruskal-Wallis: H = 1.1710, p = 0.5568, significant (α=0.05) = no
+
+2.3 C (Healthcare)
+  Metric: aqs_partial
+    L1: n= 30  mean=0.7138  median=0.8333  sd=0.2682  min=0.3167  max=1.0000
+    L2: n= 30  mean=0.6930  median=0.8691  sd=0.3064  min=0.1750  max=0.9821
+    L3: n= 30  mean=0.7053  median=0.8719  sd=0.2995  min=0.2792  max=1.0000
+  Kruskal-Wallis: H = 0.8182, p = 0.6643, significant (α=0.05) = no
+
+----------------------------------------------------------------------------
+Section 3 — Pairwise richness contrasts on AQS partial (H1)
+----------------------------------------------------------------------------
+3.1 Mann-Whitney U + Bonferroni + Cohen's d
+  Bonferroni correction: k = 3 (p_corrected = min(1, p × k))
+  L1 vs L2
+    L1: n= 89  mean=0.7311  median=0.8833  sd=0.2845  min=0.2500  max=1.0000
+    L2: n= 88  mean=0.7605  median=0.9095  sd=0.2801  min=0.1750  max=1.0000
+    Mann-Whitney U = 3767.5000, p_raw = 0.6640, p_corrected = 1.0000
+    Cohen's d = -0.1040  (negligible)
+    Significant (α=0.05): no
+  L1 vs L3
+    L1: n= 89  mean=0.7311  median=0.8833  sd=0.2845  min=0.2500  max=1.0000
+    L3: n= 90  mean=0.7336  median=0.8750  sd=0.2813  min=0.2646  max=1.0000
+    Mann-Whitney U = 3952.0000, p_raw = 0.8796, p_corrected = 1.0000
+    Cohen's d = -0.0089  (negligible)
+    Significant (α=0.05): no
+  L2 vs L3
+    L2: n= 88  mean=0.7605  median=0.9095  sd=0.2801  min=0.1750  max=1.0000
+    L3: n= 90  mean=0.7336  median=0.8750  sd=0.2813  min=0.2646  max=1.0000
+    Mann-Whitney U = 4025.0000, p_raw = 0.8511, p_corrected = 1.0000
+    Cohen's d = 0.0956  (negligible)
+    Significant (α=0.05): no
+
+----------------------------------------------------------------------------
+Section 4 — D5 verdict-stability differences (H3)
+----------------------------------------------------------------------------
+4.1 Per-key D5 stability vs richness
+  Metric: d5_per_key_stability
+    L1: n=147  mean=0.8873  median=0.9000  sd=0.1314  min=0.5000  max=1.0000
+    L2: n=161  mean=0.9122  median=1.0000  sd=0.1346  min=0.5000  max=1.0000
+    L3: n=168  mean=0.9075  median=1.0000  sd=0.1470  min=0.5000  max=1.0000
+  Kruskal-Wallis: H = 7.7178, p = 0.0211, significant (α=0.05) = yes
+
+4.2 Pairwise D5 contrasts (Mann-Whitney + Bonferroni)
+  Bonferroni correction: k = 3 (p_corrected = min(1, p × k))
+  L1 vs L2
+    L1: n=147  mean=0.8873  median=0.9000  sd=0.1314  min=0.5000  max=1.0000
+    L2: n=161  mean=0.9122  median=1.0000  sd=0.1346  min=0.5000  max=1.0000
+    Mann-Whitney U = 10118.5000, p_raw = 0.0168, p_corrected = 0.0505
+    Cohen's d = -0.1869  (negligible)
+    Significant (α=0.05): no
+  L1 vs L3
+    L1: n=147  mean=0.8873  median=0.9000  sd=0.1314  min=0.5000  max=1.0000
+    L3: n=168  mean=0.9075  median=1.0000  sd=0.1470  min=0.5000  max=1.0000
+    Mann-Whitney U = 10596.0000, p_raw = 0.0171, p_corrected = 0.0514
+    Cohen's d = -0.1445  (negligible)
+    Significant (α=0.05): no
+  L2 vs L3
+    L2: n=161  mean=0.9122  median=1.0000  sd=0.1346  min=0.5000  max=1.0000
+    L3: n=168  mean=0.9075  median=1.0000  sd=0.1470  min=0.5000  max=1.0000
+    Mann-Whitney U = 13444.0000, p_raw = 0.9153, p_corrected = 1.0000
+    Cohen's d = 0.0331  (negligible)
+    Significant (α=0.05): no
+
+----------------------------------------------------------------------------
+Section 5 — Model effect on AQS (H5)
+----------------------------------------------------------------------------
+Models present:  M-best (n=90), M-mid (n=90), M-small (n=87)
+
+5.1 Overall AQS partial vs model (pooled across cells)
+  Metric: aqs_partial
+    M-best: n= 90  mean=0.9004  median=0.9792  sd=0.1927  min=0.3056  max=1.0000
+    M-mid: n= 90  mean=0.8809  median=0.9162  sd=0.1348  min=0.3594  max=0.9938
+    M-small: n= 87  mean=0.4333  median=0.3312  sd=0.2109  min=0.1750  max=0.8688
+  Kruskal-Wallis: H = 168.1020, p = 0.0000, significant (α=0.05) = yes
+
+5.2 Model effect at richness = L1
+  Metric: aqs_partial
+    M-best: n= 30  mean=0.8643  median=0.9683  sd=0.2285  min=0.3417  max=1.0000
+    M-mid: n= 30  mean=0.8947  median=0.9161  sd=0.1126  min=0.3667  max=0.9792
+    M-small: n= 29  mean=0.4241  median=0.3309  sd=0.2046  min=0.2500  max=0.8333
+  Kruskal-Wallis: H = 54.4253, p = 0.0000, significant (α=0.05) = yes
+
+5.3 Model effect at richness = L2
+  Metric: aqs_partial
+    M-best: n= 30  mean=0.9199  median=0.9771  sd=0.1705  min=0.3056  max=1.0000
+    M-mid: n= 30  mean=0.9015  median=0.9231  sd=0.1097  min=0.3750  max=0.9938
+    M-small: n= 28  mean=0.4386  median=0.3253  sd=0.2257  min=0.1750  max=0.8688
+  Kruskal-Wallis: H = 54.0434, p = 0.0000, significant (α=0.05) = yes
+
+5.4 Model effect at richness = L3
+  Metric: aqs_partial
+    M-best: n= 30  mean=0.9171  median=0.9807  sd=0.1750  min=0.3750  max=1.0000
+    M-mid: n= 30  mean=0.8467  median=0.9043  sd=0.1709  min=0.3594  max=0.9635
+    M-small: n= 30  mean=0.4371  median=0.3330  sd=0.2097  min=0.2646  max=0.8490
+  Kruskal-Wallis: H = 61.3114, p = 0.0000, significant (α=0.05) = yes
+
+5.5 Model effect in domain A (Banking)
+  Metric: aqs_partial
+    M-best: n= 30  mean=0.9241  median=0.9781  sd=0.1413  min=0.3750  max=1.0000
+    M-mid: n= 30  mean=0.9040  median=0.9231  sd=0.1077  min=0.3750  max=0.9792
+    M-small: n= 27  mean=0.4342  median=0.3351  sd=0.2070  min=0.2646  max=0.8490
+  Kruskal-Wallis: H = 56.4197, p = 0.0000, significant (α=0.05) = yes
+
+5.6 Model effect in domain B (SaaS)
+  Metric: aqs_partial
+    M-best: n= 30  mean=0.9675  median=0.9792  sd=0.0351  min=0.8819  max=1.0000
+    M-mid: n= 30  mean=0.8842  median=0.9301  sd=0.1497  min=0.3631  max=0.9938
+    M-small: n= 30  mean=0.4179  median=0.3320  sd=0.1995  min=0.2500  max=0.8688
+  Kruskal-Wallis: H = 64.4804, p = 0.0000, significant (α=0.05) = yes
+
+5.7 Model effect in domain C (Healthcare)
+  Metric: aqs_partial
+    M-best: n= 30  mean=0.8098  median=0.9740  sd=0.2812  min=0.3056  max=1.0000
+    M-mid: n= 30  mean=0.8546  median=0.8906  sd=0.1431  min=0.3594  max=0.9604
+    M-small: n= 30  mean=0.4477  median=0.3187  sd=0.2308  min=0.1750  max=0.8333
+  Kruskal-Wallis: H = 45.0132, p = 0.0000, significant (α=0.05) = yes
+
+5.8 Pairwise model contrasts on AQS partial (MW + Bonferroni)
+  Bonferroni correction: k = 3 (p_corrected = min(1, p × k))
+  M vs best-M-mid
+    M-best: n= 90  mean=0.9004  median=0.9792  sd=0.1927  min=0.3056  max=1.0000
+    M-mid: n= 90  mean=0.8809  median=0.9162  sd=0.1348  min=0.3594  max=0.9938
+    Mann-Whitney U = 6156.0000, p_raw = 0.0000, p_corrected = 0.0000
+    Cohen's d = 0.1173  (negligible)
+    Significant (α=0.05): yes
+  M vs best-M-small
+    M-best: n= 90  mean=0.9004  median=0.9792  sd=0.1927  min=0.3056  max=1.0000
+    M-small: n= 87  mean=0.4333  median=0.3312  sd=0.2109  min=0.1750  max=0.8688
+    Mann-Whitney U = 7501.5000, p_raw = 0.0000, p_corrected = 0.0000
+    Cohen's d = 2.3145  (large)
+    Significant (α=0.05): yes
+  M vs mid-M-small
+    M-mid: n= 90  mean=0.8809  median=0.9162  sd=0.1348  min=0.3594  max=0.9938
+    M-small: n= 87  mean=0.4333  median=0.3312  sd=0.2109  min=0.1750  max=0.8688
+    Mann-Whitney U = 7631.5000, p_raw = 0.0000, p_corrected = 0.0000
+    Cohen's d = 2.5387  (large)
+    Significant (α=0.05): yes
+
+----------------------------------------------------------------------------
+Section 6 — Lever comparison (H6: model vs richness)
+----------------------------------------------------------------------------
+  Model lever:    M-best vs M-small at richness=L2
+    n_a=30  n_b=28  Cohen's d = 2.4182  |d| = 2.4182  (large)
+  Richness lever: L1 vs L3 at model=M-best
+    n_a=30  n_b=30  Cohen's d = -0.2596  |d| = 0.2596  (small)
+  Winner: model (|d| margin = 2.1586)
+
+----------------------------------------------------------------------------
+Section 7 — D5 verdict-stability by model (H7)
+----------------------------------------------------------------------------
+7.1 Per-key D5 stability vs model
+  Metric: d5_per_key_stability
+    M-best: n=252  mean=0.9636  median=1.0000  sd=0.0785  min=0.6000  max=1.0000
+    M-mid: n=212  mean=0.8329  median=0.8889  sd=0.1602  min=0.5000  max=1.0000
+    M-small: n= 12  mean=0.8639  median=0.8333  sd=0.1096  min=0.6667  max=1.0000
+  Kruskal-Wallis: H = 112.3277, p = 0.0000, significant (α=0.05) = yes
+
+7.2 Pairwise D5 contrasts by model (MW + Bonferroni)
+  Bonferroni correction: k = 3 (p_corrected = min(1, p × k))
+  M vs best-M-mid
+    M-best: n=252  mean=0.9636  median=1.0000  sd=0.0785  min=0.6000  max=1.0000
+    M-mid: n=212  mean=0.8329  median=0.8889  sd=0.1602  min=0.5000  max=1.0000
+    Mann-Whitney U = 40249.5000, p_raw = 0.0000, p_corrected = 0.0000
+    Cohen's d = 1.0644  (large)
+    Significant (α=0.05): yes
+  M vs best-M-small
+    M-best: n=252  mean=0.9636  median=1.0000  sd=0.0785  min=0.6000  max=1.0000
+    M-small: n= 12  mean=0.8639  median=0.8333  sd=0.1096  min=0.6667  max=1.0000
+    Mann-Whitney U = 2264.5000, p_raw = 0.0001, p_corrected = 0.0002
+    Cohen's d = 1.2450  (large)
+    Significant (α=0.05): yes
+  M vs mid-M-small
+    M-mid: n=212  mean=0.8329  median=0.8889  sd=0.1602  min=0.5000  max=1.0000
+    M-small: n= 12  mean=0.8639  median=0.8333  sd=0.1096  min=0.6667  max=1.0000
+    Mann-Whitney U = 1204.5000, p_raw = 0.7545, p_corrected = 1.0000
+    Cohen's d = -0.1961  (negligible)
+    Significant (α=0.05): no
+
+============================================================================
+End of report.
+============================================================================

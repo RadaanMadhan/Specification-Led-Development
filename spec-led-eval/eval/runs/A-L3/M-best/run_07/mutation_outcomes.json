@@ -1,0 +1,48 @@
+{
+  "F_AuditAppendOnly": {
+    "targeted_asserts": {
+      "AppendOnly": "BIT",
+      "FR_018_AuditAppendOnly": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_NoSelfAssignment": {
+    "targeted_asserts": {
+      "NoSelfMutation": "BIT",
+      "FR_011_NoSelfAssignment": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_PatchRequiresAssignedOfficerNotApplicant": {
+    "targeted_asserts": {
+      "NoSelfMutation": "BIT",
+      "FR_013_NoSelfDecision": "BIT",
+      "FR_012_OnlyAssignedOfficerCanPatch": "BIT",
+      "FR_024_ApplicantCannotModify": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_NotFoundForUnauthorizedReads": {
+    "targeted_asserts": {
+      "NoInformationLeakage": "BIT",
+      "FR_020_NotFoundForUnauthorizedReads": "BIT",
+      "FR_021_NoCrossApplicantLeak": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AuthBeforeBusinessLogic": {
+    "targeted_asserts": {
+      "AuthRequiredEverywhere": "BIT",
+      "FR_001_AuthRequired": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AuditOnlyOnSuccessfulStateChange": {
+    "targeted_asserts": {
+      "ValidationBeforeMutation": "BIT",
+      "FR_017_AuditAtomicWithTransition": "BIT",
+      "AuditCompleteness": "BIT"
+    },
+    "all_bit": true
+  }
+}

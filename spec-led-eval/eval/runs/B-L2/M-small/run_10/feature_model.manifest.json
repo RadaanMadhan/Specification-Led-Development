@@ -1,0 +1,129 @@
+{
+  "feature_id": "B-L2",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "PrivilegeMonotonicity",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_003_TeamContextRequired",
+    "FR_008_MemberCanCreateViewEditOwnDeleteOwn",
+    "FR_009_OnlyOwnerOrAdminCanEditDelete",
+    "FR_010_AdminCanDoEverything",
+    "FR_012_TaskContentConstraints",
+    "FR_014_CrossTeamIsolation",
+    "FR_016_AuditAppendOnly",
+    "FR_017_AuditVisibleToTeamMembers"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired"
+    ],
+    "FR-003": [
+      "FR_003_TeamContextRequired"
+    ],
+    "FR-004": [
+      "FR_003_TeamContextRequired"
+    ],
+    "FR-005": [
+      "F_TaskTeamImmutable"
+    ],
+    "FR-006": [
+      "F_OwnerImmutable",
+      "F_OwnershipExclusivity"
+    ],
+    "FR-007": [
+      "F_TeamMembershipUniqueness"
+    ],
+    "FR-008": [
+      "FR_008_MemberCanCreateViewEditOwnDeleteOwn"
+    ],
+    "FR-009": [
+      "FR_009_OnlyOwnerOrAdminCanEditDelete"
+    ],
+    "FR-010": [
+      "FR_010_AdminCanDoEverything",
+      "PrivilegeMonotonicity"
+    ],
+    "FR-012": [
+      "FR_012_TaskContentConstraints",
+      "F_AssigneeInTeam"
+    ],
+    "FR-013": [
+      "FR_012_TaskContentConstraints"
+    ],
+    "FR-014": [
+      "FR_014_CrossTeamIsolation"
+    ],
+    "FR-015": [
+      "AuditCompleteness",
+      "AttributionCorrectness"
+    ],
+    "FR-016": [
+      "FR_016_AuditAppendOnly"
+    ],
+    "FR-017": [
+      "FR_017_AuditVisibleToTeamMembers"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "PrivilegeMonotonicity"
+      ],
+      "rationale": "removing this fact allows Member role to have PatchTaskById and DeleteTaskById permissions, which violates the least-privilege principle that only Admin should have these powers over non-owned tasks",
+      "inject_violation": "fact MUTATE_BadPermissions { Member -> PatchTaskById in PermissionMatrix.allowed }"
+    },
+    {
+      "fact_name": "F_AuditCreatedEntry",
+      "asserts_violated": [
+        "AuditCompleteness"
+      ],
+      "rationale": "removing the requirement that every task has a Created audit entry allows tasks to exist with no creation record, which violates audit completeness",
+      "inject_violation": "fact MUTATE_MissingCreatedEntry { some t: Task | no ae: AuditEntry | ae.task = t and ae.change_type = Created }"
+    },
+    {
+      "fact_name": "F_AuditAppendOnly",
+      "asserts_violated": [
+        "FR_016_AuditAppendOnly"
+      ],
+      "rationale": "removing the uniqueness constraint on (task, actor, change_type) allows duplicate audit entries, which violates the append-only invariant",
+      "inject_violation": "fact MUTATE_AuditDuplicate { some disj ae1, ae2: AuditEntry | ae1.task = ae2.task and ae1.actor = ae2.actor and ae1.change_type = ae2.change_type }"
+    },
+    {
+      "fact_name": "F_OwnershipBasedAccess",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_009_OnlyOwnerOrAdminCanEditDelete"
+      ],
+      "rationale": "removing the check that only owners and admins can modify tasks allows non-owner members to edit and delete tasks, violating access control",
+      "inject_violation": "fact MUTATE_NonOwnerEdit { some t: Task | some u: User | u != t.owner and (no tm: TeamMembership | tm.user = u and tm.team = t.team and tm.role = Admin) and (some ae: AuditEntry | ae.task = t and ae.actor = u and ae.change_type in (Modified + Deleted)) }"
+    },
+    {
+      "fact_name": "F_AssigneeInTeam",
+      "asserts_violated": [
+        "FR_012_TaskContentConstraints"
+      ],
+      "rationale": "removing the constraint that an assignee must be in the task's team allows cross-team assignment, which violates task integrity",
+      "inject_violation": "fact MUTATE_BadAssignee { some t: Task | t.assignee != none and no tm: TeamMembership | tm.user = t.assignee and tm.team = t.team }"
+    },
+    {
+      "fact_name": "F_TeamMembershipUniqueness",
+      "asserts_violated": [
+        "FR_003_TeamContextRequired"
+      ],
+      "rationale": "removing uniqueness allows duplicate (user, team) memberships with inconsistent roles, breaking team context resolution",
+      "inject_violation": "fact MUTATE_DuplicateMembership { some disj tm1, tm2: TeamMembership | tm1.user = tm2.user and tm1.team = tm2.team and tm1.role != tm2.role }"
+    }
+  ]
+}

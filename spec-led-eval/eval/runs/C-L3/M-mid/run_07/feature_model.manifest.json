@@ -1,0 +1,164 @@
+{
+  "feature_id": "C-L3",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "ValidationBeforeMutation"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_OneRolePerUser",
+    "FR_003_PatientAssignedRecord",
+    "FR_004_CareTeamGating",
+    "FR_005_ClinicianAccessLogDenied",
+    "FR_006_PatientSelfAccessOnly",
+    "FR_007_ComplianceContentBlind",
+    "FR_008_ByteEquivalentForbidden",
+    "FR_012_NotesAppendOnly",
+    "FR_013_OneAuditPerAccess",
+    "FR_014_AuditEntryFields",
+    "FR_015_AuditImmutable",
+    "FR_017_AuditRetention",
+    "FR_020_OpaqueRecordIds"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_OneRolePerUser"
+    ],
+    "FR-003": [
+      "FR_003_PatientAssignedRecord",
+      "OwnershipExclusivity"
+    ],
+    "FR-004": [
+      "FR_004_CareTeamGating",
+      "LeastPrivilege"
+    ],
+    "FR-005": [
+      "FR_005_ClinicianAccessLogDenied",
+      "LeastPrivilege"
+    ],
+    "FR-006": [
+      "FR_006_PatientSelfAccessOnly",
+      "OwnershipBasedAccess"
+    ],
+    "FR-007": [
+      "FR_007_ComplianceContentBlind",
+      "LeastPrivilege"
+    ],
+    "FR-008": [
+      "FR_008_ByteEquivalentForbidden",
+      "NoInformationLeakage"
+    ],
+    "FR-009": [
+      "FR_004_CareTeamGating"
+    ],
+    "FR-010": [
+      "FR_012_NotesAppendOnly"
+    ],
+    "FR-011": [
+      "FR_012_NotesAppendOnly",
+      "AppendOnly"
+    ],
+    "FR-012": [
+      "FR_012_NotesAppendOnly",
+      "AppendOnly"
+    ],
+    "FR-013": [
+      "FR_013_OneAuditPerAccess",
+      "AuditCompleteness"
+    ],
+    "FR-014": [
+      "FR_014_AuditEntryFields",
+      "AttributionCorrectness"
+    ],
+    "FR-015": [
+      "FR_015_AuditImmutable"
+    ],
+    "FR-016": [
+      "FR_013_OneAuditPerAccess"
+    ],
+    "FR-017": [
+      "FR_017_AuditRetention",
+      "FR_015_AuditImmutable"
+    ],
+    "FR-018": [
+      "FR_005_ClinicianAccessLogDenied",
+      "FR_007_ComplianceContentBlind"
+    ],
+    "FR-019": [
+      "FR_007_ComplianceContentBlind"
+    ],
+    "FR-020": [
+      "FR_020_OpaqueRecordIds"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_ComplianceContentBlind",
+      "asserts_violated": [
+        "FR_007_ComplianceContentBlind",
+        "LeastPrivilege"
+      ],
+      "rationale": "Removing this fact allows the model to create an AccessAttempt where a ComplianceOfficer caller reaches GetRecord or PostNote with a Permitted outcome, directly violating FR-007 and LeastPrivilege. The injection forces exactly such an instance.",
+      "inject_violation": "fact MUTATE_ComplianceContentBlindViolation { some a: AccessAttempt | a.aaCaller.role = ComplianceOfficer and a.aaEndpoint = GetRecord and a.aaOutcome = Permitted }"
+    },
+    {
+      "fact_name": "F_AuthorisationConditional",
+      "asserts_violated": [
+        "FR_004_CareTeamGating",
+        "OwnershipBasedAccess"
+      ],
+      "rationale": "Removing this fact decouples the outcome from the care-team and ownership conditions. The injection forces a Clinician with no CareTeamMembership to obtain Permitted access to GetRecord, breaking FR-004 and OwnershipBasedAccess.",
+      "inject_violation": "fact MUTATE_CareTeamGatingViolation { some a: AccessAttempt | a.aaCaller.role = Clinician and a.aaEndpoint = GetRecord and a.aaOutcome = Permitted and (no m: CareTeamMembership | m.ctmClinician = a.aaCaller and m.ctmRecord = a.aaTargetRecord) }"
+    },
+    {
+      "fact_name": "F_AuditEntriesAppendOnly",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_015_AuditImmutable",
+        "FR_013_OneAuditPerAccess"
+      ],
+      "rationale": "Removing this fact allows two distinct AccessAttempts to share the same AuditEntry atom, breaking the one-to-one audit mapping required by FR-013 and FR-015. The injection forces exactly two AccessAttempts to map to the same AuditEntry.",
+      "inject_violation": "fact MUTATE_AuditShareViolation { some disj a1, a2: AccessAttempt | a1.aaAudit = a2.aaAudit }"
+    },
+    {
+      "fact_name": "F_NoteIdAuditConstraint",
+      "asserts_violated": [
+        "FR_014_AuditEntryFields",
+        "AppendOnly"
+      ],
+      "rationale": "Removing this fact allows an AuditEntry with aeOp=AppendOp and aeOutcome=Denied to carry a non-null aeNote, or a ReadOp entry to carry a note reference, violating FR-014's structural check. The injection forces a denied-append AuditEntry to carry a note reference.",
+      "inject_violation": "fact MUTATE_NoteIdConstraintViolation { some ae: AuditEntry | ae.aeOp = AppendOp and ae.aeOutcome = Denied and one ae.aeNote }"
+    },
+    {
+      "fact_name": "F_AuditRoleAttribution",
+      "asserts_violated": [
+        "AttributionCorrectness",
+        "FR_014_AuditEntryFields"
+      ],
+      "rationale": "Removing this fact allows an AuditEntry's snapshotted aeRole to differ from the actual caller's role, breaking AttributionCorrectness. The injection forces a mismatch between the caller's role and the audit entry's role field.",
+      "inject_violation": "fact MUTATE_AttributionViolation { some a: AccessAttempt | a.aaAudit.aeRole != a.aaCaller.role }"
+    },
+    {
+      "fact_name": "F_PatientRecordPairing",
+      "asserts_violated": [
+        "OwnershipExclusivity",
+        "FR_003_PatientAssignedRecord",
+        "FR_006_PatientSelfAccessOnly"
+      ],
+      "rationale": "Removing this fact allows a PatientRole user to have no assignedRecord (orphan) or a Clinician to carry an assignedRecord, breaking FR-003. The injection forces a PatientRole user with no assignedRecord, which means the ownership-based access predicate cannot resolve correctly.",
+      "inject_violation": "fact MUTATE_PatientPairingViolation { some u: User | u.role = PatientRole and no u.assignedRecord }"
+    }
+  ]
+}

@@ -1,0 +1,109 @@
+$ /Users/leonhausmann/opt/anaconda3/bin/python3 -m speceval.cli verify-design --no-cache --model M-best --java-bin /Users/leonhausmann/opt/anaconda3/lib/python3.9/site-packages/jdk4py/java-runtime/bin/java /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/eval/specs/A-L3
+
+[parse]   feature 'A-L3', 24 FRs, 5 user stories
+[lift]    calling LLM (anthropic: tier=M-best, model=claude-opus-4-7)...
+[lift]    fresh lift (sha=928b500107ea)
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/A-L3/feature_model.als
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/A-L3/cost_log.json
+[alloy]   running alloy.jar on feature_model.als...
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/A-L3/alloy_verdicts.json
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/A-L3/mutation_outcomes.json
+
+==============================================================================
+  Design Compliance Report  (Phase 3 — feature_model.als)
+  feature       : A-L3
+  spec source   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/eval/specs/A-L3
+  alloy model   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/A-L3/feature_model.als
+  patterns      : (none declared)
+  fr count      : 24 declared in spec.md
+  assertions    : 36 total (34/36 PASS via Alloy)
+==============================================================================
+
+  Compliance matrix
+  ----------------------------------------------------------------------------
+  Assertion                          Verdict   Anchor
+  -----------------------------------------------------------------------
+  LeastPrivilege                     PASS      PATTERN LeastPrivilege: contracts/http-api.md permission matrix; FR-003..FR-005
+  PermissionCompleteness             PASS      PATTERN PermissionCompleteness: contracts/http-api.md permission matrix
+  PermissionGrounding                PASS      PATTERN PermissionGrounding: every allow cell anchored to FR-003..FR-006, FR-023
+  AuthRequiredEverywhere             PASS      PATTERN AuthRequiredEverywhere: FR-001
+  AuditCompleteness                  FAIL      PATTERN AuditCompleteness: FR-016, FR-017
+  AppendOnly                         PASS      PATTERN AppendOnly: FR-018, FR-019
+  AttributionCorrectness             PASS      PATTERN AttributionCorrectness: FR-016, data-model.md audit_entries
+  OwnershipExclusivity               PASS      PATTERN OwnershipExclusivity: data-model.md applicant_id NOT NULL FK
+  OwnershipBasedAccess               PASS      PATTERN OwnershipBasedAccess: FR-003, FR-004, FR-012, FR-020
+  NoInformationLeakage               PASS      PATTERN NoInformationLeakage: FR-020, FR-021, FR-022, FR-023
+  NoSelfMutation                     PASS      PATTERN NoSelfMutation: FR-011, FR-013
+  ValidationBeforeMutation           PASS      PATTERN ValidationBeforeMutation: FR-007, FR-014; spec acceptance #2
+  FR_001_AuthRequired                PASS      FEATURE-SPECIFIC: FR-001
+  FR_002_RoleMultiplicity            PASS      FEATURE-SPECIFIC: FR-002
+  FR_003_ApplicantScope              PASS      FEATURE-SPECIFIC: FR-003
+  FR_004_OfficerScope                PASS      FEATURE-SPECIFIC: FR-004
+  FR_005_AuditorReadOnly             PASS      FEATURE-SPECIFIC: FR-005
+  FR_006_ApplicantFromToken          PASS      FEATURE-SPECIFIC: FR-006
+  FR_007_ValidationNoSideEffect      PASS      FEATURE-SPECIFIC: FR-007
+  FR_008_OneInFlight                 PASS      FEATURE-SPECIFIC: FR-008
+  FR_009_TransitionLegality          PASS      FEATURE-SPECIFIC: FR-009
+  FR_010_AssignmentInvariant         PASS      FEATURE-SPECIFIC: FR-010
+  FR_011_NoSelfAssignment            PASS      FEATURE-SPECIFIC: FR-011
+  FR_012_OnlyAssignedOfficerPatches  PASS      FEATURE-SPECIFIC: FR-012
+  FR_013_NoSelfDecision              PASS      FEATURE-SPECIFIC: FR-013
+  FR_014_ReasonOnEveryEntry          PASS      FEATURE-SPECIFIC: FR-014
+  FR_015_TerminalStatusFinal         PASS      FEATURE-SPECIFIC: FR-015
+  FR_016_AuditFieldsComplete         PASS      FEATURE-SPECIFIC: FR-016
+  FR_017_AuditWithEverySuccess       PASS      FEATURE-SPECIFIC: FR-017
+  FR_018_AuditImmutable              FAIL      FEATURE-SPECIFIC: FR-018
+  FR_019_RetentionNoOrphans          PASS      FEATURE-SPECIFIC: FR-019
+  FR_020_NoLeakageOnGet              PASS      FEATURE-SPECIFIC: FR-020
+  FR_021_NoCrossApplicantLeak        PASS      FEATURE-SPECIFIC: FR-021
+  FR_022_PostExposesOnlySelf         PASS      FEATURE-SPECIFIC: FR-022
+  FR_023_AuditEndpointAuditorOnly    PASS      FEATURE-SPECIFIC: FR-023
+  FR_024_ApplicantDataImmutable      PASS      FEATURE-SPECIFIC: FR-024
+
+  Counterexamples (Alloy SAT)
+  ----------------------------------------------------------------------------
+  AuditCompleteness  [PATTERN AuditCompleteness: FR-016, FR-017]
+    Alloy: 04. check AuditCompleteness        0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR_018_AuditImmutable  [FEATURE-SPECIFIC: FR-018]
+    Alloy: 29. check FR_018_AuditImmutable     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR coverage
+  ----------------------------------------------------------------------------
+  FR-001  →  FR_001_AuthRequired=PASS
+  FR-002  →  FR_002_RoleMultiplicity=PASS
+  FR-003  →  FR_003_ApplicantScope=PASS
+  FR-004  →  FR_004_OfficerScope=PASS
+  FR-005  →  FR_005_AuditorReadOnly=PASS
+  FR-006  →  FR_006_ApplicantFromToken=PASS
+  FR-007  →  FR_007_ValidationNoSideEffect=PASS
+  FR-008  →  FR_008_OneInFlight=PASS
+  FR-009  →  FR_009_TransitionLegality=PASS
+  FR-010  →  FR_010_AssignmentInvariant=PASS
+  FR-011  →  FR_011_NoSelfAssignment=PASS
+  FR-012  →  FR_012_OnlyAssignedOfficerPatches=PASS
+  FR-013  →  FR_013_NoSelfDecision=PASS
+  FR-014  →  FR_014_ReasonOnEveryEntry=PASS
+  FR-015  →  FR_015_TerminalStatusFinal=PASS
+  FR-016  →  FR_016_AuditFieldsComplete=PASS
+  FR-017  →  FR_017_AuditWithEverySuccess=PASS
+  FR-018  →  FR_018_AuditImmutable=FAIL
+  FR-019  →  FR_019_RetentionNoOrphans=PASS
+  FR-020  →  FR_020_NoLeakageOnGet=PASS
+  FR-021  →  FR_021_NoCrossApplicantLeak=PASS
+  FR-022  →  FR_022_PostExposesOnlySelf=PASS
+  FR-023  →  FR_023_AuditEndpointAuditorOnly=PASS
+  FR-024  →  FR_024_ApplicantDataImmutable=PASS
+
+  All FRs have at least one matching assertion.
+
+==============================================================================
+  Mutation tests  (assertion-strength validation)
+==============================================================================
+
+  No mutation_targets in manifest. Skipped.
+
+
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/A-L3/report.txt

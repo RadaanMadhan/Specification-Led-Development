@@ -1,0 +1,20 @@
+{
+  "AuthRequiredEverywhere": "FAIL",
+  "PermissionCompleteness": "FAIL",
+  "AppendOnly": "PASS",
+  "AuditCompleteness": "FAIL",
+  "AttributionCorrectness": "PASS",
+  "OwnershipExclusivity": "PASS",
+  "ValidationBeforeMutation": "FAIL",
+  "FR_001_AuthRequired": "FAIL",
+  "FR_002_IdentityFromAuthContext": "PASS",
+  "FR_003_SingleWorkspace": "PASS",
+  "FR_004_FlatPermissions": "FAIL",
+  "FR_008_AssigneeMustBeMember": "FAIL",
+  "FR_009_CreatorAndTimestampFixed": "PASS",
+  "FR_010_StatusIsValid": "PASS",
+  "FR_011_ClosedTaskEditRule": "FAIL",
+  "FR_012_AnyMemberMayDelete": "FAIL",
+  "FR_017_TimestampsAlwaysPresent": "PASS",
+  "FR_018_DeletionLogged": "FAIL"
+}

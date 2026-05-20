@@ -1,0 +1,167 @@
+{
+  "feature_id": "013-hipaa-clinical-records",
+  "patterns_applied": [
+    "AuthRequiredEverywhere",
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_OneRolePerUser",
+    "FR_003_PatientAssigned",
+    "FR_004_CareTeamGating",
+    "FR_005_ClinicianNoAccessLog",
+    "FR_006_PatientSelfAccess",
+    "FR_007_ComplianceNoClinical",
+    "FR_008_ByteEquivalentDenied",
+    "FR_009_DeniedAlsoAudited",
+    "FR_010_ValidationBeforeMutation",
+    "FR_011_NoteAttribution",
+    "FR_012_NotesAppendOnly",
+    "FR_013_OneAuditPerAccess",
+    "FR_014_AuditFields",
+    "FR_015_AuditImmutable",
+    "FR_016_NoStateChangeWithoutAudit",
+    "FR_017_AuditRetained",
+    "FR_018_AccessLogComplianceOnly",
+    "FR_019_ComplianceContentBlind",
+    "FR_020_RecordIdInPath"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_OneRolePerUser"
+    ],
+    "FR-003": [
+      "FR_003_PatientAssigned",
+      "OwnershipExclusivity"
+    ],
+    "FR-004": [
+      "FR_004_CareTeamGating"
+    ],
+    "FR-005": [
+      "FR_005_ClinicianNoAccessLog"
+    ],
+    "FR-006": [
+      "FR_006_PatientSelfAccess",
+      "OwnershipBasedAccess"
+    ],
+    "FR-007": [
+      "FR_007_ComplianceNoClinical",
+      "LeastPrivilege"
+    ],
+    "FR-008": [
+      "FR_008_ByteEquivalentDenied",
+      "NoInformationLeakage"
+    ],
+    "FR-009": [
+      "FR_009_DeniedAlsoAudited"
+    ],
+    "FR-010": [
+      "FR_010_ValidationBeforeMutation"
+    ],
+    "FR-011": [
+      "FR_011_NoteAttribution",
+      "AttributionCorrectness"
+    ],
+    "FR-012": [
+      "FR_012_NotesAppendOnly",
+      "AppendOnly"
+    ],
+    "FR-013": [
+      "FR_013_OneAuditPerAccess",
+      "AuditCompleteness"
+    ],
+    "FR-014": [
+      "FR_014_AuditFields",
+      "AttributionCorrectness"
+    ],
+    "FR-015": [
+      "FR_015_AuditImmutable",
+      "AppendOnly"
+    ],
+    "FR-016": [
+      "FR_016_NoStateChangeWithoutAudit"
+    ],
+    "FR-017": [
+      "FR_017_AuditRetained"
+    ],
+    "FR-018": [
+      "FR_018_AccessLogComplianceOnly"
+    ],
+    "FR-019": [
+      "FR_019_ComplianceContentBlind"
+    ],
+    "FR-020": [
+      "FR_020_RecordIdInPath",
+      "PermissionCompleteness"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_AuthorizationLogic",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_007_ComplianceNoClinical",
+        "FR_019_ComplianceContentBlind",
+        "NoInformationLeakage",
+        "FR_008_ByteEquivalentDenied"
+      ],
+      "rationale": "Clearing the authorisation logic lets the model invent a Compliance-officer record-read that returns Permitted \u2014 exactly the leak LeastPrivilege / FR-007 / FR-019 / FR-008 are meant to catch.",
+      "inject_violation": "fact MUTATE_AuthLogicViolation { some op: Operation | some op.caller and op.caller.role = ComplianceRole and op.kind = OpReadRecord and op.outcome = Permitted }"
+    },
+    {
+      "fact_name": "F_OneAuditPerAuthenticatedOp",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_013_OneAuditPerAccess",
+        "FR_017_AuditRetained"
+      ],
+      "rationale": "Removing the audit-per-op fact lets an authenticated access exist with no matching audit entry \u2014 the precise SC-002 / FR-013 failure mode.",
+      "inject_violation": "fact MUTATE_MissingAudit { some op: Operation | some op.caller and (no ae: AuditEntry | ae.ofOp = op) }"
+    },
+    {
+      "fact_name": "F_NoteAuthorIsClinician",
+      "asserts_violated": [
+        "FR_011_NoteAttribution"
+      ],
+      "rationale": "Removing the snapshot constraint lets a ClinicalNote carry author_role != clinician \u2014 FR-011 / data-model.md author_role CHECK violation.",
+      "inject_violation": "fact MUTATE_NoteRoleSnapshot { some n: ClinicalNote | n.noteAuthorRole = PatientRole }"
+    },
+    {
+      "fact_name": "F_AuditAttribution",
+      "asserts_violated": [
+        "AttributionCorrectness",
+        "FR_014_AuditFields"
+      ],
+      "rationale": "Without the attribution constraint, audit entries may misreport their accessor's role \u2014 exactly the FR-014 misattribution we need to catch.",
+      "inject_violation": "fact MUTATE_AuditMisattribution { some ae: AuditEntry | ae.recordedRole != ae.ofOp.caller.role }"
+    },
+    {
+      "fact_name": "F_PatientAssignment",
+      "asserts_violated": [
+        "FR_003_PatientAssigned",
+        "OwnershipExclusivity"
+      ],
+      "rationale": "Clearing the pairing fact lets a non-patient user carry an assigned_record_id, violating the data-model.md paired-CHECK that FR-003 encodes.",
+      "inject_violation": "fact MUTATE_NonPatientAssigned { some u: User | u.role = ClinicianRole and some u.assignedRecord }"
+    },
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "PermissionCompleteness"
+      ],
+      "rationale": "Removing the matrix declaration removes the hard-deny semantics; an invented model can declare compliance officers as record-readers, which PermissionCompleteness forbids.",
+      "inject_violation": "fact MUTATE_PermMatrixViolation { (ComplianceRole -> OpReadRecord) in PermMatrix.EverAllowed }"
+    }
+  ]
+}

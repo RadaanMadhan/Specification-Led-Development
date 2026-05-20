@@ -1,0 +1,174 @@
+{
+  "feature_id": "B-L3",
+  "patterns_applied": [
+    "AuthRequiredEverywhere",
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "NoInformationLeakage",
+    "AppendOnly",
+    "AuditCompleteness",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "ValidationBeforeMutation"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_OneTeamOneRole",
+    "FR_003_MemberEditAccess",
+    "FR_004_MemberNoForeignTask",
+    "FR_005_AdminTeamScoped",
+    "FR_006_CrossTeamIsolation",
+    "FR_007_TaskShape",
+    "FR_008_AuditOpEnum",
+    "FR_009_OneOwnerPerTask",
+    "FR_010_OwnerOnlyShareControl",
+    "FR_011_ShareeNoDelete",
+    "FR_012_SameTeamSharing",
+    "FR_013_ShareAuditEntries",
+    "FR_014_ByteEquivalent404",
+    "FR_015_AuditPerEvent",
+    "FR_016_AuditAttribution",
+    "FR_017_AuditAppendOnly",
+    "FR_018_RollbackNoAudit",
+    "FR_019_AuditReadAccess",
+    "FR_020_AuditEntryReferencesTask",
+    "FR_021_OneKindOneOutcome"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "AuthRequiredEverywhere",
+      "FR_001_AuthRequired"
+    ],
+    "FR-002": [
+      "FR_002_OneTeamOneRole"
+    ],
+    "FR-003": [
+      "FR_003_MemberEditAccess",
+      "LeastPrivilege"
+    ],
+    "FR-004": [
+      "FR_004_MemberNoForeignTask",
+      "NoInformationLeakage"
+    ],
+    "FR-005": [
+      "FR_005_AdminTeamScoped"
+    ],
+    "FR-006": [
+      "FR_006_CrossTeamIsolation"
+    ],
+    "FR-007": [
+      "FR_007_TaskShape"
+    ],
+    "FR-008": [
+      "FR_008_AuditOpEnum"
+    ],
+    "FR-009": [
+      "FR_009_OneOwnerPerTask",
+      "OwnershipExclusivity"
+    ],
+    "FR-010": [
+      "FR_010_OwnerOnlyShareControl",
+      "OwnershipBasedAccess"
+    ],
+    "FR-011": [
+      "FR_011_ShareeNoDelete",
+      "LeastPrivilege"
+    ],
+    "FR-012": [
+      "FR_012_SameTeamSharing"
+    ],
+    "FR-013": [
+      "FR_013_ShareAuditEntries"
+    ],
+    "FR-014": [
+      "FR_014_ByteEquivalent404",
+      "NoInformationLeakage"
+    ],
+    "FR-015": [
+      "FR_015_AuditPerEvent",
+      "AuditCompleteness"
+    ],
+    "FR-016": [
+      "FR_016_AuditAttribution",
+      "AttributionCorrectness"
+    ],
+    "FR-017": [
+      "FR_017_AuditAppendOnly",
+      "AppendOnly"
+    ],
+    "FR-018": [
+      "FR_018_RollbackNoAudit",
+      "ValidationBeforeMutation"
+    ],
+    "FR-019": [
+      "FR_019_AuditReadAccess"
+    ],
+    "FR-020": [
+      "FR_020_AuditEntryReferencesTask"
+    ],
+    "FR-021": [
+      "FR_021_OneKindOneOutcome"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_AuthRequired",
+      "asserts_violated": [
+        "AuthRequiredEverywhere",
+        "FR_001_AuthRequired"
+      ],
+      "rationale": "Removing the unauth-iff-no-caller fact lets Alloy invent an operation with no caller yet outcome=Success, which is exactly the bypass the AuthRequired assertion is supposed to catch.",
+      "inject_violation": "fact MUTATE_AuthBypass { some op: Operation | no op.caller and op.outcome = Success and op.kind = GetTaskOp and some op.target }"
+    },
+    {
+      "fact_name": "F_ReadAccessForReadOps",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "FR_014_ByteEquivalent404",
+        "FR_004_MemberNoForeignTask",
+        "LeastPrivilege"
+      ],
+      "rationale": "Removing the read-access guard lets a caller without ownership/share/admin status see a task via GET, which is the byte-equivalent-404 invariant from FR-014.",
+      "inject_violation": "fact MUTATE_LeakageViolation { some op: Operation | op.kind = GetTaskOp and op.outcome = Success and some op.caller and some op.target and op.caller != op.target.owner and op.caller not in op.target.sharedWith and (op.caller.role != TeamAdminRole or op.caller.team != op.target.taskTeam) }"
+    },
+    {
+      "fact_name": "F_PatchSharedOwnerOnly",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_010_OwnerOnlyShareControl"
+      ],
+      "rationale": "Removing the owner-only share-control fact allows a non-owner (admin or sharee) to successfully PATCH shared_with, violating Q1=A / SC-011.",
+      "inject_violation": "fact MUTATE_NonOwnerShareControl { some op: Operation | op.kind = PatchSharedOp and op.outcome = Success and some op.target and some op.caller and op.caller != op.target.owner and op.caller.role = TeamAdminRole and op.caller.team = op.target.taskTeam }"
+    },
+    {
+      "fact_name": "F_DeleteAccess",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_011_ShareeNoDelete"
+      ],
+      "rationale": "Removing the delete-access fact lets a sharee (a Member in shared_with but not owner and not admin) successfully DELETE a task, which Q3=B forbids.",
+      "inject_violation": "fact MUTATE_ShareeCanDelete { some op: Operation | op.kind = DeleteTaskOp and op.outcome = Success and some op.target and some op.caller and op.caller in op.target.sharedWith and op.caller != op.target.owner and op.caller.role = MemberRole }"
+    },
+    {
+      "fact_name": "F_NoAuditsWithoutSuccess",
+      "asserts_violated": [
+        "AppendOnly",
+        "ValidationBeforeMutation",
+        "FR_018_RollbackNoAudit",
+        "FR_017_AuditAppendOnly"
+      ],
+      "rationale": "Removing this fact lets Alloy place an AuditEntry in the audits of an operation whose outcome is not Success, which directly contradicts FR-018 (audit_unavailable rollback) and FR-017 (audit append-only / no orphan audits).",
+      "inject_violation": "fact MUTATE_OrphanAudit { some op: Operation | op.outcome = AuditUnavailable and some op.audits }"
+    },
+    {
+      "fact_name": "F_AuditAttribution",
+      "asserts_violated": [
+        "AttributionCorrectness",
+        "FR_016_AuditAttribution"
+      ],
+      "rationale": "Removing the attribution fact allows an audit entry to record an actor/role different from the operation's actual caller, violating FR-016's snapshot semantics.",
+      "inject_violation": "fact MUTATE_Misattribution { some op: Operation, ae: AuditEntry | ae in op.audits and (ae.actor != op.caller or ae.actorRoleSnap != op.caller.role) }"
+    }
+  ]
+}

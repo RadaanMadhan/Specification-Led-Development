@@ -1,0 +1,172 @@
+{
+  "feature_id": "013-hipaa-clinical-records",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "ValidationBeforeMutation"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_OneRolePerUser",
+    "FR_003_PatientAssignedRecord",
+    "FR_004_CareTeamGating",
+    "FR_005_ClinicianNoAccessLog",
+    "FR_006_PatientOwnRecordOnly",
+    "FR_007_ComplianceNoClinicalRead",
+    "FR_008_ByteEquivalentForbidden",
+    "FR_009_NonCareTeamClinicianForbidden",
+    "FR_010_ValidationGatesNote",
+    "FR_011_AuthorSnapshot",
+    "FR_012_NotesAppendOnly",
+    "FR_013_AuditPerAccess",
+    "FR_014_AuditFields",
+    "FR_015_AuditImmutable",
+    "FR_016_AuditSynchronous",
+    "FR_017_AuditRetention",
+    "FR_018_AccessLogComplianceOnly",
+    "FR_019_ComplianceContentBlind",
+    "FR_020_RecordIdOnlyInUrl"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_OneRolePerUser"
+    ],
+    "FR-003": [
+      "FR_003_PatientAssignedRecord",
+      "OwnershipExclusivity"
+    ],
+    "FR-004": [
+      "FR_004_CareTeamGating",
+      "LeastPrivilege"
+    ],
+    "FR-005": [
+      "FR_005_ClinicianNoAccessLog",
+      "LeastPrivilege"
+    ],
+    "FR-006": [
+      "FR_006_PatientOwnRecordOnly",
+      "OwnershipBasedAccess"
+    ],
+    "FR-007": [
+      "FR_007_ComplianceNoClinicalRead",
+      "LeastPrivilege"
+    ],
+    "FR-008": [
+      "FR_008_ByteEquivalentForbidden",
+      "NoInformationLeakage"
+    ],
+    "FR-009": [
+      "FR_009_NonCareTeamClinicianForbidden"
+    ],
+    "FR-010": [
+      "FR_010_ValidationGatesNote",
+      "ValidationBeforeMutation"
+    ],
+    "FR-011": [
+      "FR_011_AuthorSnapshot",
+      "AttributionCorrectness"
+    ],
+    "FR-012": [
+      "FR_012_NotesAppendOnly",
+      "AppendOnly"
+    ],
+    "FR-013": [
+      "FR_013_AuditPerAccess",
+      "AuditCompleteness"
+    ],
+    "FR-014": [
+      "FR_014_AuditFields",
+      "AttributionCorrectness"
+    ],
+    "FR-015": [
+      "FR_015_AuditImmutable",
+      "AppendOnly"
+    ],
+    "FR-016": [
+      "FR_016_AuditSynchronous",
+      "AuditCompleteness"
+    ],
+    "FR-017": [
+      "FR_017_AuditRetention"
+    ],
+    "FR-018": [
+      "FR_018_AccessLogComplianceOnly",
+      "LeastPrivilege",
+      "PermissionCompleteness"
+    ],
+    "FR-019": [
+      "FR_019_ComplianceContentBlind"
+    ],
+    "FR-020": [
+      "FR_020_RecordIdOnlyInUrl"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_AuditCompleteness",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_013_AuditPerAccess",
+        "FR_016_AuditSynchronous",
+        "FR_017_AuditRetention"
+      ],
+      "rationale": "Clearing the always-on audit fact lets the model invent an authenticated access with no matching audit entry, which the AuditCompleteness assertion is supposed to forbid.",
+      "inject_violation": "fact MUTATE_AuditMissing { some op: Operation | some op.authenticated and (no ae: AuditEntry | ae.forOp = op) }"
+    },
+    {
+      "fact_name": "F_AuditUniquePerOp",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_015_AuditImmutable"
+      ],
+      "rationale": "Removing per-operation uniqueness allows two AuditEntries to be created for the same operation \u2014 a direct violation of the append-only/immutable audit log invariant.",
+      "inject_violation": "fact MUTATE_DuplicateAudit { some disj ae1, ae2: AuditEntry | ae1.forOp = ae2.forOp }"
+    },
+    {
+      "fact_name": "F_ByteEquivalentForbidden",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "FR_008_ByteEquivalentForbidden",
+        "FR_009_NonCareTeamClinicianForbidden"
+      ],
+      "rationale": "Clearing the canonical-envelope fact lets a denied operation respond with something other than ForbiddenEnvelope, which is exactly the existence-leak the NoInformationLeakage assertion catches.",
+      "inject_violation": "fact MUTATE_ResponseLeak { some op: Operation | some op.authenticated and op.outcome = Denied and op.response != ForbiddenEnvelope }"
+    },
+    {
+      "fact_name": "F_PatientOwnRecordGating",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_006_PatientOwnRecordOnly"
+      ],
+      "rationale": "Without the patient-own-record gating fact, the model can permit a patient to read a record other than their assignedRecord \u2014 the canonical ownership-based-access violation.",
+      "inject_violation": "fact MUTATE_PatientCrossAccess { some op: Operation, r: Record | some op.authenticated and op.caller.role = PatientRole and op.outcome = Permitted and op.targetRecord = r and r != op.caller.assignedRecord }"
+    },
+    {
+      "fact_name": "F_ClinicianCareTeamGating",
+      "asserts_violated": [
+        "FR_004_CareTeamGating"
+      ],
+      "rationale": "Clearing the care-team gating fact allows a permitted clinician access without any CareTeamMembership row \u2014 the core HIPAA care-team-only invariant.",
+      "inject_violation": "fact MUTATE_NonCareTeamClinicianGranted { some op: Operation | some op.authenticated and op.outcome = Permitted and op.caller.role = ClinicianRole and op.endpoint = GetRecord and (no m: CareTeamMembership | m.clinician = op.caller and m.record = op.targetRecord) }"
+    },
+    {
+      "fact_name": "F_NoteAuthorIsClinician",
+      "asserts_violated": [
+        "FR_011_AuthorSnapshot"
+      ],
+      "rationale": "Without the clinician-author constraint, a ClinicalNote could be authored by a patient or compliance officer \u2014 violating the schema's author_role CHECK and FR-011's role snapshot.",
+      "inject_violation": "fact MUTATE_NonClinicianAuthor { some n: ClinicalNote | n.authorRoleSnapshot != ClinicianRole }"
+    }
+  ]
+}

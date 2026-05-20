@@ -1,0 +1,44 @@
+{
+  "F_NoSelfDecision": {
+    "targeted_asserts": {
+      "FR_013_NoSelfDecision": "VACUOUS_OVERCONSTRAINT",
+      "NoSelfMutation": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_AppendOnlyAuditEntries": {
+    "targeted_asserts": {
+      "AppendOnly": "BIT",
+      "FR_018_AuditImmutableUniqueness": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_OnlyAssignedOfficerCreatesTransitionAudit": {
+    "targeted_asserts": {
+      "FR_012_OnlyAssignedOfficerTransitions": "BIT",
+      "AttributionCorrectness": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_PermissionMatrix": {
+    "targeted_asserts": {
+      "LeastPrivilege": "VACUOUS_OVERCONSTRAINT",
+      "FR_005_AuditorReadOnly": "VACUOUS_OVERCONSTRAINT",
+      "FR_024_ApplicantCannotModifyAfterSubmission": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_OneInFlightPerApplicant": {
+    "targeted_asserts": {
+      "FR_008_OneInFlightPerApplicant": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_NoSelfAssignment": {
+    "targeted_asserts": {
+      "FR_011_NoSelfAssignment": "BIT",
+      "NoSelfMutation": "BIT"
+    },
+    "all_bit": true
+  }
+}

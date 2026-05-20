@@ -1,0 +1,196 @@
+{
+  "feature_id": "A-L3",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "PermissionGrounding",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoSelfMutation",
+    "NoInformationLeakage",
+    "ValidationBeforeMutation"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_OfficerAuditorMutex",
+    "FR_003_ApplicantScope",
+    "FR_004_OfficerScope",
+    "FR_005_AuditorReadOnly",
+    "FR_007_InputsValid",
+    "FR_008_OneInFlight",
+    "FR_009_AllowedTransitions",
+    "FR_010_AssignedIsOfficer",
+    "FR_011_NoSelfAssignment",
+    "FR_012_AssignedOfficerOnly",
+    "FR_013_NoSelfDecision",
+    "FR_014_ReasonRequired",
+    "FR_015_NoChangeAfterDecided",
+    "FR_016_AuditFields",
+    "FR_017_AuditWithTransition",
+    "FR_018_AuditAppendOnly",
+    "FR_019_NoDelete",
+    "FR_020_NoLeakOnGet",
+    "FR_021_SameForOwnership",
+    "FR_022_PostNoLeak",
+    "FR_023_AuditAuditorOnly",
+    "FR_024_ApplicantNoModify"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_OfficerAuditorMutex"
+    ],
+    "FR-003": [
+      "FR_003_ApplicantScope"
+    ],
+    "FR-004": [
+      "FR_004_OfficerScope",
+      "OwnershipBasedAccess"
+    ],
+    "FR-005": [
+      "FR_005_AuditorReadOnly",
+      "LeastPrivilege"
+    ],
+    "FR-006": [
+      "FR_003_ApplicantScope"
+    ],
+    "FR-007": [
+      "FR_007_InputsValid",
+      "ValidationBeforeMutation"
+    ],
+    "FR-008": [
+      "FR_008_OneInFlight"
+    ],
+    "FR-009": [
+      "FR_009_AllowedTransitions"
+    ],
+    "FR-010": [
+      "FR_010_AssignedIsOfficer"
+    ],
+    "FR-011": [
+      "FR_011_NoSelfAssignment",
+      "NoSelfMutation"
+    ],
+    "FR-012": [
+      "FR_012_AssignedOfficerOnly",
+      "OwnershipBasedAccess",
+      "FR_004_OfficerScope"
+    ],
+    "FR-013": [
+      "FR_013_NoSelfDecision",
+      "NoSelfMutation"
+    ],
+    "FR-014": [
+      "FR_014_ReasonRequired"
+    ],
+    "FR-015": [
+      "FR_015_NoChangeAfterDecided"
+    ],
+    "FR-016": [
+      "FR_016_AuditFields",
+      "AttributionCorrectness"
+    ],
+    "FR-017": [
+      "FR_017_AuditWithTransition",
+      "AuditCompleteness"
+    ],
+    "FR-018": [
+      "FR_018_AuditAppendOnly",
+      "AppendOnly"
+    ],
+    "FR-019": [
+      "FR_019_NoDelete"
+    ],
+    "FR-020": [
+      "FR_020_NoLeakOnGet",
+      "NoInformationLeakage"
+    ],
+    "FR-021": [
+      "FR_021_SameForOwnership",
+      "NoInformationLeakage"
+    ],
+    "FR-022": [
+      "FR_022_PostNoLeak"
+    ],
+    "FR-023": [
+      "FR_023_AuditAuditorOnly",
+      "NoInformationLeakage"
+    ],
+    "FR-024": [
+      "FR_024_ApplicantNoModify"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_RoleAllowsKind",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_005_AuditorReadOnly",
+        "FR_022_PostNoLeak",
+        "FR_023_AuditAuditorOnly"
+      ],
+      "rationale": "Removing the role-allows-kind gate lets the model invent a successful operation whose caller does not hold any role the matrix permits for the endpoint. The injection forces an Auditor (who has no Applicant role) to succeed at POST /applications, which directly violates LeastPrivilege and the FR-005 auditor-read-only and FR-022 post-no-leak invariants.",
+      "inject_violation": "fact MUTATE_RoleAllowsKindViolation { some op: Operation | op.succeeded = BTrue and op.kind = PostApplications and Applicant not in op.caller.roles and Auditor in op.caller.roles }"
+    },
+    {
+      "fact_name": "F_AuditExists",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_017_AuditWithTransition"
+      ],
+      "rationale": "Removing the every-successful-state-change-has-an-audit fact lets a successful PATCH exist without a corresponding audit row \u2014 exactly the SC-002/SC-008 reconciliation failure that AuditCompleteness/FR-017 are supposed to detect.",
+      "inject_violation": "fact MUTATE_AuditMissingViolation { some op: Operation | op.kind = PatchStatus and op.succeeded = BTrue and no op.audit }"
+    },
+    {
+      "fact_name": "F_AuditEntryHasSource",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_018_AuditAppendOnly",
+        "FR_019_NoDelete"
+      ],
+      "rationale": "Removing the every-audit-entry-has-a-source-op fact lets a fabricated or orphaned audit row exist with no originating operation \u2014 the structural analogue of an out-of-band UPDATE or DELETE on the audit log that FR-018 / FR-019 forbid.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some ae: AuditEntry | (no op: Operation | op.audit = ae) }"
+    },
+    {
+      "fact_name": "F_NoSelfAssignment",
+      "asserts_violated": [
+        "NoSelfMutation",
+        "FR_011_NoSelfAssignment"
+      ],
+      "rationale": "Removing the no-self-assignment fact lets auto-assignment hand an application to its own applicant. FR-011 explicitly forbids this \u2014 it is the conflict-of-interest backstop for FR-013.",
+      "inject_violation": "fact MUTATE_SelfAssignmentViolation { some a: LoanApplication | some a.assignedOfficer and a.assignedOfficer = a.applicant }"
+    },
+    {
+      "fact_name": "F_PatchStatusRules",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_012_AssignedOfficerOnly",
+        "FR_013_NoSelfDecision",
+        "FR_004_OfficerScope",
+        "NoSelfMutation",
+        "FR_009_AllowedTransitions",
+        "FR_015_NoChangeAfterDecided"
+      ],
+      "rationale": "Removing the PATCH ownership / transition / not-already-decided / reason-required bundle lets some officer who is NOT the application's assigned officer succeed at deciding it \u2014 the SC-005 production-failure mode that FR-012 and OwnershipBasedAccess directly forbid.",
+      "inject_violation": "fact MUTATE_PatchOwnershipViolation { some op: Operation, t: LoanApplication, u: User | op.kind = PatchStatus and op.succeeded = BTrue and op.target = t and op.caller = u and Officer in u.roles and u != t.assignedOfficer }"
+    },
+    {
+      "fact_name": "F_GetApplicationByIdAccess",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "FR_020_NoLeakOnGet",
+        "FR_021_SameForOwnership",
+        "OwnershipBasedAccess"
+      ],
+      "rationale": "Removing the GET-by-id ownership check lets a non-owner, non-assigned-officer, non-auditor caller successfully read another applicant's application \u2014 exactly the FR-020/FR-021 byte-equivalent privacy invariant the NoInformationLeakage assertion is supposed to catch.",
+      "inject_violation": "fact MUTATE_GetLeakViolation { some op: Operation, t: LoanApplication | op.kind = GetApplicationById and op.succeeded = BTrue and op.target = t and op.caller != t.applicant and op.caller != t.assignedOfficer and Auditor not in op.caller.roles }"
+    }
+  ]
+}

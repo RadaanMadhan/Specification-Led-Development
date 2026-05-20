@@ -1,0 +1,21 @@
+{
+  "LeastPrivilege": "PASS",
+  "PermissionCompleteness": "PASS",
+  "AuthRequiredEverywhere": "PASS",
+  "AppendOnly": "PASS",
+  "AuditCompleteness": "PASS",
+  "AttributionCorrectness": "PASS",
+  "OwnershipExclusivity": "PASS",
+  "ValidationBeforeMutation": "PASS",
+  "FR_001_AuthRequired": "PASS",
+  "FR_002_IdentityFromAuthContext": "PASS",
+  "FR_003_FR_004_FlatPermissions": "PASS",
+  "FR_008_AssigneeIsCurrentMember": "PASS",
+  "FR_009_CreatorRecordedAndImmutable": "PASS",
+  "FR_010_ValidTaskStatus": "PASS",
+  "FR_011_ClosedTaskEditRule": "PASS",
+  "FR_012_DeletedTaskUnreachable": "PASS",
+  "FR_014_AllTasksVisible": "PASS",
+  "FR_017_TimestampSemantics": "PASS",
+  "FR_018_DeletionLogComplete": "PASS"
+}

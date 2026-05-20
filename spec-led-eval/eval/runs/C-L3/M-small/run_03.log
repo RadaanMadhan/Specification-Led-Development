@@ -1,0 +1,158 @@
+$ /Users/leonhausmann/opt/anaconda3/bin/python3 -m speceval.cli verify-design --no-cache --model M-small --java-bin /Users/leonhausmann/opt/anaconda3/lib/python3.9/site-packages/jdk4py/java-runtime/bin/java /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/eval/specs/C-L3
+
+[parse]   feature 'C-L3', 20 FRs, 5 user stories
+[lift]    calling LLM (anthropic: tier=M-small, model=claude-haiku-4-5)...
+[lift]    fresh lift (sha=e63f780ed54c)
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/C-L3/feature_model.als
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/C-L3/cost_log.json
+[alloy]   running alloy.jar on feature_model.als...
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/C-L3/alloy_verdicts.json
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/C-L3/mutation_outcomes.json
+
+==============================================================================
+  Design Compliance Report  (Phase 3 — feature_model.als)
+  feature       : C-L3
+  spec source   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/eval/specs/C-L3
+  alloy model   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/C-L3/feature_model.als
+  patterns      : LeastPrivilege, PermissionCompleteness, AuthRequiredEverywhere, AuditCompleteness, AppendOnly, AttributionCorrectness, OwnershipExclusivity, OwnershipBasedAccess
+  fr count      : 20 declared in spec.md
+  assertions    : 16 total (16/16 PASS via Alloy)
+==============================================================================
+
+  Compliance matrix
+  ----------------------------------------------------------------------------
+  Assertion                            Verdict   Anchor
+  -------------------------------------------------------------------------
+  LeastPrivilege                       PASS      PATTERN AuthRequiredEverywhere: spec.md FR-001
+  OwnershipExclusivity                 PASS      (no anchor comment found)
+  OwnershipBasedAccess                 PASS      (no anchor comment found)
+  AuditCompleteness                    PASS      (no anchor comment found)
+  AppendOnly                           PASS      (no anchor comment found)
+  AttributionCorrectness               PASS      (no anchor comment found)
+  AuthRequiredEverywhere               PASS      (no anchor comment found)
+  FR_002_OneRolePerUser                PASS      FEATURE-SPECIFIC: FR-002
+  FR_003_PatientRecordAssignment       PASS      FEATURE-SPECIFIC: FR-003
+  FR_004_CareTeamGating                PASS      FEATURE-SPECIFIC: FR-004
+  FR_006_PatientSelfAccess             PASS      FEATURE-SPECIFIC: FR-006
+  FR_007_ComplianceOfficerRestriction  PASS      FEATURE-SPECIFIC: FR-007
+  FR_012_AppendOnlyNotes               PASS      FEATURE-SPECIFIC: FR-012
+  FR_013_OneAuditPerAccess             PASS      FEATURE-SPECIFIC: FR-013
+  FR_014_AuditRoleSnapshot             PASS      FEATURE-SPECIFIC: FR-014
+  FR_015_AuditImmutability             PASS      FEATURE-SPECIFIC: FR-015
+
+  FR coverage
+  ----------------------------------------------------------------------------
+  FR-001  →  AuthRequiredEverywhere=PASS
+  FR-002  →  FR_002_OneRolePerUser=PASS
+  FR-003  →  FR_003_PatientRecordAssignment=PASS, OwnershipExclusivity=PASS
+  FR-004  →  LeastPrivilege=PASS, FR_004_CareTeamGating=PASS
+  FR-005  [uncovered]
+  FR-006  →  OwnershipBasedAccess=PASS, FR_006_PatientSelfAccess=PASS
+  FR-007  →  FR_007_ComplianceOfficerRestriction=PASS
+  FR-008  [uncovered]
+  FR-009  [uncovered]
+  FR-010  [uncovered]
+  FR-011  [uncovered]
+  FR-012  →  AppendOnly=PASS, FR_012_AppendOnlyNotes=PASS
+  FR-013  →  AuditCompleteness=PASS, FR_013_OneAuditPerAccess=PASS
+  FR-014  →  AttributionCorrectness=PASS, FR_014_AuditRoleSnapshot=PASS
+  FR-015  →  AppendOnly=PASS, FR_015_AuditImmutability=PASS
+  FR-016  [uncovered]
+  FR-017  →  AppendOnly=PASS
+  FR-018  [uncovered]
+  FR-019  [uncovered]
+  FR-020  [uncovered]
+
+  WARNING: 9 FR(s) without any matching assertion: FR-005, FR-008, FR-009, FR-010, FR-011, FR-016, FR-018, FR-019, FR-020
+
+==============================================================================
+  Mutation tests  (assertion-strength validation)
+==============================================================================
+
+  Strategy: replace each named fact's body with `{}` (no constraint),
+  then re-run Alloy. Each listed assertion should now FAIL on the
+  mutated model. If it still PASSes, the assertion is vacuous and
+  must be strengthened.
+
+  - MUTATE F_ClinicianAccessGating  → runs/C-L3/mutated_F_ClinicianAccessGating.als
+    rationale: removing this fact allows the model to create audit entries where a clinician has permitted access to a record they are not on the active care team for, which violates the core access-control invariant that clinician access requires care-team membership.
+    expected to FAIL: LeastPrivilege, FR_004_CareTeamGating
+      - LeastPrivilege: MISSING
+      - FR_004_CareTeamGating: MISSING
+    WARNING: Alloy returned no verdicts for this mutant; stderr below.
+    [main] ERROR alloy - excuting sub command CLI:exec error Syntax error in /private/var/folders/fj/1zqdpxbj0b1g_r10m_bwm16m0000gn/T/speceval_jtchgpuv/model.als at line 344 column 1:
+    There are 5 possible tokens that can appear here:
+    enum fun let open pred 
+    Syntax error in /private/var/folders/fj/1zqdpxbj0b1g_r10m_bwm16m0000gn/T/speceval_jtchgpuv/model.als at line 344 column 1:
+    There a
+
+  - MUTATE F_AppendOnlyAuditEntries  → runs/C-L3/mutated_F_AppendOnlyAuditEntries.als
+    rationale: removing this fact lets the model create two distinct audit entries with identical accessor, record, operation, and outcome, violating the immutability invariant that each audit entry is unique and cannot be modified.
+    expected to FAIL: AppendOnly, FR_015_AuditImmutability
+      - AppendOnly: MISSING
+      - FR_015_AuditImmutability: MISSING
+    WARNING: Alloy returned no verdicts for this mutant; stderr below.
+    [main] ERROR alloy - excuting sub command CLI:exec error Syntax error in /private/var/folders/fj/1zqdpxbj0b1g_r10m_bwm16m0000gn/T/speceval_tc2sn1o4/model.als at line 343 column 1:
+    There are 5 possible tokens that can appear here:
+    enum fun let open pred 
+    Syntax error in /private/var/folders/fj/1zqdpxbj0b1g_r10m_bwm16m0000gn/T/speceval_tc2sn1o4/model.als at line 343 column 1:
+    There a
+
+  - MUTATE F_AuditCompleteness  → runs/C-L3/mutated_F_AuditCompleteness.als
+    rationale: removing this fact allows the model to create a clinical note without a corresponding permitted append audit entry, violating the completeness invariant that every note creation is audited.
+    expected to FAIL: AuditCompleteness, FR_013_OneAuditPerAccess
+      - AuditCompleteness: MISSING
+      - FR_013_OneAuditPerAccess: MISSING
+    WARNING: Alloy returned no verdicts for this mutant; stderr below.
+    [main] ERROR alloy - excuting sub command CLI:exec error Syntax error in /private/var/folders/fj/1zqdpxbj0b1g_r10m_bwm16m0000gn/T/speceval_oe3bf_x0/model.als at line 342 column 1:
+    There are 5 possible tokens that can appear here:
+    enum fun let open pred 
+    Syntax error in /private/var/folders/fj/1zqdpxbj0b1g_r10m_bwm16m0000gn/T/speceval_oe3bf_x0/model.als at line 342 column 1:
+    There a
+
+  - MUTATE F_PatientAccessGating  → runs/C-L3/mutated_F_PatientAccessGating.als
+    rationale: removing this fact lets the model create a patient with permitted access to a record that is not their assigned_record_id, violating the ownership-based access control invariant that patients can only access their own record.
+    expected to FAIL: OwnershipBasedAccess, FR_006_PatientSelfAccess
+      - OwnershipBasedAccess: MISSING
+      - FR_006_PatientSelfAccess: MISSING
+    WARNING: Alloy returned no verdicts for this mutant; stderr below.
+    [main] ERROR alloy - excuting sub command CLI:exec error Syntax error in /private/var/folders/fj/1zqdpxbj0b1g_r10m_bwm16m0000gn/T/speceval_6f60ssga/model.als at line 345 column 1:
+    There are 5 possible tokens that can appear here:
+    enum fun let open pred 
+    Syntax error in /private/var/folders/fj/1zqdpxbj0b1g_r10m_bwm16m0000gn/T/speceval_6f60ssga/model.als at line 345 column 1:
+    There a
+
+  - MUTATE F_AuditRoleSnapshot  → runs/C-L3/mutated_F_AuditRoleSnapshot.als
+    rationale: removing this fact lets the model create an audit entry whose accessor_role field differs from the accessor's actual role, violating the attribution correctness invariant that audit entries must record the correct role at the time of access.
+    expected to FAIL: AttributionCorrectness, FR_014_AuditRoleSnapshot
+      - AttributionCorrectness: MISSING
+      - FR_014_AuditRoleSnapshot: MISSING
+    WARNING: Alloy returned no verdicts for this mutant; stderr below.
+    [main] ERROR alloy - excuting sub command CLI:exec error Syntax error in /private/var/folders/fj/1zqdpxbj0b1g_r10m_bwm16m0000gn/T/speceval_xnx887qj/model.als at line 346 column 1:
+    There are 5 possible tokens that can appear here:
+    enum fun let open pred 
+    Syntax error in /private/var/folders/fj/1zqdpxbj0b1g_r10m_bwm16m0000gn/T/speceval_xnx887qj/model.als at line 346 column 1:
+    There a
+
+  - MUTATE F_ComplianceOfficerRestriction  → runs/C-L3/mutated_F_ComplianceOfficerRestriction.als
+    rationale: removing this fact allows compliance officers to perform operations other than list (e.g., read or append), violating the content-blindness invariant that compliance officers must only access audit logs and never read clinical content.
+    expected to FAIL: FR_007_ComplianceOfficerRestriction
+      - FR_007_ComplianceOfficerRestriction: MISSING
+    WARNING: Alloy returned no verdicts for this mutant; stderr below.
+    [main] ERROR alloy - excuting sub command CLI:exec error Syntax error in /private/var/folders/fj/1zqdpxbj0b1g_r10m_bwm16m0000gn/T/speceval_4nb4o32q/model.als at line 345 column 1:
+    There are 5 possible tokens that can appear here:
+    enum fun let open pred 
+    Syntax error in /private/var/folders/fj/1zqdpxbj0b1g_r10m_bwm16m0000gn/T/speceval_4nb4o32q/model.als at line 345 column 1:
+    There a
+
+  Mutation summary
+  ----------------------------------------------------------------------------
+  - F_ClinicianAccessGating: ASSERTION VACUOUS (LeastPrivilege, FR_004_CareTeamGating)
+  - F_AppendOnlyAuditEntries: ASSERTION VACUOUS (AppendOnly, FR_015_AuditImmutability)
+  - F_AuditCompleteness: ASSERTION VACUOUS (AuditCompleteness, FR_013_OneAuditPerAccess)
+  - F_PatientAccessGating: ASSERTION VACUOUS (OwnershipBasedAccess, FR_006_PatientSelfAccess)
+  - F_AuditRoleSnapshot: ASSERTION VACUOUS (AttributionCorrectness, FR_014_AuditRoleSnapshot)
+  - F_ComplianceOfficerRestriction: ASSERTION VACUOUS (FR_007_ComplianceOfficerRestriction)
+
+
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/C-L3/report.txt

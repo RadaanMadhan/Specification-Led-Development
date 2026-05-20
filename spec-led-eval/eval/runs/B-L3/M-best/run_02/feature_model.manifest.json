@@ -1,0 +1,188 @@
+{
+  "feature_id": "008-task-sharing",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "NoSelfMutation",
+    "ValidationBeforeMutation"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_RoleFromToken",
+    "FR_003_MemberPermissions",
+    "FR_004_NoAccessToOthersTasks",
+    "FR_005_AdminCantChangeShare",
+    "FR_006_CrossTeamIsolation",
+    "FR_007_TaskHasOwnerAndTeam",
+    "FR_008_TaskOwnerStable",
+    "FR_009_OwnerImmutable",
+    "FR_010_OnlyOwnerChangesShares",
+    "FR_011_ShareeNoDelete",
+    "FR_012_NoCrossTeamSharing",
+    "FR_013_ShareAuditEntry",
+    "FR_014_ByteEquiv404",
+    "FR_015_AuditPerEvent",
+    "FR_016_AuditFields",
+    "FR_017_AuditImmutable",
+    "FR_018_AuditAtomic",
+    "FR_019_AuditVisibility",
+    "FR_020_AuditRetention",
+    "FR_021_WellFormedActions"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_RoleFromToken",
+      "AttributionCorrectness"
+    ],
+    "FR-002a": [
+      "FR_002_RoleFromToken"
+    ],
+    "FR-003": [
+      "FR_003_MemberPermissions",
+      "LeastPrivilege"
+    ],
+    "FR-004": [
+      "FR_004_NoAccessToOthersTasks",
+      "LeastPrivilege"
+    ],
+    "FR-005": [
+      "FR_005_AdminCantChangeShare",
+      "LeastPrivilege"
+    ],
+    "FR-006": [
+      "FR_006_CrossTeamIsolation",
+      "NoInformationLeakage"
+    ],
+    "FR-007": [
+      "FR_007_TaskHasOwnerAndTeam"
+    ],
+    "FR-008": [
+      "FR_008_TaskOwnerStable"
+    ],
+    "FR-009": [
+      "FR_009_OwnerImmutable",
+      "OwnershipExclusivity"
+    ],
+    "FR-010": [
+      "FR_010_OnlyOwnerChangesShares",
+      "LeastPrivilege"
+    ],
+    "FR-011": [
+      "FR_011_ShareeNoDelete",
+      "LeastPrivilege"
+    ],
+    "FR-012": [
+      "FR_012_NoCrossTeamSharing"
+    ],
+    "FR-013": [
+      "FR_013_ShareAuditEntry"
+    ],
+    "FR-014": [
+      "FR_014_ByteEquiv404",
+      "NoInformationLeakage"
+    ],
+    "FR-015": [
+      "FR_015_AuditPerEvent",
+      "AuditCompleteness"
+    ],
+    "FR-016": [
+      "FR_016_AuditFields",
+      "AttributionCorrectness"
+    ],
+    "FR-017": [
+      "FR_017_AuditImmutable",
+      "AppendOnly"
+    ],
+    "FR-018": [
+      "FR_018_AuditAtomic",
+      "ValidationBeforeMutation"
+    ],
+    "FR-019": [
+      "FR_019_AuditVisibility"
+    ],
+    "FR-020": [
+      "FR_020_AuditRetention"
+    ],
+    "FR-021": [
+      "FR_021_WellFormedActions"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_OwnerNotSelfSharee",
+      "asserts_violated": [
+        "NoSelfMutation"
+      ],
+      "rationale": "removing this fact lets a Task list its own owner in shared_with; the injection forces such a Task to exist, which NoSelfMutation should catch.",
+      "inject_violation": "fact MUTATE_OwnerSelfShare { some t: Task | t.owner in t.sharedWith }"
+    },
+    {
+      "fact_name": "F_SharedWithSameTeam",
+      "asserts_violated": [
+        "FR_012_NoCrossTeamSharing"
+      ],
+      "rationale": "without this fact, sharees can be from a foreign team; the injection forces a cross-team sharee, violating FR-012.",
+      "inject_violation": "fact MUTATE_CrossTeamSharee { some t: Task | some s: t.sharedWith | s.userTeam != t.taskTeam }"
+    },
+    {
+      "fact_name": "F_NoCrossTeamAccess",
+      "asserts_violated": [
+        "FR_006_CrossTeamIsolation",
+        "NoInformationLeakage"
+      ],
+      "rationale": "removing this fact lets a successful Action target a task in a different team; the injection makes such an Action exist, violating cross-team isolation.",
+      "inject_violation": "fact MUTATE_CrossTeamAccess { some act: Action | act.outcome = OK and act.caller.userTeam != act.target.taskTeam }"
+    },
+    {
+      "fact_name": "F_AuditActorRoleSnapshot",
+      "asserts_violated": [
+        "AttributionCorrectness",
+        "FR_002_RoleFromToken",
+        "FR_016_AuditFields"
+      ],
+      "rationale": "removing this fact lets the audit entry record a role that doesn't match the actor's persisted role (i.e., role taken from request body); the injection forces a misattributed entry.",
+      "inject_violation": "fact MUTATE_AuditMisattribution { some a: AuditEntry | a.auditActorRole != a.auditActor.userRole }"
+    },
+    {
+      "fact_name": "F_AuditOriginatesFromAction",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_017_AuditImmutable",
+        "FR_020_AuditRetention"
+      ],
+      "rationale": "removing this fact allows an AuditEntry to exist without any producing Action (orphan or fabricated); the injection forces such an orphan, which AppendOnly should reject.",
+      "inject_violation": "fact MUTATE_OrphanAudit { some ae: AuditEntry | no act: Action | ae in act.produces }"
+    },
+    {
+      "fact_name": "F_AccessMatrix",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_005_AdminCantChangeShare",
+        "FR_010_OnlyOwnerChangesShares"
+      ],
+      "rationale": "removing the access-matrix definition lets Alloy populate forbidden cells; the injection forces (TeamAdminRel -> PatchTaskShare) to be allowed, which directly violates the FR-005 / FR-010 invariant that share-list changes are owner-only.",
+      "inject_violation": "fact MUTATE_AdminShareCell { (TeamAdminRel -> PatchTaskShare) in AccessMatrix.CanAct }"
+    },
+    {
+      "fact_name": "F_AuditCompletenessFact",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_015_AuditPerEvent",
+        "ValidationBeforeMutation"
+      ],
+      "rationale": "removing this fact allows a successful mutation Action to produce zero audit entries; the injection forces such an Action to exist, violating per-event audit completeness.",
+      "inject_violation": "fact MUTATE_NoAuditOnMutation { some act: Action | act.outcome = OK and act.kind = PatchTaskFields and no act.produces }"
+    }
+  ]
+}

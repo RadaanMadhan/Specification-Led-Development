@@ -1,0 +1,42 @@
+{
+  "F_AuthRequired": {
+    "targeted_asserts": {
+      "AuthRequiredEverywhere": "BIT",
+      "FR_001_AuthRequired": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_LeastPrivilege": {
+    "targeted_asserts": {
+      "LeastPrivilege": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_DeletionLogCompleteness": {
+    "targeted_asserts": {
+      "AuditCompleteness": "BIT",
+      "FR_012_DeletionRecorded": "BIT",
+      "FR_018_DeletionLogged": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_DeletionLogAttribution": {
+    "targeted_asserts": {
+      "AttributionCorrectness": "BIT",
+      "FR_018_DeletionLogged": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AppendOnlyDeletionLog": {
+    "targeted_asserts": {
+      "AppendOnly": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_ClosedTaskEditRule": {
+    "targeted_asserts": {
+      "FR_011_ClosedTaskEdit": "BIT"
+    },
+    "all_bit": true
+  }
+}

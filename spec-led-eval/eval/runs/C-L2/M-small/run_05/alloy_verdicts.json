@@ -1,0 +1,17 @@
+{
+  "LeastPrivilege": "PASS",
+  "OwnershipBasedAccess": "PASS",
+  "AppendOnlyNotes": "PASS",
+  "AppendOnlyAuditEntries": "PASS",
+  "AuditCompleteness": "FAIL",
+  "AttributionCorrectness": "PASS",
+  "NoInformationLeakage": "FAIL",
+  "AuthRequiredEverywhere": "PASS",
+  "FR_001_AuthenticationRequired": "PASS",
+  "FR_004_CareTeamGatingEnforced": "PASS",
+  "FR_005_AdministratorContentBlind": "PASS",
+  "FR_006_ByteEquivalentUnauthorised": "PASS",
+  "FR_011_NotesImmutable": "PASS",
+  "FR_012_OneAuditPerAccess": "PASS",
+  "FR_014_AuditImmutable": "FAIL"
+}

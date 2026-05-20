@@ -1,0 +1,41 @@
+{
+  "F_AuditCompleteness": {
+    "targeted_asserts": {
+      "AuditCompleteness": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_NoSelfApproval": {
+    "targeted_asserts": {
+      "FR_013_NoSelfApprovalOrDecision": "VACUOUS_OVERCONSTRAINT",
+      "NoSelfMutation": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_AssignedOfficerOnly": {
+    "targeted_asserts": {
+      "FR_012_OnlyAssignedOfficerCanPatch": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_ValidTransitions": {
+    "targeted_asserts": {
+      "FR_009_ValidStatusMachine": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_PermissionMatrix": {
+    "targeted_asserts": {
+      "LeastPrivilege": "BIT",
+      "FR_003_ApplicantPermissions": "BIT",
+      "FR_005_AuditorCannotWrite": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_OneInFlightPerApplicant": {
+    "targeted_asserts": {
+      "FR_008_OneInFlightPerApplicant": "BIT"
+    },
+    "all_bit": true
+  }
+}

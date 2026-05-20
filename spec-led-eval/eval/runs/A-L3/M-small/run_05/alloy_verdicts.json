@@ -1,0 +1,19 @@
+{
+  "LeastPrivilege": "PASS",
+  "PermissionCompleteness": "PASS",
+  "AuthRequiredEverywhere": "PASS",
+  "AuditCompleteness": "PASS",
+  "AppendOnly": "FAIL",
+  "AttributionCorrectness": "FAIL",
+  "OwnershipExclusivity": "PASS",
+  "OwnershipBasedAccess": "PASS",
+  "NoInformationLeakage": "PASS",
+  "NoSelfMutation": "PASS",
+  "FR_008_OneInFlightPerApplicant": "PASS",
+  "FR_009_ValidStatusMachine": "PASS",
+  "FR_012_OnlyAssignedOfficerCanPatch": "PASS",
+  "FR_013_NoSelfApprovalOrDecision": "PASS",
+  "FR_001_AllOperationsRequireAuth": "PASS",
+  "FR_003_ApplicantPermissions": "PASS",
+  "FR_005_AuditorCannotWrite": "PASS"
+}

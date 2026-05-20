@@ -1,0 +1,44 @@
+{
+  "F_PermissionMatrix": {
+    "targeted_asserts": {
+      "LeastPrivilege": "BIT",
+      "FR_002_CustomerActionsLimited": "BIT",
+      "FR_004_ComplianceReadOnly": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AuditEntryCompleteness": {
+    "targeted_asserts": {},
+    "all_bit": false,
+    "skipped": true,
+    "skip_reason": "mutation target fact `F_AuditEntryCompleteness` not found in feature_model.als"
+  },
+  "F_AuditEntryCounts": {
+    "targeted_asserts": {
+      "AppendOnly": "VACUOUS_OVERCONSTRAINT",
+      "FR_017_019_ExactlyOneAuditEntryPerTransition": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_DecisionByAssignedOfficer": {
+    "targeted_asserts": {
+      "FR_013_OnlyAssignedOfficerDecides": "BIT",
+      "AttributionCorrectness": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_OneInFlightPerCustomer": {
+    "targeted_asserts": {
+      "FR_008_OneInFlightPerCustomer": "VACUOUS_OVERCONSTRAINT",
+      "OwnershipExclusivity": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_ReasonRequired": {
+    "targeted_asserts": {
+      "FR_014_ReasonRequiredForDecision": "BIT",
+      "ValidationBeforeMutation": "BIT"
+    },
+    "all_bit": true
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "F_PermissionMatrix": {
+    "targeted_asserts": {
+      "LeastPrivilege": "VACUOUS_OVERCONSTRAINT",
+      "FR_004_CareTeamGating": "VACUOUS_OVERCONSTRAINT",
+      "FR_005_AdminCannotReadClinicalContent": "VACUOUS_OVERCONSTRAINT",
+      "FR_017_AuditListAdminOnly": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_AuditOnePerNote": {
+    "targeted_asserts": {
+      "AuditCompleteness": "VACUOUS_OVERCONSTRAINT",
+      "FR_012_EveryAccessAudited": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_NotesAppendOnly": {
+    "targeted_asserts": {
+      "AppendOnly": "VACUOUS_OVERCONSTRAINT",
+      "FR_011_NotesAppendOnly": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_AuditAttributionCorrect": {
+    "targeted_asserts": {
+      "AttributionCorrectness": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_DeniedAndNotFoundIdentical": {
+    "targeted_asserts": {
+      "NoInformationLeakage": "VACUOUS_OVERCONSTRAINT",
+      "FR_006_ByteEquivalentResponse": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_AuthRequired": {
+    "targeted_asserts": {
+      "AuthRequiredEverywhere": "VACUOUS_OVERCONSTRAINT",
+      "FR_001_AuthRequired": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  }
+}

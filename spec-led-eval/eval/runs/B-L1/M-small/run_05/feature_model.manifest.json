@@ -1,0 +1,84 @@
+{
+  "feature_id": "B-L1",
+  "patterns_applied": [
+    "AuthRequiredEverywhere",
+    "OwnershipExclusivity",
+    "AppendOnly",
+    "AttributionCorrectness"
+  ],
+  "feature_specific_predicates": [
+    "FR_008_ValidAssignee",
+    "FR_010_ValidStatus",
+    "FR_017_TimestampsPresent",
+    "FR_018_DeletionRecorded"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "AuthRequiredEverywhere"
+    ],
+    "FR-008": [
+      "FR_008_ValidAssignee",
+      "OwnershipExclusivity"
+    ],
+    "FR-009": [
+      "OwnershipExclusivity",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-010": [
+      "FR_010_ValidStatus"
+    ],
+    "FR-012": [
+      "AppendOnly"
+    ],
+    "FR-017": [
+      "FR_017_TimestampsPresent"
+    ],
+    "FR-018": [
+      "AttributionCorrectness",
+      "FR_018_DeletionRecorded",
+      "AppendOnly"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_AuthRequired",
+      "asserts_violated": [
+        "AuthRequiredEverywhere"
+      ],
+      "rationale": "Removing this fact allows Alloy to create a Task without a created_by field and a TaskDeletion without a deleted_by field, violating the invariant that every task and deletion must be attributed to an authenticated member (FR-001).",
+      "inject_violation": "fact MUTATE_AuthViolation { some t: Task | no t.created_by }"
+    },
+    {
+      "fact_name": "F_AppendOnly",
+      "asserts_violated": [
+        "AppendOnly"
+      ],
+      "rationale": "Removing this fact allows Alloy to create two distinct TaskDeletion records with the same deleted_task_id, violating the append-only constraint that each deletion is unique and immutable (FR-012, FR-018).",
+      "inject_violation": "fact MUTATE_AppendViolation { some disj td1, td2: TaskDeletion | td1.deleted_task_id = td2.deleted_task_id }"
+    },
+    {
+      "fact_name": "F_ValidAssignee",
+      "asserts_violated": [
+        "FR_008_ValidAssignee"
+      ],
+      "rationale": "Removing this fact allows Alloy to create a Task assigned to a non-member, violating the invariant that assignees must be current members of the workspace (FR-008).",
+      "inject_violation": "fact MUTATE_AssigneeViolation { some t: Task | t.assignee not in Member and some t.assignee }"
+    },
+    {
+      "fact_name": "F_ValidStatus",
+      "asserts_violated": [
+        "FR_010_ValidStatus"
+      ],
+      "rationale": "Removing this fact allows Alloy to create a Task with an invalid status value outside the set {todo, in_progress, done}, violating the enum constraint on task status (FR-010).",
+      "inject_violation": "fact MUTATE_StatusViolation { some t: Task | t.status not in (TodoStatus + InProgressStatus + DoneStatus) }"
+    },
+    {
+      "fact_name": "F_AttributionCorrectness",
+      "asserts_violated": [
+        "AttributionCorrectness"
+      ],
+      "rationale": "Removing this fact allows Alloy to create a TaskDeletion record without a deleted_by user or without a task title snapshot, violating the invariant that all deletions must be properly attributed and include the task state at deletion (FR-018).",
+      "inject_violation": "fact MUTATE_AttributionViolation { some td: TaskDeletion | no td.deleted_by }"
+    }
+  ]
+}

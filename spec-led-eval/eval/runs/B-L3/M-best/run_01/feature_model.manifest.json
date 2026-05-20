@@ -1,0 +1,187 @@
+{
+  "feature_id": "008-task-sharing",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "ValidationBeforeMutation",
+    "PermissionCompleteness"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_RoleFromToken",
+    "FR_003_MemberPermissions",
+    "FR_004_NoUnauthorisedMember",
+    "FR_005_AdminPermissions",
+    "FR_006_CrossTeamIsolation",
+    "FR_009_ImmutableOwnerTeam",
+    "FR_010_OwnerOnlyShares",
+    "FR_011_ShareeNoDelete",
+    "FR_012_SameTeamShare",
+    "FR_013_ShareAuditEntry",
+    "FR_014_ByteEquivalent",
+    "FR_015_AuditPerMutation",
+    "FR_016_AuditFields",
+    "FR_017_AuditImmutable",
+    "FR_018_AuditAtomic",
+    "FR_019_AuditReadAccess"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_RoleFromToken",
+      "AttributionCorrectness"
+    ],
+    "FR-003": [
+      "FR_003_MemberPermissions",
+      "LeastPrivilege"
+    ],
+    "FR-004": [
+      "FR_004_NoUnauthorisedMember",
+      "NoInformationLeakage"
+    ],
+    "FR-005": [
+      "FR_005_AdminPermissions",
+      "LeastPrivilege"
+    ],
+    "FR-006": [
+      "FR_006_CrossTeamIsolation",
+      "NoInformationLeakage"
+    ],
+    "FR-007": [
+      "FR_016_AuditFields"
+    ],
+    "FR-008": [
+      "FR_016_AuditFields"
+    ],
+    "FR-009": [
+      "FR_009_ImmutableOwnerTeam",
+      "OwnershipExclusivity"
+    ],
+    "FR-010": [
+      "FR_010_OwnerOnlyShares",
+      "OwnershipBasedAccess",
+      "PermissionCompleteness"
+    ],
+    "FR-011": [
+      "FR_011_ShareeNoDelete",
+      "PermissionCompleteness"
+    ],
+    "FR-012": [
+      "FR_012_SameTeamShare"
+    ],
+    "FR-013": [
+      "FR_013_ShareAuditEntry"
+    ],
+    "FR-014": [
+      "FR_014_ByteEquivalent",
+      "NoInformationLeakage"
+    ],
+    "FR-015": [
+      "FR_015_AuditPerMutation",
+      "AuditCompleteness"
+    ],
+    "FR-016": [
+      "FR_016_AuditFields",
+      "AttributionCorrectness"
+    ],
+    "FR-017": [
+      "FR_017_AuditImmutable",
+      "AppendOnly"
+    ],
+    "FR-018": [
+      "FR_018_AuditAtomic",
+      "ValidationBeforeMutation"
+    ],
+    "FR-019": [
+      "FR_019_AuditReadAccess",
+      "LeastPrivilege"
+    ],
+    "FR-020": [
+      "FR_017_AuditImmutable"
+    ],
+    "FR-021": [
+      "FR_018_AuditAtomic"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_LeastPrivilege",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_003_MemberPermissions",
+        "FR_005_AdminPermissions",
+        "FR_019_AuditReadAccess"
+      ],
+      "rationale": "Removing this fact lets Alloy invent a successful per-task operation whose (relationship, kind) pair is outside the permission matrix \u2014 the canonical least-privilege violation.",
+      "inject_violation": "fact MUTATE_LeastPrivilegeViolation { some op: Operation | op.succeeded = True and some op.target and op.kind != PostTasks and (rel[op.caller, op.target] -> op.kind) not in PermMatrix.Allowed }"
+    },
+    {
+      "fact_name": "F_CrossTeamIsolation",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "FR_006_CrossTeamIsolation",
+        "FR_014_ByteEquivalent",
+        "FR_004_NoUnauthorisedMember"
+      ],
+      "rationale": "Clears the cross-team / in-team-no-rel denial. The injected fact then forces an outsider-success operation to exist, which any byte-equivalent / no-leakage assertion must reject.",
+      "inject_violation": "fact MUTATE_CrossTeamViolation { some op: Operation | some op.target and rel[op.caller, op.target] in (OutsiderRel + InTeamNoneRel) and op.succeeded = True }"
+    },
+    {
+      "fact_name": "F_OwnerOnlyShareControl",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_010_OwnerOnlyShares"
+      ],
+      "rationale": "Removing the owner-only constraint on PatchShares lets a non-owner succeed at modifying the share list \u2014 exactly the Q1=A violation.",
+      "inject_violation": "fact MUTATE_NonOwnerShares { some op: Operation | op.kind = PatchShares and op.succeeded = True and some op.target and op.caller != op.target.owner }"
+    },
+    {
+      "fact_name": "F_AuditOnMutation",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_015_AuditPerMutation",
+        "FR_018_AuditAtomic",
+        "ValidationBeforeMutation"
+      ],
+      "rationale": "Without this fact, successful mutations may have zero audit entries (or failed ops may emit entries). The injected violation forces a successful PATCH with no audit entry \u2014 the canonical 'state change without audit' bug.",
+      "inject_violation": "fact MUTATE_MissingAudit { some op: Operation | op.succeeded = True and op.kind = PatchFields and some op.target and no op.emits }"
+    },
+    {
+      "fact_name": "F_AuditAttribution",
+      "asserts_violated": [
+        "AttributionCorrectness",
+        "FR_002_RoleFromToken"
+      ],
+      "rationale": "Removing this fact lets the audit entry's actor or role be unhooked from the calling operation \u2014 exactly the FR-002 attribution-correctness failure mode (role spoofed from body, etc.).",
+      "inject_violation": "fact MUTATE_BadAttribution { some op: Operation, ae: op.emits | ae.actor != op.caller or ae.actorRole != op.caller.userRole }"
+    },
+    {
+      "fact_name": "F_AuditEntryUnique",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_017_AuditImmutable",
+        "AuditCompleteness",
+        "FR_015_AuditPerMutation"
+      ],
+      "rationale": "Removing 'each AuditEntry has exactly one emitting Operation' allows the same audit row to be claimed by two operations \u2014 a structural mutation/duplication of an append-only artefact.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some disj op1, op2: Operation | some ae: AuditEntry | ae in op1.emits and ae in op2.emits }"
+    },
+    {
+      "fact_name": "F_ShareeSameTeam",
+      "asserts_violated": [
+        "FR_012_SameTeamShare"
+      ],
+      "rationale": "Clearing this fact allows a sharee whose team differs from the task's team. The injected fact forces such a cross-team share to exist, violating FR-012.",
+      "inject_violation": "fact MUTATE_CrossTeamShare { some t: Task | some u: t.sharedWith | u.userTeam != t.taskTeam }"
+    }
+  ]
+}

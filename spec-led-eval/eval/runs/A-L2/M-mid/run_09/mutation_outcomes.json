@@ -1,0 +1,44 @@
+{
+  "F_AppendOnlyAuditEntries": {
+    "targeted_asserts": {},
+    "all_bit": false,
+    "skipped": true,
+    "skip_reason": "mutation target fact `F_AppendOnlyAuditEntries` not found in feature_model.als"
+  },
+  "F_AuditDecisionEventExists": {
+    "targeted_asserts": {
+      "AuditCompleteness": "BIT",
+      "FR_015_AtomicDecisionAudit": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_PermissionMatrix": {
+    "targeted_asserts": {
+      "LeastPrivilege": "BIT",
+      "FR_002_CustomerRestricted": "BIT",
+      "FR_004_ComplianceReadOnly": "BIT",
+      "FR_023_ComplianceReadOnlyEnforced": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_DecisionByAssignedOfficer": {
+    "targeted_asserts": {
+      "FR_013_OnlyAssignedOfficerDecides": "BIT",
+      "AttributionCorrectness": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_OneInFlightPerCustomer": {
+    "targeted_asserts": {
+      "FR_008_OneInFlight": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AuditNoSpuriousTransitions": {
+    "targeted_asserts": {
+      "FR_016_TerminalStateImmutable": "VACUOUS_OVERCONSTRAINT",
+      "FR_009_ValidStateMachine": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  }
+}

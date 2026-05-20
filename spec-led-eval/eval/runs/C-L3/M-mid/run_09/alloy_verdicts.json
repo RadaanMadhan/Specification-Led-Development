@@ -1,0 +1,23 @@
+{
+  "LeastPrivilege": "PASS",
+  "PermissionCompleteness": "PASS",
+  "AuthRequiredEverywhere": "PASS",
+  "AuditCompleteness": "PASS",
+  "AppendOnly": "PASS",
+  "AttributionCorrectness": "PASS",
+  "OwnershipExclusivity": "PASS",
+  "OwnershipBasedAccess": "FAIL",
+  "NoInformationLeakage": "PASS",
+  "FR_001_AuthRequired": "PASS",
+  "FR_002_003_RoleAndAssignment": "PASS",
+  "FR_004_CareTeamGating": "FAIL",
+  "FR_005_ClinicianNoAccessLog": "PASS",
+  "FR_006_PatientSelfAccess": "FAIL",
+  "FR_007_ComplianceContentBlindness": "FAIL",
+  "FR_011_012_NotesAppendOnly": "PASS",
+  "FR_013_AuditAlwaysOn": "PASS",
+  "FR_014_AuditNoteIdConstraint": "PASS",
+  "FR_015_AuditImmutable": "PASS",
+  "FR_018_AccessLogComplianceOnly": "FAIL",
+  "FR_020_RecordTargetRequiredForRecordOps": "PASS"
+}

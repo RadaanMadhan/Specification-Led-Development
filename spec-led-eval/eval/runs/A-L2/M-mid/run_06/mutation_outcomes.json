@@ -1,0 +1,48 @@
+{
+  "F_PermissionMatrix": {
+    "targeted_asserts": {
+      "LeastPrivilege": "VACUOUS_OVERCONSTRAINT",
+      "PermissionCompleteness": "VACUOUS_OVERCONSTRAINT",
+      "FR_004_ComplianceReadOnly": "VACUOUS_OVERCONSTRAINT",
+      "FR_002_CustomerPermissions": "VACUOUS_OVERCONSTRAINT",
+      "FR_003_LoanOfficerPermissions": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_AppendOnlyAudit": {
+    "targeted_asserts": {
+      "AppendOnly": "BIT",
+      "FR_019_ExactlyOneAuditPerTransition": "BIT",
+      "AuditCompleteness": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_OneInFlightPerCustomer": {
+    "targeted_asserts": {
+      "FR_008_OneInFlightPerCustomer": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_DecisionByAssignedOfficer": {
+    "targeted_asserts": {
+      "FR_013_AssignedOfficerDecides": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_DecidedApplicationNoFurtherTransitions": {
+    "targeted_asserts": {
+      "FR_016_ImmutableDecided": "VACUOUS_OVERCONSTRAINT",
+      "AppendOnly": "VACUOUS_OVERCONSTRAINT",
+      "FR_018_AuditAppendOnly": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_AuditNullPrevOnlyForSubmission": {
+    "targeted_asserts": {
+      "AppendOnly": "BIT",
+      "FR_018_AuditAppendOnly": "BIT",
+      "FR_009_SubmissionAuditEntry": "BIT"
+    },
+    "all_bit": true
+  }
+}

@@ -1,0 +1,137 @@
+{
+  "feature_id": "B-L3",
+  "patterns_applied": [
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "AppendOnly",
+    "AuditCompleteness",
+    "AttributionCorrectness",
+    "AuthRequiredEverywhere",
+    "LeastPrivilege",
+    "PrivilegeMonotonicity",
+    "PermissionCompleteness"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_UserIdentityFromToken",
+    "FR_003_MemberPermissions",
+    "FR_004_MemberViewRestricted",
+    "FR_005_AdminFullAccess",
+    "FR_006_NoTeamCrossAccess",
+    "FR_009_ImmutableOwnerTeam",
+    "FR_010_OwnerOnlyChangeSharedWith",
+    "FR_011_ShareePermissions",
+    "FR_012_SameTeamSharing",
+    "FR_014_ByteEquivalent404",
+    "FR_015_OneAuditPerEvent",
+    "FR_016_AuditFieldsComplete",
+    "FR_017_AuditImmutable",
+    "FR_019_AuditReadable"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_UserIdentityFromToken"
+    ],
+    "FR-003": [
+      "FR_003_MemberPermissions"
+    ],
+    "FR-004": [
+      "FR_004_MemberViewRestricted"
+    ],
+    "FR-005": [
+      "FR_005_AdminFullAccess"
+    ],
+    "FR-006": [
+      "FR_006_NoTeamCrossAccess",
+      "NoInformationLeakage"
+    ],
+    "FR-009": [
+      "FR_009_ImmutableOwnerTeam",
+      "OwnershipExclusivity"
+    ],
+    "FR-010": [
+      "FR_010_OwnerOnlyChangeSharedWith",
+      "OwnershipBasedAccess"
+    ],
+    "FR-011": [
+      "FR_011_ShareePermissions"
+    ],
+    "FR-012": [
+      "FR_012_SameTeamSharing",
+      "OwnershipBasedAccess"
+    ],
+    "FR-014": [
+      "FR_014_ByteEquivalent404",
+      "NoInformationLeakage"
+    ],
+    "FR-015": [
+      "FR_015_OneAuditPerEvent",
+      "AuditCompleteness"
+    ],
+    "FR-016": [
+      "FR_016_AuditFieldsComplete",
+      "AttributionCorrectness"
+    ],
+    "FR-017": [
+      "FR_017_AuditImmutable",
+      "AppendOnly"
+    ],
+    "FR-019": [
+      "FR_019_AuditReadable"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_AuditCompleteness",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_015_OneAuditPerEvent"
+      ],
+      "rationale": "Removing this fact allows the model to invent tasks with no audit entries, which violates the compliance requirement that every mutation is logged. This tests whether AuditCompleteness is actually enforced by checking that a counterexample (task with no audit entry) can be constructed.",
+      "inject_violation": "fact MUTATE_AuditCompletenessViolation { some t: Task | no ae: AuditEntry | ae.task = t }"
+    },
+    {
+      "fact_name": "F_CrossTeamIsolation",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "FR_014_ByteEquivalent404",
+        "FR_006_NoTeamCrossAccess"
+      ],
+      "rationale": "Removing this fact allows cross-team users to be in a task's shared_with set, which violates the fundamental multi-tenant isolation guarantee. This tests whether multi-tenant boundaries are enforced.",
+      "inject_violation": "fact MUTATE_CrossTeamIsolationViolation { some t: Task, u: User | u in t.shared_with and u.team != t.team }"
+    },
+    {
+      "fact_name": "F_OwnershipBasedAccess",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_012_SameTeamSharing",
+        "FR_011_ShareePermissions"
+      ],
+      "rationale": "Removing this fact allows sharees to be added from different teams or allows self-sharing, which violates the sharing permission model. This tests whether the ownership-based access control is actually enforced.",
+      "inject_violation": "fact MUTATE_OwnershipBasedAccessViolation { some t: Task, u: User | u in t.shared_with and (u.team != t.owner.team or u = t.owner) }"
+    },
+    {
+      "fact_name": "F_OwnershipExclusivity",
+      "asserts_violated": [
+        "OwnershipExclusivity",
+        "FR_009_ImmutableOwnerTeam"
+      ],
+      "rationale": "Removing this fact allows tasks to have owners in different teams, which violates the invariant that team_id must match the owner's team. This tests whether task ownership and team scoping are correctly intertwined.",
+      "inject_violation": "fact MUTATE_OwnershipExclusivityViolation { some t: Task | t.owner.team != t.team }"
+    },
+    {
+      "fact_name": "F_AppendOnlyAuditEntries",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_017_AuditImmutable"
+      ],
+      "rationale": "Removing this fact allows audit entries with invalid or mutated operations, which violates append-only semantics. This tests whether audit immutability is enforced by the operation type constraint.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some ae: AuditEntry, op: AuditOperation | ae.operation = op and op not in (AuditCreated + AuditEdited + AuditDeleted + AuditShared + AuditUnshared) }"
+    }
+  ]
+}

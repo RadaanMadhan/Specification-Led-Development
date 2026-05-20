@@ -1,0 +1,43 @@
+{
+  "F_PermissionMatrix": {
+    "targeted_asserts": {
+      "LeastPrivilege": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_CareTeamGatingForPermittedAccess": {
+    "targeted_asserts": {
+      "OwnershipBasedAccess": "BIT",
+      "FR_004_CareTeamGatingEnforced": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_AuditCompletenessForNotes": {
+    "targeted_asserts": {
+      "AuditCompleteness": "BIT",
+      "FR_012_OneAuditPerAccess": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_ClinicalNotesAppendOnly": {
+    "targeted_asserts": {
+      "AppendOnlyNotes": "VACUOUS_OVERCONSTRAINT",
+      "FR_011_NotesImmutable": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_AdministratorRoleRestriction": {
+    "targeted_asserts": {
+      "FR_005_AdministratorContentBlind": "BIT",
+      "LeastPrivilege": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_AllAccessesAuthenticated": {
+    "targeted_asserts": {
+      "AuthRequiredEverywhere": "VACUOUS_OVERCONSTRAINT",
+      "FR_001_AuthenticationRequired": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  }
+}

@@ -1,0 +1,122 @@
+{
+  "feature_id": "C-L3",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "PermissionGrounding",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage"
+  ],
+  "feature_specific_predicates": [
+    "FR_002_SingleRolePerUser",
+    "FR_003_PatientRecordAssignment",
+    "FR_004_CareTeamGating",
+    "FR_006_PatientSelfAccessOnly",
+    "FR_007_ComplianceOfficerNoClinicalAccess",
+    "FR_012_NotesAppendOnly",
+    "FR_013_AuditCompleteness",
+    "FR_015_AuditImmutability"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_SingleRolePerUser"
+    ],
+    "FR-003": [
+      "FR_003_PatientRecordAssignment",
+      "OwnershipExclusivity"
+    ],
+    "FR-004": [
+      "FR_004_CareTeamGating",
+      "OwnershipBasedAccess"
+    ],
+    "FR-006": [
+      "FR_006_PatientSelfAccessOnly"
+    ],
+    "FR-007": [
+      "FR_007_ComplianceOfficerNoClinicalAccess"
+    ],
+    "FR-008": [
+      "NoInformationLeakage"
+    ],
+    "FR-012": [
+      "FR_012_NotesAppendOnly",
+      "AppendOnly"
+    ],
+    "FR-013": [
+      "FR_013_AuditCompleteness",
+      "AuditCompleteness"
+    ],
+    "FR-014": [
+      "AttributionCorrectness"
+    ],
+    "FR-015": [
+      "FR_015_AuditImmutability",
+      "AppendOnly"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_CareTeamMembershipStructure",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "OwnershipBasedAccess",
+        "FR_004_CareTeamGating"
+      ],
+      "rationale": "Removing care team constraints lets clinicians access records without membership, violating the permission matrix and care-team-gating invariant.",
+      "inject_violation": "fact MUTATE_BypassCareTeam { some u: User, r: Record | u.role = ClinicianRole and (some aa: AccessAttempt | aa.user = u and aa.record = r and aa.operation = ReadRecord) and no ctm: CareTeamMembership | ctm.clinician = u and ctm.record = r and ctm.active = TRUE }"
+    },
+    {
+      "fact_name": "F_AuditEntryCompleteness",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_013_AuditCompleteness"
+      ],
+      "rationale": "Removing this fact allows access attempts without corresponding audit entries, violating the always-on auditing invariant.",
+      "inject_violation": "fact MUTATE_MissingAuditEntry { some aa: AccessAttempt | no ae: AuditEntry | ae.accessor = aa.user and ae.operationKind = aa.operation }"
+    },
+    {
+      "fact_name": "F_ClinicalNotesAppendOnly",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_012_NotesAppendOnly"
+      ],
+      "rationale": "Removing the constraint allows patient or compliance officer authorship of notes, violating the append-only clinician-only invariant.",
+      "inject_violation": "fact MUTATE_NonClinicianNote { some cn: ClinicalNote | cn.author.role != ClinicianRole }"
+    },
+    {
+      "fact_name": "F_PatientRecordOwnership",
+      "asserts_violated": [
+        "OwnershipExclusivity",
+        "FR_003_PatientRecordAssignment",
+        "FR_006_PatientSelfAccessOnly"
+      ],
+      "rationale": "Removing the pairing between patient role and assigned record lets patients access multiple records or have no assigned record, violating ownership invariants.",
+      "inject_violation": "fact MUTATE_BrokenPatientOwnership { some p: User | p.role = PatientRole and (no r: Record | p.assignedRecordId = r) }"
+    },
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_007_ComplianceOfficerNoClinicalAccess"
+      ],
+      "rationale": "Removing permission rules lets roles bypass their restrictions; e.g., compliance officer reads clinical content.",
+      "inject_violation": "fact MUTATE_PermissionBypass { some u: User | u.role = ComplianceOfficerRole and (u -> ReadRecord) in PermissionMatrix.allowed }"
+    },
+    {
+      "fact_name": "F_AuditEntryStructure",
+      "asserts_violated": [
+        "AttributionCorrectness"
+      ],
+      "rationale": "Removing the audit structure constraint lets accessor snapshots diverge from actual role, violating attribution correctness.",
+      "inject_violation": "fact MUTATE_WrongSnapshot { some ae: AuditEntry | ae.accessorRoleSnapshot != ae.accessor.role }"
+    }
+  ]
+}

@@ -1,0 +1,132 @@
+==============================================================================
+  Design Compliance Report  (Phase 3 — feature_model.als)
+  feature       : B-L3
+  spec source   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/eval/specs/B-L3
+  alloy model   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/B-L3/feature_model.als
+  patterns      : LeastPrivilege, PermissionCompleteness, AppendOnly, AuditCompleteness, AttributionCorrectness, OwnershipExclusivity, OwnershipBasedAccess, NoInformationLeakage
+  fr count      : 21 declared in spec.md
+  assertions    : 24 total (22/24 PASS via Alloy)
+==============================================================================
+
+  Compliance matrix
+  ----------------------------------------------------------------------------
+  Assertion                                    Verdict   Anchor
+  ---------------------------------------------------------------------------------
+  LeastPrivilege                               PASS      (no anchor comment found)
+  PermissionCompleteness                       PASS      (no anchor comment found)
+  AppendOnly                                   PASS      (no anchor comment found)
+  AuditCompleteness                            PASS      (no anchor comment found)
+  AttributionCorrectness                       PASS      (no anchor comment found)
+  OwnershipExclusivity                         PASS      (no anchor comment found)
+  OwnershipBasedAccess                         PASS      (no anchor comment found)
+  NoInformationLeakage                         PASS      (no anchor comment found)
+  FR_001_AuthRequiredEverywhere                PASS      FEATURE-SPECIFIC: FR-001 — OAuth required on all endpoints
+  FR_002_OneTeamPerUser                        PASS      FEATURE-SPECIFIC: FR-002 — exactly one team per user
+  FR_009_OwnerAndTeamImmutable                 PASS      FEATURE-SPECIFIC: FR-009 — owner_id and team_id are immutable
+  FR_010_OwnerOnlyShareControl                 PASS      FEATURE-SPECIFIC: FR-010 / Q1=A — only owner can change shared_with
+  FR_011_ShareeCannotDelete                    PASS      FEATURE-SPECIFIC: FR-011 / Q3=B — sharee cannot delete task
+  FR_012_CrossTeamSharingForbidden             PASS      FEATURE-SPECIFIC: FR-012 — cross-team sharing forbidden
+  FR_013_ShareAuditLogged                      PASS      FEATURE-SPECIFIC: FR-013 — share and unshare events are audit-logged
+  FR_014_CrossTeamByteEquivalent               PASS      FEATURE-SPECIFIC: FR-014 — cross-team byte-equivalent 404
+  FR_015_PerEventAuditSemantics                FAIL      FEATURE-SPECIFIC: FR-015 — per-event audit semantics (one entry per event)
+  FR_016_AuditEntryFieldsPresent               PASS      FEATURE-SPECIFIC: FR-016 — audit entry contains all required fields
+  FR_017_AuditImmutableAndOutlivesTask         PASS      FEATURE-SPECIFIC: FR-017 — audit entries are immutable and outlive tasks
+  FR_019_AuditReadableByReadSet                PASS      FEATURE-SPECIFIC: FR-019 — audit readable by owner / sharee / admin
+  FR_005_AdminCanDeleteAnyTeamTask             PASS      FEATURE-SPECIFIC: FR-005 / spec.md — team admin can delete any team task
+  FR_006_AbsoluteCrossTeamIsolation            PASS      FEATURE-SPECIFIC: FR-006 — absolute cross-team isolation
+  FR_003_MemberAccessRequiresOwnershipOrShare  PASS      FEATURE-SPECIFIC: FR-003/FR-004 — member access depends on ownership/sharing
+  FR_015_DeleteProducesExactlyOneAuditEntry    FAIL      FEATURE-SPECIFIC: FR-015 — delete mutation produces exactly one deleted entry
+
+  Counterexamples (Alloy SAT)
+  ----------------------------------------------------------------------------
+  FR_015_PerEventAuditSemantics  [FEATURE-SPECIFIC: FR-015 — per-event audit semantics (one entry per event)]
+    Alloy: 16. check FR_015_PerEventAuditSemantics     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR_015_DeleteProducesExactlyOneAuditEntry  [FEATURE-SPECIFIC: FR-015 — delete mutation produces exactly one deleted entry]
+    Alloy: 23. check FR_015_DeleteProducesExactlyOneAuditEntry     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR coverage
+  ----------------------------------------------------------------------------
+  FR-001  →  FR_001_AuthRequiredEverywhere=PASS
+  FR-002  →  FR_002_OneTeamPerUser=PASS
+  FR-003  →  FR_003_MemberAccessRequiresOwnershipOrShare=PASS, OwnershipBasedAccess=PASS
+  FR-004  →  FR_003_MemberAccessRequiresOwnershipOrShare=PASS, LeastPrivilege=PASS
+  FR-005  →  FR_005_AdminCanDeleteAnyTeamTask=PASS
+  FR-006  →  FR_006_AbsoluteCrossTeamIsolation=PASS, NoInformationLeakage=PASS
+  FR-007  [uncovered]
+  FR-008  [uncovered]
+  FR-009  →  FR_009_OwnerAndTeamImmutable=PASS, OwnershipExclusivity=PASS
+  FR-010  →  FR_010_OwnerOnlyShareControl=PASS, OwnershipBasedAccess=PASS
+  FR-011  →  FR_011_ShareeCannotDelete=PASS
+  FR-012  →  FR_012_CrossTeamSharingForbidden=PASS
+  FR-013  →  FR_013_ShareAuditLogged=PASS
+  FR-014  →  FR_014_CrossTeamByteEquivalent=PASS, NoInformationLeakage=PASS
+  FR-015  →  FR_015_PerEventAuditSemantics=FAIL, FR_015_DeleteProducesExactlyOneAuditEntry=FAIL, AuditCompleteness=PASS
+  FR-016  →  FR_016_AuditEntryFieldsPresent=PASS, AttributionCorrectness=PASS
+  FR-017  →  FR_017_AuditImmutableAndOutlivesTask=PASS, AppendOnly=PASS
+  FR-018  [uncovered]
+  FR-019  →  FR_019_AuditReadableByReadSet=PASS
+  FR-020  [uncovered]
+  FR-021  [uncovered]
+
+  WARNING: 5 FR(s) without any matching assertion: FR-007, FR-008, FR-018, FR-020, FR-021
+
+==============================================================================
+  Mutation tests  (assertion-strength validation)
+==============================================================================
+
+  Strategy: replace each named fact's body with `{}` (no constraint),
+  then re-run Alloy. Each listed assertion should now FAIL on the
+  mutated model. If it still PASSes, the assertion is vacuous and
+  must be strengthened.
+
+  - MUTATE F_PermissionMatrix  → runs/B-L3/mutated_F_PermissionMatrix.als
+    rationale: Clearing the permission matrix body removes all constraints on the Allowed relation, letting Alloy freely assign any (Relationship × OperationKind) pair. The injected violation explicitly grants Sharee the PatchSharedWith right and Outsider the GetTask right, directly violating OwnerOnlyShareControl, ShareeCannotDelete, LeastPrivilege, and NoInformationLeakage assertions.
+    expected to FAIL: LeastPrivilege, FR_010_OwnerOnlyShareControl, FR_011_ShareeCannotDelete, FR_014_CrossTeamByteEquivalent, NoInformationLeakage
+      - LeastPrivilege: FAIL (expected)
+      - FR_010_OwnerOnlyShareControl: FAIL (expected)
+      - FR_011_ShareeCannotDelete: FAIL (expected)
+      - FR_014_CrossTeamByteEquivalent: FAIL (expected)
+      - NoInformationLeakage: FAIL (expected)
+
+  - MUTATE F_AuditEntryBelongsToOneMutation  → runs/B-L3/mutated_F_AuditEntryBelongsToOneMutation.als
+    rationale: Clearing this fact allows an AuditEntry to be shared between two Mutation atoms, which models an 'update' re-use of an existing entry — exactly what AppendOnly forbids. The injected fact forces two distinct Mutations to share the same AuditEntry, triggering the AppendOnly and PerEventAuditSemantics counterexample.
+    expected to FAIL: AppendOnly, FR_015_PerEventAuditSemantics, AuditCompleteness
+      - AppendOnly: FAIL (expected)
+      - FR_015_PerEventAuditSemantics: FAIL (expected)
+      - AuditCompleteness: FAIL (expected)
+
+  - MUTATE F_ShareeSameTeam  → runs/B-L3/mutated_F_ShareeSameTeam.als
+    rationale: Clearing this fact removes the constraint that sharees must be in the same team as the task. The injected violation creates a TaskShare where the sharee belongs to a different team, directly violating FR_012_CrossTeamSharingForbidden and FR_006_AbsoluteCrossTeamIsolation.
+    expected to FAIL: FR_012_CrossTeamSharingForbidden, FR_006_AbsoluteCrossTeamIsolation
+      - FR_012_CrossTeamSharingForbidden: FAIL (expected)
+      - FR_006_AbsoluteCrossTeamIsolation: FAIL (expected)
+
+  - MUTATE F_AuditRoleMatchesActor  → runs/B-L3/mutated_F_AuditRoleMatchesActor.als
+    rationale: Clearing this fact allows the recorded actorRole on an audit entry to differ from the actor's actual role. The injection forces an AuditEntry where entryRole is TeamAdmin but the actor's userRole is Member, directly counterexampling AttributionCorrectness.
+    expected to FAIL: AttributionCorrectness
+      - AttributionCorrectness: FAIL (expected)
+
+  - MUTATE F_MutationAuditNonEmpty  → runs/B-L3/mutated_F_MutationAuditNonEmpty.als
+    rationale: Clearing this fact allows a Mutation to have an empty mutAudit set, meaning a successful state change has no audit record. The injection explicitly creates a Mutation with no audit entries, providing the counterexample that AuditCompleteness is designed to catch.
+    expected to FAIL: AuditCompleteness, FR_015_PerEventAuditSemantics
+      - AuditCompleteness: FAIL (expected)
+      - FR_015_PerEventAuditSemantics: FAIL (expected)
+
+  - MUTATE F_MutationActorInTaskTeam  → runs/B-L3/mutated_F_MutationActorInTaskTeam.als
+    rationale: Clearing this fact allows a Mutation to be performed by a user in a different team than the task. The injection forces exactly such a state, directly violating the absolute cross-team isolation invariant.
+    expected to FAIL: FR_006_AbsoluteCrossTeamIsolation, NoInformationLeakage
+      - FR_006_AbsoluteCrossTeamIsolation: PASS (vacuous?)
+      - NoInformationLeakage: PASS (vacuous?)
+
+  Mutation summary
+  ----------------------------------------------------------------------------
+  - F_PermissionMatrix: ASSERTIONS BIT (LeastPrivilege, FR_010_OwnerOnlyShareControl, FR_011_ShareeCannotDelete, FR_014_CrossTeamByteEquivalent, NoInformationLeakage)
+  - F_AuditEntryBelongsToOneMutation: ASSERTIONS BIT (AppendOnly, FR_015_PerEventAuditSemantics, AuditCompleteness)
+  - F_ShareeSameTeam: ASSERTIONS BIT (FR_012_CrossTeamSharingForbidden, FR_006_AbsoluteCrossTeamIsolation)
+  - F_AuditRoleMatchesActor: ASSERTIONS BIT (AttributionCorrectness)
+  - F_MutationAuditNonEmpty: ASSERTIONS BIT (AuditCompleteness, FR_015_PerEventAuditSemantics)
+  - F_MutationActorInTaskTeam: ASSERTION VACUOUS (FR_006_AbsoluteCrossTeamIsolation, NoInformationLeakage)
+

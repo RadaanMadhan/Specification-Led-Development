@@ -1,0 +1,195 @@
+{
+  "feature_id": "005-fca-loan-applications",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "PermissionGrounding",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "NoSelfMutation",
+    "ValidationBeforeMutation"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_RoleMultiplicity",
+    "FR_003_ApplicantScope",
+    "FR_004_OfficerScope",
+    "FR_005_AuditorScope",
+    "FR_006_IdentityFromCaller",
+    "FR_007_ValidStatusSet",
+    "FR_008_OneInFlightPerApplicant",
+    "FR_009_AllowedTransitions",
+    "FR_010_AssignedIsOfficer",
+    "FR_011_NoSelfAssignment",
+    "FR_012_AssignedOfficerOnly",
+    "FR_013_NoSelfDecision",
+    "FR_014_TransitionIsRealChange",
+    "FR_015_NoChangeAfterTerminal",
+    "FR_016_AuditFields",
+    "FR_017_AuditAtomic",
+    "FR_018_AppendOnly",
+    "FR_019_AuditRetained",
+    "FR_020_ByteEquivalentNotFound",
+    "FR_021_OwnerVsNonexistent",
+    "FR_022_NoLeakInPost",
+    "FR_023_AuditAuditorOnly",
+    "FR_024_ApplicantCannotPatch"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_RoleMultiplicity"
+    ],
+    "FR-003": [
+      "FR_003_ApplicantScope",
+      "LeastPrivilege",
+      "PermissionGrounding"
+    ],
+    "FR-004": [
+      "FR_004_OfficerScope",
+      "LeastPrivilege",
+      "PermissionGrounding"
+    ],
+    "FR-005": [
+      "FR_005_AuditorScope",
+      "LeastPrivilege",
+      "PermissionGrounding"
+    ],
+    "FR-006": [
+      "FR_006_IdentityFromCaller",
+      "AttributionCorrectness"
+    ],
+    "FR-007": [
+      "FR_007_ValidStatusSet"
+    ],
+    "FR-008": [
+      "FR_008_OneInFlightPerApplicant"
+    ],
+    "FR-009": [
+      "FR_009_AllowedTransitions"
+    ],
+    "FR-010": [
+      "FR_010_AssignedIsOfficer"
+    ],
+    "FR-011": [
+      "FR_011_NoSelfAssignment",
+      "NoSelfMutation"
+    ],
+    "FR-012": [
+      "FR_012_AssignedOfficerOnly",
+      "OwnershipBasedAccess"
+    ],
+    "FR-013": [
+      "FR_013_NoSelfDecision",
+      "NoSelfMutation",
+      "OwnershipBasedAccess"
+    ],
+    "FR-014": [
+      "FR_014_TransitionIsRealChange"
+    ],
+    "FR-015": [
+      "FR_015_NoChangeAfterTerminal"
+    ],
+    "FR-016": [
+      "FR_016_AuditFields",
+      "AuditCompleteness",
+      "AttributionCorrectness"
+    ],
+    "FR-017": [
+      "FR_017_AuditAtomic",
+      "AuditCompleteness",
+      "ValidationBeforeMutation"
+    ],
+    "FR-018": [
+      "FR_018_AppendOnly",
+      "AppendOnly"
+    ],
+    "FR-019": [
+      "FR_019_AuditRetained",
+      "AppendOnly"
+    ],
+    "FR-020": [
+      "FR_020_ByteEquivalentNotFound",
+      "NoInformationLeakage"
+    ],
+    "FR-021": [
+      "FR_021_OwnerVsNonexistent",
+      "NoInformationLeakage"
+    ],
+    "FR-022": [
+      "FR_022_NoLeakInPost"
+    ],
+    "FR-023": [
+      "FR_023_AuditAuditorOnly",
+      "NoInformationLeakage"
+    ],
+    "FR-024": [
+      "FR_024_ApplicantCannotPatch"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_LeastPrivilege",
+      "asserts_violated": [
+        "LeastPrivilege"
+      ],
+      "rationale": "Clearing F_LeastPrivilege removes the constraint that a successful operation's caller must hold a role with permission for the endpoint. The injection forces a successful GetAudit by a caller with only the Applicant role, which the LeastPrivilege assertion is designed to forbid.",
+      "inject_violation": "fact MUTATE_LeastPrivilegeViolation { some o: Operation, u: User | o.caller = u and o.outcome = OK and o.kind = GetAudit and u.roles = Applicant }"
+    },
+    {
+      "fact_name": "F_AppendOnlyAuditEntries",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_018_AppendOnly"
+      ],
+      "rationale": "Clearing F_AppendOnlyAuditEntries removes the uniqueness-per-transition constraint. The injection introduces two distinct AuditEntries describing the same (app, prev, new) slot \u2014 exactly the duplication that append-only forbids.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some disj ae1, ae2: AuditEntry | ae1.app = ae2.app and ae1.prevStatus = ae2.prevStatus and ae1.newStatus = ae2.newStatus }"
+    },
+    {
+      "fact_name": "F_NoSelfAssignment",
+      "asserts_violated": [
+        "NoSelfMutation",
+        "FR_011_NoSelfAssignment"
+      ],
+      "rationale": "Clearing F_NoSelfAssignment lets a LoanApplication be assigned to its own applicant \u2014 the precise FR-011 violation NoSelfMutation must catch.",
+      "inject_violation": "fact MUTATE_NoSelfAssignmentViolation { some a: LoanApplication | some a.assignedOfficer and a.assignedOfficer = a.applicant }"
+    },
+    {
+      "fact_name": "F_AuditCompletenessOnSuccess",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_017_AuditAtomic",
+        "FR_019_AuditRetained"
+      ],
+      "rationale": "Clearing F_AuditCompletenessOnSuccess decouples successful state-changing operations from their audit entries. The injection produces a successful PATCH with no audit entry, which violates the audit-completeness invariant.",
+      "inject_violation": "fact MUTATE_AuditCompletenessViolation { some o: Operation | o.outcome = OK and o.kind = PatchStatus and no o.audit }"
+    },
+    {
+      "fact_name": "F_ByteEquivalentNotFound",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "FR_020_ByteEquivalentNotFound",
+        "FR_021_OwnerVsNonexistent"
+      ],
+      "rationale": "Clearing F_ByteEquivalentNotFound removes the constraint that denied/not-found reads collapse to NotFoundBody. The injection forces a denied GetApplicationById response that is not byte-equivalent to the canonical not-found shape, leaking existence information.",
+      "inject_violation": "fact MUTATE_NoInformationLeakageViolation { some o: Operation | o.kind = GetApplicationById and o.outcome = PermDenied and o.response != NotFoundBody }"
+    },
+    {
+      "fact_name": "F_PatchOnlyAssignedOfficer",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_012_AssignedOfficerOnly"
+      ],
+      "rationale": "Clearing F_PatchOnlyAssignedOfficer removes the requirement that the PATCH caller equal the application's assigned officer. The injection forces a successful PATCH by a non-assigned officer \u2014 exactly what FR-012 forbids.",
+      "inject_violation": "fact MUTATE_OwnershipBasedAccessViolation { some o: Operation | o.outcome = OK and o.kind = PatchStatus and some o.target and o.caller != o.target.assignedOfficer }"
+    }
+  ]
+}

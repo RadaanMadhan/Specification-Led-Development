@@ -1,0 +1,170 @@
+{
+  "feature_id": "013-hipaa-clinical-records",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "OwnershipBasedAccess",
+    "AuditCompleteness",
+    "AttributionCorrectness",
+    "AppendOnly",
+    "NoInformationLeakage",
+    "ValidationBeforeMutation",
+    "OwnershipExclusivity"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_OneRolePerUser",
+    "FR_003_PatientAssignedRecord",
+    "FR_004_ClinicianCareTeamGating",
+    "FR_005_ClinicianNoAccessLog",
+    "FR_006_PatientSelfAccessOnly",
+    "FR_007_ComplianceNoClinicalContent",
+    "FR_008_NoLeakOnDeny",
+    "FR_011_NoteAuthorSnapshot",
+    "FR_012_NotesAppendOnly",
+    "FR_013_OneAuditPerOp",
+    "FR_014_AuditShape",
+    "FR_015_AuditImmutable",
+    "FR_018_AccessLogComplianceOnly",
+    "FR_019_ComplianceContentBlind",
+    "FR_020_OpaqueRecordTarget"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired"
+    ],
+    "FR-002": [
+      "FR_002_OneRolePerUser"
+    ],
+    "FR-003": [
+      "FR_003_PatientAssignedRecord",
+      "OwnershipExclusivity"
+    ],
+    "FR-004": [
+      "FR_004_ClinicianCareTeamGating",
+      "OwnershipBasedAccess"
+    ],
+    "FR-005": [
+      "FR_005_ClinicianNoAccessLog",
+      "LeastPrivilege",
+      "PermissionCompleteness"
+    ],
+    "FR-006": [
+      "FR_006_PatientSelfAccessOnly",
+      "OwnershipBasedAccess",
+      "LeastPrivilege"
+    ],
+    "FR-007": [
+      "FR_007_ComplianceNoClinicalContent",
+      "LeastPrivilege",
+      "PermissionCompleteness"
+    ],
+    "FR-008": [
+      "FR_008_NoLeakOnDeny",
+      "NoInformationLeakage",
+      "ValidationBeforeMutation"
+    ],
+    "FR-009": [
+      "FR_004_ClinicianCareTeamGating"
+    ],
+    "FR-010": [
+      "ValidationBeforeMutation"
+    ],
+    "FR-011": [
+      "FR_011_NoteAuthorSnapshot"
+    ],
+    "FR-012": [
+      "FR_012_NotesAppendOnly",
+      "AppendOnly"
+    ],
+    "FR-013": [
+      "FR_013_OneAuditPerOp",
+      "AuditCompleteness"
+    ],
+    "FR-014": [
+      "FR_014_AuditShape",
+      "AttributionCorrectness"
+    ],
+    "FR-015": [
+      "FR_015_AuditImmutable",
+      "AppendOnly"
+    ],
+    "FR-016": [
+      "FR_013_OneAuditPerOp"
+    ],
+    "FR-017": [
+      "FR_015_AuditImmutable"
+    ],
+    "FR-018": [
+      "FR_018_AccessLogComplianceOnly",
+      "PermissionCompleteness"
+    ],
+    "FR-019": [
+      "FR_019_ComplianceContentBlind",
+      "FR_007_ComplianceNoClinicalContent"
+    ],
+    "FR-020": [
+      "FR_020_OpaqueRecordTarget"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_NotesOnlyFromPermittedAppend",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_012_NotesAppendOnly",
+        "NoInformationLeakage",
+        "FR_008_NoLeakOnDeny",
+        "ValidationBeforeMutation"
+      ],
+      "rationale": "Clearing this fact removes the rule that every ClinicalNote must originate from a permitted PostNote op. The injection forces a note tied to a denied op, which violates the append-only invariant (notes only from permitted appends) and the no-leak-on-deny invariant (denied ops produce no side effects).",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some n: ClinicalNote | n.createdBy.outcome = Denied }"
+    },
+    {
+      "fact_name": "F_RoleBasedAccess",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_007_ComplianceNoClinicalContent",
+        "FR_019_ComplianceContentBlind"
+      ],
+      "rationale": "Clearing this fact removes the global rule that permitted ops must lie in the MayAttempt matrix. The injection forces a permitted ComplianceOfficer\u2192GetRecord op, which is explicitly denied by the matrix and the spec \u2014 exactly what LeastPrivilege should catch.",
+      "inject_violation": "fact MUTATE_LeastPrivilegeViolation { some op: Operation | op.callerRole = ComplianceOfficer and op.kind = GetRecord and op.outcome = Permitted }"
+    },
+    {
+      "fact_name": "F_AuditPerOperation",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_013_OneAuditPerOp"
+      ],
+      "rationale": "Clearing this fact removes the requirement that every Operation has a matching AuditEntry. The injection forces an Operation with no audit, violating FR-013's always-on auditing rule.",
+      "inject_violation": "fact MUTATE_AuditCompletenessViolation { some op: Operation | (no ae: AuditEntry | ae.forOp = op) }"
+    },
+    {
+      "fact_name": "F_AuditAttribution",
+      "asserts_violated": [
+        "AttributionCorrectness",
+        "FR_014_AuditShape"
+      ],
+      "rationale": "Clearing this fact lets audit-entry fields diverge from the underlying operation. The injection forces an AuditEntry whose entryUser differs from its op's caller, violating FR-014's snapshot-fidelity requirement.",
+      "inject_violation": "fact MUTATE_AttributionViolation { some ae: AuditEntry | ae.entryUser != ae.forOp.caller }"
+    },
+    {
+      "fact_name": "F_ClinicianCareTeamGating",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_004_ClinicianCareTeamGating"
+      ],
+      "rationale": "Clearing this fact removes the care-team predicate that gates clinician access. The injection forces a permitted clinician GetRecord op against a record for which no CareTeamMembership row exists \u2014 exactly the FR-004 violation pattern.",
+      "inject_violation": "fact MUTATE_CareTeamViolation { some op: Operation | op.callerRole = Clinician and op.outcome = Permitted and op.kind = GetRecord and (no m: CareTeamMembership | m.member = op.caller and m.forRecord = op.target) }"
+    },
+    {
+      "fact_name": "F_PatientOwnRecord",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_006_PatientSelfAccessOnly"
+      ],
+      "rationale": "Clearing this fact removes the rule that a patient may only access their own assigned_record_id. The injection forces a permitted patient op targeting a record other than the caller's assignedRecord, violating FR-006.",
+      "inject_violation": "fact MUTATE_PatientOwnViolation { some op: Operation | op.callerRole = Patient and op.outcome = Permitted and op.kind = GetRecord and op.caller.assignedRecord != op.target }"
+    }
+  ]
+}

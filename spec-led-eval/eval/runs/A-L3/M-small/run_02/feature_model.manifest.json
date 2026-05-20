@@ -1,0 +1,131 @@
+{
+  "feature_id": "A-L3",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionGrounding",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "NoSelfMutation"
+  ],
+  "feature_specific_predicates": [
+    "FR_002_RoleMultiplicity",
+    "FR_007_AmountAndPurposeValidation",
+    "FR_008_OneInFlightPerApplicant",
+    "FR_009_ValidStatusTransitions",
+    "FR_010_11_AutoAssignmentExcludesApplicant",
+    "FR_012_OnlyAssignedOfficerCanPatch",
+    "FR_023_AuditEndpointAuditorOnly",
+    "FR_024_ApplicantCannotModifyPostSubmission"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "LeastPrivilege",
+      "PermissionGrounding"
+    ],
+    "FR-002": [
+      "FR_002_RoleMultiplicity"
+    ],
+    "FR-003": [
+      "OwnershipBasedAccess"
+    ],
+    "FR-004": [
+      "OwnershipBasedAccess"
+    ],
+    "FR-005": [
+      "LeastPrivilege"
+    ],
+    "FR-007": [
+      "FR_007_AmountAndPurposeValidation"
+    ],
+    "FR-008": [
+      "FR_008_OneInFlightPerApplicant"
+    ],
+    "FR-009": [
+      "FR_009_ValidStatusTransitions"
+    ],
+    "FR-010": [
+      "FR_010_11_AutoAssignmentExcludesApplicant"
+    ],
+    "FR-011": [
+      "FR_010_11_AutoAssignmentExcludesApplicant"
+    ],
+    "FR-012": [
+      "FR_012_OnlyAssignedOfficerCanPatch"
+    ],
+    "FR-013": [
+      "NoSelfMutation"
+    ],
+    "FR-016": [
+      "AuditCompleteness",
+      "AttributionCorrectness"
+    ],
+    "FR-018": [
+      "AppendOnly"
+    ],
+    "FR-020": [
+      "NoInformationLeakage"
+    ],
+    "FR-021": [
+      "NoInformationLeakage"
+    ],
+    "FR-022": [
+      "NoInformationLeakage"
+    ],
+    "FR-023": [
+      "FR_023_AuditEndpointAuditorOnly"
+    ],
+    "FR-024": [
+      "FR_024_ApplicantCannotModifyPostSubmission"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "PermissionGrounding"
+      ],
+      "rationale": "Removing the permission matrix definition allows the model to invent arbitrary permissions, which violates the least-privilege and permission-grounding assertions that depend on the matrix being correctly specified.",
+      "inject_violation": "fact MUTATE_InvalidPermission { Officer -> PostApplications in PermMatrix.allowed }"
+    },
+    {
+      "fact_name": "F_NonEmptyUniverse",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "AppendOnly",
+        "NoSelfMutation"
+      ],
+      "rationale": "Removing the non-empty-universe constraint allows the model to satisfy audit-related predicates vacuously (since they quantify over empty sets). The injection forces at least one audit entry to exist so the assertions must actually constrain structure.",
+      "inject_violation": "fact MUTATE_EmptyUniverse { some u: User, app: LoanApplication, entry: AuditEntry | entry.application = app }"
+    },
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "NoSelfMutation"
+      ],
+      "rationale": "The NoSelfMutation assertion requires audit entries where the actor_role is Officer to have actor != app.applicant. If we allow an officer to submit their own application (by removing the permission matrix constraint), we can construct a violation.",
+      "inject_violation": "fact MUTATE_SelfMutation { some app: LoanApplication, entry: AuditEntry | entry.application = app and entry.actor_role = Officer and entry.actor = app.applicant }"
+    },
+    {
+      "fact_name": "F_NonEmptyUniverse",
+      "asserts_violated": [
+        "FR_008_OneInFlightPerApplicant",
+        "FR_010_11_AutoAssignmentExcludesApplicant"
+      ],
+      "rationale": "These assertions require at least one application to exist. Removing the non-empty constraint lets them pass vacuously. The injection forces a violation of the one-in-flight rule.",
+      "inject_violation": "fact MUTATE_MultipleInFlight { some u: User, disj a1, a2: LoanApplication | a1.applicant = u and a2.applicant = u and a1.status = Pending and a2.status = Pending }"
+    },
+    {
+      "fact_name": "F_NonEmptyUniverse",
+      "asserts_violated": [
+        "AppendOnly"
+      ],
+      "rationale": "The AppendOnly assertion requires at least one audit entry to validate that all entries are distinct. Removing non-empty allows it to pass vacuously. The injection creates a duplicate entry.",
+      "inject_violation": "fact MUTATE_DuplicateAudit { some disj e1, e2: AuditEntry | e1.application = e2.application and e1.actor_role = e2.actor_role and e1.new_status = e2.new_status }"
+    }
+  ]
+}

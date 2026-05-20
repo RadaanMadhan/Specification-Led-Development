@@ -1,0 +1,137 @@
+{
+  "feature_id": "C-L2",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuthRequiredEverywhere",
+    "OwnershipBasedAccess",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "NoInformationLeakage",
+    "ValidationBeforeMutation"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_RoleCatalogue",
+    "FR_004_CareTeamGating",
+    "FR_005_AdminContentBlind",
+    "FR_006_ByteEquivalentDenial",
+    "FR_009_NoteValidation",
+    "FR_010_NoteShape",
+    "FR_011_NotesAppendOnly",
+    "FR_012_AlwaysOnAudit",
+    "FR_013_AuditShape",
+    "FR_014_AuditAppendOnly",
+    "FR_015_NoPermitWithoutAudit",
+    "FR_016_AuditRetention",
+    "FR_017_AdminOnlyAuditEndpoint",
+    "FR_018_AdminContentBlindResponse"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_RoleCatalogue"
+    ],
+    "FR-004": [
+      "FR_004_CareTeamGating",
+      "OwnershipBasedAccess"
+    ],
+    "FR-005": [
+      "FR_005_AdminContentBlind",
+      "FR_018_AdminContentBlindResponse"
+    ],
+    "FR-006": [
+      "FR_006_ByteEquivalentDenial",
+      "NoInformationLeakage"
+    ],
+    "FR-009": [
+      "FR_009_NoteValidation",
+      "ValidationBeforeMutation"
+    ],
+    "FR-010": [
+      "FR_010_NoteShape",
+      "AttributionCorrectness"
+    ],
+    "FR-011": [
+      "FR_011_NotesAppendOnly",
+      "AppendOnly"
+    ],
+    "FR-012": [
+      "FR_012_AlwaysOnAudit",
+      "AuditCompleteness"
+    ],
+    "FR-013": [
+      "FR_013_AuditShape",
+      "AttributionCorrectness"
+    ],
+    "FR-014": [
+      "FR_014_AuditAppendOnly",
+      "AppendOnly"
+    ],
+    "FR-015": [
+      "FR_015_NoPermitWithoutAudit"
+    ],
+    "FR-016": [
+      "FR_016_AuditRetention"
+    ],
+    "FR-017": [
+      "FR_017_AdminOnlyAuditEndpoint",
+      "LeastPrivilege"
+    ],
+    "FR-018": [
+      "FR_018_AdminContentBlindResponse"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_CareTeamGating",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_004_CareTeamGating"
+      ],
+      "rationale": "Removing the care-team gating fact lets the model invent a permitted clinical access (ReadRecord) by a clinician who has no active care-team membership for the target patient.",
+      "inject_violation": "fact MUTATE_NoMembershipPermitted { some op: Operation | op.kind = ReadRecord and op.outcome = Permitted and op.authStatus = Authenticated and op.valStatus = Valid and op.caller.role = Doctor and (no m: CareTeamMembership | m.clinician = op.caller and m.patient = op.targetPatient and m.mstatus = ActiveMembership) }"
+    },
+    {
+      "fact_name": "F_AuditCompleteness",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_012_AlwaysOnAudit",
+        "FR_015_NoPermitWithoutAudit"
+      ],
+      "rationale": "Removing the always-on-audit fact lets the model produce a permitted access (admin ListAudit) with no matching audit entry.",
+      "inject_violation": "fact MUTATE_NoAuditOnPermit { some op: Operation | op.kind = ListAudit and op.outcome = Permitted and op.authStatus = Authenticated and op.valStatus = Valid and op.caller.role = HospitalAdministrator and no op.audit }"
+    },
+    {
+      "fact_name": "F_AuditAttribution",
+      "asserts_violated": [
+        "AttributionCorrectness",
+        "FR_013_AuditShape"
+      ],
+      "rationale": "Removing the attribution fact lets an audit entry attribute the access to someone other than the actual caller.",
+      "inject_violation": "fact MUTATE_MisattributedAudit { some op: Operation | some op.audit and op.audit.recordedUser != op.caller }"
+    },
+    {
+      "fact_name": "F_AdminOnlyAudit",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_017_AdminOnlyAuditEndpoint"
+      ],
+      "rationale": "Without the admin-only gate on the audit endpoint, a clinical-role caller can be permitted on ListAudit \u2014 but Doctor->ListAudit is not in the permission matrix, so LeastPrivilege bites.",
+      "inject_violation": "fact MUTATE_DoctorListAudit { some op: Operation | op.caller.role = Doctor and op.kind = ListAudit and op.outcome = Permitted and op.authStatus = Authenticated and op.valStatus = Valid }"
+    },
+    {
+      "fact_name": "F_ByteEquivalentDenial",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "FR_006_ByteEquivalentDenial"
+      ],
+      "rationale": "Removing the byte-equivalent-denial fact lets a Denied response and a NotFoundOrDenied response take on different external response shapes, leaking the existence of restricted resources.",
+      "inject_violation": "fact MUTATE_LeakyDenial { some disj op1, op2: Operation | op1.authStatus = Authenticated and op1.valStatus = Valid and op1.outcome = Denied and op2.authStatus = Authenticated and op2.valStatus = Valid and op2.outcome = NotFoundOrDenied and op1.externalResponse != op2.externalResponse }"
+    }
+  ]
+}

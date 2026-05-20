@@ -1,0 +1,130 @@
+{
+  "feature_id": "B-L2",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "ValidationBeforeMutation"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_003_TeamContextRequired",
+    "FR_005_TaskTeamImmutable",
+    "FR_006_OwnerImmutable",
+    "FR_007_RolePerTeam",
+    "FR_008_MemberCanCreateAndView",
+    "FR_009_MemberCannotEditNonOwned",
+    "FR_010_AdminCanEditAnyTask",
+    "FR_014_CrossTeamIsolation",
+    "FR_015_AuditPerEditEvent",
+    "FR_016_AuditAppendOnly",
+    "FR_017_AuditVisibleToTeam"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-003": [
+      "FR_003_TeamContextRequired"
+    ],
+    "FR-004": [
+      "F_TaskMembersInTeam"
+    ],
+    "FR-005": [
+      "FR_005_TaskTeamImmutable"
+    ],
+    "FR-006": [
+      "FR_006_OwnerImmutable",
+      "OwnershipExclusivity"
+    ],
+    "FR-007": [
+      "FR_007_RolePerTeam"
+    ],
+    "FR-008": [
+      "FR_008_MemberCanCreateAndView"
+    ],
+    "FR-009": [
+      "FR_009_MemberCannotEditNonOwned"
+    ],
+    "FR-010": [
+      "FR_010_AdminCanEditAnyTask"
+    ],
+    "FR-011": [
+      "FR_014_CrossTeamIsolation"
+    ],
+    "FR-014": [
+      "FR_014_CrossTeamIsolation",
+      "NoInformationLeakage"
+    ],
+    "FR-015": [
+      "FR_015_AuditPerEditEvent",
+      "AuditCompleteness",
+      "AttributionCorrectness"
+    ],
+    "FR-016": [
+      "FR_016_AuditAppendOnly",
+      "AppendOnly"
+    ],
+    "FR-017": [
+      "FR_017_AuditVisibleToTeam"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege"
+      ],
+      "rationale": "Removing this fact eliminates the structured definition of role-operation pairs. The LeastPrivilege assertion checks that every (Role, OperationKind) pair is defined; without this fact, the permission matrix becomes empty and the assertion fails to constrain anything.",
+      "inject_violation": "fact MUTATE_BrokenPermissionMatrix { PermMatrix.allowed = none }"
+    },
+    {
+      "fact_name": "F_OwnershipExclusivity",
+      "asserts_violated": [
+        "OwnershipExclusivity",
+        "OwnershipBasedAccess"
+      ],
+      "rationale": "Removing this fact allows tasks to have zero or multiple owners. The OwnershipExclusivity assertion explicitly checks that each task has exactly one owner; without this constraint, tasks can violate the one-owner invariant.",
+      "inject_violation": "fact MUTATE_MultiOwner { some t: Task, u1, u2: User | u1 != u2 and (u1 = t.owner or u2 = t.owner) }"
+    },
+    {
+      "fact_name": "F_AuditActorMembershipConsistency",
+      "asserts_violated": [
+        "AttributionCorrectness"
+      ],
+      "rationale": "Removing this fact allows audit entries to record an actor with a role that does not match their actual membership role in that team. The AttributionCorrectness assertion checks this consistency; without the fact, actors can be misattributed.",
+      "inject_violation": "fact MUTATE_WrongActorRole { some ae: AuditEntry, tm: TeamMembership | ae.actorUser = tm.user and ae.team = tm.team and ae.actorRole != tm.role }"
+    },
+    {
+      "fact_name": "F_AuditEntryPerTask",
+      "asserts_violated": [
+        "AuditCompleteness"
+      ],
+      "rationale": "Removing this fact allows tasks to exist without any audit entry. The AuditCompleteness assertion requires every task to have at least one entry (the creation); without this constraint, orphan tasks violate the invariant.",
+      "inject_violation": "fact MUTATE_NoAuditEntry { some t: Task | no ae: AuditEntry | ae.task = t }"
+    },
+    {
+      "fact_name": "F_AllOperationsAuthenticated",
+      "asserts_violated": [
+        "AuthRequiredEverywhere",
+        "FR_001_AuthRequired"
+      ],
+      "rationale": "Removing this fact allows tasks and audit entries to exist without an authenticated actor. The AuthRequiredEverywhere assertion verifies that every operation is performed by a user with valid team membership; without the constraint, unauthenticated operations become possible.",
+      "inject_violation": "fact MUTATE_UnauthenticatedOp { some ae: AuditEntry | no u: User | u = ae.actorUser }"
+    },
+    {
+      "fact_name": "F_OneMembershipPerUserTeam",
+      "asserts_violated": [
+        "FR_007_RolePerTeam"
+      ],
+      "rationale": "Removing this fact allows a user to have multiple memberships (and thus multiple roles) in the same team. The FR_007 assertion explicitly checks that each (user, team) pair maps to at most one membership; without this constraint, multi-role-per-team becomes possible.",
+      "inject_violation": "fact MUTATE_MultiRolePerTeam { some u: User, t: Team, tm1, tm2: TeamMembership | tm1 != tm2 and tm1.user = u and tm1.team = t and tm2.user = u and tm2.team = t }"
+    }
+  ]
+}

@@ -1,0 +1,172 @@
+{
+  "feature_id": "B-L2",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "PermissionGrounding",
+    "PrivilegeMonotonicity",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "ValidationBeforeMutation"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_004_NonMemberDenied",
+    "FR_005_TaskBelongsToOneTeam",
+    "FR_006_OwnerImmutable",
+    "FR_007_PerTeamRole",
+    "FR_008_MemberCanCreateAndRead",
+    "FR_009_NonOwnerMemberCannotEditDelete",
+    "FR_010_AdminCanEditDeleteAny",
+    "FR_011_CrossTeamIsolation",
+    "FR_012_AssigneeInSameTeam",
+    "FR_014_AdminPrivilegeDoesNotCrossTeam",
+    "FR_015_AuditPerSave",
+    "FR_015_ActorRoleSnapshotted",
+    "FR_016_AuditAppendOnly",
+    "FR_017_AuditReadableByAnyMember"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "ValidationBeforeMutation"
+    ],
+    "FR-003": [
+      "FR_004_NonMemberDenied"
+    ],
+    "FR-004": [
+      "FR_004_NonMemberDenied",
+      "LeastPrivilege"
+    ],
+    "FR-005": [
+      "FR_005_TaskBelongsToOneTeam",
+      "OwnershipExclusivity"
+    ],
+    "FR-006": [
+      "FR_006_OwnerImmutable",
+      "ValidationBeforeMutation"
+    ],
+    "FR-007": [
+      "FR_007_PerTeamRole"
+    ],
+    "FR-008": [
+      "FR_008_MemberCanCreateAndRead",
+      "OwnershipBasedAccess"
+    ],
+    "FR-009": [
+      "FR_009_NonOwnerMemberCannotEditDelete",
+      "OwnershipBasedAccess"
+    ],
+    "FR-010": [
+      "FR_010_AdminCanEditDeleteAny",
+      "PrivilegeMonotonicity"
+    ],
+    "FR-011": [
+      "FR_011_CrossTeamIsolation",
+      "NoInformationLeakage"
+    ],
+    "FR-012": [
+      "FR_012_AssigneeInSameTeam"
+    ],
+    "FR-013": [
+      "FR_005_TaskBelongsToOneTeam"
+    ],
+    "FR-014": [
+      "FR_014_AdminPrivilegeDoesNotCrossTeam",
+      "NoInformationLeakage",
+      "LeastPrivilege"
+    ],
+    "FR-015": [
+      "FR_015_AuditPerSave",
+      "FR_015_ActorRoleSnapshotted",
+      "AuditCompleteness",
+      "AttributionCorrectness"
+    ],
+    "FR-016": [
+      "FR_016_AuditAppendOnly",
+      "AppendOnly"
+    ],
+    "FR-017": [
+      "FR_017_AuditReadableByAnyMember"
+    ],
+    "FR-018": [
+      "AppendOnly",
+      "FR_016_AuditAppendOnly"
+    ],
+    "FR-019": [
+      "FR_008_MemberCanCreateAndRead"
+    ],
+    "FR-020": [
+      "FR_008_MemberCanCreateAndRead"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_001_AuthRequired",
+        "FR_009_NonOwnerMemberCannotEditDelete",
+        "FR_011_CrossTeamIsolation",
+        "NoInformationLeakage",
+        "AuthRequiredEverywhere"
+      ],
+      "rationale": "The permission matrix is the single load-bearing fact for all allow/deny cells. Clearing it removes every explicit Allowed cell assignment, so Alloy is free to populate PermMatrix.Allowed arbitrarily. The injection adds unauthenticated and non-member access to PATCH and DELETE, directly violating LeastPrivilege, AuthRequiredEverywhere, and NoInformationLeakage.",
+      "inject_violation": "fact MUTATE_PermMatrixViolation { (CallerUnauth -> OpPatchTask) in PermMatrix.Allowed  (CallerNonMember -> OpDeleteTask) in PermMatrix.Allowed }"
+    },
+    {
+      "fact_name": "F_AppendOnlyAuditEntries",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_016_AuditAppendOnly"
+      ],
+      "rationale": "Clearing F_AppendOnlyAuditEntries removes the constraint that audit entries for deleted tasks must survive. The injection creates a DeletedTask whose audit entries all reference a different task, simulating orphaned (effectively erased) audit entries for the deleted task \u2014 exactly what append-only is meant to prevent.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some t: DeletedTask | no ae: AuditEntry | ae.ae_task = t }"
+    },
+    {
+      "fact_name": "F_AuditCreatedEntry",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_015_AuditPerSave"
+      ],
+      "rationale": "Clearing F_AuditCreatedEntry allows tasks to exist without a 'created' audit entry. The injection forces a task that has no DescCreated audit entry at all, directly violating AuditCompleteness and FR_015_AuditPerSave.",
+      "inject_violation": "fact MUTATE_MissingCreatedAudit { some t: Task | no ae: AuditEntry | ae.ae_task = t and ae.ae_change = DescCreated }"
+    },
+    {
+      "fact_name": "F_AuditTeamMatchesTask",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_015_AuditPerSave",
+        "NoInformationLeakage"
+      ],
+      "rationale": "Clearing F_AuditTeamMatchesTask removes the denormalised team-consistency requirement on audit entries. The injection places an audit entry whose ae_team differs from its ae_task's task_team, simulating a cross-team audit record leak that breaks cross-team isolation on the audit endpoint.",
+      "inject_violation": "fact MUTATE_AuditTeamMismatch { some ae: AuditEntry | ae.ae_team != ae.ae_task.task_team }"
+    },
+    {
+      "fact_name": "F_AuditActorAttributed",
+      "asserts_violated": [
+        "AttributionCorrectness",
+        "FR_015_ActorRoleSnapshotted"
+      ],
+      "rationale": "Clearing F_AuditActorAttributed removes the requirement that the audit actor holds a team membership matching the recorded role. The injection creates an audit entry whose actor has no membership in the entry's team at all, simulating a misattributed or fabricated audit record.",
+      "inject_violation": "fact MUTATE_MisattributedAudit { some ae: AuditEntry | no m: TeamMembership | m.mem_user = ae.ae_actor and m.mem_team = ae.ae_team and m.mem_role = ae.ae_actor_role }"
+    },
+    {
+      "fact_name": "F_OwnerImmutableViaMatrix",
+      "asserts_violated": [
+        "ValidationBeforeMutation",
+        "FR_006_OwnerImmutable"
+      ],
+      "rationale": "Clearing F_OwnerImmutableViaMatrix removes the rule that OpPatchOwner is denied for every caller. The injection grants CallerAdmin the OpPatchOwner operation, simulating a privilege-escalation path where even admins could change task ownership \u2014 exactly what FR-006 forbids.",
+      "inject_violation": "fact MUTATE_OwnerMutationAllowed { (CallerAdmin -> OpPatchOwner) in PermMatrix.Allowed }"
+    }
+  ]
+}

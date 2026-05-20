@@ -1,0 +1,141 @@
+{
+  "feature_id": "C-L1",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_RoleResolution",
+    "FR_004_PatientIdNotInUrl",
+    "FR_005_ReadOnly",
+    "FR_006_CareTeamGating",
+    "FR_007_ByteEquivalentNotFound",
+    "FR_008_AlwaysOnAudit",
+    "FR_009_AuditEntryShape",
+    "FR_010_AuditImmutability",
+    "FR_011_AuditVisibleToIGOnly",
+    "FR_012_AuditRetention",
+    "FR_013_AuditBeforeAccess",
+    "FR_014_AllergiesFirst",
+    "FR_015_IdDoBFirst"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_RoleResolution"
+    ],
+    "FR-003": [],
+    "FR-004": [
+      "FR_004_PatientIdNotInUrl"
+    ],
+    "FR-005": [
+      "FR_005_ReadOnly"
+    ],
+    "FR-006": [
+      "FR_006_CareTeamGating",
+      "OwnershipBasedAccess"
+    ],
+    "FR-007": [
+      "FR_007_ByteEquivalentNotFound",
+      "NoInformationLeakage"
+    ],
+    "FR-008": [
+      "FR_008_AlwaysOnAudit",
+      "AuditCompleteness"
+    ],
+    "FR-009": [
+      "FR_009_AuditEntryShape",
+      "AttributionCorrectness"
+    ],
+    "FR-010": [
+      "FR_010_AuditImmutability",
+      "AppendOnly"
+    ],
+    "FR-011": [
+      "FR_011_AuditVisibleToIGOnly",
+      "LeastPrivilege"
+    ],
+    "FR-012": [
+      "FR_012_AuditRetention",
+      "AppendOnly"
+    ],
+    "FR-013": [
+      "FR_013_AuditBeforeAccess"
+    ],
+    "FR-014": [
+      "FR_014_AllergiesFirst"
+    ],
+    "FR-015": [
+      "FR_015_IdDoBFirst"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_CareTeamGating",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_006_CareTeamGating"
+      ],
+      "rationale": "Removing F_CareTeamGating allows Alloy to construct a world where an AccessAttempt has outcome=Permitted even though no ActiveMembership links the caller to the target patient, directly violating the care-team-only authorisation rule in FR-006.",
+      "inject_violation": "fact MUTATE_CareTeamViolation { some a: AccessAttempt | a.outcome = Permitted and (all m: ActiveMembership | not (m.clinician = a.caller and m.patient = a.target)) }"
+    },
+    {
+      "fact_name": "F_AppendOnlyAuditEntries",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_010_AuditImmutability",
+        "FR_012_AuditRetention"
+      ],
+      "rationale": "Removing F_AppendOnlyAuditEntries allows two distinct AuditEntries to record the same AccessAttempt, modelling an overwrite or duplicate-write of an existing audit record. The AppendOnly and FR_010_AuditImmutability assertions then find a counterexample.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some disj ae1, ae2: AuditEntry | ae1.for_attempt = ae2.for_attempt }"
+    },
+    {
+      "fact_name": "F_AuditCompleteness",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_008_AlwaysOnAudit",
+        "FR_013_AuditBeforeAccess"
+      ],
+      "rationale": "Removing F_AuditCompleteness allows an AccessAttempt to exist with no corresponding AuditEntry, directly violating the always-on audit obligation in FR-008 and the audit-before-access rule in FR-013.",
+      "inject_violation": "fact MUTATE_AuditMissing { some a: AccessAttempt | all ae: AuditEntry | ae.for_attempt != a }"
+    },
+    {
+      "fact_name": "F_ByteEquivalentNotFound",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "FR_007_ByteEquivalentNotFound"
+      ],
+      "rationale": "Removing F_ByteEquivalentNotFound allows a Denied AccessAttempt to be assigned SuccessResponse, making the denied-access path distinguishable from the not-found path and leaking the existence of the patient to an unauthorised clinician.",
+      "inject_violation": "fact MUTATE_LeakageViolation { some a: AccessAttempt | a.outcome = Denied and a.response = SuccessResponse }"
+    },
+    {
+      "fact_name": "F_AttributionCorrectness",
+      "asserts_violated": [
+        "AttributionCorrectness",
+        "FR_009_AuditEntryShape"
+      ],
+      "rationale": "Removing F_AttributionCorrectness allows an AuditEntry's role_snapshot to differ from the actual role of the access's caller, breaking the snapshot-fidelity requirement in FR-009 (a renamed or wrong-role clinician appears in the audit log).",
+      "inject_violation": "fact MUTATE_AttributionViolation { some ae: AuditEntry | some r: Role | r != ae.for_attempt.caller.role and ae.role_snapshot = r }"
+    },
+    {
+      "fact_name": "F_LeastPrivilegeClinicalEndpoint",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_001_AuthRequired",
+        "FR_011_AuditVisibleToIGOnly"
+      ],
+      "rationale": "Removing F_LeastPrivilegeClinicalEndpoint allows an AuditOfficer to appear as the caller of an AccessAttempt on PostRecordsLookup, violating the role-segregation requirement that audit officers may not use the clinical endpoint.",
+      "inject_violation": "fact MUTATE_LeastPrivilegeViolation { some a: AccessAttempt | a.caller.role = AuditOfficer }"
+    }
+  ]
+}

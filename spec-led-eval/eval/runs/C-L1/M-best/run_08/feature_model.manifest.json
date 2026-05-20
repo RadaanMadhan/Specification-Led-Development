@@ -1,0 +1,125 @@
+{
+  "feature_id": "009-clinician-record-access",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_RoleFromCatalogue",
+    "FR_005_ReadOnly",
+    "FR_006_CareTeamGating",
+    "FR_007_ByteEquivalentDeny",
+    "FR_008_OneAuditPerAccess",
+    "FR_009_AuditFields",
+    "FR_010_AuditAppendOnly",
+    "FR_011_IGOnlyAuditSearch",
+    "FR_013_NoRecordWithoutAudit"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_RoleFromCatalogue"
+    ],
+    "FR-005": [
+      "FR_005_ReadOnly"
+    ],
+    "FR-006": [
+      "FR_006_CareTeamGating",
+      "OwnershipBasedAccess"
+    ],
+    "FR-007": [
+      "FR_007_ByteEquivalentDeny",
+      "NoInformationLeakage"
+    ],
+    "FR-008": [
+      "FR_008_OneAuditPerAccess",
+      "AuditCompleteness"
+    ],
+    "FR-009": [
+      "FR_009_AuditFields",
+      "AttributionCorrectness"
+    ],
+    "FR-010": [
+      "FR_010_AuditAppendOnly",
+      "AppendOnly"
+    ],
+    "FR-011": [
+      "FR_011_IGOnlyAuditSearch",
+      "LeastPrivilege",
+      "PermissionCompleteness"
+    ],
+    "FR-012": [
+      "FR_010_AuditAppendOnly",
+      "AppendOnly"
+    ],
+    "FR-013": [
+      "FR_013_NoRecordWithoutAudit"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_AppendOnlyAuditOneToOne",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_010_AuditAppendOnly"
+      ],
+      "rationale": "Removing this fact lets Alloy invent two distinct audit entries that point at the same Operation, which is exactly the 'audit was duplicated / mutated by writing a second row for the same access' scenario the AppendOnly assertion catches.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some disj a, b: AuditEntry | a.op = b.op }"
+    },
+    {
+      "fact_name": "F_AuditOnEveryClinicalServiceOp",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_008_OneAuditPerAccess"
+      ],
+      "rationale": "Clearing the fact removes the 'every serviced RecordsLookup has an audit entry' rule; injecting a serviced RecordsLookup with no AuditEntry pointing to it forces the missing-audit counterexample.",
+      "inject_violation": "fact MUTATE_AuditMissing { some op: Operation | op.kind = RecordsLookup and some op.reachedService and (no ae: AuditEntry | ae.op = op) }"
+    },
+    {
+      "fact_name": "F_CareTeamRequiredForRecord",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_006_CareTeamGating"
+      ],
+      "rationale": "Clearing this fact lets a record be returned without any active care-team membership; the injection forces such an operation to exist, which is the SC-010 leakage the ownership-based access assertion is meant to catch.",
+      "inject_violation": "fact MUTATE_NoCareTeamMembership { some op: Operation | some op.recordReturned and (no m: CareTeamMembership | m.member = op.caller and m.patient = op.presentedPatient and m.status = MembershipActive) }"
+    },
+    {
+      "fact_name": "F_NoRecordOnDenyOrNotFound",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "FR_007_ByteEquivalentDeny"
+      ],
+      "rationale": "Removing this fact allows a Denied outcome to still ship record content to the caller; injecting such an Operation produces the byte-non-equivalent leak SC-003 forbids.",
+      "inject_violation": "fact MUTATE_LeakOnDeny { some op: Operation | op.result = Denied and some op.recordReturned }"
+    },
+    {
+      "fact_name": "F_RoleKindAuthorization",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_011_IGOnlyAuditSearch"
+      ],
+      "rationale": "Clearing the role/kind authorisation lets a caller whose role is not in the permission matrix still reach the service layer; injecting an AuditOfficer who performs a RecordsLookup at service depth produces the cross-role privilege escalation LeastPrivilege catches.",
+      "inject_violation": "fact MUTATE_RoleEscalation { some op: Operation | some op.reachedService and op.caller.role = AuditOfficer and op.kind = RecordsLookup }"
+    },
+    {
+      "fact_name": "F_AuditAttribution",
+      "asserts_violated": [
+        "AttributionCorrectness",
+        "FR_009_AuditFields"
+      ],
+      "rationale": "Removing this fact decouples audit-entry attribution from the operation it records; injecting an audit entry whose recorded clinician differs from the operation's actual caller produces a misattribution counterexample.",
+      "inject_violation": "fact MUTATE_MisattributedAudit { some ae: AuditEntry | ae.clinician != ae.op.caller }"
+    }
+  ]
+}

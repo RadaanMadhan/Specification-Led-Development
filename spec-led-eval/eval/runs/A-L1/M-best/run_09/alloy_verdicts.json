@@ -1,0 +1,23 @@
+{
+  "LeastPrivilege": "PASS",
+  "PermissionCompleteness": "PASS",
+  "PermissionGrounding": "PASS",
+  "AuditCompleteness": "PASS",
+  "AppendOnly": "FAIL",
+  "AttributionCorrectness": "PASS",
+  "OwnershipExclusivity": "PASS",
+  "OwnershipBasedAccess": "PASS",
+  "FR_001_AuthRequired": "PASS",
+  "FR_002_StructuralFieldsPresent": "PASS",
+  "FR_004_SubmissionRecorded": "PASS",
+  "FR_005_OnePendingPerCustomer": "PASS",
+  "FR_009_DecisionReasonRequired": "PASS",
+  "FR_010_DecisionPersisted": "PASS",
+  "FR_011_DecidedImmutable": "PASS",
+  "FR_012_NoTwoDecisions": "PASS",
+  "FR_013_CustomerOwnAccess": "PASS",
+  "FR_014_StatusChangeObservable": "PASS",
+  "FR_015_OnlyStaffDecides": "PASS",
+  "FR_016_AuditTrail": "PASS",
+  "FR_017_RetentionOrphanFreedom": "FAIL"
+}

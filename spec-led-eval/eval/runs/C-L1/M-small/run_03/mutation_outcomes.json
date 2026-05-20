@@ -1,0 +1,36 @@
+{
+  "F_AppendOnlyAuditEntries": {
+    "targeted_asserts": {
+      "AppendOnly": "VACUOUS_TAUTOLOGY"
+    },
+    "all_bit": false
+  },
+  "F_OwnershipBasedAccessRule": {
+    "targeted_asserts": {
+      "OwnershipBasedAccess": "BIT",
+      "FR_006_CareTeamAuthorizationEnforced": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_NoInformationLeakage": {
+    "targeted_asserts": {
+      "NoInformationLeakage": "BIT",
+      "FR_007_ByteEquivalentResponses": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AttributionCorrectness": {
+    "targeted_asserts": {
+      "AttributionCorrectness": "BIT",
+      "FR_009_AuditEntryShape": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_NonEmptyUniverse": {
+    "targeted_asserts": {
+      "AuditCompleteness": "VACUOUS_TAUTOLOGY",
+      "FR_008_AlwaysOnAudit": "VACUOUS_TAUTOLOGY"
+    },
+    "all_bit": false
+  }
+}

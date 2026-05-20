@@ -1,0 +1,114 @@
+{
+  "feature_id": "A-L1",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "ValidationBeforeMutation"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_SubmitApplication",
+    "FR_005_OnePendingPerCustomer",
+    "FR_009_DecisionWithReason",
+    "FR_011_DecisionsImmutable",
+    "FR_012_NoConcurrentDecisions",
+    "FR_013_OwnershipBasedView",
+    "FR_015_StaffOnlyDecisions",
+    "FR_016_AuditTrail"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_SubmitApplication"
+    ],
+    "FR-002": [
+      "ValidationBeforeMutation"
+    ],
+    "FR-003": [
+      "ValidationBeforeMutation"
+    ],
+    "FR-004": [
+      "FR_001_SubmitApplication"
+    ],
+    "FR-005": [
+      "FR_005_OnePendingPerCustomer"
+    ],
+    "FR-009": [
+      "FR_009_DecisionWithReason"
+    ],
+    "FR-011": [
+      "FR_011_DecisionsImmutable"
+    ],
+    "FR-012": [
+      "FR_012_NoConcurrentDecisions"
+    ],
+    "FR-013": [
+      "FR_013_OwnershipBasedView"
+    ],
+    "FR-015": [
+      "LeastPrivilege",
+      "FR_015_StaffOnlyDecisions"
+    ],
+    "FR-016": [
+      "AuditCompleteness",
+      "AppendOnly",
+      "FR_016_AuditTrail",
+      "AttributionCorrectness"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "PermissionCompleteness"
+      ],
+      "rationale": "Removing this fact eliminates the constraint that defines allowed (role, operation) pairs. The injection forces Customer to have RecordDecision permission, violating both LeastPrivilege (which expects this to be denied) and PermissionCompleteness (which expects a specific closed set).",
+      "inject_violation": "fact MUTATE_BadPermissions { Customer -> RecordDecision in PermMatrix.allowed }"
+    },
+    {
+      "fact_name": "F_OnePendingPerCustomer",
+      "asserts_violated": [
+        "FR_005_OnePendingPerCustomer"
+      ],
+      "rationale": "Removing this fact eliminates the structural constraint that enforces at most one Pending Review application per customer. The injection forces multiple pending applications for the same customer.",
+      "inject_violation": "fact MUTATE_MultiplePending { some customer: CustomerUser | #{app: LoanApplication | app.customer = customer and app.status = PendingReview} > 1 }"
+    },
+    {
+      "fact_name": "F_AuditAppendOnly",
+      "asserts_violated": [
+        "AppendOnly"
+      ],
+      "rationale": "Removing this fact allows audit trails to be incomplete or internally inconsistent. The injection creates an Approved application with no ApprovedEvent, violating the append-only constraint that requires all status-changing events to be present.",
+      "inject_violation": "fact MUTATE_AuditMutation { some app: LoanApplication | app.status = Approved and no e: ApplicationEvent | e.application = app and e.eventType = ApprovedEvent }"
+    },
+    {
+      "fact_name": "F_OwnershipExclusivity",
+      "asserts_violated": [
+        "OwnershipExclusivity"
+      ],
+      "rationale": "Removing this fact allows applications to lack a unique owner. The injection forces an application to potentially belong to multiple customers or have an inconsistent ownership relation.",
+      "inject_violation": "fact MUTATE_SharedOwnership { some disj c1, c2: CustomerUser, app: LoanApplication | some d1, d2: Decision | d1.application = app and d2.application = app and d1 != d2 }"
+    },
+    {
+      "fact_name": "F_AttributionCorrectness",
+      "asserts_violated": [
+        "AttributionCorrectness"
+      ],
+      "rationale": "Removing this fact allows audit events to be attributed to incorrect actors. The injection creates a SubmittedEvent not attributed to the application's customer.",
+      "inject_violation": "fact MUTATE_BadAttribution { some event: ApplicationEvent | event.eventType = SubmittedEvent and event.actor not in CustomerUser }"
+    },
+    {
+      "fact_name": "F_ValidationConstraints",
+      "asserts_violated": [
+        "ValidationBeforeMutation"
+      ],
+      "rationale": "Removing this fact eliminates amount and term validation. The injection creates an application with an amount outside the allowed range (\u00a31,000\u2013\u00a325,000).",
+      "inject_violation": "fact MUTATE_InvalidAmount { some app: LoanApplication | app.requestedAmount < 100000 or app.requestedAmount > 2500000 }"
+    }
+  ]
+}

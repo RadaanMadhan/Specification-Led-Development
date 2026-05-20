@@ -1,0 +1,165 @@
+{
+  "feature_id": "B-L2",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_IdentityFromAuthContext",
+    "FR_003_TeamContextRequired",
+    "FR_004_CallerIsMember",
+    "FR_005_TaskTeamImmutable",
+    "FR_006_OwnerImmutable",
+    "FR_007_PerTeamRole",
+    "FR_008_OwnerCanMutate",
+    "FR_009_NonOwnerMemberDenied",
+    "FR_010_AdminCanMutateAnyInTeam",
+    "FR_011_CrossTeamIsolation",
+    "FR_012_AssigneeSameTeam",
+    "FR_013_StatusInSet",
+    "FR_014_ByteEquivalentNotFound",
+    "FR_015_AuditPerEdit",
+    "FR_016_AuditAppendOnly",
+    "FR_017_AuditTeamScoped",
+    "FR_018_RetentionByCodePathAbsence",
+    "FR_019_ListScopedToTeam",
+    "FR_020_FilteredListScopedToTeam"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_IdentityFromAuthContext"
+    ],
+    "FR-003": [
+      "FR_003_TeamContextRequired"
+    ],
+    "FR-004": [
+      "FR_004_CallerIsMember"
+    ],
+    "FR-005": [
+      "FR_005_TaskTeamImmutable"
+    ],
+    "FR-006": [
+      "FR_006_OwnerImmutable",
+      "OwnershipExclusivity"
+    ],
+    "FR-007": [
+      "FR_007_PerTeamRole"
+    ],
+    "FR-008": [
+      "FR_008_OwnerCanMutate",
+      "OwnershipBasedAccess"
+    ],
+    "FR-009": [
+      "FR_009_NonOwnerMemberDenied",
+      "OwnershipBasedAccess"
+    ],
+    "FR-010": [
+      "FR_010_AdminCanMutateAnyInTeam",
+      "OwnershipBasedAccess"
+    ],
+    "FR-011": [
+      "FR_011_CrossTeamIsolation",
+      "NoInformationLeakage"
+    ],
+    "FR-012": [
+      "FR_012_AssigneeSameTeam"
+    ],
+    "FR-013": [
+      "FR_013_StatusInSet"
+    ],
+    "FR-014": [
+      "FR_014_ByteEquivalentNotFound",
+      "NoInformationLeakage"
+    ],
+    "FR-015": [
+      "FR_015_AuditPerEdit",
+      "AuditCompleteness",
+      "AttributionCorrectness"
+    ],
+    "FR-016": [
+      "FR_016_AuditAppendOnly",
+      "AppendOnly"
+    ],
+    "FR-017": [
+      "FR_017_AuditTeamScoped"
+    ],
+    "FR-018": [
+      "FR_018_RetentionByCodePathAbsence"
+    ],
+    "FR-019": [
+      "FR_019_ListScopedToTeam"
+    ],
+    "FR-020": [
+      "FR_020_FilteredListScopedToTeam"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_OwnerOrAdminForMutation",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_008_OwnerCanMutate",
+        "FR_009_NonOwnerMemberDenied"
+      ],
+      "rationale": "Clearing this fact lets a Member who is not the task's owner succeed at PATCH/DELETE; the injected fact constructs exactly such a Success op (non-owner, role=Member), which the OwnershipBasedAccess predicate is supposed to forbid.",
+      "inject_violation": "fact MUTATE_OwnershipBypass { some op: Operation, t: Task, m: Membership | op.kind = PatchTask and op.outcome = Success and op.target = t and m.user = op.caller and m.team = op.teamCtx and m.role = Member and op.caller != t.owner }"
+    },
+    {
+      "fact_name": "F_CrossTeamIsolation",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "FR_011_CrossTeamIsolation",
+        "FR_014_ByteEquivalentNotFound"
+      ],
+      "rationale": "Removing this fact allows a Success operation to act on a task whose team differs from the caller's X-Team-Id. The injection forces such an instance \u2014 a clear cross-team leak that NoInformationLeakage must catch.",
+      "inject_violation": "fact MUTATE_CrossTeamLeak { some op: Operation, t: Task, m: Membership | op.outcome = Success and op.kind = GetTaskById and op.target = t and m.user = op.caller and m.team = op.teamCtx and t.team != op.teamCtx }"
+    },
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "PermissionCompleteness"
+      ],
+      "rationale": "Clearing the matrix definition lets PermMatrix.Allowed be anything. The injection collapses it to empty, so PermissionCompleteness (every Role x OperationKind cell present) fails.",
+      "inject_violation": "fact MUTATE_PermMatrixEmpty { PermMatrix.Allowed = none -> none }"
+    },
+    {
+      "fact_name": "F_AuditEntryForStateChange",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_015_AuditPerEdit"
+      ],
+      "rationale": "Without this fact, a successful PATCH need not produce an audit entry. The injection forces a PATCH-Success op with writesAudit empty, which AuditCompleteness must reject.",
+      "inject_violation": "fact MUTATE_AuditMissing { some op: Operation, t: Task, m: Membership | op.outcome = Success and op.kind = PatchTask and op.target = t and m.user = op.caller and m.team = op.teamCtx and m.role = Admin and no op.writesAudit }"
+    },
+    {
+      "fact_name": "F_AuditAppendOnlyKind",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_016_AuditAppendOnly"
+      ],
+      "rationale": "Removing this fact lets an audit entry's kind diverge from its producing operation's kind \u2014 e.g., a PostTasks op producing a DeletedKind entry, which is impossible under an append-only invariant where the kind is fixed at insert time.",
+      "inject_violation": "fact MUTATE_AuditKindMismatch { some op: Operation, a: AuditEntry | op.writesAudit = a and op.kind = PostTasks and a.kind = DeletedKind }"
+    },
+    {
+      "fact_name": "F_AuditAttribution",
+      "asserts_violated": [
+        "AttributionCorrectness",
+        "FR_015_AuditPerEdit"
+      ],
+      "rationale": "Clearing this fact lets an audit entry's actor differ from the caller of the producing operation \u2014 misattribution. The injection forces such a mismatch, which AttributionCorrectness must detect.",
+      "inject_violation": "fact MUTATE_Misattribution { some op: Operation, a: AuditEntry | op.writesAudit = a and a.actor != op.caller }"
+    }
+  ]
+}

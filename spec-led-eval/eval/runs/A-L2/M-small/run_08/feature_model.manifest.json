@@ -1,0 +1,120 @@
+{
+  "feature_id": "A-L2",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "NoInformationLeakage",
+    "ConcurrencySafety"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_CustomerActions",
+    "FR_003_LoanOfficerActions",
+    "FR_004_ComplianceReviewerActions",
+    "FR_008_OneInFlightPerCustomer",
+    "FR_013_OnlyAssignedOfficerDecides",
+    "FR_016_DecidedApplicationsImmutable",
+    "FR_018_AuditAppendOnly",
+    "FR_020_CustomerDataExclusivity"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_CustomerActions",
+      "LeastPrivilege"
+    ],
+    "FR-003": [
+      "FR_003_LoanOfficerActions",
+      "LeastPrivilege"
+    ],
+    "FR-004": [
+      "FR_004_ComplianceReviewerActions",
+      "LeastPrivilege"
+    ],
+    "FR-008": [
+      "FR_008_OneInFlightPerCustomer"
+    ],
+    "FR-013": [
+      "FR_013_OnlyAssignedOfficerDecides"
+    ],
+    "FR-016": [
+      "FR_016_DecidedApplicationsImmutable"
+    ],
+    "FR-017": [
+      "AuditCompleteness",
+      "AttributionCorrectness"
+    ],
+    "FR-018": [
+      "AppendOnly",
+      "FR_018_AuditAppendOnly"
+    ],
+    "FR-019": [
+      "AuditCompleteness"
+    ],
+    "FR-020": [
+      "NoInformationLeakage",
+      "FR_020_CustomerDataExclusivity"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_002_CustomerActions",
+        "FR_003_LoanOfficerActions",
+        "FR_004_ComplianceReviewerActions"
+      ],
+      "rationale": "Removing this fact leaves PermMatrix.Allowed unconstrained, allowing any role-operation pairs. The LeastPrivilege and role-specific assertions will fail because denied operations become allowed.",
+      "inject_violation": "fact MUTATE_PermissionMatrixViolation { Customer -> ClaimApplication in PermMatrix.Allowed }"
+    },
+    {
+      "fact_name": "F_AuditCompleteness",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_018_AuditAppendOnly"
+      ],
+      "rationale": "Removing this fact allows applications to have missing or duplicate audit entries. The assertion will find instances where an application transitioned without a corresponding event.",
+      "inject_violation": "fact MUTATE_AuditCompletenessViolation { some app: LoanApplication | app.status = UnderReview and no e: ApplicationEvent | e.application = app and e.previous_status = Submitted and e.new_status = UnderReview }"
+    },
+    {
+      "fact_name": "F_OnlyAssignedOfficerDecides",
+      "asserts_violated": [
+        "FR_013_OnlyAssignedOfficerDecides"
+      ],
+      "rationale": "Removing this fact allows a non-assigned officer to decide an application. The assertion will find a counterexample where a decided application was decided by someone other than the assigned officer.",
+      "inject_violation": "fact MUTATE_FR_013_Violation { some app: LoanApplication, officer: User | app.status = Approved and officer != app.assigned_officer and officer.role = LoanOfficer and (some d: Decision | d.application = app and d.decided_by = officer) }"
+    },
+    {
+      "fact_name": "F_OneInFlightPerCustomer",
+      "asserts_violated": [
+        "FR_008_OneInFlightPerCustomer"
+      ],
+      "rationale": "Removing this fact allows a customer to have multiple concurrent in-flight applications. The assertion will find a customer with two applications both in Submitted or UnderReview status.",
+      "inject_violation": "fact MUTATE_FR_008_Violation { some disj app1, app2: LoanApplication, customer: User | customer.role = Customer and app1.customer = customer and app2.customer = customer and (app1.status = Submitted or app1.status = UnderReview) and (app2.status = Submitted or app2.status = UnderReview) }"
+    },
+    {
+      "fact_name": "F_ConcurrencySafety",
+      "asserts_violated": [
+        "ConcurrencySafety"
+      ],
+      "rationale": "Removing this fact allows an application in UnderReview (or beyond) to have no assigned officer or an assigned officer who is not a loan officer. The assertion will find a counterexample where concurrency race was not properly resolved.",
+      "inject_violation": "fact MUTATE_ConcurrencySafetyViolation { some app: LoanApplication | app.status = UnderReview and app.assigned_officer = none }"
+    },
+    {
+      "fact_name": "F_AttributionCorrectness",
+      "asserts_violated": [
+        "AttributionCorrectness"
+      ],
+      "rationale": "Removing this fact allows audit entries to be created by the wrong actor (e.g., a claim event not by a loan officer). The assertion will find instances where audit-entry attribution does not match the transition type.",
+      "inject_violation": "fact MUTATE_AttributionCorrectnessViolation { some e: ApplicationEvent, c: User | c.role = Customer and e.previous_status = Submitted and e.new_status = UnderReview and e.actor = c }"
+    }
+  ]
+}

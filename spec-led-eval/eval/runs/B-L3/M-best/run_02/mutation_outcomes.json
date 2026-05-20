@@ -1,0 +1,53 @@
+{
+  "F_OwnerNotSelfSharee": {
+    "targeted_asserts": {
+      "NoSelfMutation": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_SharedWithSameTeam": {
+    "targeted_asserts": {
+      "FR_012_NoCrossTeamSharing": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_NoCrossTeamAccess": {
+    "targeted_asserts": {
+      "FR_006_CrossTeamIsolation": "VACUOUS_OVERCONSTRAINT",
+      "NoInformationLeakage": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_AuditActorRoleSnapshot": {
+    "targeted_asserts": {
+      "AttributionCorrectness": "BIT",
+      "FR_002_RoleFromToken": "BIT",
+      "FR_016_AuditFields": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AuditOriginatesFromAction": {
+    "targeted_asserts": {
+      "AppendOnly": "BIT",
+      "FR_017_AuditImmutable": "BIT",
+      "FR_020_AuditRetention": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AccessMatrix": {
+    "targeted_asserts": {
+      "LeastPrivilege": "BIT",
+      "FR_005_AdminCantChangeShare": "BIT",
+      "FR_010_OnlyOwnerChangesShares": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AuditCompletenessFact": {
+    "targeted_asserts": {
+      "AuditCompleteness": "BIT",
+      "FR_015_AuditPerEvent": "BIT",
+      "ValidationBeforeMutation": "BIT"
+    },
+    "all_bit": true
+  }
+}

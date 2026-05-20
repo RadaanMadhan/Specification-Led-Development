@@ -1,0 +1,165 @@
+{
+  "feature_id": "A-L2",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_CustomerLimited",
+    "FR_003_LoanOfficerPermissions",
+    "FR_004_ComplianceReadOnly",
+    "FR_005_OnlyCustomersSubmit",
+    "FR_008_OneInFlight",
+    "FR_009_InitialSubmissionRecorded",
+    "FR_011_ClaimTransitionRecorded",
+    "FR_012_OneAssignedOfficer",
+    "FR_013_OnlyAssignedDecides",
+    "FR_014_DecisionHasReason",
+    "FR_015_DecisionAtomic",
+    "FR_016_ImmutableAfterDecision",
+    "FR_017_AuditPerStatusChange",
+    "FR_018_AuditAppendOnly",
+    "FR_019_ExactlyOneAuditPerChange",
+    "FR_020_CustomerOwnOnly",
+    "FR_021_OfficerIdentityHidden",
+    "FR_023_ComplianceNoWrite"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_CustomerLimited",
+      "LeastPrivilege"
+    ],
+    "FR-003": [
+      "FR_003_LoanOfficerPermissions",
+      "LeastPrivilege"
+    ],
+    "FR-004": [
+      "FR_004_ComplianceReadOnly",
+      "LeastPrivilege"
+    ],
+    "FR-005": [
+      "FR_005_OnlyCustomersSubmit"
+    ],
+    "FR-008": [
+      "FR_008_OneInFlight"
+    ],
+    "FR-009": [
+      "FR_009_InitialSubmissionRecorded"
+    ],
+    "FR-011": [
+      "FR_011_ClaimTransitionRecorded"
+    ],
+    "FR-012": [
+      "FR_012_OneAssignedOfficer"
+    ],
+    "FR-013": [
+      "FR_013_OnlyAssignedDecides"
+    ],
+    "FR-014": [
+      "FR_014_DecisionHasReason"
+    ],
+    "FR-015": [
+      "FR_015_DecisionAtomic"
+    ],
+    "FR-016": [
+      "FR_016_ImmutableAfterDecision"
+    ],
+    "FR-017": [
+      "FR_017_AuditPerStatusChange",
+      "AuditCompleteness",
+      "AttributionCorrectness"
+    ],
+    "FR-018": [
+      "FR_018_AuditAppendOnly",
+      "AppendOnly"
+    ],
+    "FR-019": [
+      "FR_019_ExactlyOneAuditPerChange"
+    ],
+    "FR-020": [
+      "FR_020_CustomerOwnOnly",
+      "OwnershipBasedAccess",
+      "NoInformationLeakage"
+    ],
+    "FR-021": [
+      "FR_021_OfficerIdentityHidden"
+    ],
+    "FR-023": [
+      "FR_023_ComplianceNoWrite",
+      "LeastPrivilege"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_OperationAuthorisation",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_002_CustomerLimited",
+        "FR_003_LoanOfficerPermissions",
+        "FR_004_ComplianceReadOnly",
+        "FR_005_OnlyCustomersSubmit",
+        "FR_023_ComplianceNoWrite"
+      ],
+      "rationale": "F_OperationAuthorisation is the sole fact that ties Operation.outcome=Success to the permission matrix. Clearing it allows successful operations outside the allow-set, which LeastPrivilege and every role-scope predicate must catch.",
+      "inject_violation": "fact MUTATE_LeastPrivilegeViolation { some op: Operation | op.outcome = Success and some op.caller and op.caller.role = Customer and op.kind = ClaimApplication }"
+    },
+    {
+      "fact_name": "F_AppendOnlyAuditEntries",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_018_AuditAppendOnly",
+        "FR_019_ExactlyOneAuditPerChange"
+      ],
+      "rationale": "Clearing this fact removes the structural ban on duplicate audit entries for the same (application, prevStatus, newStatus) transition. The injection forces two distinct entries to coexist, which the AppendOnly assertion must catch.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some disj ae1, ae2: AuditEntry | ae1.application = ae2.application and ae1.prevStatus = ae2.prevStatus and ae1.newStatus = ae2.newStatus }"
+    },
+    {
+      "fact_name": "F_AuditMatchesStatus",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_017_AuditPerStatusChange"
+      ],
+      "rationale": "F_AuditMatchesStatus is the sole fact linking each application's status to the existence of the corresponding audit entries. Clearing it lets an application reach Approved without any UnderReview\u2192Approved record, which AuditCompleteness must surface.",
+      "inject_violation": "fact MUTATE_AuditCompletenessViolation { some app: LoanApplication | app.status = Approved and (no ae: AuditEntry | ae.application = app and ae.prevStatus = UnderReview and ae.newStatus = Approved) }"
+    },
+    {
+      "fact_name": "F_OwnershipBasedCustomerAccess",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_020_CustomerOwnOnly"
+      ],
+      "rationale": "This fact restricts customer-GetApplication successes to applications the caller owns. Removing it allows a customer to successfully view someone else's application, which OwnershipBasedAccess must catch.",
+      "inject_violation": "fact MUTATE_OwnershipViolation { some op: Operation, c: User, app: LoanApplication | c.role = Customer and op.outcome = Success and op.kind = GetApplication and op.caller = c and op.target = app and app.customer != c }"
+    },
+    {
+      "fact_name": "F_NoInformationLeakage",
+      "asserts_violated": [
+        "NoInformationLeakage"
+      ],
+      "rationale": "Removes the rule that customers asking about a non-owned application receive NotFound (not PermissionDenied). The injection forces a leakage instance which NoInformationLeakage must catch.",
+      "inject_violation": "fact MUTATE_LeakageViolation { some op: Operation, c: User, app: LoanApplication | c.role = Customer and op.caller = c and op.kind = GetApplication and op.target = app and app.customer != c and op.outcome = PermissionDeniedOutcome }"
+    },
+    {
+      "fact_name": "F_AuditAttribution",
+      "asserts_violated": [
+        "AttributionCorrectness",
+        "FR_009_InitialSubmissionRecorded",
+        "FR_011_ClaimTransitionRecorded"
+      ],
+      "rationale": "F_AuditAttribution enforces actor\u2194transition correspondence. Clearing it lets an initial-submission audit entry record an actor other than the application's customer, which AttributionCorrectness must catch.",
+      "inject_violation": "fact MUTATE_AttributionViolation { some ae: AuditEntry, u: User | ae.actor = u and no ae.prevStatus and ae.newStatus = Submitted and u != ae.application.customer }"
+    }
+  ]
+}

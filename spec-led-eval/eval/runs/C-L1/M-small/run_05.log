@@ -1,0 +1,117 @@
+$ /Users/leonhausmann/opt/anaconda3/bin/python3 -m speceval.cli verify-design --no-cache --model M-small --java-bin /Users/leonhausmann/opt/anaconda3/lib/python3.9/site-packages/jdk4py/java-runtime/bin/java /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/eval/specs/C-L1
+
+[parse]   feature 'C-L1', 15 FRs, 2 user stories
+[lift]    calling LLM (anthropic: tier=M-small, model=claude-haiku-4-5)...
+[lift]    fresh lift (sha=bd803dd85990)
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/C-L1/feature_model.als
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/C-L1/cost_log.json
+[alloy]   running alloy.jar on feature_model.als...
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/C-L1/alloy_verdicts.json
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/C-L1/mutation_outcomes.json
+
+==============================================================================
+  Design Compliance Report  (Phase 3 — feature_model.als)
+  feature       : C-L1
+  spec source   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/eval/specs/C-L1
+  alloy model   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/C-L1/feature_model.als
+  patterns      : LeastPrivilege, PermissionCompleteness, AuthRequiredEverywhere, AuditCompleteness, AppendOnly, AttributionCorrectness, OwnershipBasedAccess, NoInformationLeakage
+  fr count      : 15 declared in spec.md
+  assertions    : 22 total (22/22 PASS via Alloy)
+==============================================================================
+
+  Compliance matrix
+  ----------------------------------------------------------------------------
+  Assertion                    Verdict   Anchor
+  -----------------------------------------------------------------
+  LeastPrivilege               PASS      PATTERN LeastPrivilege: contracts/http-api.md authorisation tables; spec.md FRs
+  PermissionCompleteness       PASS      PATTERN PermissionCompleteness: contracts/http-api.md permission tables
+  AuthRequiredEverywhere       PASS      PATTERN AuthRequiredEverywhere: spec.md FR-001
+  AuditCompleteness            PASS      PATTERN AuditCompleteness: spec.md FR-008
+  AppendOnly                   PASS      PATTERN AppendOnly: spec.md FR-010
+  AttributionCorrectness       PASS      PATTERN AttributionCorrectness: spec.md FR-009
+  OwnershipBasedAccess         PASS      PATTERN OwnershipBasedAccess: spec.md FR-006
+  NoInformationLeakage         PASS      PATTERN NoInformationLeakage: spec.md FR-007
+  FR_001_AuthRequired          PASS      FEATURE-SPECIFIC: FR-001
+  FR_002_RoleIdentity          PASS      FEATURE-SPECIFIC: FR-002
+  FR_004_NoPatientIdInURL      PASS      FEATURE-SPECIFIC: FR-004
+  FR_005_ReadOnly              PASS      FEATURE-SPECIFIC: FR-005
+  FR_006_CareTeamGating        PASS      FEATURE-SPECIFIC: FR-006
+  FR_007_ByteEquivalent        PASS      FEATURE-SPECIFIC: FR-007
+  FR_008_AlwaysAudit           PASS      FEATURE-SPECIFIC: FR-008
+  FR_009_AuditShape            PASS      FEATURE-SPECIFIC: FR-009
+  FR_010_AuditImmutable        PASS      FEATURE-SPECIFIC: FR-010
+  FR_011_AuditSearchGating     PASS      FEATURE-SPECIFIC: FR-011
+  FR_012_RetentionFloor        PASS      FEATURE-SPECIFIC: FR-012
+  FR_013_AuditSLA              PASS      FEATURE-SPECIFIC: FR-013
+  FR_014_AllergiesWarningsTop  PASS      FEATURE-SPECIFIC: FR-014
+  FR_015_PatientIdAndDoBTop    PASS      FEATURE-SPECIFIC: FR-015
+
+  FR coverage
+  ----------------------------------------------------------------------------
+  FR-001  →  FR_001_AuthRequired=PASS, AuthRequiredEverywhere=PASS
+  FR-002  →  FR_002_RoleIdentity=PASS
+  FR-003  [uncovered]
+  FR-004  →  FR_004_NoPatientIdInURL=PASS
+  FR-005  →  FR_005_ReadOnly=PASS
+  FR-006  →  FR_006_CareTeamGating=PASS, OwnershipBasedAccess=PASS
+  FR-007  →  FR_007_ByteEquivalent=PASS, NoInformationLeakage=PASS
+  FR-008  →  FR_008_AlwaysAudit=PASS, AuditCompleteness=PASS
+  FR-009  →  FR_009_AuditShape=PASS, AttributionCorrectness=PASS
+  FR-010  →  FR_010_AuditImmutable=PASS, AppendOnly=PASS
+  FR-011  →  FR_011_AuditSearchGating=PASS
+  FR-012  →  FR_012_RetentionFloor=PASS
+  FR-013  →  FR_013_AuditSLA=PASS
+  FR-014  →  FR_014_AllergiesWarningsTop=PASS
+  FR-015  →  FR_015_PatientIdAndDoBTop=PASS
+
+  WARNING: 1 FR(s) without any matching assertion: FR-003
+
+==============================================================================
+  Mutation tests  (assertion-strength validation)
+==============================================================================
+
+  Strategy: replace each named fact's body with `{}` (no constraint),
+  then re-run Alloy. Each listed assertion should now FAIL on the
+  mutated model. If it still PASSes, the assertion is vacuous and
+  must be strengthened.
+
+  - MUTATE F_PermissionMatrix  → runs/C-L1/mutated_F_PermissionMatrix.als
+    rationale: Removing the permission matrix definition allows Alloy to introduce unauthorized (role, operation) pairs, which the LeastPrivilege and PermissionCompleteness assertions should catch.
+    expected to FAIL: LeastPrivilege, PermissionCompleteness
+      - LeastPrivilege: PASS (vacuous?)
+      - PermissionCompleteness: PASS (vacuous?)
+
+  - MUTATE F_AuditCompleteness  → runs/C-L1/mutated_F_AuditCompleteness.als
+    rationale: Removing the constraint that every access request produces exactly one audit entry allows Alloy to create access requests without corresponding audit entries, which violates the audit-completeness invariant.
+    expected to FAIL: AuditCompleteness, FR_008_AlwaysAudit
+      - AuditCompleteness: PASS (vacuous?)
+      - FR_008_AlwaysAudit: PASS (vacuous?)
+
+  - MUTATE F_AppendOnly  → runs/C-L1/mutated_F_AppendOnly.als
+    rationale: Removing the constraint that audit entry IDs are unique allows Alloy to create two audit entries with the same id, which violates the immutability invariant.
+    expected to FAIL: AppendOnly, FR_010_AuditImmutable
+      - AppendOnly: FAIL (expected)
+      - FR_010_AuditImmutable: FAIL (expected)
+
+  - MUTATE F_OwnershipBasedAccess  → runs/C-L1/mutated_F_OwnershipBasedAccess.als
+    rationale: Removing the care-team-membership gating constraint allows Alloy to grant permitted access to a clinician who is not on the patient's care team, violating the ownership-based access control invariant.
+    expected to FAIL: OwnershipBasedAccess, FR_006_CareTeamGating
+      - OwnershipBasedAccess: PASS (vacuous?)
+      - FR_006_CareTeamGating: PASS (vacuous?)
+
+  - MUTATE F_NoInformationLeakage  → runs/C-L1/mutated_F_NoInformationLeakage.als
+    rationale: Removing the constraint that denied and not-found outcomes are byte-identical allows Alloy to distinguish between these outcomes, leaking information about patient existence.
+    expected to FAIL: NoInformationLeakage, FR_007_ByteEquivalent
+      - NoInformationLeakage: PASS (vacuous?)
+      - FR_007_ByteEquivalent: PASS (vacuous?)
+
+  Mutation summary
+  ----------------------------------------------------------------------------
+  - F_PermissionMatrix: ASSERTION VACUOUS (LeastPrivilege, PermissionCompleteness)
+  - F_AuditCompleteness: ASSERTION VACUOUS (AuditCompleteness, FR_008_AlwaysAudit)
+  - F_AppendOnly: ASSERTIONS BIT (AppendOnly, FR_010_AuditImmutable)
+  - F_OwnershipBasedAccess: ASSERTION VACUOUS (OwnershipBasedAccess, FR_006_CareTeamGating)
+  - F_NoInformationLeakage: ASSERTION VACUOUS (NoInformationLeakage, FR_007_ByteEquivalent)
+
+
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/C-L1/report.txt

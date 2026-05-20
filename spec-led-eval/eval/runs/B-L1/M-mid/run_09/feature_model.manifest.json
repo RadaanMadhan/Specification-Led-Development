@@ -1,0 +1,121 @@
+{
+  "feature_id": "006-task-management",
+  "patterns_applied": [
+    "AuthRequiredEverywhere",
+    "AppendOnly",
+    "AuditCompleteness",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "ValidationBeforeMutation"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_003_SingleWorkspaceFlatPermissions",
+    "FR_008_AssigneeIsMember",
+    "FR_009_CreatorRecordedImmutably",
+    "FR_010_ValidStatus",
+    "FR_011_ClosedTaskRule",
+    "FR_012_PermanentDeletion",
+    "FR_014_UniversalTaskVisibility",
+    "FR_017_CreatorNeverOverwritten",
+    "FR_018_DeletionLogCorrectness"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-003": [
+      "FR_003_SingleWorkspaceFlatPermissions"
+    ],
+    "FR-004": [
+      "FR_003_SingleWorkspaceFlatPermissions"
+    ],
+    "FR-008": [
+      "FR_008_AssigneeIsMember",
+      "ValidationBeforeMutation"
+    ],
+    "FR-009": [
+      "FR_009_CreatorRecordedImmutably",
+      "OwnershipExclusivity"
+    ],
+    "FR-010": [
+      "FR_010_ValidStatus"
+    ],
+    "FR-011": [
+      "FR_011_ClosedTaskRule"
+    ],
+    "FR-012": [
+      "FR_012_PermanentDeletion"
+    ],
+    "FR-014": [
+      "FR_014_UniversalTaskVisibility"
+    ],
+    "FR-017": [
+      "FR_017_CreatorNeverOverwritten"
+    ],
+    "FR-018": [
+      "FR_018_DeletionLogCorrectness",
+      "AppendOnly",
+      "AuditCompleteness",
+      "AttributionCorrectness"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_AllCallsAuthenticated",
+      "asserts_violated": [
+        "AuthRequiredEverywhere",
+        "FR_001_AuthRequired"
+      ],
+      "rationale": "Clearing this fact allows ApiCall atoms with no ac_caller (unauthenticated calls). The AuthRequiredEverywhere and FR_001_AuthRequired predicates both assert `all c: ApiCall | one c.ac_caller`, so Alloy will find a counterexample where an ApiCall atom has zero callers.",
+      "inject_violation": "fact MUTATE_UnauthenticatedCall { some c: ApiCall | no c.ac_caller }"
+    },
+    {
+      "fact_name": "F_AppendOnlyDeletionLog",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_012_PermanentDeletion",
+        "FR_018_DeletionLogCorrectness"
+      ],
+      "rationale": "Clearing this fact removes the uniqueness constraint on td_task_ref across TaskDeletion atoms. The injection forces two distinct TaskDeletion entries with the same td_task_ref, which is exactly what AppendOnly, FR_012_PermanentDeletion, and FR_018_DeletionLogCorrectness assert cannot happen.",
+      "inject_violation": "fact MUTATE_DuplicateDeletionEntry { some disj td1, td2: TaskDeletion | td1.td_task_ref = td2.td_task_ref }"
+    },
+    {
+      "fact_name": "F_ClosedTaskRule",
+      "asserts_violated": [
+        "FR_011_ClosedTaskRule"
+      ],
+      "rationale": "Clearing this fact removes the constraint that editing a Done task requires reopening it. The injection forces an EditRequest targeting a Done task without a reopening status, which is exactly the violation FR_011_ClosedTaskRule checks for.",
+      "inject_violation": "fact MUTATE_ClosedTaskViolation { some er: EditRequest | er.er_target.t_status = Done and er.er_new_status = Done }"
+    },
+    {
+      "fact_name": "F_AuditCompletenessOnDeletion",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_018_DeletionLogCorrectness"
+      ],
+      "rationale": "Clearing this fact allows the same task to appear in multiple TaskDeletion entries (or none). The injection forces exactly two deletion log entries for the same task, violating the lone-entry requirement that AuditCompleteness asserts.",
+      "inject_violation": "fact MUTATE_DuplicateAuditEntry { some disj td1, td2: TaskDeletion | td1.td_task_ref = td2.td_task_ref }"
+    },
+    {
+      "fact_name": "F_CreatorExactlyOne",
+      "asserts_violated": [
+        "OwnershipExclusivity",
+        "FR_009_CreatorRecordedImmutably",
+        "FR_017_CreatorNeverOverwritten"
+      ],
+      "rationale": "Clearing this fact allows Task atoms with no creator. The injection forces a Task with no t_creator, violating OwnershipExclusivity's assertion that every task has exactly one creator.",
+      "inject_violation": "fact MUTATE_OrphanTask { some t: Task | no t.t_creator }"
+    },
+    {
+      "fact_name": "F_AssigneeIsMember",
+      "asserts_violated": [
+        "FR_008_AssigneeIsMember",
+        "ValidationBeforeMutation"
+      ],
+      "rationale": "Clearing this fact allows a Task to have an assignee that is not a Member. The injection forces a Task to have a non-null assignee field that does not resolve to any Member, which FR_008_AssigneeIsMember directly checks.",
+      "inject_violation": "fact MUTATE_NonMemberAssignee { some t: Task | some m: Member | t.t_assignee != m and some t.t_assignee }"
+    }
+  ]
+}

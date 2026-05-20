@@ -1,0 +1,154 @@
+$ /Users/leonhausmann/opt/anaconda3/bin/python3 -m speceval.cli verify-design --no-cache --model M-best --java-bin /Users/leonhausmann/opt/anaconda3/lib/python3.9/site-packages/jdk4py/java-runtime/bin/java /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/eval/specs/A-L3
+
+[parse]   feature 'A-L3', 24 FRs, 5 user stories
+[lift]    calling LLM (anthropic: tier=M-best, model=claude-opus-4-7)...
+[lift]    fresh lift (sha=928b500107ea)
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/A-L3/feature_model.als
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/A-L3/cost_log.json
+[alloy]   running alloy.jar on feature_model.als...
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/A-L3/alloy_verdicts.json
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/A-L3/mutation_outcomes.json
+
+==============================================================================
+  Design Compliance Report  (Phase 3 — feature_model.als)
+  feature       : A-L3
+  spec source   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/eval/specs/A-L3
+  alloy model   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/A-L3/feature_model.als
+  patterns      : LeastPrivilege, PermissionCompleteness, PermissionGrounding, AuthRequiredEverywhere, AuditCompleteness, AppendOnly, AttributionCorrectness, OwnershipExclusivity, OwnershipBasedAccess, NoInformationLeakage, NoSelfMutation, ValidationBeforeMutation
+  fr count      : 24 declared in spec.md
+  assertions    : 36 total (35/36 PASS via Alloy)
+==============================================================================
+
+  Compliance matrix
+  ----------------------------------------------------------------------------
+  Assertion                       Verdict   Anchor
+  --------------------------------------------------------------------
+  LeastPrivilege                  PASS      PATTERN LeastPrivilege: contracts/http-api.md permission matrix; spec.md FR-003/FR-004/FR-005
+  PermissionCompleteness          PASS      PATTERN PermissionCompleteness: contracts/http-api.md permission matrix
+  PermissionGrounding             PASS      PATTERN PermissionGrounding: spec.md FR-003/004/005/012/023
+  AuthRequiredEverywhere          PASS      PATTERN AuthRequiredEverywhere: spec.md FR-001, SC-010
+  AuditCompleteness               PASS      PATTERN AuditCompleteness: spec.md FR-016, FR-017
+  AppendOnly                      PASS      PATTERN AppendOnly: spec.md FR-018, FR-019; data-model.md "no UPDATE/DELETE on audit_entries"
+  AttributionCorrectness          PASS      PATTERN AttributionCorrectness: spec.md FR-016; data-model.md audit-entry fields
+  OwnershipExclusivity            PASS      PATTERN OwnershipExclusivity: data-model.md applicant_id NOT NULL; spec.md FR-006
+  OwnershipBasedAccess            PASS      PATTERN OwnershipBasedAccess: spec.md FR-012/FR-013
+  NoInformationLeakage            PASS      PATTERN NoInformationLeakage: spec.md FR-020/FR-021/FR-022/FR-023
+  NoSelfMutation                  PASS      PATTERN NoSelfMutation: spec.md FR-011, FR-013
+  ValidationBeforeMutation        PASS      PATTERN ValidationBeforeMutation: spec.md FR-007/008/014/017
+  FR_001_AuthRequired             PASS      FEATURE-SPECIFIC: FR-001
+  FR_002_RoleMultiplicity         PASS      FEATURE-SPECIFIC: FR-002
+  FR_003_ApplicantScope           PASS      FEATURE-SPECIFIC: FR-003
+  FR_004_OfficerScope             PASS      FEATURE-SPECIFIC: FR-004
+  FR_005_AuditorScope             PASS      FEATURE-SPECIFIC: FR-005
+  FR_006_IdentityFromCaller       PASS      FEATURE-SPECIFIC: FR-006
+  FR_007_ValidStatusSet           PASS      FEATURE-SPECIFIC: FR-007 (status set; amount/purpose ranges abstracted as the legal status enumeration)
+  FR_008_OneInFlightPerApplicant  PASS      FEATURE-SPECIFIC: FR-008
+  FR_009_AllowedTransitions       PASS      FEATURE-SPECIFIC: FR-009
+  FR_010_AssignedIsOfficer        PASS      FEATURE-SPECIFIC: FR-010
+  FR_011_NoSelfAssignment         PASS      FEATURE-SPECIFIC: FR-011
+  FR_012_AssignedOfficerOnly      PASS      FEATURE-SPECIFIC: FR-012
+  FR_013_NoSelfDecision           PASS      FEATURE-SPECIFIC: FR-013
+  FR_014_TransitionIsRealChange   PASS      FEATURE-SPECIFIC: FR-014 (transition audit has non-trivial prev->new pair)
+  FR_015_NoChangeAfterTerminal    FAIL      FEATURE-SPECIFIC: FR-015
+  FR_016_AuditFields              PASS      FEATURE-SPECIFIC: FR-016
+  FR_017_AuditAtomic              PASS      FEATURE-SPECIFIC: FR-017
+  FR_018_AppendOnly               PASS      FEATURE-SPECIFIC: FR-018
+  FR_019_AuditRetained            PASS      FEATURE-SPECIFIC: FR-019 (retention: every successful state change retains an audit entry)
+  FR_020_ByteEquivalentNotFound   PASS      FEATURE-SPECIFIC: FR-020
+  FR_021_OwnerVsNonexistent       PASS      FEATURE-SPECIFIC: FR-021
+  FR_022_NoLeakInPost             PASS      FEATURE-SPECIFIC: FR-022
+  FR_023_AuditAuditorOnly         PASS      FEATURE-SPECIFIC: FR-023
+  FR_024_ApplicantCannotPatch     PASS      FEATURE-SPECIFIC: FR-024
+
+  Counterexamples (Alloy SAT)
+  ----------------------------------------------------------------------------
+  FR_015_NoChangeAfterTerminal  [FEATURE-SPECIFIC: FR-015]
+    Alloy: 26. check FR_015_NoChangeAfterTerminal     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR coverage
+  ----------------------------------------------------------------------------
+  FR-001  →  FR_001_AuthRequired=PASS, AuthRequiredEverywhere=PASS
+  FR-002  →  FR_002_RoleMultiplicity=PASS
+  FR-003  →  FR_003_ApplicantScope=PASS, LeastPrivilege=PASS, PermissionGrounding=PASS
+  FR-004  →  FR_004_OfficerScope=PASS, LeastPrivilege=PASS, PermissionGrounding=PASS
+  FR-005  →  FR_005_AuditorScope=PASS, LeastPrivilege=PASS, PermissionGrounding=PASS
+  FR-006  →  FR_006_IdentityFromCaller=PASS, AttributionCorrectness=PASS
+  FR-007  →  FR_007_ValidStatusSet=PASS
+  FR-008  →  FR_008_OneInFlightPerApplicant=PASS
+  FR-009  →  FR_009_AllowedTransitions=PASS
+  FR-010  →  FR_010_AssignedIsOfficer=PASS
+  FR-011  →  FR_011_NoSelfAssignment=PASS, NoSelfMutation=PASS
+  FR-012  →  FR_012_AssignedOfficerOnly=PASS, OwnershipBasedAccess=PASS
+  FR-013  →  FR_013_NoSelfDecision=PASS, NoSelfMutation=PASS, OwnershipBasedAccess=PASS
+  FR-014  →  FR_014_TransitionIsRealChange=PASS
+  FR-015  →  FR_015_NoChangeAfterTerminal=FAIL
+  FR-016  →  FR_016_AuditFields=PASS, AuditCompleteness=PASS, AttributionCorrectness=PASS
+  FR-017  →  FR_017_AuditAtomic=PASS, AuditCompleteness=PASS, ValidationBeforeMutation=PASS
+  FR-018  →  FR_018_AppendOnly=PASS, AppendOnly=PASS
+  FR-019  →  FR_019_AuditRetained=PASS, AppendOnly=PASS
+  FR-020  →  FR_020_ByteEquivalentNotFound=PASS, NoInformationLeakage=PASS
+  FR-021  →  FR_021_OwnerVsNonexistent=PASS, NoInformationLeakage=PASS
+  FR-022  →  FR_022_NoLeakInPost=PASS
+  FR-023  →  FR_023_AuditAuditorOnly=PASS, NoInformationLeakage=PASS
+  FR-024  →  FR_024_ApplicantCannotPatch=PASS
+
+  All FRs have at least one matching assertion.
+
+==============================================================================
+  Mutation tests  (assertion-strength validation)
+==============================================================================
+
+  Strategy: replace each named fact's body with `{}` (no constraint),
+  then re-run Alloy. Each listed assertion should now FAIL on the
+  mutated model. If it still PASSes, the assertion is vacuous and
+  must be strengthened.
+
+  - MUTATE F_LeastPrivilege  → runs/A-L3/mutated_F_LeastPrivilege.als
+    rationale: Clearing F_LeastPrivilege removes the constraint that a successful operation's caller must hold a role with permission for the endpoint. The injection forces a successful GetAudit by a caller with only the Applicant role, which the LeastPrivilege assertion is designed to forbid.
+    expected to FAIL: LeastPrivilege
+      - LeastPrivilege: FAIL (expected)
+
+  - MUTATE F_AppendOnlyAuditEntries  → runs/A-L3/mutated_F_AppendOnlyAuditEntries.als
+    rationale: Clearing F_AppendOnlyAuditEntries removes the uniqueness-per-transition constraint. The injection introduces two distinct AuditEntries describing the same (app, prev, new) slot — exactly the duplication that append-only forbids.
+    expected to FAIL: AppendOnly, FR_018_AppendOnly
+      - AppendOnly: FAIL (expected)
+      - FR_018_AppendOnly: FAIL (expected)
+
+  - MUTATE F_NoSelfAssignment  → runs/A-L3/mutated_F_NoSelfAssignment.als
+    rationale: Clearing F_NoSelfAssignment lets a LoanApplication be assigned to its own applicant — the precise FR-011 violation NoSelfMutation must catch.
+    expected to FAIL: NoSelfMutation, FR_011_NoSelfAssignment
+      - NoSelfMutation: FAIL (expected)
+      - FR_011_NoSelfAssignment: FAIL (expected)
+
+  - MUTATE F_AuditCompletenessOnSuccess  → runs/A-L3/mutated_F_AuditCompletenessOnSuccess.als
+    rationale: Clearing F_AuditCompletenessOnSuccess decouples successful state-changing operations from their audit entries. The injection produces a successful PATCH with no audit entry, which violates the audit-completeness invariant.
+    expected to FAIL: AuditCompleteness, FR_017_AuditAtomic, FR_019_AuditRetained
+      - AuditCompleteness: PASS (vacuous?)
+      - FR_017_AuditAtomic: PASS (vacuous?)
+      - FR_019_AuditRetained: PASS (vacuous?)
+
+  - MUTATE F_ByteEquivalentNotFound  → runs/A-L3/mutated_F_ByteEquivalentNotFound.als
+    rationale: Clearing F_ByteEquivalentNotFound removes the constraint that denied/not-found reads collapse to NotFoundBody. The injection forces a denied GetApplicationById response that is not byte-equivalent to the canonical not-found shape, leaking existence information.
+    expected to FAIL: NoInformationLeakage, FR_020_ByteEquivalentNotFound, FR_021_OwnerVsNonexistent
+      - NoInformationLeakage: FAIL (expected)
+      - FR_020_ByteEquivalentNotFound: FAIL (expected)
+      - FR_021_OwnerVsNonexistent: FAIL (expected)
+
+  - MUTATE F_PatchOnlyAssignedOfficer  → runs/A-L3/mutated_F_PatchOnlyAssignedOfficer.als
+    rationale: Clearing F_PatchOnlyAssignedOfficer removes the requirement that the PATCH caller equal the application's assigned officer. The injection forces a successful PATCH by a non-assigned officer — exactly what FR-012 forbids.
+    expected to FAIL: OwnershipBasedAccess, FR_012_AssignedOfficerOnly
+      - OwnershipBasedAccess: FAIL (expected)
+      - FR_012_AssignedOfficerOnly: FAIL (expected)
+
+  Mutation summary
+  ----------------------------------------------------------------------------
+  - F_LeastPrivilege: ASSERTIONS BIT (LeastPrivilege)
+  - F_AppendOnlyAuditEntries: ASSERTIONS BIT (AppendOnly, FR_018_AppendOnly)
+  - F_NoSelfAssignment: ASSERTIONS BIT (NoSelfMutation, FR_011_NoSelfAssignment)
+  - F_AuditCompletenessOnSuccess: ASSERTION VACUOUS (AuditCompleteness, FR_017_AuditAtomic, FR_019_AuditRetained)
+  - F_ByteEquivalentNotFound: ASSERTIONS BIT (NoInformationLeakage, FR_020_ByteEquivalentNotFound, FR_021_OwnerVsNonexistent)
+  - F_PatchOnlyAssignedOfficer: ASSERTIONS BIT (OwnershipBasedAccess, FR_012_AssignedOfficerOnly)
+
+
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/A-L3/report.txt

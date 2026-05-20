@@ -1,0 +1,38 @@
+{
+  "F_CareTeamGating": {
+    "targeted_asserts": {
+      "OwnershipBasedAccess": "BIT",
+      "FR_004_CareTeamGating": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AuditCompleteness": {
+    "targeted_asserts": {
+      "AuditCompleteness": "BIT",
+      "FR_012_AlwaysOnAudit": "BIT",
+      "FR_015_NoPermitWithoutAudit": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AuditAttribution": {
+    "targeted_asserts": {
+      "AttributionCorrectness": "BIT",
+      "FR_013_AuditShape": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AdminOnlyAudit": {
+    "targeted_asserts": {
+      "LeastPrivilege": "BIT",
+      "FR_017_AdminOnlyAuditEndpoint": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_ByteEquivalentDenial": {
+    "targeted_asserts": {
+      "NoInformationLeakage": "BIT",
+      "FR_006_ByteEquivalentDenial": "BIT"
+    },
+    "all_bit": true
+  }
+}

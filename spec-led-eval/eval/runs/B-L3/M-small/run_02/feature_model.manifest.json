@@ -1,0 +1,115 @@
+{
+  "feature_id": "B-L3",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess"
+  ],
+  "feature_specific_predicates": [
+    "FR_003_MemberCanCreateOwn",
+    "FR_004_MemberIsolation",
+    "FR_005_AdminCanEditAnyInTeam",
+    "FR_006_NoCrossTeamAccess",
+    "FR_010_OwnerOnlySharedWith",
+    "FR_012_NoUnsupported",
+    "FR_014_ByteEquivalent404",
+    "FR_015_PerEventAudit",
+    "FR_017_AuditImmutable",
+    "FR_019_AuditReadableByAuthorized"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "LeastPrivilege"
+    ],
+    "FR-003": [
+      "FR_003_MemberCanCreateOwn",
+      "OwnershipBasedAccess"
+    ],
+    "FR-004": [
+      "FR_004_MemberIsolation"
+    ],
+    "FR-005": [
+      "FR_005_AdminCanEditAnyInTeam"
+    ],
+    "FR-006": [
+      "FR_006_NoCrossTeamAccess"
+    ],
+    "FR-010": [
+      "FR_010_OwnerOnlySharedWith"
+    ],
+    "FR-012": [
+      "FR_012_NoUnsupported"
+    ],
+    "FR-014": [
+      "FR_014_ByteEquivalent404"
+    ],
+    "FR-015": [
+      "FR_015_PerEventAudit",
+      "AuditCompleteness"
+    ],
+    "FR-016": [
+      "AttributionCorrectness"
+    ],
+    "FR-017": [
+      "FR_017_AuditImmutable",
+      "AppendOnly"
+    ],
+    "FR-019": [
+      "FR_019_AuditReadableByAuthorized"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege"
+      ],
+      "rationale": "Clearing this fact removes the constraint that defines allowed (role, op) pairs. The LeastPrivilege assertion checks that allowed pairs respect the closed-world list; without the fact, Alloy can construct instances with arbitrary role-operation pairs.",
+      "inject_violation": "fact MUTATE_ExtraPermission { Member -> OpDelete in PermMatrix.allowed }"
+    },
+    {
+      "fact_name": "F_AppendOnlyAuditEntries",
+      "asserts_violated": [
+        "AppendOnly"
+      ],
+      "rationale": "This fact enforces that audit entries are logically persistent (no DELETE/UPDATE paths). Removing it allows the model to construct deleted or mutated audit entries; the AppendOnly predicate should fail.",
+      "inject_violation": "fact MUTATE_AuditDeletion { some ae: AuditEntry | ae not in AuditEntry }"
+    },
+    {
+      "fact_name": "F_AttributionCorrectness",
+      "asserts_violated": [
+        "AttributionCorrectness"
+      ],
+      "rationale": "This fact enforces that every audit entry's actor_role matches the actor's real role. Removing it allows mismatched roles; AttributionCorrectness should find a counterexample.",
+      "inject_violation": "fact MUTATE_RoleMismatch { some ae: AuditEntry | ae.actor_role != ae.actor.role }"
+    },
+    {
+      "fact_name": "F_NoCrossTeamAccess",
+      "asserts_violated": [
+        "FR_006_NoCrossTeamAccess"
+      ],
+      "rationale": "This fact strictly isolates cross-team users from tasks in other teams. Removing it allows a user in team A to be a sharee on a task in team B; FR_006 should fail.",
+      "inject_violation": "fact MUTATE_CrossTeamShare { some u: User, t: Task, ts: TaskShare | ts.task = t and ts.sharee = u and u.team != t.team }"
+    },
+    {
+      "fact_name": "F_OwnerOnlySharedWith",
+      "asserts_violated": [
+        "FR_010_OwnerOnlySharedWith"
+      ],
+      "rationale": "This fact prevents the task owner from being listed as a sharee (redundant). Removing it allows self-shares; FR_010 should detect the violation.",
+      "inject_violation": "fact MUTATE_SelfShare { some ts: TaskShare | ts.sharee = ts.task.owner }"
+    },
+    {
+      "fact_name": "F_OwnershipBasedAccessControl",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_004_MemberIsolation"
+      ],
+      "rationale": "This fact ties all access to team membership and either ownership, sharing, or admin status. Removing it allows arbitrary cross-team access or access by unrelated users; both assertions should find violations.",
+      "inject_violation": "fact MUTATE_UnrelatedAccess { some u: User, t: Task | u.team = t.team and u != t.owner and u.role = Member and not (some ts: TaskShare | ts.task = t and ts.sharee = u) }"
+    }
+  ]
+}

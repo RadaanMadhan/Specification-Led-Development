@@ -1,0 +1,163 @@
+{
+  "feature_id": "004-loan-application-rbac",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "AuthRequiredEverywhere",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_CustomerScope",
+    "FR_003_OfficerScope",
+    "FR_004_ComplianceReadOnly",
+    "FR_005_CustomerIdFromAuth",
+    "FR_008_OneInFlight",
+    "FR_009_InitialSubmitted",
+    "FR_011_ClaimTransition",
+    "FR_012_OneClaimWins",
+    "FR_013_OnlyAssignedDecides",
+    "FR_014_NonEmptyReason",
+    "FR_015_DecisionAtomicity",
+    "FR_016_ImmutabilityAfterDecided",
+    "FR_017_AuditPerStatusChange",
+    "FR_018_AppendOnly",
+    "FR_019_ExactlyOnePerChange",
+    "FR_020_CustomerOwnOnly",
+    "FR_021_OfficerHidden",
+    "FR_023_ComplianceNoWrites"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_CustomerScope",
+      "LeastPrivilege"
+    ],
+    "FR-003": [
+      "FR_003_OfficerScope",
+      "LeastPrivilege"
+    ],
+    "FR-004": [
+      "FR_004_ComplianceReadOnly",
+      "LeastPrivilege"
+    ],
+    "FR-005": [
+      "FR_005_CustomerIdFromAuth"
+    ],
+    "FR-008": [
+      "FR_008_OneInFlight"
+    ],
+    "FR-009": [
+      "FR_009_InitialSubmitted"
+    ],
+    "FR-011": [
+      "FR_011_ClaimTransition"
+    ],
+    "FR-012": [
+      "FR_012_OneClaimWins"
+    ],
+    "FR-013": [
+      "FR_013_OnlyAssignedDecides",
+      "FR_003_OfficerScope"
+    ],
+    "FR-014": [
+      "FR_014_NonEmptyReason"
+    ],
+    "FR-015": [
+      "FR_015_DecisionAtomicity"
+    ],
+    "FR-016": [
+      "FR_016_ImmutabilityAfterDecided"
+    ],
+    "FR-017": [
+      "FR_017_AuditPerStatusChange",
+      "AuditCompleteness",
+      "AttributionCorrectness"
+    ],
+    "FR-018": [
+      "FR_018_AppendOnly",
+      "AppendOnly"
+    ],
+    "FR-019": [
+      "FR_019_ExactlyOnePerChange"
+    ],
+    "FR-020": [
+      "FR_020_CustomerOwnOnly",
+      "OwnershipBasedAccess",
+      "NoInformationLeakage"
+    ],
+    "FR-021": [
+      "FR_021_OfficerHidden"
+    ],
+    "FR-023": [
+      "FR_023_ComplianceNoWrites",
+      "FR_004_ComplianceReadOnly"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_LeastPrivilege",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_002_CustomerScope",
+        "FR_004_ComplianceReadOnly",
+        "FR_023_ComplianceNoWrites"
+      ],
+      "rationale": "removing this fact lets the model invent an Operation whose (role, kind) is not in the matrix yet outcome=Allowed \u2014 a direct LeastPrivilege violation.",
+      "inject_violation": "fact MUTATE_LeastPrivilegeViolation { some op: Operation | op.outcome = Allowed and op.caller.role = Customer and op.kind = PostClaim }"
+    },
+    {
+      "fact_name": "F_AuthRequired",
+      "asserts_violated": [
+        "AuthRequiredEverywhere",
+        "FR_001_AuthRequired"
+      ],
+      "rationale": "removing this fact lets an unauthenticated Operation be Allowed, which is exactly what the FR-001 auth-required invariant forbids.",
+      "inject_violation": "fact MUTATE_AuthRequiredViolation { some op: Operation | op.authenticated = False and op.outcome = Allowed }"
+    },
+    {
+      "fact_name": "F_EventTransitionUniqueness",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_018_AppendOnly",
+        "FR_019_ExactlyOnePerChange",
+        "FR_012_OneClaimWins"
+      ],
+      "rationale": "removing this fact permits two distinct ApplicationEvents on the same application with identical (prev, new) \u2014 the duplicate-audit-entry violation the append-only / one-event-per-change invariants exist to rule out.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some a: LoanApplication | some disj e1, e2: a.events | e1.prevStatus = Submitted and e2.prevStatus = Submitted and e1.newStatus = UnderReview and e2.newStatus = UnderReview }"
+    },
+    {
+      "fact_name": "F_DecisionByAssignedOfficer",
+      "asserts_violated": [
+        "FR_013_OnlyAssignedDecides"
+      ],
+      "rationale": "removing this fact lets a Decision exist whose decidedBy is some other user, not the application's assigned officer \u2014 exactly the FR-013 violation (an unassigned officer somehow recording the decision).",
+      "inject_violation": "fact MUTATE_OnlyAssignedDecidesViolation { some d: Decision | d.decidedBy != d.app.assignedOfficer }"
+    },
+    {
+      "fact_name": "F_OfficerIdentityHiddenFromCustomer",
+      "asserts_violated": [
+        "FR_021_OfficerHidden"
+      ],
+      "rationale": "removing this fact lets a customer-role Operation expose an officer identity via revealsOfficer \u2014 the FR-021 information-leak the scrub_for_role layer is supposed to prevent.",
+      "inject_violation": "fact MUTATE_OfficerHiddenViolation { some op: Operation | op.caller.role = Customer and some op.revealsOfficer }"
+    },
+    {
+      "fact_name": "F_CustomerOwnsAppOnRead",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "NoInformationLeakage",
+        "FR_020_CustomerOwnOnly"
+      ],
+      "rationale": "removing this fact lets a customer GetApplicationById succeed on an application owned by a different customer \u2014 the cross-tenant read FR-020 prohibits, also breaking the no-leakage invariant (the existence of another customer's application becomes observable).",
+      "inject_violation": "fact MUTATE_CustomerOwnershipViolation { some op: Operation | op.outcome = Allowed and op.caller.role = Customer and op.kind = GetApplicationById and some op.target and op.target.customer != op.caller }"
+    }
+  ]
+}

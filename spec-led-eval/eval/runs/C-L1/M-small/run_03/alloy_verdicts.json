@@ -1,0 +1,20 @@
+{
+  "AuthRequiredEverywhere": "PASS",
+  "AuditCompleteness": "PASS",
+  "AppendOnly": "PASS",
+  "AttributionCorrectness": "PASS",
+  "OwnershipBasedAccess": "PASS",
+  "NoInformationLeakage": "PASS",
+  "FR_001_AuthRequired": "PASS",
+  "FR_002_ClinicianRoleResolution": "PASS",
+  "FR_005_ReadOnlyScope": "PASS",
+  "FR_006_CareTeamAuthorizationEnforced": "PASS",
+  "FR_007_ByteEquivalentResponses": "PASS",
+  "FR_008_AlwaysOnAudit": "PASS",
+  "FR_009_AuditEntryShape": "PASS",
+  "FR_010_AuditImmutability": "PASS",
+  "FR_011_AuditEndpointIGOnly": "FAIL",
+  "FR_012_RetentionFloor": "PASS",
+  "FR_013_AuditWriteSLA": "PASS",
+  "FR_014_FR_015_ClinicalSafetyFieldOrdering": "PASS"
+}

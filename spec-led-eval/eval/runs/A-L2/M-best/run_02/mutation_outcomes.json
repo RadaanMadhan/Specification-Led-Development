@@ -1,0 +1,51 @@
+{
+  "F_LeastPrivilegeOperations": {
+    "targeted_asserts": {
+      "LeastPrivilege": "BIT",
+      "FR_001_AuthRequired": "BIT",
+      "FR_002_CustomerScope": "BIT",
+      "FR_003_OfficerScope": "BIT",
+      "FR_004_ComplianceReadOnly": "BIT",
+      "FR_023_ComplianceNoWrite": "BIT",
+      "AuthRequiredEverywhere": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AuditAppendOnlyNoDup": {
+    "targeted_asserts": {
+      "AppendOnly": "VACUOUS_OVERCONSTRAINT",
+      "FR_018_AppendOnly": "VACUOUS_OVERCONSTRAINT",
+      "FR_019_OnePerTransition": "VACUOUS_OVERCONSTRAINT",
+      "AuditCompleteness": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_AuditCompleteness": {
+    "targeted_asserts": {
+      "AuditCompleteness": "BIT",
+      "FR_017_AuditMandatory": "BIT",
+      "FR_019_OnePerTransition": "BIT",
+      "FR_009_SubmissionAudited": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_OwnershipBasedAccess": {
+    "targeted_asserts": {
+      "OwnershipBasedAccess": "BIT",
+      "FR_020_CustomerOwnOnly": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_DecisionPostConditions": {
+    "targeted_asserts": {
+      "FR_013_AssignedOfficerDecides": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_OneInFlightPerCustomer": {
+    "targeted_asserts": {
+      "FR_008_OneInFlight": "BIT"
+    },
+    "all_bit": true
+  }
+}

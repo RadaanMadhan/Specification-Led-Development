@@ -1,0 +1,147 @@
+{
+  "feature_id": "B-L1",
+  "patterns_applied": [
+    "AuthRequiredEverywhere",
+    "AppendOnly",
+    "AuditCompleteness",
+    "AttributionCorrectness",
+    "ValidationBeforeMutation"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_CreatorFromAuthContext",
+    "FR_003_SingleWorkspace",
+    "FR_004_FlatPermissions",
+    "FR_005_TitleValid",
+    "FR_006_DescriptionBounds",
+    "FR_008_AssigneeIsMember",
+    "FR_009_CreatorRecorded",
+    "FR_010_StatusEnum",
+    "FR_011_ClosedTaskRule",
+    "FR_012_PermanentDelete",
+    "FR_013_V1Scope",
+    "FR_014_UniformList",
+    "FR_015_FilteringRequiresAuth",
+    "FR_016_ClearFilters",
+    "FR_017_Timestamps",
+    "FR_018_DeletionLog"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_CreatorFromAuthContext"
+    ],
+    "FR-003": [
+      "FR_003_SingleWorkspace"
+    ],
+    "FR-004": [
+      "FR_004_FlatPermissions"
+    ],
+    "FR-005": [
+      "FR_005_TitleValid",
+      "ValidationBeforeMutation"
+    ],
+    "FR-006": [
+      "FR_006_DescriptionBounds"
+    ],
+    "FR-007": [
+      "FR_010_StatusEnum"
+    ],
+    "FR-008": [
+      "FR_008_AssigneeIsMember"
+    ],
+    "FR-009": [
+      "FR_009_CreatorRecorded"
+    ],
+    "FR-010": [
+      "FR_010_StatusEnum"
+    ],
+    "FR-011": [
+      "FR_011_ClosedTaskRule"
+    ],
+    "FR-012": [
+      "FR_012_PermanentDelete",
+      "AuditCompleteness"
+    ],
+    "FR-013": [
+      "FR_013_V1Scope"
+    ],
+    "FR-014": [
+      "FR_014_UniformList"
+    ],
+    "FR-015": [
+      "FR_015_FilteringRequiresAuth"
+    ],
+    "FR-016": [
+      "FR_016_ClearFilters"
+    ],
+    "FR-017": [
+      "FR_017_Timestamps"
+    ],
+    "FR-018": [
+      "FR_018_DeletionLog",
+      "AppendOnly",
+      "AttributionCorrectness",
+      "AuditCompleteness"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_AuthRequiredEverywhere",
+      "asserts_violated": [
+        "AuthRequiredEverywhere",
+        "FR_001_AuthRequired",
+        "FR_004_FlatPermissions"
+      ],
+      "rationale": "Removing this fact lets the model invent a successful operation with no authenticated caller, directly violating the FR-001/SC-005 'authentication required everywhere' invariant.",
+      "inject_violation": "fact MUTATE_AuthBypass { some op: Operation | op.outcome = Success and no op.caller }"
+    },
+    {
+      "fact_name": "F_AppendOnlyDeletionLog",
+      "asserts_violated": [
+        "AppendOnly"
+      ],
+      "rationale": "Clearing this fact removes the one-to-one binding between TaskDeletion atoms and their creating DeleteOp; the injection forces an orphan log entry with no creating operation, which is exactly the mutation/insertion the append-only contract forbids.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some td: TaskDeletion | (no op: Operation | op.logEntry = td) }"
+    },
+    {
+      "fact_name": "F_DeleteLogCompleteness",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_012_PermanentDelete"
+      ],
+      "rationale": "Without completeness, the model can produce a successful DeleteOp that leaves no operational-log entry, which is exactly the FR-018 violation auditors must detect.",
+      "inject_violation": "fact MUTATE_MissingLog { some op: Operation | op.kind = DeleteOp and op.outcome = Success and no op.logEntry }"
+    },
+    {
+      "fact_name": "F_DeletionAttribution",
+      "asserts_violated": [
+        "AttributionCorrectness",
+        "FR_018_DeletionLog"
+      ],
+      "rationale": "Clearing this fact lets the deletion log record someone other than the actual caller, which is the canonical attribution-correctness violation.",
+      "inject_violation": "fact MUTATE_AttributionMismatch { some op: Operation, m: Member | op.kind = DeleteOp and op.outcome = Success and some op.caller and some op.logEntry and op.logEntry.deleter = m and op.caller != m }"
+    },
+    {
+      "fact_name": "F_ClosedTaskRule",
+      "asserts_violated": [
+        "FR_011_ClosedTaskRule"
+      ],
+      "rationale": "Without this rule the model can succeed on an edit of a done task that does not reopen it, which is precisely the contract violation FR-011 forbids and the 409 task_closed response is designed to surface.",
+      "inject_violation": "fact MUTATE_ClosedTaskBypass { some op: Operation | op.kind = EditOp and op.preStatus = Done and op.reopens = BFalse and op.changesNonStatus = BTrue and op.outcome = Success }"
+    },
+    {
+      "fact_name": "F_TitleValid",
+      "asserts_violated": [
+        "ValidationBeforeMutation",
+        "FR_005_TitleValid",
+        "FR_006_DescriptionBounds"
+      ],
+      "rationale": "Clearing the title-validation invariant lets a Task exist with an invalid (empty or too-long) title; this is the validation-before-mutation contract failure for FR-005.",
+      "inject_violation": "fact MUTATE_InvalidTitle { some t: Task | t.titleValid = BFalse }"
+    }
+  ]
+}

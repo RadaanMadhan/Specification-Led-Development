@@ -1,0 +1,406 @@
+{
+  "run_id": "A-L3/M-best/run_09",
+  "cell": "A-L3",
+  "model": "M-best",
+  "rep": 9,
+  "D1": 1.0,
+  "D2": 1.0,
+  "D3": 0.9166666666666666,
+  "D4": 0.9791666666666666,
+  "aqs_partial": 0.9739583333333333,
+  "scored_at": "2026-05-20T04:29:04.161583+00:00",
+  "details": {
+    "D1": {
+      "n_assertions": 36,
+      "n_verdicts": 36
+    },
+    "D2": {
+      "patterns_applied": [
+        "LeastPrivilege",
+        "PermissionCompleteness",
+        "PermissionGrounding",
+        "AuthRequiredEverywhere",
+        "AuditCompleteness",
+        "AppendOnly",
+        "AttributionCorrectness",
+        "OwnershipExclusivity",
+        "OwnershipBasedAccess",
+        "NoInformationLeakage",
+        "NoSelfMutation",
+        "ValidationBeforeMutation"
+      ],
+      "per_pattern": {
+        "LeastPrivilege": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "PermissionCompleteness": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "PermissionGrounding": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "AuthRequiredEverywhere": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "AuditCompleteness": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "AppendOnly": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "AttributionCorrectness": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "OwnershipExclusivity": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "OwnershipBasedAccess": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "NoInformationLeakage": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "NoSelfMutation": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "ValidationBeforeMutation": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        }
+      }
+    },
+    "D3": {
+      "per_target": {
+        "F_LeastPrivilege": {
+          "targeted_asserts": {
+            "LeastPrivilege": "BIT"
+          },
+          "score": 1.0
+        },
+        "F_AppendOnlyAuditEntries": {
+          "targeted_asserts": {
+            "AppendOnly": "BIT",
+            "FR_018_AppendOnly": "BIT"
+          },
+          "score": 1.0
+        },
+        "F_NoSelfAssignment": {
+          "targeted_asserts": {
+            "NoSelfMutation": "BIT",
+            "FR_011_NoSelfAssignment": "BIT"
+          },
+          "score": 1.0
+        },
+        "F_AuditCompletenessOnSuccess": {
+          "targeted_asserts": {
+            "AuditCompleteness": "VACUOUS_OVERCONSTRAINT",
+            "FR_017_AuditAtomic": "VACUOUS_OVERCONSTRAINT",
+            "FR_019_AuditRetained": "VACUOUS_OVERCONSTRAINT"
+          },
+          "score": 0.5
+        },
+        "F_ByteEquivalentNotFound": {
+          "targeted_asserts": {
+            "NoInformationLeakage": "BIT",
+            "FR_020_ByteEquivalentNotFound": "BIT",
+            "FR_021_OwnerVsNonexistent": "BIT"
+          },
+          "score": 1.0
+        },
+        "F_PatchOnlyAssignedOfficer": {
+          "targeted_asserts": {
+            "OwnershipBasedAccess": "BIT",
+            "FR_012_AssignedOfficerOnly": "BIT"
+          },
+          "score": 1.0
+        }
+      },
+      "skipped": []
+    },
+    "D4": {
+      "per_fr": {
+        "FR-001": {
+          "covers": [
+            "FR_001_AuthRequired",
+            "AuthRequiredEverywhere"
+          ],
+          "verdicts": {
+            "FR_001_AuthRequired": "PASS",
+            "AuthRequiredEverywhere": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-002": {
+          "covers": [
+            "FR_002_RoleMultiplicity"
+          ],
+          "verdicts": {
+            "FR_002_RoleMultiplicity": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-003": {
+          "covers": [
+            "FR_003_ApplicantScope",
+            "LeastPrivilege",
+            "PermissionGrounding"
+          ],
+          "verdicts": {
+            "FR_003_ApplicantScope": "PASS",
+            "LeastPrivilege": "PASS",
+            "PermissionGrounding": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-004": {
+          "covers": [
+            "FR_004_OfficerScope",
+            "LeastPrivilege",
+            "PermissionGrounding"
+          ],
+          "verdicts": {
+            "FR_004_OfficerScope": "PASS",
+            "LeastPrivilege": "PASS",
+            "PermissionGrounding": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-005": {
+          "covers": [
+            "FR_005_AuditorScope",
+            "LeastPrivilege",
+            "PermissionGrounding"
+          ],
+          "verdicts": {
+            "FR_005_AuditorScope": "PASS",
+            "LeastPrivilege": "PASS",
+            "PermissionGrounding": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-006": {
+          "covers": [
+            "FR_006_IdentityFromCaller",
+            "AttributionCorrectness"
+          ],
+          "verdicts": {
+            "FR_006_IdentityFromCaller": "PASS",
+            "AttributionCorrectness": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-007": {
+          "covers": [
+            "FR_007_ValidStatusSet"
+          ],
+          "verdicts": {
+            "FR_007_ValidStatusSet": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-008": {
+          "covers": [
+            "FR_008_OneInFlightPerApplicant"
+          ],
+          "verdicts": {
+            "FR_008_OneInFlightPerApplicant": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-009": {
+          "covers": [
+            "FR_009_AllowedTransitions"
+          ],
+          "verdicts": {
+            "FR_009_AllowedTransitions": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-010": {
+          "covers": [
+            "FR_010_AssignedIsOfficer"
+          ],
+          "verdicts": {
+            "FR_010_AssignedIsOfficer": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-011": {
+          "covers": [
+            "FR_011_NoSelfAssignment",
+            "NoSelfMutation"
+          ],
+          "verdicts": {
+            "FR_011_NoSelfAssignment": "PASS",
+            "NoSelfMutation": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-012": {
+          "covers": [
+            "FR_012_AssignedOfficerOnly",
+            "OwnershipBasedAccess"
+          ],
+          "verdicts": {
+            "FR_012_AssignedOfficerOnly": "PASS",
+            "OwnershipBasedAccess": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-013": {
+          "covers": [
+            "FR_013_NoSelfDecision",
+            "NoSelfMutation",
+            "OwnershipBasedAccess"
+          ],
+          "verdicts": {
+            "FR_013_NoSelfDecision": "PASS",
+            "NoSelfMutation": "PASS",
+            "OwnershipBasedAccess": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-014": {
+          "covers": [
+            "FR_014_TransitionIsRealChange"
+          ],
+          "verdicts": {
+            "FR_014_TransitionIsRealChange": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-015": {
+          "covers": [
+            "FR_015_NoChangeAfterTerminal"
+          ],
+          "verdicts": {
+            "FR_015_NoChangeAfterTerminal": "FAIL"
+          },
+          "score": 0.5
+        },
+        "FR-016": {
+          "covers": [
+            "FR_016_AuditFields",
+            "AuditCompleteness",
+            "AttributionCorrectness"
+          ],
+          "verdicts": {
+            "FR_016_AuditFields": "PASS",
+            "AuditCompleteness": "PASS",
+            "AttributionCorrectness": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-017": {
+          "covers": [
+            "FR_017_AuditAtomic",
+            "AuditCompleteness",
+            "ValidationBeforeMutation"
+          ],
+          "verdicts": {
+            "FR_017_AuditAtomic": "PASS",
+            "AuditCompleteness": "PASS",
+            "ValidationBeforeMutation": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-018": {
+          "covers": [
+            "FR_018_AppendOnly",
+            "AppendOnly"
+          ],
+          "verdicts": {
+            "FR_018_AppendOnly": "PASS",
+            "AppendOnly": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-019": {
+          "covers": [
+            "FR_019_AuditRetained",
+            "AppendOnly"
+          ],
+          "verdicts": {
+            "FR_019_AuditRetained": "PASS",
+            "AppendOnly": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-020": {
+          "covers": [
+            "FR_020_ByteEquivalentNotFound",
+            "NoInformationLeakage"
+          ],
+          "verdicts": {
+            "FR_020_ByteEquivalentNotFound": "PASS",
+            "NoInformationLeakage": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-021": {
+          "covers": [
+            "FR_021_OwnerVsNonexistent",
+            "NoInformationLeakage"
+          ],
+          "verdicts": {
+            "FR_021_OwnerVsNonexistent": "PASS",
+            "NoInformationLeakage": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-022": {
+          "covers": [
+            "FR_022_NoLeakInPost"
+          ],
+          "verdicts": {
+            "FR_022_NoLeakInPost": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-023": {
+          "covers": [
+            "FR_023_AuditAuditorOnly",
+            "NoInformationLeakage"
+          ],
+          "verdicts": {
+            "FR_023_AuditAuditorOnly": "PASS",
+            "NoInformationLeakage": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-024": {
+          "covers": [
+            "FR_024_ApplicantCannotPatch"
+          ],
+          "verdicts": {
+            "FR_024_ApplicantCannotPatch": "PASS"
+          },
+          "score": 1.0
+        }
+      }
+    }
+  }
+}

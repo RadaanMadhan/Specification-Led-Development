@@ -1,0 +1,166 @@
+{
+  "feature_id": "B-L2",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_003_TeamContextRequired",
+    "FR_004_ActorMustBeMember",
+    "FR_005_TaskTeamImmutable",
+    "FR_006_OwnerImmutable",
+    "FR_007_PerTeamRole",
+    "FR_009_NonOwnerMemberCannotEditDelete",
+    "FR_010_AdminCanEditAnyTask",
+    "FR_011_CrossTeamIsolation",
+    "FR_015_AuditPerEditEvent",
+    "FR_016_AuditOutlivesTask",
+    "FR_017_AuditVisibleToTeamMembers",
+    "FR_012_AssigneeInSameTeam",
+    "FR_013_StatusSetCorrect",
+    "FR_018_AuditRetained",
+    "FR_019_ListScopedToTeam",
+    "FR_010_AdminAuditRoleSnapshot"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_001_AuthRequired"
+    ],
+    "FR-003": [
+      "FR_003_TeamContextRequired"
+    ],
+    "FR-004": [
+      "FR_004_ActorMustBeMember"
+    ],
+    "FR-005": [
+      "FR_005_TaskTeamImmutable"
+    ],
+    "FR-006": [
+      "FR_006_OwnerImmutable"
+    ],
+    "FR-007": [
+      "FR_007_PerTeamRole"
+    ],
+    "FR-008": [
+      "OwnershipBasedAccess",
+      "LeastPrivilege"
+    ],
+    "FR-009": [
+      "FR_009_NonOwnerMemberCannotEditDelete",
+      "LeastPrivilege",
+      "OwnershipBasedAccess"
+    ],
+    "FR-010": [
+      "FR_010_AdminCanEditAnyTask",
+      "FR_010_AdminAuditRoleSnapshot"
+    ],
+    "FR-011": [
+      "FR_011_CrossTeamIsolation",
+      "NoInformationLeakage"
+    ],
+    "FR-012": [
+      "FR_012_AssigneeInSameTeam"
+    ],
+    "FR-013": [
+      "FR_013_StatusSetCorrect"
+    ],
+    "FR-014": [
+      "FR_011_CrossTeamIsolation",
+      "NoInformationLeakage"
+    ],
+    "FR-015": [
+      "FR_015_AuditPerEditEvent",
+      "AuditCompleteness",
+      "AttributionCorrectness"
+    ],
+    "FR-016": [
+      "FR_016_AuditOutlivesTask",
+      "AppendOnly"
+    ],
+    "FR-017": [
+      "FR_017_AuditVisibleToTeamMembers"
+    ],
+    "FR-018": [
+      "FR_018_AuditRetained",
+      "AppendOnly"
+    ],
+    "FR-019": [
+      "FR_019_ListScopedToTeam"
+    ],
+    "FR-020": [
+      "FR_019_ListScopedToTeam"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "PermissionCompleteness",
+        "FR_009_NonOwnerMemberCannotEditDelete"
+      ],
+      "rationale": "Clearing F_PermissionMatrix removes the closed-world definition of PermMatrix.Allowed. The injection then adds AC_MemberNonOwner -> Op_PatchTask to Allowed, which directly violates the LeastPrivilege and FR_009 assertions that no non-owner member may PATCH.",
+      "inject_violation": "fact MUTATE_PermMatrixViolation { AC_MemberNonOwner -> Op_PatchTask in PermMatrix.Allowed }"
+    },
+    {
+      "fact_name": "F_EachTaskHasCreatedEntry",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_015_AuditPerEditEvent",
+        "FR_006_OwnerImmutable"
+      ],
+      "rationale": "Clearing F_EachTaskHasCreatedEntry removes the guarantee that every task has a CK_Created audit entry. The injection forces a task with no CK_Created entry to exist, making AuditCompleteness, FR_015_AuditPerEditEvent and FR_006_OwnerImmutable all find counterexamples.",
+      "inject_violation": "fact MUTATE_MissingCreatedEntry { some t: Task | no ae: AuditEntry | ae.ae_task = t and ae.ae_change = CK_Created }"
+    },
+    {
+      "fact_name": "F_DeletedTaskHasDeletedEntry",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_016_AuditOutlivesTask"
+      ],
+      "rationale": "Clearing this fact removes the requirement that deleted tasks retain a CK_Deleted audit entry. The injection forces a deleted task with no CK_Deleted entry, directly violating FR_016_AuditOutlivesTask and showing the audit trail did not survive deletion.",
+      "inject_violation": "fact MUTATE_MissingDeletedEntry { some t: Task | t in Graveyard.deleted_tasks and (no ae: AuditEntry | ae.ae_task = t and ae.ae_change = CK_Deleted) }"
+    },
+    {
+      "fact_name": "F_AuditActorRoleMatchesMembership",
+      "asserts_violated": [
+        "AttributionCorrectness",
+        "FR_010_AdminAuditRoleSnapshot"
+      ],
+      "rationale": "Clearing this fact removes the snapshot-correctness constraint on actor_role. The injection creates an AuditEntry where a MemberRole user is recorded as AdminRole, directly violating AttributionCorrectness and FR_010_AdminAuditRoleSnapshot.",
+      "inject_violation": "fact MUTATE_WrongRoleSnapshot { some ae: AuditEntry, m: TeamMembership | ae.ae_actor = m.tm_user and ae.ae_team = m.tm_team and m.tm_role = MemberRole and ae.ae_actor_role = AdminRole }"
+    },
+    {
+      "fact_name": "F_OperationTaskInSameTeam",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "FR_011_CrossTeamIsolation",
+        "FR_019_ListScopedToTeam"
+      ],
+      "rationale": "Clearing this fact removes the team-scope guard on operations. The injection forces an operation whose op_task belongs to a different team, directly leaking cross-team task visibility and violating cross-team isolation assertions.",
+      "inject_violation": "fact MUTATE_CrossTeamLeak { some op: Operation, t: Task | t in op.op_task and t.task_team != op.op_team }"
+    },
+    {
+      "fact_name": "F_AllOperationsAreAuthorized",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "OwnershipBasedAccess",
+        "FR_009_NonOwnerMemberCannotEditDelete"
+      ],
+      "rationale": "Clearing this fact removes the gate that every operation must appear in PermMatrix.Allowed. The injection forces an operation with AC_MemberNonOwner context executing Op_DeleteTask, which is denied in the matrix, causing LeastPrivilege and OwnershipBasedAccess to find counterexamples.",
+      "inject_violation": "fact MUTATE_UnauthorizedOperation { some op: Operation | op.op_context = AC_MemberNonOwner and op.op_kind = Op_DeleteTask }"
+    }
+  ]
+}

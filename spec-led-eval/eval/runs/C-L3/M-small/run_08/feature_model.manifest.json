@@ -1,0 +1,126 @@
+{
+  "feature_id": "C-L3",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "AppendOnly",
+    "AuditCompleteness",
+    "AttributionCorrectness",
+    "OwnershipBasedAccess",
+    "AuthRequiredEverywhere",
+    "NoInformationLeakage"
+  ],
+  "feature_specific_predicates": [
+    "FR_002_SingleRole",
+    "FR_003_PatientRecordAssignment",
+    "FR_004_CareTeamGating",
+    "FR_006_PatientSelfAccess",
+    "FR_007_ComplianceContentBlindness",
+    "FR_008_ByteEquivalent403",
+    "FR_010_NoteValidation",
+    "FR_012_NotesAppendOnly",
+    "FR_013_AuditCompleteness",
+    "FR_015_AuditImmutable",
+    "FR_018_ComplianceLogAccess",
+    "FR_019_ComplianceContentBlind",
+    "FR_020_URLPaths"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_SingleRole"
+    ],
+    "FR-003": [
+      "FR_003_PatientRecordAssignment"
+    ],
+    "FR-004": [
+      "FR_004_CareTeamGating",
+      "LeastPrivilege"
+    ],
+    "FR-005": [
+      "FR_004_CareTeamGating"
+    ],
+    "FR-006": [
+      "FR_006_PatientSelfAccess",
+      "OwnershipBasedAccess"
+    ],
+    "FR-007": [
+      "FR_007_ComplianceContentBlindness",
+      "LeastPrivilege"
+    ],
+    "FR-008": [
+      "NoInformationLeakage",
+      "FR_008_ByteEquivalent403"
+    ],
+    "FR-010": [
+      "FR_010_NoteValidation"
+    ],
+    "FR-012": [
+      "FR_012_NotesAppendOnly",
+      "AppendOnly"
+    ],
+    "FR-013": [
+      "AuditCompleteness",
+      "FR_013_AuditCompleteness"
+    ],
+    "FR-014": [
+      "AttributionCorrectness"
+    ],
+    "FR-015": [
+      "FR_015_AuditImmutable",
+      "AppendOnly"
+    ],
+    "FR-018": [
+      "FR_018_ComplianceLogAccess"
+    ],
+    "FR-019": [
+      "FR_019_ComplianceContentBlind"
+    ],
+    "FR-020": [
+      "FR_020_URLPaths"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_LeastPrivilegePatientAppend",
+      "asserts_violated": [
+        "LeastPrivilege"
+      ],
+      "rationale": "Removing this fact allows patients to append notes (outcome = Permitted). The LeastPrivilege assertion checks that patients can never append with a permitted outcome; without this constraint, Alloy finds a counterexample.",
+      "inject_violation": "fact MUTATE_PatientAppendAllowed { some ae: AuditEntry | ae.accessor_role = Patient and ae.operation = AppendOp and ae.outcome = Permitted }"
+    },
+    {
+      "fact_name": "F_AuditCompleteness_NoteCreation",
+      "asserts_violated": [
+        "AuditCompleteness"
+      ],
+      "rationale": "Removing this fact decouples notes from audit entries. The AuditCompleteness assertion requires exactly one audit entry per permitted note; without this constraint, a note can exist without a corresponding audit.",
+      "inject_violation": "fact MUTATE_NoteWithoutAudit { some note: ClinicalNote | no (ae: AuditEntry | ae.operation = AppendOp and ae.outcome = Permitted and ae.note_id = note.note_id) }"
+    },
+    {
+      "fact_name": "F_CareTeamClinicianGating",
+      "asserts_violated": [
+        "FR_004_CareTeamGating"
+      ],
+      "rationale": "Removing this fact allows clinicians to read records without being on the care team. The assertion requires that permitted clinician reads have authorisation_basis = CareTeamMember; without this constraint, clinicians bypass the care-team gate.",
+      "inject_violation": "fact MUTATE_ClinicianBypassCareTeam { some ae: AuditEntry | ae.accessor_role = Clinician and ae.operation = ReadOp and ae.outcome = Permitted and ae.authorisation_basis != CareTeamMember }"
+    },
+    {
+      "fact_name": "F_AppendOnlyAuditEntries",
+      "asserts_violated": [
+        "AppendOnly"
+      ],
+      "rationale": "Removing this fact allows multiple audit entries to share the same audit_id (representing mutation/deletion). The AppendOnly assertion requires all audit IDs to be unique; without this constraint, audit entries can be overwritten.",
+      "inject_violation": "fact MUTATE_DuplicateAuditId { some disj ae1, ae2: AuditEntry | ae1.audit_id = ae2.audit_id }"
+    },
+    {
+      "fact_name": "F_PatientOwnRecordAccess",
+      "asserts_violated": [
+        "FR_006_PatientSelfAccess"
+      ],
+      "rationale": "Removing this fact allows patients to have permitted read access with any authorisation basis, not just PatientOwn. The assertion checks that permitted patient reads have authorisation_basis = PatientOwn; without this constraint, patients can access records they don't own.",
+      "inject_violation": "fact MUTATE_PatientAccessOther { some ae: AuditEntry | ae.accessor_role = Patient and ae.operation = ReadOp and ae.outcome = Permitted and ae.authorisation_basis = PatientOther }"
+    }
+  ]
+}

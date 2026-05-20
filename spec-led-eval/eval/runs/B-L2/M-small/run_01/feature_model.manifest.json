@@ -1,0 +1,160 @@
+{
+  "feature_id": "B-L2",
+  "patterns_applied": [
+    "AuthRequiredEverywhere",
+    "LeastPrivilege",
+    "PermissionGrounding",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "AppendOnly",
+    "AuditCompleteness",
+    "NoInformationLeakage",
+    "PerTeamRole",
+    "ValidationBeforeMutation"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthenticationRequired",
+    "FR_002_UserIdentityFromAuth",
+    "FR_003_TeamContextRequired",
+    "FR_005_TaskTeamImmutable",
+    "FR_006_OwnerImmutable",
+    "FR_007_PerTeamRole",
+    "FR_008_MemberCanCreateViewEditOwn",
+    "FR_009_MemberCannotEditOthersTask",
+    "FR_010_AdminCanEditDeleteAny",
+    "FR_011_CrossTeamIsolation",
+    "FR_012_TaskValidation",
+    "FR_013_StatusValues",
+    "FR_014_ByteEquivalentNotFound",
+    "FR_015_AuditTrailPerEditEvent",
+    "FR_016_AuditAppendOnly",
+    "FR_017_AuditVisibleToTeamMembers",
+    "FR_018_AuditRetention",
+    "FR_019_TaskListPresentation",
+    "FR_020_FilteringSupport"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "AuthRequiredEverywhere",
+      "FR_001_AuthenticationRequired"
+    ],
+    "FR-002": [
+      "FR_002_UserIdentityFromAuth"
+    ],
+    "FR-003": [
+      "FR_003_TeamContextRequired"
+    ],
+    "FR-004": [
+      "FR_003_TeamContextRequired"
+    ],
+    "FR-005": [
+      "FR_005_TaskTeamImmutable"
+    ],
+    "FR-006": [
+      "FR_006_OwnerImmutable"
+    ],
+    "FR-007": [
+      "FR_007_PerTeamRole"
+    ],
+    "FR-008": [
+      "FR_008_MemberCanCreateViewEditOwn"
+    ],
+    "FR-009": [
+      "FR_009_MemberCannotEditOthersTask"
+    ],
+    "FR-010": [
+      "FR_010_AdminCanEditDeleteAny"
+    ],
+    "FR-011": [
+      "FR_011_CrossTeamIsolation",
+      "NoInformationLeakage"
+    ],
+    "FR-012": [
+      "FR_012_TaskValidation"
+    ],
+    "FR-013": [
+      "FR_013_StatusValues"
+    ],
+    "FR-014": [
+      "FR_014_ByteEquivalentNotFound",
+      "NoInformationLeakage"
+    ],
+    "FR-015": [
+      "FR_015_AuditTrailPerEditEvent",
+      "AuditCompleteness"
+    ],
+    "FR-016": [
+      "FR_016_AuditAppendOnly",
+      "AppendOnly"
+    ],
+    "FR-017": [
+      "FR_017_AuditVisibleToTeamMembers"
+    ],
+    "FR-018": [
+      "FR_018_AuditRetention"
+    ],
+    "FR-019": [
+      "FR_019_TaskListPresentation"
+    ],
+    "FR-020": [
+      "FR_020_FilteringSupport"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_008_MemberCanCreateViewEditOwn",
+        "FR_010_AdminCanEditDeleteAny"
+      ],
+      "rationale": "Removing the permission matrix definition removes the structural encoding of role-operation grants. Assertions checking that members can create tasks and admins can edit/delete will fail when the matrix is undefined.",
+      "inject_violation": "fact MUTATE_NoPermissions { PermMatrix.Allowed = none }"
+    },
+    {
+      "fact_name": "F_AppendOnlyAudit",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_016_AuditAppendOnly"
+      ],
+      "rationale": "Removing the append-only constraint allows audit entries for the same task to duplicate or mutate. Assertions checking append-only will find counterexamples where ae1 and ae2 with the same task are identical (violating the distinctness check).",
+      "inject_violation": "fact MUTATE_DuplicateAuditEntry { some disj ae1, ae2: AuditEntry | ae1.task = ae2.task and ae1 = ae2 }"
+    },
+    {
+      "fact_name": "F_CrossTeamIsolation",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "FR_011_CrossTeamIsolation"
+      ],
+      "rationale": "Removing cross-team isolation allows audit entries to leak across team boundaries. Assertions checking cross-team isolation will fail when a user not in a team can see that team's audit entries.",
+      "inject_violation": "fact MUTATE_CrossTeamLeak { some t: Task, u: User, ae: AuditEntry | ae.task = t and ae.actor = u and (no tm: TeamMembership | tm.user = u and tm.team = t.team) }"
+    },
+    {
+      "fact_name": "F_MemberNonOwnerCannotEditDelete",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_009_MemberCannotEditOthersTask"
+      ],
+      "rationale": "Removing the restriction allows non-owner members to edit and delete any task. Assertions checking that members cannot edit others' tasks will fail.",
+      "inject_violation": "fact MUTATE_MemberEditOthers { (Member -> PatchTask) in PermMatrix.Allowed or (Member -> DeleteTask) in PermMatrix.Allowed }"
+    },
+    {
+      "fact_name": "F_AuditTrailPerTask",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_015_AuditTrailPerEditEvent"
+      ],
+      "rationale": "Removing the requirement that every task has an audit entry allows tasks without any audit history. Assertions checking audit completeness will fail when a task has no corresponding audit entries.",
+      "inject_violation": "fact MUTATE_NoAudit { some t: Task | no ae: AuditEntry | ae.task = t }"
+    },
+    {
+      "fact_name": "F_OwnerMustBeMemberOfTeam",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_001_AuthenticationRequired"
+      ],
+      "rationale": "Removing the requirement that a task's owner is a member of the task's team breaks the structural link between ownership and team membership. Access control based on ownership will become meaningless.",
+      "inject_violation": "fact MUTATE_OwnerNotMember { some t: Task | no tm: TeamMembership | tm.user = t.owner and tm.team = t.team }"
+    }
+  ]
+}

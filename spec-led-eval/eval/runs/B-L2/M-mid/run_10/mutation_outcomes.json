@@ -1,0 +1,45 @@
+{
+  "F_CrossTeamIsolation": {
+    "targeted_asserts": {
+      "NoInformationLeakage": "BIT",
+      "FR_011_FR_014_CrossTeamIsolation": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AppendOnlyAuditEntries": {
+    "targeted_asserts": {
+      "AppendOnly": "BIT",
+      "FR_016_AuditAppendOnly": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_OwnerOrAdminMutate": {
+    "targeted_asserts": {
+      "OwnershipBasedAccess": "BIT",
+      "FR_008_FR_009_FR_010_OwnerAdminAccess": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_NoAuditOnFailure": {
+    "targeted_asserts": {
+      "AuditCompleteness": "VACUOUS_OVERCONSTRAINT",
+      "ValidationBeforeMutation": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_AttributionCorrectness": {
+    "targeted_asserts": {
+      "AttributionCorrectness": "BIT",
+      "FR_015_AuditEntryShape": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_PermissionMatrix": {
+    "targeted_asserts": {
+      "LeastPrivilege": "BIT",
+      "PermissionCompleteness": "BIT",
+      "PrivilegeMonotonicity": "BIT"
+    },
+    "all_bit": true
+  }
+}

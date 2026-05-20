@@ -1,0 +1,177 @@
+{
+  "feature_id": "012-hospital-clinical-records",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "PermissionGrounding",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "AuthRequiredEverywhere"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_RoleCatalogue",
+    "FR_003_PatientIdInBody",
+    "FR_004_CareTeamGating",
+    "FR_005_AdminNoClinicalContent",
+    "FR_006_ByteEquivalentDenied",
+    "FR_007_ClinicalReadShape",
+    "FR_008_PatientSummary",
+    "FR_009_NoteValidation",
+    "FR_010_NoteProvenance",
+    "FR_011_NotesAppendOnly",
+    "FR_012_AlwaysOnAudit",
+    "FR_013_AuditFields",
+    "FR_014_AuditImmutable",
+    "FR_015_AuditSLA",
+    "FR_016_AuditRetention",
+    "FR_017_AdminOnlyAudit",
+    "FR_018_AdminContentBlind",
+    "FR_019_SafetyFieldsFirst",
+    "FR_020_NotesCount"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_RoleCatalogue"
+    ],
+    "FR-003": [
+      "FR_003_PatientIdInBody"
+    ],
+    "FR-004": [
+      "FR_004_CareTeamGating",
+      "OwnershipBasedAccess"
+    ],
+    "FR-005": [
+      "FR_005_AdminNoClinicalContent"
+    ],
+    "FR-006": [
+      "FR_006_ByteEquivalentDenied",
+      "NoInformationLeakage"
+    ],
+    "FR-007": [
+      "FR_007_ClinicalReadShape"
+    ],
+    "FR-008": [
+      "FR_008_PatientSummary"
+    ],
+    "FR-009": [
+      "FR_009_NoteValidation"
+    ],
+    "FR-010": [
+      "FR_010_NoteProvenance"
+    ],
+    "FR-011": [
+      "FR_011_NotesAppendOnly",
+      "AppendOnly"
+    ],
+    "FR-012": [
+      "FR_012_AlwaysOnAudit",
+      "AuditCompleteness"
+    ],
+    "FR-013": [
+      "FR_013_AuditFields",
+      "AttributionCorrectness"
+    ],
+    "FR-014": [
+      "FR_014_AuditImmutable",
+      "AppendOnly"
+    ],
+    "FR-015": [
+      "FR_015_AuditSLA"
+    ],
+    "FR-016": [
+      "FR_016_AuditRetention"
+    ],
+    "FR-017": [
+      "FR_017_AdminOnlyAudit",
+      "LeastPrivilege"
+    ],
+    "FR-018": [
+      "FR_018_AdminContentBlind",
+      "FR_005_AdminNoClinicalContent"
+    ],
+    "FR-019": [
+      "FR_019_SafetyFieldsFirst"
+    ],
+    "FR-020": [
+      "FR_020_NotesCount"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_AccessControl",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_005_AdminNoClinicalContent",
+        "FR_017_AdminOnlyAudit",
+        "OwnershipBasedAccess",
+        "FR_004_CareTeamGating"
+      ],
+      "rationale": "Clearing the access-control fact lets the model invent a Permitted operation whose (role, kind) pair is not in the policy matrix \u2014 e.g., a hospital_administrator reading a clinical record \u2014 which is exactly what LeastPrivilege, FR_005, and FR_017 are meant to catch.",
+      "inject_violation": "fact MUTATE_LeastPrivilegeViolation { some o: Operation | o.opOutcome = Permitted and o.opCaller.role = HospitalAdministrator and o.opKind = ReadRecord }"
+    },
+    {
+      "fact_name": "F_NotesAppendOnly",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_011_NotesAppendOnly"
+      ],
+      "rationale": "Clearing the no-NoteEdit fact lets the model invent a clinical-note mutation event, which the append-only invariant exists to forbid.",
+      "inject_violation": "fact MUTATE_NoteEditExists { some NoteEdit }"
+    },
+    {
+      "fact_name": "F_AuditAppendOnly",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_014_AuditImmutable",
+        "FR_016_AuditRetention"
+      ],
+      "rationale": "Clearing the no-AuditMutation fact lets the model invent an audit-entry mutation, violating immutability (FR-014) and the 7-year retention floor (FR-016).",
+      "inject_violation": "fact MUTATE_AuditMutationExists { some AuditMutation }"
+    },
+    {
+      "fact_name": "F_AuditCompleteness",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_012_AlwaysOnAudit",
+        "FR_015_AuditSLA"
+      ],
+      "rationale": "Clearing audit completeness lets a Read/AddNote operation occur with no audit entry, violating the always-on-audit invariant and the SLA-enforced rollback rule.",
+      "inject_violation": "fact MUTATE_OpWithoutAudit { some o: Operation | o.opKind = ReadRecord and no o.opAudit }"
+    },
+    {
+      "fact_name": "F_Attribution",
+      "asserts_violated": [
+        "AttributionCorrectness",
+        "FR_013_AuditFields"
+      ],
+      "rationale": "Clearing attribution lets an audit entry record an accessor different from the actual operation caller, violating audit-entry correctness.",
+      "inject_violation": "fact MUTATE_MisattributedAudit { some o: Operation | some o.opAudit and o.opAudit.aeAccessor != o.opCaller }"
+    },
+    {
+      "fact_name": "F_NonPermittedResponseIs404",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "FR_006_ByteEquivalentDenied"
+      ],
+      "rationale": "Clearing the byte-equivalent-404 invariant lets a denied operation return a clinical-content response, distinguishing denial from not-found and leaking patient existence.",
+      "inject_violation": "fact MUTATE_LeakyDenialResponse { some o: Operation | o.opOutcome = Denied and o.opResponse = ClinicalReadShape }"
+    },
+    {
+      "fact_name": "F_AdminResponseNoClinicalContent",
+      "asserts_violated": [
+        "FR_018_AdminContentBlind",
+        "FR_005_AdminNoClinicalContent"
+      ],
+      "rationale": "Clearing admin content-blindness lets a ListAudit response carry a clinical-read shape, exactly the FR-018 forbidden case.",
+      "inject_violation": "fact MUTATE_AdminLeakingClinicalContent { some o: Operation | o.opKind = ListAudit and o.opResponse = ClinicalReadShape }"
+    }
+  ]
+}

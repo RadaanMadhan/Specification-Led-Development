@@ -1,0 +1,145 @@
+$ /Users/leonhausmann/opt/anaconda3/bin/python3 -m speceval.cli verify-design --no-cache --model M-best --java-bin /Users/leonhausmann/opt/anaconda3/lib/python3.9/site-packages/jdk4py/java-runtime/bin/java /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/eval/specs/B-L1
+
+[parse]   feature 'B-L1', 18 FRs, 4 user stories
+[lift]    calling LLM (anthropic: tier=M-best, model=claude-opus-4-7)...
+[lift]    fresh lift (sha=30ea4f60657c)
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/B-L1/feature_model.als
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/B-L1/cost_log.json
+[alloy]   running alloy.jar on feature_model.als...
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/B-L1/alloy_verdicts.json
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/B-L1/mutation_outcomes.json
+
+==============================================================================
+  Design Compliance Report  (Phase 3 — feature_model.als)
+  feature       : B-L1
+  spec source   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/eval/specs/B-L1
+  alloy model   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/B-L1/feature_model.als
+  patterns      : AuthRequiredEverywhere, PermissionCompleteness, AppendOnly, AttributionCorrectness, OwnershipExclusivity, AuditCompleteness, ValidationBeforeMutation
+  fr count      : 18 declared in spec.md
+  assertions    : 25 total (22/25 PASS via Alloy)
+==============================================================================
+
+  Compliance matrix
+  ----------------------------------------------------------------------------
+  Assertion                       Verdict   Anchor
+  --------------------------------------------------------------------
+  AuthRequiredEverywhere          PASS      PATTERN AuthRequiredEverywhere: spec.md FR-001; contracts/http-api.md "401 unauthenticated"
+  PermissionCompleteness          FAIL      PATTERN PermissionCompleteness: contracts/http-api.md "no 403"; spec.md FR-004
+  AppendOnly                      PASS      PATTERN AppendOnly: data-model.md "No UPDATE/DELETE on task_deletions"; FR-018
+  AttributionCorrectness          PASS      PATTERN AttributionCorrectness: FR-018; data-model.md task_deletions fields
+  OwnershipExclusivity            PASS      PATTERN OwnershipExclusivity: FR-008 "at most one assignee"
+  AuditCompleteness               PASS      PATTERN AuditCompleteness: FR-018; every successful DeleteOp -> exactly one TaskDeletion
+  ValidationBeforeMutation        PASS      PATTERN ValidationBeforeMutation: FR-005..FR-008; contracts/http-api.md validation_error
+  FR_001_AuthRequired             PASS      FEATURE-SPECIFIC: FR-001
+  FR_002_CallerFromAuth           PASS      FEATURE-SPECIFIC: FR-002 caller from auth context, not from payload
+  FR_003_SingleWorkspace          FAIL      FEATURE-SPECIFIC: FR-003 single implicit workspace; every authenticated user is a member
+  FR_004_FlatPermissions          FAIL      FEATURE-SPECIFIC: FR-004 flat peer permissions; no 403
+  FR_005_TitleStructure           PASS      FEATURE-SPECIFIC: FR-005 title required (structural: one title atom per task)
+  FR_006_DescriptionStructure     PASS      FEATURE-SPECIFIC: FR-006 description present-but-bounded (one description atom per task)
+  FR_007_DueDateOptional          PASS      FEATURE-SPECIFIC: FR-007 due_date optional, past allowed
+  FR_008_AssigneeAtMostOne        PASS      FEATURE-SPECIFIC: FR-008 at most one assignee; assignee is a member
+  FR_009_CreatorOnePerTask        PASS      FEATURE-SPECIFIC: FR-009 creator immutable (exactly one createdBy per task)
+  FR_010_StatusValidAndInitial    PASS      FEATURE-SPECIFIC: FR-010 status in {todo, in_progress, done}; created tasks start in todo
+  FR_011_ClosedTaskRule           PASS      FEATURE-SPECIFIC: FR-011 closed-task PATCH rule (reopen-or-fail)
+  FR_012_DeletionRecorded         PASS      FEATURE-SPECIFIC: FR-012 deletion is permanent and recorded
+  FR_013_ScopeLimited             PASS      FEATURE-SPECIFIC: FR-013 v1 scope is exactly the five operation kinds
+  FR_014_UpdatedAtPresent         PASS      FEATURE-SPECIFIC: FR-014 updated_at present (most-recently-updated ordering possible)
+  FR_015_FilterableFieldsPresent  PASS      FEATURE-SPECIFIC: FR-015 fields needed to filter (status, assignee, title) are present
+  FR_016_FiltersClearable         PASS      FEATURE-SPECIFIC: FR-016 clearing filters yields full task universe (no hidden tasks)
+  FR_017_TimestampsPresent        PASS      FEATURE-SPECIFIC: FR-017 created_at and updated_at exist on every task
+  FR_018_DeletionLogAppendOnly    PASS      FEATURE-SPECIFIC: FR-018 deletion log: append-only AND faithful attribution
+
+  Counterexamples (Alloy SAT)
+  ----------------------------------------------------------------------------
+  PermissionCompleteness  [PATTERN PermissionCompleteness: contracts/http-api.md "no 403"; spec.md FR-004]
+    Alloy: 01. check PermissionCompleteness     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR_003_SingleWorkspace  [FEATURE-SPECIFIC: FR-003 single implicit workspace; every authenticated user is a member]
+    Alloy: 09. check FR_003_SingleWorkspace     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR_004_FlatPermissions  [FEATURE-SPECIFIC: FR-004 flat peer permissions; no 403]
+    Alloy: 10. check FR_004_FlatPermissions     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR coverage
+  ----------------------------------------------------------------------------
+  FR-001  →  FR_001_AuthRequired=PASS, AuthRequiredEverywhere=PASS
+  FR-002  →  FR_002_CallerFromAuth=PASS
+  FR-003  →  FR_003_SingleWorkspace=FAIL
+  FR-004  →  FR_004_FlatPermissions=FAIL, PermissionCompleteness=FAIL
+  FR-005  →  FR_005_TitleStructure=PASS
+  FR-006  →  FR_006_DescriptionStructure=PASS
+  FR-007  →  FR_007_DueDateOptional=PASS
+  FR-008  →  FR_008_AssigneeAtMostOne=PASS, OwnershipExclusivity=PASS
+  FR-009  →  FR_009_CreatorOnePerTask=PASS
+  FR-010  →  FR_010_StatusValidAndInitial=PASS
+  FR-011  →  FR_011_ClosedTaskRule=PASS
+  FR-012  →  FR_012_DeletionRecorded=PASS, AuditCompleteness=PASS
+  FR-013  →  FR_013_ScopeLimited=PASS
+  FR-014  →  FR_014_UpdatedAtPresent=PASS
+  FR-015  →  FR_015_FilterableFieldsPresent=PASS
+  FR-016  →  FR_016_FiltersClearable=PASS
+  FR-017  →  FR_017_TimestampsPresent=PASS
+  FR-018  →  FR_018_DeletionLogAppendOnly=PASS, AppendOnly=PASS, AttributionCorrectness=PASS, AuditCompleteness=PASS
+
+  All FRs have at least one matching assertion.
+
+==============================================================================
+  Mutation tests  (assertion-strength validation)
+==============================================================================
+
+  Strategy: replace each named fact's body with `{}` (no constraint),
+  then re-run Alloy. Each listed assertion should now FAIL on the
+  mutated model. If it still PASSes, the assertion is vacuous and
+  must be strengthened.
+
+  - MUTATE F_AuthRequired  → runs/B-L1/mutated_F_AuthRequired.als
+    rationale: F_AuthRequired is the only fact tying outcome=OK to caller presence. Clearing it and forcing a successful but uncalled operation gives a direct counterexample to FR-001.
+    expected to FAIL: AuthRequiredEverywhere, FR_001_AuthRequired, PermissionCompleteness, FR_003_SingleWorkspace, FR_004_FlatPermissions
+      - AuthRequiredEverywhere: FAIL (expected)
+      - FR_001_AuthRequired: FAIL (expected)
+      - PermissionCompleteness: FAIL (expected)
+      - FR_003_SingleWorkspace: FAIL (expected)
+      - FR_004_FlatPermissions: FAIL (expected)
+
+  - MUTATE F_AppendOnlyDeletionLog  → runs/B-L1/mutated_F_AppendOnlyDeletionLog.als
+    rationale: F_AppendOnlyDeletionLog is the sole guard against two TaskDeletion rows for the same task. Clearing it and forcing duplicates exposes any model that secretly allowed re-deletion.
+    expected to FAIL: AppendOnly, FR_018_DeletionLogAppendOnly
+      - AppendOnly: FAIL (expected)
+      - FR_018_DeletionLogAppendOnly: FAIL (expected)
+
+  - MUTATE F_DeletionLogPerDelete  → runs/B-L1/mutated_F_DeletionLogPerDelete.als
+    rationale: F_DeletionLogPerDelete is the load-bearing fact for one-TaskDeletion-per-successful-DeleteOp. Injecting a successful DeleteOp with no matching log row breaks audit completeness.
+    expected to FAIL: AuditCompleteness, FR_012_DeletionRecorded
+      - AuditCompleteness: FAIL (expected)
+      - FR_012_DeletionRecorded: FAIL (expected)
+
+  - MUTATE F_DeletionLogPerDelete  → runs/B-L1/mutated_F_DeletionLogPerDelete.als
+    rationale: Same fact also pins TaskDeletion.deletedBy to the operation's caller. Injecting a misattributed entry exposes any predicate that doesn't actually check attribution.
+    expected to FAIL: AttributionCorrectness, FR_018_DeletionLogAppendOnly
+      - AttributionCorrectness: FAIL (expected)
+      - FR_018_DeletionLogAppendOnly: FAIL (expected)
+
+  - MUTATE F_ClosedTaskRule  → runs/B-L1/mutated_F_ClosedTaskRule.als
+    rationale: F_ClosedTaskRule encodes the FR-011 reopen-or-fail invariant. Injecting an OK edit of a Done task that does not set status to Todo/InProgress directly contradicts FR-011.
+    expected to FAIL: FR_011_ClosedTaskRule
+      - FR_011_ClosedTaskRule: FAIL (expected)
+
+  - MUTATE F_NoSideEffectsOnFailure  → runs/B-L1/mutated_F_NoSideEffectsOnFailure.als
+    rationale: F_NoSideEffectsOnFailure forbids producing a newTask when the operation failed. Injecting a ValidationFail CreateOp that nonetheless carries a newTask is the canonical 'side effect on failure' counterexample.
+    expected to FAIL: ValidationBeforeMutation
+      - ValidationBeforeMutation: FAIL (expected)
+
+  Mutation summary
+  ----------------------------------------------------------------------------
+  - F_AuthRequired: ASSERTIONS BIT (AuthRequiredEverywhere, FR_001_AuthRequired, PermissionCompleteness, FR_003_SingleWorkspace, FR_004_FlatPermissions)
+  - F_AppendOnlyDeletionLog: ASSERTIONS BIT (AppendOnly, FR_018_DeletionLogAppendOnly)
+  - F_DeletionLogPerDelete: ASSERTIONS BIT (AuditCompleteness, FR_012_DeletionRecorded)
+  - F_DeletionLogPerDelete: ASSERTIONS BIT (AttributionCorrectness, FR_018_DeletionLogAppendOnly)
+  - F_ClosedTaskRule: ASSERTIONS BIT (FR_011_ClosedTaskRule)
+  - F_NoSideEffectsOnFailure: ASSERTIONS BIT (ValidationBeforeMutation)
+
+
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/B-L1/report.txt

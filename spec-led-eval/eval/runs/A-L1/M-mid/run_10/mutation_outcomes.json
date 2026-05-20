@@ -1,0 +1,48 @@
+{
+  "F_AppendOnlyAuditEntries": {
+    "targeted_asserts": {
+      "AppendOnly": "BIT",
+      "FR_016_AuditTrailComplete": "VACUOUS_OVERCONSTRAINT",
+      "AuditCompleteness": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_OnePendingPerCustomer": {
+    "targeted_asserts": {
+      "FR_005_OnePendingPerCustomer": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_DeciderIsStaff": {
+    "targeted_asserts": {
+      "FR_009_DecisionReasonAndStaffOnly": "BIT",
+      "LeastPrivilege": "VACUOUS_OVERCONSTRAINT",
+      "FR_015_RoleBasedAccess": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_AtMostOneDecisionPerApplication": {
+    "targeted_asserts": {
+      "ConcurrencySafety": "VACUOUS_OVERCONSTRAINT",
+      "FR_011_DecisionImmutability": "VACUOUS_OVERCONSTRAINT",
+      "FR_012_NoConcurrentDecisions": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_AuditActorAttribution": {
+    "targeted_asserts": {
+      "AttributionCorrectness": "BIT",
+      "FR_016_AuditTrailComplete": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_PermissionMatrix": {
+    "targeted_asserts": {
+      "LeastPrivilege": "BIT",
+      "PermissionCompleteness": "BIT",
+      "PermissionGrounding": "BIT",
+      "FR_015_RoleBasedAccess": "BIT"
+    },
+    "all_bit": true
+  }
+}

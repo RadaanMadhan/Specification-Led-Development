@@ -1,0 +1,53 @@
+{
+  "F_PermissionMatrix": {
+    "targeted_asserts": {
+      "LeastPrivilege": "VACUOUS_OVERCONSTRAINT",
+      "FR_002_CustomerPermissions": "VACUOUS_OVERCONSTRAINT",
+      "FR_003_LoanOfficerPermissions": "VACUOUS_OVERCONSTRAINT",
+      "FR_004_ComplianceReviewerPermissions": "VACUOUS_OVERCONSTRAINT",
+      "FR_023_ComplianceReadOnly": "VACUOUS_OVERCONSTRAINT",
+      "PermissionCompleteness": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_OneInFlightPerCustomer": {
+    "targeted_asserts": {
+      "FR_008_OneInFlightPerCustomer": "BIT",
+      "ConcurrencySafety": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_DeciderIsAssignedOfficer": {
+    "targeted_asserts": {
+      "FR_013_OnlyAssignedOfficerDecides": "BIT",
+      "AttributionCorrectness": "BIT",
+      "ValidationBeforeMutation": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_UniqueInitialAuditEntry": {
+    "targeted_asserts": {
+      "FR_009_AuditOnSubmission": "BIT",
+      "FR_019_ExactlyOneAuditPerTransition": "BIT",
+      "AppendOnly": "BIT",
+      "FR_018_AppendOnlyAudit": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AtMostOneDecisionPerApplication": {
+    "targeted_asserts": {
+      "FR_015_AtomicDecisionRecord": "VACUOUS_OVERCONSTRAINT",
+      "FR_016_TerminalStateImmutability": "VACUOUS_OVERCONSTRAINT",
+      "AuditCompleteness": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_AuditActorRolesMatchTransition": {
+    "targeted_asserts": {
+      "AttributionCorrectness": "VACUOUS_OVERCONSTRAINT",
+      "FR_021_OfficerIdentityHiddenFromCustomer": "VACUOUS_OVERCONSTRAINT",
+      "FR_017_AuditForEveryTransition": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  }
+}

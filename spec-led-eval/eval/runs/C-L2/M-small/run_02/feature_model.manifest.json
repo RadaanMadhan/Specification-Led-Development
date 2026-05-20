@@ -1,0 +1,116 @@
+{
+  "feature_id": "C-L2",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuthRequiredEverywhere",
+    "AppendOnly",
+    "AuditCompleteness",
+    "AttributionCorrectness",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthenticationBoundary",
+    "FR_004_CareTeamEvaluatedPerRequest",
+    "FR_005_018_AdminContentBlindness",
+    "FR_006_ByteEquivalentUnauthorized",
+    "FR_011_NotesAppendOnly",
+    "FR_012_OneAuditPerAccessAttempt",
+    "FR_013_AuthorisationBasisRecorded",
+    "FR_014_AuditImmutable",
+    "FR_017_AdminOnlyAuditEndpoint"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthenticationBoundary",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-004": [
+      "FR_004_CareTeamEvaluatedPerRequest",
+      "OwnershipBasedAccess"
+    ],
+    "FR-005": [
+      "FR_005_018_AdminContentBlindness"
+    ],
+    "FR-006": [
+      "FR_006_ByteEquivalentUnauthorized",
+      "NoInformationLeakage"
+    ],
+    "FR-011": [
+      "FR_011_NotesAppendOnly",
+      "AppendOnly"
+    ],
+    "FR-012": [
+      "FR_012_OneAuditPerAccessAttempt",
+      "AuditCompleteness"
+    ],
+    "FR-013": [
+      "FR_013_AuthorisationBasisRecorded",
+      "AttributionCorrectness"
+    ],
+    "FR-014": [
+      "FR_014_AuditImmutable",
+      "AppendOnly"
+    ],
+    "FR-017": [
+      "FR_017_AdminOnlyAuditEndpoint"
+    ],
+    "FR-018": [
+      "FR_005_018_AdminContentBlindness"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege"
+      ],
+      "rationale": "Removing the permission matrix definition allows Alloy to construct access-control scenarios that violate the principle of least privilege. The LeastPrivilege assertion checks that all permitted operations conform to the matrix; without it, the assertion becomes vacuous.",
+      "inject_violation": "fact MUTATE_PermissionViolation { some a: AuditEntry | a.accessor.userRole = HospitalAdmin and a.accessType = ReadRecord and a.outcome = Permitted }"
+    },
+    {
+      "fact_name": "F_CareTeamGatesAccess",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_004_CareTeamEvaluatedPerRequest"
+      ],
+      "rationale": "This fact enforces that clinical roles can only succeed if they have care-team membership. Removing it allows the model to construct clinical-access audit entries with Permitted outcome and no backing care-team membership, which is exactly what OwnershipBasedAccess should reject.",
+      "inject_violation": "fact MUTATE_AccessWithoutTeam { some a: AuditEntry | a.accessor.userRole in ClinicalRole and a.accessType = ReadRecord and a.outcome = Permitted and no m: CareTeamMembership | m.clinician = a.accessor and m.patient = a.patient and m.status = \"active\" }"
+    },
+    {
+      "fact_name": "F_AppendOnlyNotes",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_011_NotesAppendOnly"
+      ],
+      "rationale": "Removing the append-only constraint on notes allows two distinct ClinicalNote atoms to be equal, violating the immutability invariant. The assertion checks that all notes are distinct.",
+      "inject_violation": "fact MUTATE_MutableNotes { some disj n1, n2: ClinicalNote | n1 = n2 }"
+    },
+    {
+      "fact_name": "F_AppendOnlyAuditEntries",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_014_AuditImmutable"
+      ],
+      "rationale": "Removing the append-only constraint on audit entries allows two distinct AuditEntry atoms to be equal. The assertion ensures all audit entries are immutably distinct.",
+      "inject_violation": "fact MUTATE_MutableAuditEntries { some disj a1, a2: AuditEntry | a1 = a2 }"
+    },
+    {
+      "fact_name": "F_AdminCanOnlyListAudit",
+      "asserts_violated": [
+        "FR_005_018_AdminContentBlindness"
+      ],
+      "rationale": "This fact restricts administrators to ListAudit operations. Removing it allows the model to place an administrator in a ReadRecord or AddNote operation, violating content-blindness. The assertion should catch any admin performing non-audit operations.",
+      "inject_violation": "fact MUTATE_AdminReadsRecord { some a: AuditEntry | a.accessor.userRole = HospitalAdmin and a.accessType = ReadRecord }"
+    },
+    {
+      "fact_name": "F_ListAuditIsAdminOnly",
+      "asserts_violated": [
+        "FR_017_AdminOnlyAuditEndpoint"
+      ],
+      "rationale": "This fact enforces that ListAudit is performed only by administrators. Removing it allows a clinical-role user to perform ListAudit, violating endpoint-level access control.",
+      "inject_violation": "fact MUTATE_ClinicalListAudit { some a: AuditEntry | a.accessor.userRole in ClinicalRole and a.accessType = ListAudit }"
+    }
+  ]
+}

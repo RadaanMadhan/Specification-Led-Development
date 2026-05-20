@@ -1,0 +1,49 @@
+{
+  "F_LeastPrivilege": {
+    "targeted_asserts": {
+      "LeastPrivilege": "VACUOUS_OVERCONSTRAINT",
+      "FR_005_AdminCannotAccessClinical": "VACUOUS_OVERCONSTRAINT",
+      "FR_017_CliniciansCannotAuditSearch": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_CareTeamGating": {
+    "targeted_asserts": {
+      "FR_004_CareTeamGating": "VACUOUS_OVERCONSTRAINT",
+      "OwnershipBasedAccess": "VACUOUS_OVERCONSTRAINT",
+      "FR_009_NoteAuthorOnCareTeam": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_AdminCannotAddNote": {
+    "targeted_asserts": {
+      "FR_005_AdminCannotAddNote": "VACUOUS_OVERCONSTRAINT",
+      "FR_010_NoteAuthorIsClinical": "VACUOUS_OVERCONSTRAINT",
+      "FR_018_AdminContentBlindness": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_AuditCompleteness": {
+    "targeted_asserts": {
+      "AuditCompleteness": "VACUOUS_OVERCONSTRAINT",
+      "FR_011_NotesAppendOnly": "VACUOUS_OVERCONSTRAINT",
+      "FR_012_AlwaysOnAudit": "VACUOUS_OVERCONSTRAINT",
+      "ValidationBeforeMutation": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_AppendOnlyAuditEntries": {
+    "targeted_asserts": {
+      "FR_014_AuditImmutability": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AdminContentBlindness": {
+    "targeted_asserts": {
+      "FR_018_AdminContentBlindness": "BIT",
+      "FR_017_AdminOnlyAuditSearch": "BIT",
+      "LeastPrivilege": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  }
+}

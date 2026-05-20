@@ -1,0 +1,169 @@
+{
+  "feature_id": "B-L3",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AppendOnly",
+    "AuditCompleteness",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "ValidationBeforeMutation"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_RoleFromToken",
+    "FR_003_MemberVisibilityBoundary",
+    "FR_005_TeamAdminInTeamAccess",
+    "FR_006_CrossTeamIsolation",
+    "FR_009_ImmutableOwnerAndTeam",
+    "FR_010_OwnerOnlyShareControl",
+    "FR_011_ShareePermissions",
+    "FR_012_CrossTeamSharingForbidden",
+    "FR_013_ShareAuditEntries",
+    "FR_015_MutationAuditCompleteness",
+    "FR_016_AuditEntryFields",
+    "FR_017_AuditImmutable",
+    "FR_019_AuditVisibility"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "ValidationBeforeMutation"
+    ],
+    "FR-002": [
+      "FR_002_RoleFromToken"
+    ],
+    "FR-002a": [
+      "FR_002_RoleFromToken"
+    ],
+    "FR-003": [
+      "FR_003_MemberVisibilityBoundary",
+      "OwnershipBasedAccess"
+    ],
+    "FR-004": [
+      "FR_003_MemberVisibilityBoundary",
+      "LeastPrivilege"
+    ],
+    "FR-005": [
+      "FR_005_TeamAdminInTeamAccess",
+      "LeastPrivilege"
+    ],
+    "FR-006": [
+      "FR_006_CrossTeamIsolation",
+      "NoInformationLeakage"
+    ],
+    "FR-007": [
+      "ValidationBeforeMutation"
+    ],
+    "FR-008": [
+      "FR_009_ImmutableOwnerAndTeam"
+    ],
+    "FR-009": [
+      "FR_009_ImmutableOwnerAndTeam",
+      "OwnershipExclusivity"
+    ],
+    "FR-010": [
+      "FR_010_OwnerOnlyShareControl",
+      "LeastPrivilege"
+    ],
+    "FR-011": [
+      "FR_011_ShareePermissions",
+      "OwnershipBasedAccess",
+      "NoInformationLeakage"
+    ],
+    "FR-012": [
+      "FR_012_CrossTeamSharingForbidden"
+    ],
+    "FR-013": [
+      "FR_013_ShareAuditEntries",
+      "AttributionCorrectness"
+    ],
+    "FR-014": [
+      "NoInformationLeakage",
+      "FR_006_CrossTeamIsolation"
+    ],
+    "FR-015": [
+      "FR_015_MutationAuditCompleteness",
+      "AuditCompleteness"
+    ],
+    "FR-016": [
+      "FR_016_AuditEntryFields",
+      "AttributionCorrectness"
+    ],
+    "FR-017": [
+      "FR_017_AuditImmutable",
+      "AppendOnly"
+    ],
+    "FR-018": [
+      "FR_015_MutationAuditCompleteness"
+    ],
+    "FR-019": [
+      "FR_019_AuditVisibility"
+    ],
+    "FR-020": [
+      "AppendOnly",
+      "FR_017_AuditImmutable"
+    ],
+    "FR-021": []
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_RelPermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_010_OwnerOnlyShareControl",
+        "FR_011_ShareePermissions"
+      ],
+      "rationale": "Clearing the closed-world permission matrix fact removes all constraints on which (Relationship, OperationKind) cells are allowed. Injecting a ShareeRel\u2192OpDeleteTask and TeamAdminRel\u2192OpPatchShareList cell forces a counterexample where sharees can delete tasks and admins can hijack share lists \u2014 exactly what FR-010/FR-011 forbid.",
+      "inject_violation": "fact MUTATE_RelPermViolation { ShareeRel -> OpDeleteTask in RelPermMatrix.relAllowed  TeamAdminRel -> OpPatchShareList in RelPermMatrix.relAllowed }"
+    },
+    {
+      "fact_name": "F_RolePermissionMatrix",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_017_AuditImmutable"
+      ],
+      "rationale": "Clearing the role permission matrix removes the universal prohibition on OpDeleteAuditEntry and OpUpdateAuditEntry. Injecting TeamAdmin\u2192OpDeleteAuditEntry forces a counterexample where admins can delete audit entries, violating the append-only and immutability assertions.",
+      "inject_violation": "fact MUTATE_AuditMutationViolation { TeamAdmin -> OpDeleteAuditEntry in RolePermMatrix.roleAllowed  TeamAdmin -> OpUpdateAuditEntry in RolePermMatrix.roleAllowed }"
+    },
+    {
+      "fact_name": "F_ShareeInSameTeam",
+      "asserts_violated": [
+        "FR_012_CrossTeamSharingForbidden",
+        "NoInformationLeakage"
+      ],
+      "rationale": "Clearing the same-team constraint on sharedWith removes FR-012's enforcement. The injection forces a task to have a sharee from a different team, violating cross-team isolation \u2014 a sharee in another team can now reach the task, breaking NoInformationLeakage for the outsider path.",
+      "inject_violation": "fact MUTATE_CrossTeamShareViolation { some t: Task | some u: User | u not in t.sharedWith and u.userTeam != t.taskTeam and u in t.sharedWith }"
+    },
+    {
+      "fact_name": "F_ShareAuditEntries",
+      "asserts_violated": [
+        "FR_013_ShareAuditEntries",
+        "AttributionCorrectness"
+      ],
+      "rationale": "Clearing the constraint that only the task owner authors Shared/Unshared audit entries removes attribution enforcement. Injecting a Shared audit entry authored by a non-owner (e.g., a sharee user) forces a counterexample where a sharee could generate share audit events, contradicting FR-013 and misattribution.",
+      "inject_violation": "fact MUTATE_ShareAttributionViolation { some ae: AuditEntry | ae.auditOp = Shared and ae.auditActor != ae.auditTask.taskOwner }"
+    },
+    {
+      "fact_name": "F_AuditActorInSameTeam",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_016_AuditEntryFields",
+        "FR_006_CrossTeamIsolation"
+      ],
+      "rationale": "Clearing the same-team constraint on audit actors removes the invariant that only in-team users generate audit entries. Injecting an audit entry whose actor is from a different team than the task forces a counterexample violating cross-team isolation as a side-effect of auditing.",
+      "inject_violation": "fact MUTATE_CrossTeamAuditViolation { some ae: AuditEntry | ae.auditActor.userTeam != ae.auditTask.taskTeam }"
+    },
+    {
+      "fact_name": "F_AuditExistsForEveryMutation",
+      "asserts_violated": [
+        "FR_015_MutationAuditCompleteness",
+        "AuditCompleteness"
+      ],
+      "rationale": "Clearing the constraint that every task must have a Created audit entry removes the audit-completeness guarantee. Injecting a task with no audit entries at all forces a counterexample where a task exists with no audit record \u2014 violating SC-007 (zero observable state changes without a corresponding audit entry).",
+      "inject_violation": "fact MUTATE_MissingAuditViolation { some t: Task | no ae: AuditEntry | ae.auditTask = t }"
+    }
+  ]
+}

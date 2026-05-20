@@ -1,0 +1,162 @@
+$ /Users/leonhausmann/opt/anaconda3/bin/python3 -m speceval.cli verify-design --no-cache --model M-mid --java-bin /Users/leonhausmann/opt/anaconda3/lib/python3.9/site-packages/jdk4py/java-runtime/bin/java /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/eval/specs/A-L3
+
+[parse]   feature 'A-L3', 24 FRs, 5 user stories
+[lift]    calling LLM (anthropic: tier=M-mid, model=claude-sonnet-4-6)...
+[lift]    fresh lift (sha=61f36f11fcf5)
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/A-L3/feature_model.als
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/A-L3/cost_log.json
+[alloy]   running alloy.jar on feature_model.als...
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/A-L3/alloy_verdicts.json
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/A-L3/mutation_outcomes.json
+
+==============================================================================
+  Design Compliance Report  (Phase 3 — feature_model.als)
+  feature       : A-L3
+  spec source   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/eval/specs/A-L3
+  alloy model   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/A-L3/feature_model.als
+  patterns      : LeastPrivilege, PermissionCompleteness, AuthRequiredEverywhere, AuditCompleteness, AppendOnly, AttributionCorrectness, OwnershipBasedAccess, NoInformationLeakage, NoSelfMutation, ValidationBeforeMutation
+  fr count      : 24 declared in spec.md
+  assertions    : 26 total (20/26 PASS via Alloy)
+==============================================================================
+
+  Compliance matrix
+  ----------------------------------------------------------------------------
+  Assertion                                 Verdict   Anchor
+  ------------------------------------------------------------------------------
+  LeastPrivilege                            PASS      PATTERN LeastPrivilege: contracts/http-api.md permission table; spec.md FR-003,FR-004,FR-005
+  PermissionCompleteness                    PASS      PATTERN PermissionCompleteness: contracts/http-api.md permission table
+  AuthRequiredEverywhere                    PASS      PATTERN AuthRequiredEverywhere: spec.md FR-001; contracts/http-api.md auth section
+  AuditCompleteness                         PASS      PATTERN AuditCompleteness: spec.md FR-016,FR-017; data-model.md AuditEntry
+  AppendOnly                                PASS      PATTERN AppendOnly: spec.md FR-018,FR-019; data-model.md "no UPDATE/DELETE"
+  AttributionCorrectness                    PASS      PATTERN AttributionCorrectness: spec.md FR-016; data-model.md AuditEntry.actor_role
+  OwnershipBasedAccess                      FAIL      PATTERN OwnershipBasedAccess: spec.md FR-003,FR-004; contracts/http-api.md GET permission table
+  NoInformationLeakage                      FAIL      PATTERN NoInformationLeakage: spec.md FR-020,FR-021,FR-022; contracts/http-api.md byte-equivalent not-found
+  NoSelfMutation                            PASS      PATTERN NoSelfMutation: spec.md FR-013; data-model.md CHECK applicant_id != assigned_officer_id
+  ValidationBeforeMutation                  PASS      PATTERN ValidationBeforeMutation: spec.md FR-001,FR-014,FR-017; contracts/http-api.md 400/401 responses
+  FR_001_AuthRequired                       PASS      FEATURE-SPECIFIC: FR-001; spec.md "unauthenticated → 401 before any business logic"
+  FR_002_RoleMultiplicity                   PASS      FEATURE-SPECIFIC: FR-002; data-model.md users.roles CHECK constraint
+  FR_003_ApplicantCannotPatch               FAIL      FEATURE-SPECIFIC: FR-003; contracts/http-api.md permission table row "PATCH /applications/{id}/status"
+  FR_004_OfficerCannotPost                  PASS      FEATURE-SPECIFIC: FR-004; contracts/http-api.md permission table row "POST /applications"
+  FR_005_AuditorReadOnly                    PASS      FEATURE-SPECIFIC: FR-005; contracts/http-api.md permission table; spec.md US3
+  FR_008_OneInFlight                        PASS      FEATURE-SPECIFIC: FR-008; data-model.md UNIQUE INDEX idx_one_in_flight_per_applicant
+  FR_009_ValidTransitions                   PASS      FEATURE-SPECIFIC: FR-009; data-model.md ApplicationStatus transitions
+  FR_011_NoSelfAssignment                   PASS      FEATURE-SPECIFIC: FR-011; data-model.md CHECK assigned_officer_id != applicant_id
+  FR_012_OnlyAssignedOfficerCanPatch        FAIL      FEATURE-SPECIFIC: FR-012; spec.md SC-005; data-model.md conditional UPDATE
+  FR_013_NoSelfApproval                     PASS      FEATURE-SPECIFIC: FR-013; spec.md SC-006; contracts/http-api.md self_decision_forbidden
+  FR_015_TerminalStateFinal                 PASS      FEATURE-SPECIFIC: FR-015; spec.md "already_decided"; contracts/http-api.md 409
+  FR_016_AuditAttribution                   PASS      FEATURE-SPECIFIC: FR-016; data-model.md AuditEntry schema; spec.md SC-003
+  FR_018_AuditImmutable                     PASS      FEATURE-SPECIFIC: FR-018; data-model.md "no UPDATE/DELETE on audit_entries"; spec.md SC-009
+  FR_020_ByteEquivalentUnauthorized         FAIL      FEATURE-SPECIFIC: FR-020,FR-021; contracts/http-api.md "byte-equivalent not-found response"; spec.md SC-004
+  FR_023_AuditEndpointAuditorOnly           FAIL      FEATURE-SPECIFIC: FR-023; contracts/http-api.md GET /applications/{id}/audit authorisation; spec.md US3
+  FR_024_ApplicantNoPostSubmissionMutation  PASS      FEATURE-SPECIFIC: FR-024; spec.md "applicant cannot modify any of its fields"; contracts/http-api.md
+
+  Counterexamples (Alloy SAT)
+  ----------------------------------------------------------------------------
+  OwnershipBasedAccess  [PATTERN OwnershipBasedAccess: spec.md FR-003,FR-004; contracts/http-api.md GET permission table]
+    Alloy: 06. check OwnershipBasedAccess     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  NoInformationLeakage  [PATTERN NoInformationLeakage: spec.md FR-020,FR-021,FR-022; contracts/http-api.md byte-equivalent not-found]
+    Alloy: 07. check NoInformationLeakage     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR_003_ApplicantCannotPatch  [FEATURE-SPECIFIC: FR-003; contracts/http-api.md permission table row "PATCH /applications/{id}/status"]
+    Alloy: 12. check FR_003_ApplicantCannotPatch     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR_012_OnlyAssignedOfficerCanPatch  [FEATURE-SPECIFIC: FR-012; spec.md SC-005; data-model.md conditional UPDATE]
+    Alloy: 18. check FR_012_OnlyAssignedOfficerCanPatch     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR_020_ByteEquivalentUnauthorized  [FEATURE-SPECIFIC: FR-020,FR-021; contracts/http-api.md "byte-equivalent not-found response"; spec.md SC-004]
+    Alloy: 23. check FR_020_ByteEquivalentUnauthorized     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR_023_AuditEndpointAuditorOnly  [FEATURE-SPECIFIC: FR-023; contracts/http-api.md GET /applications/{id}/audit authorisation; spec.md US3]
+    Alloy: 24. check FR_023_AuditEndpointAuditorOnly     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR coverage
+  ----------------------------------------------------------------------------
+  FR-001  →  FR_001_AuthRequired=PASS, AuthRequiredEverywhere=PASS
+  FR-002  →  FR_002_RoleMultiplicity=PASS
+  FR-003  →  FR_003_ApplicantCannotPatch=FAIL, LeastPrivilege=PASS
+  FR-004  →  FR_004_OfficerCannotPost=PASS, LeastPrivilege=PASS
+  FR-005  →  FR_005_AuditorReadOnly=PASS, LeastPrivilege=PASS
+  FR-006  →  FR_001_AuthRequired=PASS
+  FR-007  →  FR_009_ValidTransitions=PASS
+  FR-008  →  FR_008_OneInFlight=PASS
+  FR-009  →  FR_009_ValidTransitions=PASS
+  FR-010  →  FR_011_NoSelfAssignment=PASS
+  FR-011  →  FR_011_NoSelfAssignment=PASS, NoSelfMutation=PASS
+  FR-012  →  FR_012_OnlyAssignedOfficerCanPatch=FAIL
+  FR-013  →  FR_013_NoSelfApproval=PASS, NoSelfMutation=PASS
+  FR-014  →  ValidationBeforeMutation=PASS
+  FR-015  →  FR_015_TerminalStateFinal=PASS
+  FR-016  →  FR_016_AuditAttribution=PASS, AuditCompleteness=PASS, AttributionCorrectness=PASS
+  FR-017  →  AuditCompleteness=PASS, ValidationBeforeMutation=PASS
+  FR-018  →  FR_018_AuditImmutable=PASS, AppendOnly=PASS
+  FR-019  →  AppendOnly=PASS, FR_018_AuditImmutable=PASS
+  FR-020  →  FR_020_ByteEquivalentUnauthorized=FAIL, NoInformationLeakage=FAIL
+  FR-021  →  FR_020_ByteEquivalentUnauthorized=FAIL, NoInformationLeakage=FAIL
+  FR-022  →  NoInformationLeakage=FAIL
+  FR-023  →  FR_023_AuditEndpointAuditorOnly=FAIL
+  FR-024  →  FR_024_ApplicantNoPostSubmissionMutation=PASS
+
+  All FRs have at least one matching assertion.
+
+==============================================================================
+  Mutation tests  (assertion-strength validation)
+==============================================================================
+
+  Strategy: replace each named fact's body with `{}` (no constraint),
+  then re-run Alloy. Each listed assertion should now FAIL on the
+  mutated model. If it still PASSes, the assertion is vacuous and
+  must be strengthened.
+
+  - MUTATE F_AppendOnlyAuditEntries  → runs/A-L3/mutated_F_AppendOnlyAuditEntries.als
+    rationale: Clearing this fact removes the uniqueness constraint on (eApp, ePrev, eNew) tuples. The injected violation forces two distinct AuditEntry atoms with identical (app, prev, new) values to co-exist, representing a 'duplicate' (i.e., mutated/overwritten) audit record. Both AppendOnly and FR_018_AuditImmutable assert this cannot happen.
+    expected to FAIL: AppendOnly, FR_018_AuditImmutable
+      - AppendOnly: FAIL (expected)
+      - FR_018_AuditImmutable: FAIL (expected)
+
+  - MUTATE F_NoSelfApproval  → runs/A-L3/mutated_F_NoSelfApproval.als
+    rationale: Clearing this fact removes the guard preventing an applicant from being the actor on a non-initial audit entry for their own application. The injection forces exactly this situation: an audit entry with a non-null prev where the actor equals the application's applicant.
+    expected to FAIL: NoSelfMutation, FR_013_NoSelfApproval
+      - NoSelfMutation: FAIL (expected)
+      - FR_013_NoSelfApproval: PASS (vacuous?)
+
+  - MUTATE F_NoInfoLeakageOnFailedRead  → runs/A-L3/mutated_F_NoInfoLeakageOnFailedRead.als
+    rationale: Clearing this fact allows a failed GET operation to carry a non-null oApp link, meaning the system reveals the existence of the application even in a denied response. The injection forces a failed GET to reference an existing application, which is exactly what the byte-equivalence invariant prohibits.
+    expected to FAIL: NoInformationLeakage, FR_020_ByteEquivalentUnauthorized
+      - NoInformationLeakage: FAIL (expected)
+      - FR_020_ByteEquivalentUnauthorized: FAIL (expected)
+
+  - MUTATE F_AuditEndpointAuditorOnly  → runs/A-L3/mutated_F_AuditEndpointAuditorOnly.als
+    rationale: Clearing this fact removes the constraint that only RAuditor callers may succeed at GetApplicationAudit. The injection forces a succeeded GetApplicationAudit operation by an ROfficer caller, violating the auditor-only access rule for the audit endpoint.
+    expected to FAIL: FR_023_AuditEndpointAuditorOnly
+      - FR_023_AuditEndpointAuditorOnly: PASS (vacuous?)
+
+  - MUTATE F_OneInFlightPerApplicant  → runs/A-L3/mutated_F_OneInFlightPerApplicant.als
+    rationale: Clearing this fact removes the partial-unique-index equivalent on (applicant, in-flight status). The injection forces two distinct applications sharing the same applicant, both in Pending status, violating the one-in-flight invariant.
+    expected to FAIL: FR_008_OneInFlight
+      - FR_008_OneInFlight: FAIL (expected)
+
+  - MUTATE F_PermissionMatrix  → runs/A-L3/mutated_F_PermissionMatrix.als
+    rationale: Clearing this fact lets Alloy choose an arbitrary Allowed relation. The injection adds the (RAuditor, PostApplications) cell that the spec explicitly denies, causing LeastPrivilege and FR_005_AuditorReadOnly to find a world where an auditor-role caller succeeds at PostApplications.
+    expected to FAIL: LeastPrivilege, PermissionCompleteness, FR_005_AuditorReadOnly
+      - LeastPrivilege: PASS (vacuous?)
+      - PermissionCompleteness: FAIL (expected)
+      - FR_005_AuditorReadOnly: FAIL (expected)
+
+  Mutation summary
+  ----------------------------------------------------------------------------
+  - F_AppendOnlyAuditEntries: ASSERTIONS BIT (AppendOnly, FR_018_AuditImmutable)
+  - F_NoSelfApproval: ASSERTION VACUOUS (NoSelfMutation, FR_013_NoSelfApproval)
+  - F_NoInfoLeakageOnFailedRead: ASSERTIONS BIT (NoInformationLeakage, FR_020_ByteEquivalentUnauthorized)
+  - F_AuditEndpointAuditorOnly: ASSERTION VACUOUS (FR_023_AuditEndpointAuditorOnly)
+  - F_OneInFlightPerApplicant: ASSERTIONS BIT (FR_008_OneInFlight)
+  - F_PermissionMatrix: ASSERTION VACUOUS (LeastPrivilege, PermissionCompleteness, FR_005_AuditorReadOnly)
+
+
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/A-L3/report.txt

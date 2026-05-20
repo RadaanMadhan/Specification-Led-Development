@@ -1,0 +1,152 @@
+{
+  "feature_id": "006-task-management",
+  "patterns_applied": [
+    "AuthRequiredEverywhere",
+    "PermissionCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "AuditCompleteness",
+    "ValidationBeforeMutation"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_CallerFromAuth",
+    "FR_003_SingleWorkspace",
+    "FR_004_FlatPermissions",
+    "FR_005_TitleStructure",
+    "FR_006_DescriptionStructure",
+    "FR_007_DueDateOptional",
+    "FR_008_AssigneeAtMostOne",
+    "FR_009_CreatorOnePerTask",
+    "FR_010_StatusValidAndInitial",
+    "FR_011_ClosedTaskRule",
+    "FR_012_DeletionRecorded",
+    "FR_013_ScopeLimited",
+    "FR_014_UpdatedAtPresent",
+    "FR_015_FilterableFieldsPresent",
+    "FR_016_FiltersClearable",
+    "FR_017_TimestampsPresent",
+    "FR_018_DeletionLogAppendOnly"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_CallerFromAuth"
+    ],
+    "FR-003": [
+      "FR_003_SingleWorkspace"
+    ],
+    "FR-004": [
+      "FR_004_FlatPermissions",
+      "PermissionCompleteness"
+    ],
+    "FR-005": [
+      "FR_005_TitleStructure"
+    ],
+    "FR-006": [
+      "FR_006_DescriptionStructure"
+    ],
+    "FR-007": [
+      "FR_007_DueDateOptional"
+    ],
+    "FR-008": [
+      "FR_008_AssigneeAtMostOne",
+      "OwnershipExclusivity"
+    ],
+    "FR-009": [
+      "FR_009_CreatorOnePerTask"
+    ],
+    "FR-010": [
+      "FR_010_StatusValidAndInitial"
+    ],
+    "FR-011": [
+      "FR_011_ClosedTaskRule"
+    ],
+    "FR-012": [
+      "FR_012_DeletionRecorded",
+      "AuditCompleteness"
+    ],
+    "FR-013": [
+      "FR_013_ScopeLimited"
+    ],
+    "FR-014": [
+      "FR_014_UpdatedAtPresent"
+    ],
+    "FR-015": [
+      "FR_015_FilterableFieldsPresent"
+    ],
+    "FR-016": [
+      "FR_016_FiltersClearable"
+    ],
+    "FR-017": [
+      "FR_017_TimestampsPresent"
+    ],
+    "FR-018": [
+      "FR_018_DeletionLogAppendOnly",
+      "AppendOnly",
+      "AttributionCorrectness",
+      "AuditCompleteness"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_AuthRequired",
+      "asserts_violated": [
+        "AuthRequiredEverywhere",
+        "FR_001_AuthRequired",
+        "PermissionCompleteness",
+        "FR_003_SingleWorkspace",
+        "FR_004_FlatPermissions"
+      ],
+      "rationale": "F_AuthRequired is the only fact tying outcome=OK to caller presence. Clearing it and forcing a successful but uncalled operation gives a direct counterexample to FR-001.",
+      "inject_violation": "fact MUTATE_AuthBypass { some op: Operation | op.outcome = OK and no op.caller }"
+    },
+    {
+      "fact_name": "F_AppendOnlyDeletionLog",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_018_DeletionLogAppendOnly"
+      ],
+      "rationale": "F_AppendOnlyDeletionLog is the sole guard against two TaskDeletion rows for the same task. Clearing it and forcing duplicates exposes any model that secretly allowed re-deletion.",
+      "inject_violation": "fact MUTATE_DuplicateDeletion { some disj td1, td2: TaskDeletion | td1.deletedTask = td2.deletedTask }"
+    },
+    {
+      "fact_name": "F_DeletionLogPerDelete",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_012_DeletionRecorded"
+      ],
+      "rationale": "F_DeletionLogPerDelete is the load-bearing fact for one-TaskDeletion-per-successful-DeleteOp. Injecting a successful DeleteOp with no matching log row breaks audit completeness.",
+      "inject_violation": "fact MUTATE_MissingDeletionLog { some op: Operation | op.kind = DeleteOp and op.outcome = OK and (no td: TaskDeletion | td.recordedFor = op) }"
+    },
+    {
+      "fact_name": "F_DeletionLogPerDelete",
+      "asserts_violated": [
+        "AttributionCorrectness",
+        "FR_018_DeletionLogAppendOnly"
+      ],
+      "rationale": "Same fact also pins TaskDeletion.deletedBy to the operation's caller. Injecting a misattributed entry exposes any predicate that doesn't actually check attribution.",
+      "inject_violation": "fact MUTATE_Misattribution { some td: TaskDeletion | td.deletedBy != td.recordedFor.caller }"
+    },
+    {
+      "fact_name": "F_ClosedTaskRule",
+      "asserts_violated": [
+        "FR_011_ClosedTaskRule"
+      ],
+      "rationale": "F_ClosedTaskRule encodes the FR-011 reopen-or-fail invariant. Injecting an OK edit of a Done task that does not set status to Todo/InProgress directly contradicts FR-011.",
+      "inject_violation": "fact MUTATE_ClosedEditAllowed { some op: Operation | op.kind = EditOp and op.outcome = OK and some op.target and op.target.status = Done and no op.setsStatus }"
+    },
+    {
+      "fact_name": "F_NoSideEffectsOnFailure",
+      "asserts_violated": [
+        "ValidationBeforeMutation"
+      ],
+      "rationale": "F_NoSideEffectsOnFailure forbids producing a newTask when the operation failed. Injecting a ValidationFail CreateOp that nonetheless carries a newTask is the canonical 'side effect on failure' counterexample.",
+      "inject_violation": "fact MUTATE_FailedCreateSideEffect { some op: Operation | op.kind = CreateOp and op.outcome = ValidationFail and some op.newTask }"
+    }
+  ]
+}

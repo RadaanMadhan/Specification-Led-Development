@@ -1,0 +1,45 @@
+{
+  "F_NoSelfAssignment": {
+    "targeted_asserts": {
+      "NoSelfMutation": "VACUOUS_OVERCONSTRAINT",
+      "FR_011_NoSelfAssign": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_AppendOnlyAuditEntries": {
+    "targeted_asserts": {
+      "AppendOnly": "VACUOUS_OVERCONSTRAINT",
+      "FR_018_AuditAppendOnly": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_AppAccessPolicy": {
+    "targeted_asserts": {
+      "NoInformationLeakage": "VACUOUS_OVERCONSTRAINT",
+      "FR_020_ByteEquivalent": "VACUOUS_OVERCONSTRAINT",
+      "FR_021_SameForOthers": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_OfficerTransitionByAssigned": {
+    "targeted_asserts": {
+      "AttributionCorrectness": "VACUOUS_OVERCONSTRAINT",
+      "FR_012_OnlyAssignedOfficerPatches": "VACUOUS_OVERCONSTRAINT",
+      "FR_004_OfficerRights": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_RoleMultiplicity": {
+    "targeted_asserts": {
+      "FR_002_RoleMultiplicity": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_AuditAttribution": {
+    "targeted_asserts": {
+      "FR_005_AuditorReadOnly": "VACUOUS_OVERCONSTRAINT",
+      "AttributionCorrectness": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  }
+}

@@ -1,0 +1,159 @@
+{
+  "feature_id": "C-L2",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "PermissionGrounding",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "ValidationBeforeMutation"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_004_CareTeamGating",
+    "FR_005_AdminNoClinicalContent",
+    "FR_006_ByteEquivalentResponse",
+    "FR_009_NoteValidation",
+    "FR_011_NotesAppendOnly",
+    "FR_012_AlwaysOnAudit",
+    "FR_013_AuditEntryShape",
+    "FR_014_AuditImmutable",
+    "FR_017_AdminOnlyAuditEndpoint",
+    "FR_018_AdminContentBlindness"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "LeastPrivilege",
+      "PermissionCompleteness"
+    ],
+    "FR-003": [
+      "PermissionGrounding"
+    ],
+    "FR-004": [
+      "FR_004_CareTeamGating",
+      "OwnershipBasedAccess"
+    ],
+    "FR-005": [
+      "FR_005_AdminNoClinicalContent",
+      "LeastPrivilege"
+    ],
+    "FR-006": [
+      "FR_006_ByteEquivalentResponse",
+      "NoInformationLeakage"
+    ],
+    "FR-007": [
+      "FR_012_AlwaysOnAudit"
+    ],
+    "FR-009": [
+      "FR_009_NoteValidation",
+      "ValidationBeforeMutation"
+    ],
+    "FR-010": [
+      "FR_013_AuditEntryShape",
+      "AttributionCorrectness"
+    ],
+    "FR-011": [
+      "FR_011_NotesAppendOnly",
+      "AppendOnly"
+    ],
+    "FR-012": [
+      "FR_012_AlwaysOnAudit",
+      "AuditCompleteness"
+    ],
+    "FR-013": [
+      "FR_013_AuditEntryShape",
+      "AttributionCorrectness"
+    ],
+    "FR-014": [
+      "FR_014_AuditImmutable",
+      "AppendOnly"
+    ],
+    "FR-015": [
+      "FR_012_AlwaysOnAudit"
+    ],
+    "FR-016": [
+      "FR_014_AuditImmutable"
+    ],
+    "FR-017": [
+      "FR_017_AdminOnlyAuditEndpoint",
+      "LeastPrivilege"
+    ],
+    "FR-018": [
+      "FR_018_AdminContentBlindness"
+    ],
+    "FR-019": [
+      "FR_006_ByteEquivalentResponse"
+    ],
+    "FR-020": [
+      "FR_013_AuditEntryShape"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_CareTeamGating",
+      "asserts_violated": [
+        "FR_004_CareTeamGating",
+        "OwnershipBasedAccess"
+      ],
+      "rationale": "Removing F_CareTeamGating lets the model find a world where a clinician with no care-team membership obtains a Permitted outcome on RecordLookup or AddNote, directly violating FR-004.",
+      "inject_violation": "fact MUTATE_CareTeamGatingViolation { some op: Operation | op.opKind = RecordLookup and op.opOutcome = Permitted and op.opCaller.userRole = Doctor and (no m: CareTeamMembership | m.ctmMember = op.opCaller and m.ctmPatient = op.opPatient) }"
+    },
+    {
+      "fact_name": "F_AuditCorrespondence",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_012_AlwaysOnAudit",
+        "AttributionCorrectness",
+        "FR_013_AuditEntryShape"
+      ],
+      "rationale": "Removing F_AuditCorrespondence allows the model to produce an Operation with an audit entry whose accessor differs from the operation's caller, and allows orphan audit entries, violating both always-on audit and attribution correctness.",
+      "inject_violation": "fact MUTATE_AuditCorrespondenceViolation { some op: Operation | op.opAudit.auditAccessor != op.opCaller }"
+    },
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "PermissionCompleteness",
+        "PermissionGrounding",
+        "FR_017_AdminOnlyAuditEndpoint"
+      ],
+      "rationale": "Removing F_PermissionMatrix lets PermMatrix.Allowed become arbitrary, making it possible for HospitalAdministrator to have RecordLookup in the allowed set, breaking LeastPrivilege and PermissionCompleteness.",
+      "inject_violation": "fact MUTATE_PermissionMatrixViolation { HospitalAdministrator -> RecordLookup in PermMatrix.Allowed }"
+    },
+    {
+      "fact_name": "F_AppendOnlyClinicalNotes",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_011_NotesAppendOnly"
+      ],
+      "rationale": "Removing F_AppendOnlyClinicalNotes allows two distinct Permitted AddNote operations to link to the same ClinicalNote atom, simulating a 'reuse/overwrite' of a note entry that violates the append-only invariant.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some disj op1, op2: Operation | op1.opKind = AddNote and op1.opOutcome = Permitted and op2.opKind = AddNote and op2.opOutcome = Permitted and op1.opAudit.auditLinkedNote = op2.opAudit.auditLinkedNote }"
+    },
+    {
+      "fact_name": "F_ClinicalEndpointsBlockAdmin",
+      "asserts_violated": [
+        "FR_005_AdminNoClinicalContent",
+        "LeastPrivilege"
+      ],
+      "rationale": "Removing F_ClinicalEndpointsBlockAdmin allows a model world where a HospitalAdministrator caller obtains Permitted on AddNote, directly violating FR-005 administrator content-blindness.",
+      "inject_violation": "fact MUTATE_AdminContentViolation { some op: Operation | op.opCaller.userRole = HospitalAdministrator and op.opKind = AddNote and op.opOutcome = Permitted }"
+    },
+    {
+      "fact_name": "F_PermittedResponseIsSuccess",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "FR_006_ByteEquivalentResponse"
+      ],
+      "rationale": "Removing F_PermittedResponseIsSuccess allows the model to assign SuccessResponse to a Denied outcome, meaning both denied and permitted operations produce the same SuccessResponse \u2014 or inversely, Denied produces a distinct response shape that leaks existence of the resource.",
+      "inject_violation": "fact MUTATE_LeakageViolation { some op: Operation | op.opOutcome = Denied and op.opResponse = SuccessResponse }"
+    }
+  ]
+}

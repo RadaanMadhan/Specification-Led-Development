@@ -1,0 +1,110 @@
+{
+  "feature_id": "C-L1",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionGrounding",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "AttributionCorrectness"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_005_ReadOnly",
+    "FR_006_CareMembershipRequired",
+    "FR_007_ByteEquivalentDeny",
+    "FR_008_AlwaysAudit",
+    "FR_009_AuditFields",
+    "FR_010_AuditImmutable",
+    "FR_011_IGRoleOnly"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "AuthRequiredEverywhere",
+      "FR_001_AuthRequired"
+    ],
+    "FR-005": [
+      "FR_005_ReadOnly"
+    ],
+    "FR-006": [
+      "OwnershipBasedAccess",
+      "FR_006_CareMembershipRequired"
+    ],
+    "FR-007": [
+      "NoInformationLeakage",
+      "FR_007_ByteEquivalentDeny"
+    ],
+    "FR-008": [
+      "AuditCompleteness",
+      "FR_008_AlwaysAudit"
+    ],
+    "FR-009": [
+      "AuditCompleteness",
+      "AttributionCorrectness",
+      "FR_009_AuditFields"
+    ],
+    "FR-010": [
+      "AppendOnly",
+      "FR_010_AuditImmutable"
+    ],
+    "FR-011": [
+      "FR_011_IGRoleOnly"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "PermissionGrounding"
+      ],
+      "rationale": "Clearing the permission matrix allows non-permitted roles to perform operations. The LeastPrivilege assertion validates that all operations respect the matrix; removing the matrix definition allows violations.",
+      "inject_violation": "fact MUTATE_UnauthorisedOperation { some op: AccessOperation, role: ClinicianRole | op.clinician.role = role and not (role -> op.operation in PermMatrix.Allowed) }"
+    },
+    {
+      "fact_name": "F_AuditFieldConsistency",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "AttributionCorrectness"
+      ],
+      "rationale": "This fact ensures audit entry fields match the operation that created them. Removing it allows misattributed audit entries, which violates both the completeness assertion (mismatched outcomes) and attribution correctness.",
+      "inject_violation": "fact MUTATE_AuditMismatch { some op: AccessOperation, ae: AuditEntry | op.auditEntry = ae and op.clinician.id != ae.clinicianId }"
+    },
+    {
+      "fact_name": "F_AppendOnlyAuditEntries",
+      "asserts_violated": [
+        "AppendOnly"
+      ],
+      "rationale": "This fact enforces unique-audit-entry mappings per operation, preventing audit duplication or mutation. Removing it allows an operation to map to multiple distinct audit entries, violating the append-only invariant.",
+      "inject_violation": "fact MUTATE_AuditDuplication { some disj ae1, ae2: AuditEntry, op: AccessOperation | op.auditEntry = ae1 and ae1 = ae2 }"
+    },
+    {
+      "fact_name": "F_CareTeamGatingLogic",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_006_CareMembershipRequired"
+      ],
+      "rationale": "This fact encodes the access-control decision tree: permitted access requires active membership, denied/not-found outcomes follow from missing membership or non-existent patient. Removing it allows a clinician without care-team membership to access a patient record.",
+      "inject_violation": "fact MUTATE_AccessBypassCareTeam { some op: AccessOperation, ctm: CareTeamMembership | op.operation = RecordsLookup and op.outcome = Permitted and not (ctm.clinician = op.clinician and ctm.patient.id = op.patientId and ctm.status = Active) }"
+    },
+    {
+      "fact_name": "F_DeniedAndNotFoundIdentical",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "FR_007_ByteEquivalentDeny"
+      ],
+      "rationale": "This fact ensures that denied and not-found outcomes are observationally equivalent (both return non-Permitted status). Removing it allows the system to leak information by distinguishing them.",
+      "inject_violation": "fact MUTATE_LeakageViaResponse { some op1, op2: AccessOperation | (op1.outcome = Denied or op1.outcome = NotFoundOrDenied) and op2.outcome = Permitted }"
+    },
+    {
+      "fact_name": "F_LeastPrivilegeEnforcement",
+      "asserts_violated": [
+        "LeastPrivilege"
+      ],
+      "rationale": "This fact enforces that every operation respects the permission matrix. Removing it allows unpermitted (role, operation) pairs to execute.",
+      "inject_violation": "fact MUTATE_UnpermittedOp { some op: AccessOperation | not (op.clinician.role -> op.operation in PermMatrix.Allowed) }"
+    }
+  ]
+}

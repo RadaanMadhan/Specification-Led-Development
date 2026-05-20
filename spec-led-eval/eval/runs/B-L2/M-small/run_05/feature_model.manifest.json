@@ -1,0 +1,129 @@
+{
+  "feature_id": "B-L2",
+  "patterns_applied": [
+    "AuthRequiredEverywhere",
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_003_004_TeamContextRequired",
+    "FR_005_TaskTeamImmutable",
+    "FR_006_OwnerImmutable",
+    "FR_007_PerTeamRole",
+    "FR_014_CrossTeamIsolation",
+    "FR_015_PerEditEventAudit",
+    "FR_016_AuditAppendOnly"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "AuthRequiredEverywhere",
+      "FR_001_AuthRequired"
+    ],
+    "FR-003": [
+      "FR_003_004_TeamContextRequired"
+    ],
+    "FR-004": [
+      "FR_003_004_TeamContextRequired"
+    ],
+    "FR-005": [
+      "FR_005_TaskTeamImmutable"
+    ],
+    "FR-006": [
+      "OwnershipExclusivity",
+      "FR_006_OwnerImmutable"
+    ],
+    "FR-007": [
+      "FR_007_PerTeamRole"
+    ],
+    "FR-008": [
+      "OwnershipBasedAccess",
+      "LeastPrivilege"
+    ],
+    "FR-009": [
+      "OwnershipBasedAccess",
+      "LeastPrivilege"
+    ],
+    "FR-010": [
+      "OwnershipBasedAccess",
+      "LeastPrivilege"
+    ],
+    "FR-011": [
+      "NoInformationLeakage"
+    ],
+    "FR-014": [
+      "NoInformationLeakage",
+      "FR_014_CrossTeamIsolation"
+    ],
+    "FR-015": [
+      "AuditCompleteness",
+      "AttributionCorrectness",
+      "FR_015_PerEditEventAudit"
+    ],
+    "FR-016": [
+      "AppendOnly",
+      "FR_016_AuditAppendOnly"
+    ],
+    "FR-017": [
+      "AuditCompleteness"
+    ],
+    "FR-019": [
+      "AuthRequiredEverywhere"
+    ],
+    "FR-020": [
+      "LeastPrivilege"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_CrossTeamIsolation",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "FR_014_CrossTeamIsolation"
+      ],
+      "rationale": "Removing this fact allows actors to modify tasks in teams they are not members of, directly violating the cross-team isolation invariant (FR-014). The assertion checks that every audit entry's actor is a member of the task's team.",
+      "inject_violation": "fact MUTATE_CrossTeamViolation { some ae: AuditEntry, t2: Team | ae.task.team = t2 and no tm: TeamMembership | tm.user = ae.actor and tm.team = t2 }"
+    },
+    {
+      "fact_name": "F_OwnershipBasedAccess",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "LeastPrivilege"
+      ],
+      "rationale": "Removing this fact allows non-owner members to edit or delete tasks they do not own, and allows non-admin members to modify tasks at all. This directly violates FR-008/009/010.",
+      "inject_violation": "fact MUTATE_OwnershipViolation { some ae: AuditEntry, tm: TeamMembership | (ae.change_type = AuditChanged or ae.change_type = AuditDeleted) and tm.user = ae.actor and tm.team = ae.task.team and ae.actor != ae.task.owner and tm.role = Member }"
+    },
+    {
+      "fact_name": "F_TaskHasCreatedAuditEntry",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_015_PerEditEventAudit"
+      ],
+      "rationale": "Removing this fact allows tasks to exist without a 'created' audit entry, violating FR-015 which requires every task to have an audit trail starting with creation.",
+      "inject_violation": "fact MUTATE_AuditMissing { some t: Task | no ae: AuditEntry | ae.task = t and ae.change_type = AuditCreated }"
+    },
+    {
+      "fact_name": "F_ActorRoleSnapshot",
+      "asserts_violated": [
+        "AttributionCorrectness"
+      ],
+      "rationale": "Removing this fact allows audit entries to record an actor's role that differs from their actual role in that team at the time of the change, violating FR-015's requirement for role snapshots.",
+      "inject_violation": "fact MUTATE_RoleMismatch { some ae: AuditEntry, tm: TeamMembership | ae.actor = tm.user and ae.task.team = tm.team and ae.actor_role != tm.role }"
+    },
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "PermissionCompleteness",
+        "LeastPrivilege"
+      ],
+      "rationale": "Removing this fact removes the definition of which roles can perform which operations, allowing the model to explore inconsistent permission states and violating the feature's permission matrix contract.",
+      "inject_violation": "fact MUTATE_PermViolation { some ae: AuditEntry, tm: TeamMembership | ae.actor = tm.user and ae.task.team = tm.team and tm.role = Member and (ae.change_type = AuditChanged or ae.change_type = AuditDeleted) and ae.actor != ae.task.owner }"
+    }
+  ]
+}

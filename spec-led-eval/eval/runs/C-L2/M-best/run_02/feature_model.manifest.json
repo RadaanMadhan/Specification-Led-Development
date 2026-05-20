@@ -1,0 +1,172 @@
+{
+  "feature_id": "012-hospital-clinical-records",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "ValidationBeforeMutation",
+    "OwnershipExclusivity"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_RoleCatalogue",
+    "FR_004_CareTeamGating",
+    "FR_005_AdminNoClinicalAccess",
+    "FR_006_NoLeakOnFailedAttempt",
+    "FR_010_NoteFieldsSnapshot",
+    "FR_011_NotesAppendOnly",
+    "FR_012_OneAuditPerAttempt",
+    "FR_013_AuditAttribution",
+    "FR_013_NoteIdPairing",
+    "FR_014_AuditImmutable",
+    "FR_015_AtomicNoteAndAudit",
+    "FR_017_AdminEndpointRoleOnly",
+    "FR_018_AdminNoClinicalContent"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_RoleCatalogue"
+    ],
+    "FR-003": [
+      "FR_002_RoleCatalogue"
+    ],
+    "FR-004": [
+      "FR_004_CareTeamGating",
+      "OwnershipBasedAccess"
+    ],
+    "FR-005": [
+      "FR_005_AdminNoClinicalAccess",
+      "FR_018_AdminNoClinicalContent",
+      "NoInformationLeakage"
+    ],
+    "FR-006": [
+      "FR_006_NoLeakOnFailedAttempt",
+      "ValidationBeforeMutation"
+    ],
+    "FR-007": [
+      "FR_010_NoteFieldsSnapshot"
+    ],
+    "FR-008": [
+      "FR_018_AdminNoClinicalContent"
+    ],
+    "FR-009": [
+      "FR_010_NoteFieldsSnapshot",
+      "ValidationBeforeMutation"
+    ],
+    "FR-010": [
+      "FR_010_NoteFieldsSnapshot",
+      "OwnershipExclusivity"
+    ],
+    "FR-011": [
+      "FR_011_NotesAppendOnly",
+      "AppendOnly"
+    ],
+    "FR-012": [
+      "FR_012_OneAuditPerAttempt",
+      "AuditCompleteness"
+    ],
+    "FR-013": [
+      "FR_013_AuditAttribution",
+      "FR_013_NoteIdPairing",
+      "AttributionCorrectness"
+    ],
+    "FR-014": [
+      "FR_014_AuditImmutable",
+      "AppendOnly"
+    ],
+    "FR-015": [
+      "FR_015_AtomicNoteAndAudit"
+    ],
+    "FR-016": [
+      "FR_014_AuditImmutable"
+    ],
+    "FR-017": [
+      "FR_017_AdminEndpointRoleOnly",
+      "LeastPrivilege"
+    ],
+    "FR-018": [
+      "FR_018_AdminNoClinicalContent",
+      "NoInformationLeakage"
+    ],
+    "FR-019": [
+      "FR_010_NoteFieldsSnapshot"
+    ],
+    "FR-020": [
+      "FR_010_NoteFieldsSnapshot"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_LeastPrivilegeMatrix",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_017_AdminEndpointRoleOnly",
+        "FR_005_AdminNoClinicalAccess"
+      ],
+      "rationale": "removing this fact lets Alloy invent a Permitted access whose (role, kind) pair is not in PermMatrix.Allowed; the injection forces an administrator-on-record-lookup Permitted attempt \u2014 a textbook least-privilege violation.",
+      "inject_violation": "fact MUTATE_LeastPrivilege { some a: AccessAttempt | a.outcome = Permitted and a.caller.role = HospitalAdministrator and a.kind = PostRecordsLookup }"
+    },
+    {
+      "fact_name": "F_CareTeamGating",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_004_CareTeamGating"
+      ],
+      "rationale": "clearing the gating fact lets a clinical-role caller obtain Permitted access without any matching active CareTeamMembership; the injection forces such a counterexample to exist within scope.",
+      "inject_violation": "fact MUTATE_CareTeamGating { some a: AccessAttempt | a.outcome = Permitted and a.kind = PostRecordsLookup and a.caller.role in ClinicalRoles and some a.patient and (no m: CareTeamMembership | m.clinician = a.caller and m.patient = a.patient and m.status = Active) }"
+    },
+    {
+      "fact_name": "F_AuditCompleteness",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_012_OneAuditPerAttempt"
+      ],
+      "rationale": "without this fact Alloy can produce a clinical access attempt with zero AuditEntry atoms pointing at it; the injection guarantees at least one such attempt exists.",
+      "inject_violation": "fact MUTATE_AuditCompleteness { some a: AccessAttempt | a.kind = PostRecordsLookup and (no e: AuditEntry | e.attempt = a) }"
+    },
+    {
+      "fact_name": "F_AuditAttributionCorrect",
+      "asserts_violated": [
+        "AttributionCorrectness",
+        "FR_013_AuditAttribution"
+      ],
+      "rationale": "removing attribution coupling lets the recordedUser/role/kind/outcome diverge from the underlying attempt; the injection forces a mismatched audit entry into the universe.",
+      "inject_violation": "fact MUTATE_AuditAttribution { some e: AuditEntry | e.recordedUser != e.attempt.caller or e.recordedRole != e.attempt.caller.role or e.recordedKind != e.attempt.kind or e.recordedOutcome != e.attempt.outcome }"
+    },
+    {
+      "fact_name": "F_AuditAppendOnly",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_014_AuditImmutable"
+      ],
+      "rationale": "clearing the append-only fact allows AuditAction atoms whose op is ModifyOp or DeleteOp; the injection forces a Modify-op audit action, which is exactly the immutability violation the assertion catches.",
+      "inject_violation": "fact MUTATE_AuditAppendOnly { some aa: AuditAction | aa.auditOp = ModifyOp }"
+    },
+    {
+      "fact_name": "F_NotesAppendOnly",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_011_NotesAppendOnly"
+      ],
+      "rationale": "clearing notes append-only enforcement lets the universe include a ModifyOp NoteAction; the injection forces one to exist, violating FR-011.",
+      "inject_violation": "fact MUTATE_NotesAppendOnly { some na: NoteAction | na.noteOp = ModifyOp }"
+    },
+    {
+      "fact_name": "F_AdminNoClinicalContent",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "FR_018_AdminNoClinicalContent"
+      ],
+      "rationale": "removing the content-blindness fact lets an AdminResponse atom set containsClinicalContent = TrueB; the injection forces such a leak to exist, exactly the FR-018 violation.",
+      "inject_violation": "fact MUTATE_AdminLeak { some r: AdminResponse | r.responseFor.kind = PostAuditSearch and r.containsClinicalContent = TrueB }"
+    }
+  ]
+}

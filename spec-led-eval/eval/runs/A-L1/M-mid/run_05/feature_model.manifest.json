@@ -1,0 +1,152 @@
+{
+  "feature_id": "A-L1",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "PermissionGrounding",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "ValidationBeforeMutation",
+    "ConcurrencySafety"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthenticatedSubmission",
+    "FR_002_ValidationRejectsInvalid",
+    "FR_004_UniqueReference",
+    "FR_005_OnePendingPerCustomer",
+    "FR_009_DecisionReasonMandatory",
+    "FR_010_DecisionRequiresReason",
+    "FR_011_DecidedApplicationsImmutable",
+    "FR_012_ConcurrentDecisionRejected",
+    "FR_013_CustomerSeesOnlyOwnApps",
+    "FR_014_NotificationOnDecision",
+    "FR_015_StaffOnlyDecideAndAudit",
+    "FR_016_AuditTrailComplete"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthenticatedSubmission",
+      "OwnershipExclusivity"
+    ],
+    "FR-002": [
+      "FR_002_ValidationRejectsInvalid",
+      "ValidationBeforeMutation"
+    ],
+    "FR-003": [
+      "FR_002_ValidationRejectsInvalid"
+    ],
+    "FR-004": [
+      "FR_004_UniqueReference"
+    ],
+    "FR-005": [
+      "FR_005_OnePendingPerCustomer"
+    ],
+    "FR-006": [
+      "FR_004_UniqueReference"
+    ],
+    "FR-007": [
+      "LeastPrivilege",
+      "PermissionGrounding"
+    ],
+    "FR-008": [
+      "LeastPrivilege",
+      "PermissionGrounding"
+    ],
+    "FR-009": [
+      "FR_009_DecisionReasonMandatory"
+    ],
+    "FR-010": [
+      "FR_010_DecisionRequiresReason",
+      "AttributionCorrectness"
+    ],
+    "FR-011": [
+      "FR_011_DecidedApplicationsImmutable"
+    ],
+    "FR-012": [
+      "FR_012_ConcurrentDecisionRejected",
+      "ConcurrencySafety"
+    ],
+    "FR-013": [
+      "FR_013_CustomerSeesOnlyOwnApps",
+      "OwnershipBasedAccess",
+      "NoInformationLeakage"
+    ],
+    "FR-014": [
+      "FR_014_NotificationOnDecision"
+    ],
+    "FR-015": [
+      "FR_015_StaffOnlyDecideAndAudit",
+      "LeastPrivilege"
+    ],
+    "FR-016": [
+      "FR_016_AuditTrailComplete",
+      "AuditCompleteness",
+      "AppendOnly",
+      "AttributionCorrectness"
+    ],
+    "FR-017": [
+      "AppendOnly"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_AppendOnlyAuditEntries",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_016_AuditTrailComplete"
+      ],
+      "rationale": "Removing the uniqueness constraint on (forApp, eventType, actor) triples allows the model to create two ApplicationEvents that share the same application+eventType+actor, representing an in-place mutation/replacement. The AppendOnly predicate detects this via the 'no two distinct events share the same triple' clause, which will then find a counterexample.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some disj e1, e2: ApplicationEvent | e1.forApp = e2.forApp and e1.eventType = e2.eventType and e1.actor = e2.actor }"
+    },
+    {
+      "fact_name": "F_OnePendingPerCustomer",
+      "asserts_violated": [
+        "FR_005_OnePendingPerCustomer"
+      ],
+      "rationale": "Removing the at-most-one-pending constraint allows the model to construct two LoanApplications with the same owner both in PendingReview status. The FR_005_OnePendingPerCustomer predicate will find this as a counterexample.",
+      "inject_violation": "fact MUTATE_OnePendingViolation { some disj a1, a2: LoanApplication | a1.owner = a2.owner and a1.status = PendingReview and a2.status = PendingReview }"
+    },
+    {
+      "fact_name": "F_LeastPrivilege",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_015_StaffOnlyDecideAndAudit"
+      ],
+      "rationale": "Removing the LeastPrivilege enforcement fact allows the model to create an Operation where a Customer successfully calls OpPostDecision (outcome = OutSuccess), violating the permission matrix. The LeastPrivilege predicate's implication 'OutSuccess implies in Allowed' catches this.",
+      "inject_violation": "fact MUTATE_LeastPrivilegeViolation { some op: Operation | op.kind = OpPostDecision and op.caller.role = Customer and op.outcome = OutSuccess }"
+    },
+    {
+      "fact_name": "F_NoInformationLeakage",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "FR_013_CustomerSeesOnlyOwnApps"
+      ],
+      "rationale": "Removing the NoInformationLeakage fact allows the model to construct an Operation where a Customer calls GetAppByRef on another customer's application and receives OutDenied instead of OutNotFound, leaking existence information. The predicate checks for OutNotFound specifically.",
+      "inject_violation": "fact MUTATE_LeakageViolation { some op: Operation, u1, u2: User, a: LoanApplication | op.kind = OpGetAppByRef and op.caller = u1 and u1.role = Customer and op.targetApp = a and a.owner = u2 and u1 != u2 and op.outcome = OutDenied }"
+    },
+    {
+      "fact_name": "F_AuditDecisionEvent",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_016_AuditTrailComplete",
+        "AttributionCorrectness"
+      ],
+      "rationale": "Removing the fact that every decided application must have exactly one decision audit event allows the model to have an Approved application with no ApprovedEvt ApplicationEvent. The AuditCompleteness and FR_016_AuditTrailComplete predicates both check for the existence of that event and will find a counterexample.",
+      "inject_violation": "fact MUTATE_MissingDecisionEvent { some a: LoanApplication | a.status = Approved and (no e: ApplicationEvent | e.forApp = a and e.eventType = ApprovedEvt) }"
+    },
+    {
+      "fact_name": "F_AtMostOneDecision",
+      "asserts_violated": [
+        "ConcurrencySafety",
+        "FR_012_ConcurrentDecisionRejected"
+      ],
+      "rationale": "Removing the at-most-one-decision constraint allows two distinct Decision records to point to the same LoanApplication, representing a race condition where two concurrent staff decisions both succeed. The ConcurrencySafety and FR_012_ConcurrentDecisionRejected predicates both enforce lone/no duplicate decisions per application.",
+      "inject_violation": "fact MUTATE_DuplicateDecision { some disj d1, d2: Decision | d1.forApp = d2.forApp }"
+    }
+  ]
+}

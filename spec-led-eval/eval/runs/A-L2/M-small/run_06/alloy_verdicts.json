@@ -1,0 +1,15 @@
+{
+  "LeastPrivilege": "PASS",
+  "AuthRequiredEverywhere": "PASS",
+  "OwnershipExclusivity": "PASS",
+  "OwnershipBasedAccessCheck": "PASS",
+  "AuditCompleteness": "FAIL",
+  "AppendOnly": "PASS",
+  "AttributionCorrectness": "PASS",
+  "FR_008_OneInFlightPerCustomer": "FAIL",
+  "FR_012_AssignmentConsistency": "PASS",
+  "FR_013_OnlyAssignedOfficerDecides": "FAIL",
+  "FR_016_ImmutabilityOfDecidedApplications": "PASS",
+  "FR_004_ComplianceReviewerReadOnly": "PASS",
+  "FR_002_CustomerOperations": "FAIL"
+}

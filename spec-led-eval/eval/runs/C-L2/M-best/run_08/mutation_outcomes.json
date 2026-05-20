@@ -1,0 +1,56 @@
+{
+  "F_AccessControl": {
+    "targeted_asserts": {
+      "LeastPrivilege": "BIT",
+      "FR_005_AdminNoClinicalContent": "BIT",
+      "FR_017_AdminOnlyAudit": "BIT",
+      "OwnershipBasedAccess": "BIT",
+      "FR_004_CareTeamGating": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_NotesAppendOnly": {
+    "targeted_asserts": {
+      "AppendOnly": "BIT",
+      "FR_011_NotesAppendOnly": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AuditAppendOnly": {
+    "targeted_asserts": {
+      "AppendOnly": "BIT",
+      "FR_014_AuditImmutable": "BIT",
+      "FR_016_AuditRetention": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AuditCompleteness": {
+    "targeted_asserts": {
+      "AuditCompleteness": "BIT",
+      "FR_012_AlwaysOnAudit": "BIT",
+      "FR_015_AuditSLA": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_Attribution": {
+    "targeted_asserts": {
+      "AttributionCorrectness": "BIT",
+      "FR_013_AuditFields": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_NonPermittedResponseIs404": {
+    "targeted_asserts": {
+      "NoInformationLeakage": "BIT",
+      "FR_006_ByteEquivalentDenied": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AdminResponseNoClinicalContent": {
+    "targeted_asserts": {
+      "FR_018_AdminContentBlind": "BIT",
+      "FR_005_AdminNoClinicalContent": "BIT"
+    },
+    "all_bit": true
+  }
+}

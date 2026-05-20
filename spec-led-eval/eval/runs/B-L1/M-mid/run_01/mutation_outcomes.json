@@ -1,0 +1,45 @@
+{
+  "F_ClosedTaskEditRule": {
+    "targeted_asserts": {
+      "FR_011_ClosedTaskEditRule": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AppendOnlyDeletionLog": {
+    "targeted_asserts": {
+      "AppendOnly": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_DeletionLogCompleteness": {
+    "targeted_asserts": {
+      "AuditCompleteness": "BIT",
+      "FR_012_PermanentDeletion": "BIT",
+      "FR_018_DeletionLogAttribution": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_PatchCallerAuthenticated": {
+    "targeted_asserts": {
+      "AuthRequiredEverywhere": "VACUOUS_OVERCONSTRAINT",
+      "FR_001_AuthRequired": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_CreatorHasToken": {
+    "targeted_asserts": {
+      "AttributionCorrectness": "VACUOUS_OVERCONSTRAINT",
+      "FR_002_IdentityFromAuthContext": "VACUOUS_OVERCONSTRAINT",
+      "FR_009_CreatorImmutable": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_AssigneeIsMember": {
+    "targeted_asserts": {
+      "FR_008_AssigneeIsMember": "VACUOUS_TAUTOLOGY",
+      "ValidationBeforeMutation": "VACUOUS_TAUTOLOGY",
+      "OwnershipExclusivity": "VACUOUS_TAUTOLOGY"
+    },
+    "all_bit": false
+  }
+}

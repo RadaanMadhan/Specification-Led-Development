@@ -1,0 +1,44 @@
+{
+  "F_AppendOnlyAuditEntries": {
+    "targeted_asserts": {
+      "AppendOnly": "BIT",
+      "FR_016_AuditAppendOnly": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_LeastPrivilege": {
+    "targeted_asserts": {
+      "LeastPrivilege": "BIT",
+      "FR_015_StaffOnlyDecision": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AuditCompleteness": {
+    "targeted_asserts": {
+      "AuditCompleteness": "BIT",
+      "FR_016_AuditAppendOnly": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_OwnershipBasedAccess": {
+    "targeted_asserts": {
+      "OwnershipBasedAccess": "BIT",
+      "NoInformationLeakage": "BIT",
+      "FR_013_CustomerOwnAccess": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AuthRequired": {
+    "targeted_asserts": {
+      "AuthRequiredEverywhere": "BIT",
+      "FR_001_AuthRequired": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_OnePendingPerCustomer": {
+    "targeted_asserts": {
+      "FR_005_OnePendingPerCustomer": "BIT"
+    },
+    "all_bit": true
+  }
+}

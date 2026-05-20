@@ -1,0 +1,151 @@
+{
+  "feature_id": "B-L1",
+  "patterns_applied": [
+    "AuthRequiredEverywhere",
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AppendOnly",
+    "AuditCompleteness",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "ValidationBeforeMutation"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_003_SingleWorkspace",
+    "FR_004_FlatPermissions",
+    "FR_008_AssigneeIsMember",
+    "FR_009_CreatorRecorded",
+    "FR_010_ValidStatus",
+    "FR_011_ClosedTaskEditRule",
+    "FR_012_PermanentDeletion",
+    "FR_017_TimestampsExist",
+    "FR_018_DeletionLogged"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere",
+      "ValidationBeforeMutation"
+    ],
+    "FR-002": [
+      "FR_001_AuthRequired"
+    ],
+    "FR-003": [
+      "FR_003_SingleWorkspace"
+    ],
+    "FR-004": [
+      "FR_004_FlatPermissions",
+      "LeastPrivilege",
+      "PermissionCompleteness"
+    ],
+    "FR-005": [
+      "FR_003_SingleWorkspace"
+    ],
+    "FR-006": [
+      "FR_009_CreatorRecorded"
+    ],
+    "FR-007": [
+      "FR_010_ValidStatus"
+    ],
+    "FR-008": [
+      "FR_008_AssigneeIsMember",
+      "OwnershipExclusivity"
+    ],
+    "FR-009": [
+      "FR_009_CreatorRecorded",
+      "OwnershipExclusivity"
+    ],
+    "FR-010": [
+      "FR_010_ValidStatus"
+    ],
+    "FR-011": [
+      "FR_011_ClosedTaskEditRule"
+    ],
+    "FR-012": [
+      "FR_012_PermanentDeletion",
+      "AuditCompleteness"
+    ],
+    "FR-013": [
+      "LeastPrivilege",
+      "PermissionCompleteness"
+    ],
+    "FR-014": [
+      "FR_003_SingleWorkspace"
+    ],
+    "FR-015": [
+      "FR_003_SingleWorkspace"
+    ],
+    "FR-016": [
+      "FR_003_SingleWorkspace"
+    ],
+    "FR-017": [
+      "FR_017_TimestampsExist"
+    ],
+    "FR-018": [
+      "FR_018_DeletionLogged",
+      "AppendOnly",
+      "AuditCompleteness",
+      "AttributionCorrectness"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_AuthRequiredEverywhere",
+      "asserts_violated": [
+        "AuthRequiredEverywhere",
+        "FR_001_AuthRequired",
+        "ValidationBeforeMutation"
+      ],
+      "rationale": "Removing this fact allows the model to produce a world where an unauthenticated Operation has outcome=Success, directly violating the authentication-boundary invariant in FR-001.",
+      "inject_violation": "fact MUTATE_AuthBypass { some op: Operation | op.role = Unauth and op.outcome = Success }"
+    },
+    {
+      "fact_name": "F_ClosedTaskRule",
+      "asserts_violated": [
+        "FR_011_ClosedTaskEditRule"
+      ],
+      "rationale": "Removing this fact allows a PATCH operation on a Done task with KeepsDone intent to succeed, violating the closed-task edit rule (FR-011 / 409 task_closed).",
+      "inject_violation": "fact MUTATE_ClosedTaskViolation { some op: Operation | op.kind = PatchTask and op.targetTask.status = Done and op.patchIntent = KeepsDone and op.outcome = Success }"
+    },
+    {
+      "fact_name": "F_AppendOnlyDeletionLog",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_018_DeletionLogged"
+      ],
+      "rationale": "Removing this fact lets the model produce two DeletionLog entries pointing to the same task, violating the append-only / no-duplicate invariant that protects the deletion audit trail.",
+      "inject_violation": "fact MUTATE_DuplicateLogEntry { some disj d1, d2: DeletionLog | d1.loggedTask = d2.loggedTask }"
+    },
+    {
+      "fact_name": "F_DeletionLogCompleteness",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "AttributionCorrectness",
+        "FR_012_PermanentDeletion",
+        "FR_018_DeletionLogged"
+      ],
+      "rationale": "Removing this fact allows a DeletionLog entry whose deletedBy member does not match any successful DeleteTask operation caller, breaking attribution correctness and audit completeness.",
+      "inject_violation": "fact MUTATE_MisattributedLog { some d: DeletionLog | all op: Operation | not (op.kind = DeleteTask and op.targetTask = d.loggedTask and op.caller = d.deletedBy and op.outcome = Success) }"
+    },
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "PermissionCompleteness",
+        "FR_004_FlatPermissions"
+      ],
+      "rationale": "Removing the permission matrix fact lets the Allowed relation be arbitrary, which can produce a world where Unauth has a permitted operation or AuthMember is missing a permission \u2014 violating both LeastPrivilege and PermissionCompleteness.",
+      "inject_violation": "fact MUTATE_PermissionMatrixViolation { Unauth -> PostTasks in PermMatrix.Allowed }"
+    },
+    {
+      "fact_name": "F_DeleteProducesLog",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_018_DeletionLogged"
+      ],
+      "rationale": "Removing this fact allows a successful DeleteTask operation with no corresponding DeletionLog entry, meaning deletions can go unlogged and violating FR-018's audit-log requirement.",
+      "inject_violation": "fact MUTATE_UnloggedDeletion { some op: Operation | op.kind = DeleteTask and op.outcome = Success and all d: DeletionLog | d.loggedTask != op.targetTask }"
+    }
+  ]
+}

@@ -1,0 +1,50 @@
+{
+  "F_OperationsRespectMatrix": {
+    "targeted_asserts": {
+      "LeastPrivilege": "BIT",
+      "FR_015_DecisionStaffOnly": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_AtMostOneEventPerStatusChange": {
+    "targeted_asserts": {
+      "AppendOnly": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AtMostOneDecisionPerApplication": {
+    "targeted_asserts": {
+      "ConcurrencySafety": "BIT",
+      "FR_011_NoSecondDecision": "BIT",
+      "FR_012_SingleDecisionUnderConcurrency": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_CustomerOpsScopedToOwnedApps": {
+    "targeted_asserts": {
+      "OwnershipBasedAccess": "BIT",
+      "NoInformationLeakage": "BIT",
+      "FR_013_CustomerScopedToOwnApps": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_OnePendingPerCustomer": {
+    "targeted_asserts": {
+      "FR_005_OnePendingPerCustomer": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_SubmittedEventPerApplication": {
+    "targeted_asserts": {
+      "AuditCompleteness": "BIT",
+      "FR_016_AuditEveryStatusChange": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_DecisionEventActorMatchesDecider": {
+    "targeted_asserts": {
+      "AttributionCorrectness": "BIT"
+    },
+    "all_bit": true
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "F_OneAuditPerOperation": {
+    "targeted_asserts": {
+      "AppendOnly": "BIT",
+      "FR_010_AuditImmutable": "BIT",
+      "FR_012_NoDeletionPath": "BIT",
+      "AuditCompleteness": "BIT",
+      "FR_008_AuditOnEveryAttempt": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AuthenticationBoundary": {
+    "targeted_asserts": {
+      "AuthRequiredEverywhere": "BIT",
+      "FR_001_AuthRequired": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_CareTeamGate": {
+    "targeted_asserts": {
+      "OwnershipBasedAccess": "BIT",
+      "FR_006_CareTeamMembershipRequired": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_VisibleResponseMapping": {
+    "targeted_asserts": {
+      "NoInformationLeakage": "BIT",
+      "FR_007_ByteEquivalentDeniedNotFound": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_LeastPrivilegeFact": {
+    "targeted_asserts": {
+      "LeastPrivilege": "BIT",
+      "FR_011_AuditOnlyByIG": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AuditOnLookup": {
+    "targeted_asserts": {
+      "AuditCompleteness": "BIT",
+      "FR_008_AuditOnEveryAttempt": "BIT",
+      "FR_013_SLAAudit": "BIT"
+    },
+    "all_bit": true
+  }
+}

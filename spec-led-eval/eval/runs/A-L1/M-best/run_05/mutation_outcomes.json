@@ -1,0 +1,48 @@
+{
+  "F_PermissionMatrix": {
+    "targeted_asserts": {
+      "PermissionCompleteness": "VACUOUS_OVERCONSTRAINT",
+      "LeastPrivilege": "VACUOUS_OVERCONSTRAINT",
+      "FR_015_DecisionsStaffOnly": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_AuditEntriesReflectLifecycle": {
+    "targeted_asserts": {
+      "AuditCompleteness": "BIT",
+      "FR_016_AuditTrail": "BIT",
+      "AppendOnly": "BIT",
+      "AttributionCorrectness": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_DecisionApplicationCoupling": {
+    "targeted_asserts": {
+      "FR_012_AtMostOneDecision": "BIT",
+      "FR_011_DecidedImmutable": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_OnePendingPerCustomer": {
+    "targeted_asserts": {
+      "FR_005_OnePendingPerCustomer": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AuthorizationSemantics": {
+    "targeted_asserts": {
+      "AuthRequiredEverywhere": "VACUOUS_OVERCONSTRAINT",
+      "OwnershipBasedAccess": "VACUOUS_OVERCONSTRAINT",
+      "FR_013_CustomerSeesOwnOnly": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_ResponseSemantics": {
+    "targeted_asserts": {
+      "NoInformationLeakage": "BIT",
+      "FR_013_CustomerSeesOwnOnly": "BIT",
+      "AuthRequiredEverywhere": "BIT"
+    },
+    "all_bit": true
+  }
+}

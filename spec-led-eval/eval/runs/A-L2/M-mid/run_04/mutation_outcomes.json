@@ -1,0 +1,49 @@
+{
+  "F_PermissionMatrix": {
+    "targeted_asserts": {
+      "LeastPrivilege": "BIT",
+      "FR_004_ComplianceReadOnly": "BIT",
+      "FR_023_ComplianceNoWriteAtAll": "BIT",
+      "FR_021_OfficerIdentityHiddenFromCustomer": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AppendOnlyAuditEntries": {
+    "targeted_asserts": {
+      "AppendOnly": "BIT",
+      "FR_018_AuditAppendOnly": "BIT",
+      "FR_016_TerminalStatusImmutable": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_OneInFlightPerCustomer": {
+    "targeted_asserts": {
+      "FR_008_OneInFlightPerCustomer": "BIT",
+      "OwnershipExclusivity": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_DecisionByAssignedOfficer": {
+    "targeted_asserts": {
+      "FR_013_OnlyAssignedOfficerDecides": "BIT",
+      "AuditCompleteness": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_AuditNoDuplicates": {
+    "targeted_asserts": {
+      "FR_019_ExactlyOneAuditPerTransition": "VACUOUS_OVERCONSTRAINT",
+      "AppendOnly": "VACUOUS_OVERCONSTRAINT",
+      "AuditCompleteness": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_CustomerOwnershipAccessReturnsNotFound": {
+    "targeted_asserts": {
+      "NoInformationLeakage": "BIT",
+      "FR_020_CustomerOwnershipAccess": "BIT",
+      "OwnershipBasedAccess": "BIT"
+    },
+    "all_bit": true
+  }
+}

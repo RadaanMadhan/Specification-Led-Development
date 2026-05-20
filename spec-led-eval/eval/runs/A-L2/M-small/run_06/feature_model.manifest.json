@@ -1,0 +1,129 @@
+{
+  "feature_id": "A-L2",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "AuthRequiredEverywhere",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness"
+  ],
+  "feature_specific_predicates": [
+    "FR_008_OneInFlightPerCustomer",
+    "FR_012_AssignmentConsistency",
+    "FR_013_OnlyAssignedOfficerDecides",
+    "FR_016_ImmutabilityOfDecidedApplications",
+    "FR_004_ComplianceReviewerReadOnly",
+    "FR_002_CustomerOperations"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_CustomerOperations",
+      "LeastPrivilege"
+    ],
+    "FR-003": [
+      "LeastPrivilege"
+    ],
+    "FR-004": [
+      "FR_004_ComplianceReviewerReadOnly"
+    ],
+    "FR-005": [
+      "OwnershipExclusivity"
+    ],
+    "FR-008": [
+      "FR_008_OneInFlightPerCustomer"
+    ],
+    "FR-009": [
+      "AuditCompleteness"
+    ],
+    "FR-011": [
+      "AuditCompleteness"
+    ],
+    "FR-012": [
+      "FR_012_AssignmentConsistency"
+    ],
+    "FR-013": [
+      "FR_013_OnlyAssignedOfficerDecides"
+    ],
+    "FR-015": [
+      "FR_016_ImmutabilityOfDecidedApplications",
+      "AuditCompleteness"
+    ],
+    "FR-016": [
+      "FR_016_ImmutabilityOfDecidedApplications"
+    ],
+    "FR-017": [
+      "AuditCompleteness",
+      "AttributionCorrectness"
+    ],
+    "FR-018": [
+      "AppendOnly"
+    ],
+    "FR-019": [
+      "AuditCompleteness"
+    ],
+    "FR-020": [
+      "OwnershipBasedAccessCheck"
+    ],
+    "FR-023": [
+      "FR_004_ComplianceReviewerReadOnly"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_002_CustomerOperations",
+        "FR_004_ComplianceReviewerReadOnly"
+      ],
+      "rationale": "Removing this fact allows the permission matrix Allowed set to be empty or contain incorrect mappings. The LeastPrivilege assertion checks that the required role-operation pairs exist; without the fact, these pairs may be missing or incorrect.",
+      "inject_violation": "fact MUTATE_PermissionMatrixViolation { ComplianceReviewer -> DecideApplication in PermMatrix.Allowed }"
+    },
+    {
+      "fact_name": "F_AuditCompleteness",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "AttributionCorrectness"
+      ],
+      "rationale": "Removing this fact allows applications to transition between statuses without corresponding audit entries. The AuditCompleteness assertion checks that every status change produces exactly one audit entry; without the fact, transitions could occur without audit records.",
+      "inject_violation": "fact MUTATE_AuditCompletenessViolation { some app: LoanApplication | app.status = UnderReview and no ae: AuditEntry | ae.application = app and ae.newStatus = UnderReview }"
+    },
+    {
+      "fact_name": "F_OneInFlightPerCustomer",
+      "asserts_violated": [
+        "FR_008_OneInFlightPerCustomer"
+      ],
+      "rationale": "Removing this fact allows a customer to have multiple applications simultaneously in Submitted or Under Review status. The FR_008 assertion checks that at most one in-flight application exists per customer; without the fact, multiple in-flight applications would be permitted.",
+      "inject_violation": "fact MUTATE_OneInFlightViolation { some disj app1, app2: LoanApplication | app1.customer = app2.customer and (app1.status = Submitted or app1.status = UnderReview) and (app2.status = Submitted or app2.status = UnderReview) }"
+    },
+    {
+      "fact_name": "F_AssignmentConsistency",
+      "asserts_violated": [
+        "FR_012_AssignmentConsistency"
+      ],
+      "rationale": "Removing this fact allows applications at Under Review, Approved, or Rejected status to have no assigned officer or an officer with wrong role. The FR_012 assertion checks that applications in decision-phase statuses have exactly one assigned loan officer; without the fact, this invariant is violated.",
+      "inject_violation": "fact MUTATE_AssignmentConsistencyViolation { some app: LoanApplication | (app.status = UnderReview or app.status = Approved or app.status = Rejected) and app.assignedOfficer = none }"
+    },
+    {
+      "fact_name": "F_OnlyAssignedOfficerDecides",
+      "asserts_violated": [
+        "FR_013_OnlyAssignedOfficerDecides"
+      ],
+      "rationale": "Removing this fact allows decisions to be recorded by any user, not just the assigned loan officer. The FR_013 assertion checks that every decision's recorded actor is the application's assigned officer; without the fact, any user could record a decision.",
+      "inject_violation": "fact MUTATE_OnlyAssignedOfficerViolation { some dec: Decision | dec.decidedBy != dec.application.assignedOfficer }"
+    },
+    {
+      "fact_name": "F_ComplianceReviewerReadOnly",
+      "asserts_violated": [
+        "FR_004_ComplianceReviewerReadOnly"
+      ],
+      "rationale": "Removing this fact allows the compliance reviewer role to be granted write operations (submit, claim, decide). The FR_004 assertion checks that compliance reviewers have no write permissions; without the fact, write permissions could be incorrectly granted to the compliance role.",
+      "inject_violation": "fact MUTATE_ComplianceWriteViolation { ComplianceReviewer -> DecideApplication in PermMatrix.Allowed }"
+    }
+  ]
+}

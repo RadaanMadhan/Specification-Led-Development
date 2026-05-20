@@ -1,0 +1,52 @@
+{
+  "F_PermissionMatrix": {
+    "targeted_asserts": {
+      "FR_007_ComplianceContentBlind": "BIT",
+      "FR_004_CareTeamGating": "BIT",
+      "FR_018_AccessLogComplianceOnly": "BIT",
+      "LeastPrivilege": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_AuditBijection": {
+    "targeted_asserts": {
+      "AuditCompleteness": "VACUOUS_OVERCONSTRAINT",
+      "FR_013_AlwaysOnAudit": "VACUOUS_OVERCONSTRAINT",
+      "FR_017_AuditRetention": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_AuditAttributionCorrect": {
+    "targeted_asserts": {
+      "AttributionCorrectness": "VACUOUS_OVERCONSTRAINT",
+      "FR_014_AuditEntryFields": "VACUOUS_OVERCONSTRAINT",
+      "FR_015_AuditImmutable": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_NotesOnlyFromPermittedAppend": {
+    "targeted_asserts": {
+      "AppendOnly": "VACUOUS_OVERCONSTRAINT",
+      "FR_012_NotesAppendOnly": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_PatientAssignedRecordPairing": {
+    "targeted_asserts": {
+      "FR_003_PatientAssignedRecord": "BIT",
+      "FR_006_PatientSelfAccess": "BIT",
+      "OwnershipBasedAccess": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_OutcomeFromPermissionMatrix": {
+    "targeted_asserts": {
+      "LeastPrivilege": "BIT",
+      "FR_004_CareTeamGating": "BIT",
+      "FR_006_PatientSelfAccess": "BIT",
+      "FR_007_ComplianceContentBlind": "BIT",
+      "NoInformationLeakage": "BIT"
+    },
+    "all_bit": true
+  }
+}

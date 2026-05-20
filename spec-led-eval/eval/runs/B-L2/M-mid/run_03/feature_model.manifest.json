@@ -1,0 +1,164 @@
+{
+  "feature_id": "B-L2",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "PrivilegeMonotonicity",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_003_TeamContextRequired",
+    "FR_003_NonMemberGets404",
+    "FR_005_TaskTeamImmutable",
+    "FR_006_OwnerImmutable",
+    "FR_007_PerTeamRole",
+    "FR_008_010_OwnerOrAdminCanMutate",
+    "FR_011_014_CrossTeamIsolation",
+    "FR_012_AssigneeIsTeamMember",
+    "FR_013_ValidStatusSet",
+    "FR_015_OneCreatedEntryPerTask",
+    "FR_015_AuditActorRoleSnapshot",
+    "FR_016_AuditOutlivesTask",
+    "FR_017_AuditReadableByAnyTeamMember",
+    "FR_018_AuditRetention",
+    "FR_019_ListScopedToTeam"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired"
+    ],
+    "FR-002": [
+      "FR_001_AuthRequired"
+    ],
+    "FR-003": [
+      "FR_003_TeamContextRequired",
+      "FR_003_NonMemberGets404"
+    ],
+    "FR-004": [
+      "FR_003_TeamContextRequired"
+    ],
+    "FR-005": [
+      "FR_005_TaskTeamImmutable",
+      "FR_011_014_CrossTeamIsolation"
+    ],
+    "FR-006": [
+      "FR_006_OwnerImmutable"
+    ],
+    "FR-007": [
+      "FR_007_PerTeamRole"
+    ],
+    "FR-008": [
+      "FR_008_010_OwnerOrAdminCanMutate",
+      "OwnershipBasedAccess"
+    ],
+    "FR-009": [
+      "FR_008_010_OwnerOrAdminCanMutate",
+      "LeastPrivilege"
+    ],
+    "FR-010": [
+      "FR_008_010_OwnerOrAdminCanMutate",
+      "PrivilegeMonotonicity"
+    ],
+    "FR-011": [
+      "FR_011_014_CrossTeamIsolation",
+      "NoInformationLeakage"
+    ],
+    "FR-012": [
+      "FR_012_AssigneeIsTeamMember"
+    ],
+    "FR-013": [
+      "FR_013_ValidStatusSet"
+    ],
+    "FR-014": [
+      "FR_011_014_CrossTeamIsolation",
+      "NoInformationLeakage"
+    ],
+    "FR-015": [
+      "FR_015_OneCreatedEntryPerTask",
+      "FR_015_AuditActorRoleSnapshot",
+      "AuditCompleteness",
+      "AttributionCorrectness"
+    ],
+    "FR-016": [
+      "AppendOnly",
+      "FR_016_AuditOutlivesTask"
+    ],
+    "FR-017": [
+      "FR_017_AuditReadableByAnyTeamMember"
+    ],
+    "FR-018": [
+      "FR_018_AuditRetention"
+    ],
+    "FR-019": [
+      "FR_019_ListScopedToTeam"
+    ],
+    "FR-020": [
+      "FR_019_ListScopedToTeam"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_OwnerOrAdminForMutations",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_008_010_OwnerOrAdminCanMutate"
+      ],
+      "rationale": "Removing F_OwnerOrAdminForMutations allows a non-owner MemberRole actor to appear as the actor on a DescChanged or DescDeleted audit entry. Both OwnershipBasedAccess and FR_008_010_OwnerOrAdminCanMutate check exactly that constraint, so they will find a counterexample once the fact is cleared and the violation is injected.",
+      "inject_violation": "fact MUTATE_OwnerOrAdminViolation { some ae: AuditEntry | ae.aeChangeDesc = DescChanged and ae.aeActor != ae.aeTask.taskOwner and ae.aeActorRole = MemberRole }"
+    },
+    {
+      "fact_name": "F_CreatedEntryExistsForEveryTask",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_015_OneCreatedEntryPerTask",
+        "FR_018_AuditRetention"
+      ],
+      "rationale": "Removing F_CreatedEntryExistsForEveryTask allows a Task to exist with no corresponding DescCreated AuditEntry. AuditCompleteness and FR_015_OneCreatedEntryPerTask both assert 'one ae | DescCreated for every task', which fails immediately. FR_018_AuditRetention fails because 'some ae | ae.aeTask = t' is violated.",
+      "inject_violation": "fact MUTATE_MissingCreatedEntry { some t: Task | no ae: AuditEntry | ae.aeTask = t and ae.aeChangeDesc = DescCreated }"
+    },
+    {
+      "fact_name": "F_DeletedEntryForDeletedTask",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_016_AuditOutlivesTask"
+      ],
+      "rationale": "Removing F_DeletedEntryForDeletedTask allows a DeletedTask to exist without a DescDeleted audit entry. FR_016_AuditOutlivesTask asserts 'some ae | DescDeleted for every DeletedTask', which fails. AuditCompleteness also relies on this for the deleted-task branch.",
+      "inject_violation": "fact MUTATE_MissingDeletedEntry { some t: DeletedTask | no ae: AuditEntry | ae.aeTask = t and ae.aeChangeDesc = DescDeleted }"
+    },
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "PrivilegeMonotonicity",
+        "PermissionCompleteness"
+      ],
+      "rationale": "Removing F_PermissionMatrix frees PermMatrix.allowed to take any value. LeastPrivilege checks that MemberRole is not in the PATCH/DELETE cells; injecting exactly that cell violates it. PrivilegeMonotonicity's superset claim and PermissionCompleteness's coverage check also break.",
+      "inject_violation": "fact MUTATE_PermMatrixViolation { MemberRole -> OpPatchTask in PermMatrix.allowed and MemberRole -> OpDeleteTask in PermMatrix.allowed }"
+    },
+    {
+      "fact_name": "F_AuditTeamConsistency",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "FR_011_014_CrossTeamIsolation",
+        "FR_017_AuditReadableByAnyTeamMember"
+      ],
+      "rationale": "Removing F_AuditTeamConsistency allows an AuditEntry to carry a aeTeam that differs from aeTask.taskTeam. NoInformationLeakage, FR_011_014_CrossTeamIsolation, and FR_017_AuditReadableByAnyTeamMember all assert aeTeam = aeTask.taskTeam, so a counterexample is immediately found.",
+      "inject_violation": "fact MUTATE_CrossTeamAuditLeak { some ae: AuditEntry | ae.aeTeam != ae.aeTask.taskTeam }"
+    },
+    {
+      "fact_name": "F_CreatedEntryActorIsOwner",
+      "asserts_violated": [
+        "AttributionCorrectness",
+        "FR_006_OwnerImmutable"
+      ],
+      "rationale": "Removing F_CreatedEntryActorIsOwner allows a DescCreated audit entry to be attributed to an actor who is not the task's owner. AttributionCorrectness checks exactly this invariant; FR_006_OwnerImmutable's second clause (created entry actor = owner) also fails.",
+      "inject_violation": "fact MUTATE_WrongCreatedActor { some ae: AuditEntry | ae.aeChangeDesc = DescCreated and ae.aeActor != ae.aeTask.taskOwner }"
+    }
+  ]
+}

@@ -1,0 +1,106 @@
+{
+  "feature_id": "A-L1",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "AppendOnly",
+    "AuditCompleteness",
+    "OwnershipBasedAccess"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_CustomerCanSubmit",
+    "FR_003_AmountAndTermValidation",
+    "FR_004_UniqueReference",
+    "FR_005_OnePendingPerCustomer",
+    "FR_009_ReasonRequired",
+    "FR_010_DecisionExclusivity",
+    "FR_011_DecisionImmutability",
+    "FR_013_OwnershipExclusivity",
+    "FR_015_StaffOnlyDecisions",
+    "FR_016_AuditTrail"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_CustomerCanSubmit"
+    ],
+    "FR-003": [
+      "FR_003_AmountAndTermValidation"
+    ],
+    "FR-004": [
+      "FR_004_UniqueReference"
+    ],
+    "FR-005": [
+      "FR_005_OnePendingPerCustomer"
+    ],
+    "FR-009": [
+      "FR_009_ReasonRequired"
+    ],
+    "FR-010": [
+      "FR_010_DecisionExclusivity"
+    ],
+    "FR-011": [
+      "FR_011_DecisionImmutability"
+    ],
+    "FR-013": [
+      "FR_013_OwnershipExclusivity"
+    ],
+    "FR-015": [
+      "FR_015_StaffOnlyDecisions"
+    ],
+    "FR-016": [
+      "FR_016_AuditTrail",
+      "AppendOnly",
+      "AuditCompleteness"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_DecisionExclusivity",
+      "asserts_violated": [
+        "FR_010_DecisionExclusivity"
+      ],
+      "rationale": "Removing this fact allows multiple decisions to be recorded for the same application. The assertion FR_010_DecisionExclusivity checks that at most one decision exists per application, which is the core invariant preventing concurrent decision conflicts (FR-010, FR-012, SC-005).",
+      "inject_violation": "fact MUTATE_MultipleDecisions { some app: LoanApplication | some disj d1, d2: Decision | d1.application = app and d2.application = app }"
+    },
+    {
+      "fact_name": "F_OnePendingPerCustomer",
+      "asserts_violated": [
+        "FR_005_OnePendingPerCustomer"
+      ],
+      "rationale": "Removing this fact allows customers to submit multiple applications simultaneously while both remain in pending review status. The assertion checks the core business rule (FR-005) that enforces at most one in-flight application per customer.",
+      "inject_violation": "fact MUTATE_MultiplePendingApps { some c: User | some disj app1, app2: LoanApplication | app1.customer = c and app2.customer = c and app1.status = PendingReview and app2.status = PendingReview }"
+    },
+    {
+      "fact_name": "F_DeciderIsStaff",
+      "asserts_violated": [
+        "FR_015_StaffOnlyDecisions"
+      ],
+      "rationale": "Removing this fact allows customers with Customer role to record decisions on applications. The assertion enforces the critical security invariant (FR-015) that only bank staff can approve or reject applications.",
+      "inject_violation": "fact MUTATE_CustomerDecision { some dec: Decision | dec.decided_by.role = Customer }"
+    },
+    {
+      "fact_name": "F_AppendOnlyAuditEntries",
+      "asserts_violated": [
+        "AppendOnly"
+      ],
+      "rationale": "Removing this fact allows duplicate audit events to exist for the same application, actor, and timestamp. This violates the append-only invariant (FR-016) which requires that audit log entries are immutable and non-duplicable.",
+      "inject_violation": "fact MUTATE_DuplicateAuditEvent { some evt1, evt2: ApplicationEvent | evt1 != evt2 and evt1.application = evt2.application and evt1.actor = evt2.actor and evt1.occurred_at = evt2.occurred_at }"
+    },
+    {
+      "fact_name": "F_AuditCompleteness",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_016_AuditTrail"
+      ],
+      "rationale": "Removing this fact allows applications to exist without any audit events recorded. The assertions check that every application has at least one audit entry, which is required by FR-016 to maintain a complete audit trail of all status changes.",
+      "inject_violation": "fact MUTATE_MissingAuditEntry { some app: LoanApplication | no evt: ApplicationEvent | evt.application = app }"
+    },
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege"
+      ],
+      "rationale": "Removing this fact removes the definition of which role-operation pairs are allowed. The assertion checks that the permission matrix correctly encodes the least-privilege access control model (FR-015), preventing unauthorized role-operation combinations.",
+      "inject_violation": "fact MUTATE_BadPermissions { (Customer -> RecordDecision) in PermMatrix.Allowed or (BankStaff -> SubmitApplication) in PermMatrix.Allowed }"
+    }
+  ]
+}

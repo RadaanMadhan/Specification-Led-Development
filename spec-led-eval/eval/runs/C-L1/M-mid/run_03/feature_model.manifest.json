@@ -1,0 +1,136 @@
+{
+  "feature_id": "C-L1",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "PermissionGrounding",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_UniqueRolePerUser",
+    "FR_005_ReadOnlyAccess",
+    "FR_006_CareTeamGating",
+    "FR_007_ByteEquivalentDenyNotFound",
+    "FR_008_AlwaysOnAudit",
+    "FR_009_AuditEntryShape",
+    "FR_010_AuditImmutable",
+    "FR_011_AuditAccessByIGOnly",
+    "FR_012_RetentionFloor",
+    "FR_013_AuditSLAOrRefuse",
+    "FR_014_FR_015_SafetyBlockPresent"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_UniqueRolePerUser"
+    ],
+    "FR-003": [],
+    "FR-004": [
+      "FR_005_ReadOnlyAccess"
+    ],
+    "FR-005": [
+      "FR_005_ReadOnlyAccess"
+    ],
+    "FR-006": [
+      "FR_006_CareTeamGating",
+      "OwnershipBasedAccess"
+    ],
+    "FR-007": [
+      "FR_007_ByteEquivalentDenyNotFound",
+      "NoInformationLeakage"
+    ],
+    "FR-008": [
+      "FR_008_AlwaysOnAudit",
+      "AuditCompleteness"
+    ],
+    "FR-009": [
+      "FR_009_AuditEntryShape",
+      "AttributionCorrectness"
+    ],
+    "FR-010": [
+      "FR_010_AuditImmutable",
+      "AppendOnly"
+    ],
+    "FR-011": [
+      "FR_011_AuditAccessByIGOnly",
+      "LeastPrivilege"
+    ],
+    "FR-012": [
+      "FR_012_RetentionFloor"
+    ],
+    "FR-013": [
+      "FR_013_AuditSLAOrRefuse"
+    ],
+    "FR-014": [
+      "FR_014_FR_015_SafetyBlockPresent"
+    ],
+    "FR-015": [
+      "FR_014_FR_015_SafetyBlockPresent"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_AppendOnlyAuditEntries",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_010_AuditImmutable"
+      ],
+      "rationale": "F_AppendOnlyAuditEntries is the sole structural guard preventing two AuditEntries from recording the same Operation (i.e., overwriting / duplicating a record). Clearing it removes the injectivity constraint on records_op; the injection forces two distinct AuditEntries to share a linked_operation, which is exactly the counterexample the AppendOnly and FR_010_AuditImmutable assertions must catch.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some disj ae1, ae2: AuditEntry | ae1.records_op = ae2.records_op }"
+    },
+    {
+      "fact_name": "F_CareTeamGating",
+      "asserts_violated": [
+        "FR_006_CareTeamGating",
+        "OwnershipBasedAccess"
+      ],
+      "rationale": "F_CareTeamGating enforces that a Permitted outcome on RecordsLookup requires an active care-team membership. Clearing it lets the model produce a Permitted Operation with no membership row. The injection forces exactly this state: a Permitted RecordsLookup whose caller has no Active membership for the target patient.",
+      "inject_violation": "fact MUTATE_CareTeamGatingViolation { some op: Operation | op.op_kind = RecordsLookup and op.outcome = Permitted and (no m: CareTeamMembership | m.member = op.caller and m.patient = op.target and m.mstatus = Active) }"
+    },
+    {
+      "fact_name": "F_NoInformationLeakage",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "FR_007_ByteEquivalentDenyNotFound"
+      ],
+      "rationale": "F_NoInformationLeakage is the sole fact that pins Denied and NotFoundOrDenied outcomes to Resp404NotFound. Clearing it lets the model produce a Denied operation with a different response shape (e.g., Resp200OK or a distinct error code), leaking the distinction. The injection forces a Denied operation to return something other than Resp404NotFound.",
+      "inject_violation": "fact MUTATE_InformationLeakageViolation { some op: Operation | op.outcome = Denied and op.response != Resp404NotFound }"
+    },
+    {
+      "fact_name": "F_LeastPrivilege",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_011_AuditAccessByIGOnly"
+      ],
+      "rationale": "F_LeastPrivilege enforces the closed-world permission matrix by constraining every Operation's (role, op_kind) pair to be in PermMatrix.Allowed. Clearing it allows an AuditOfficer to perform a RecordsLookup or a clinical role to perform an AuditSearch. The injection instantiates the most dangerous violation: an AuditOfficer reaching RecordsLookup.",
+      "inject_violation": "fact MUTATE_LeastPrivilegeViolation { some op: Operation | op.caller.role = RoleAuditOfficer and op.op_kind = RecordsLookup }"
+    },
+    {
+      "fact_name": "F_AuditAttribution",
+      "asserts_violated": [
+        "AttributionCorrectness",
+        "FR_009_AuditEntryShape"
+      ],
+      "rationale": "F_AuditAttribution is the sole fact tying every AuditEntry's clinician, snapshotted_role, patient_ref, ae_outcome, and ae_auth_basis back to the Operation it records. Clearing it allows misattribution. The injection forces an AuditEntry whose snapshotted_role differs from the actual caller's role \u2014 a direct violation of the FR-009 snapshot requirement.",
+      "inject_violation": "fact MUTATE_AttributionViolation { some ae: AuditEntry | ae.snapshotted_role != ae.records_op.caller.role }"
+    },
+    {
+      "fact_name": "F_AuditCompleteness",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_008_AlwaysOnAudit"
+      ],
+      "rationale": "F_AuditCompleteness is the primary fact guaranteeing that every non-503 Operation generates exactly one AuditEntry. Clearing it lets the model produce an Operation with response != Resp503Unavail and no corresponding AuditEntry \u2014 violating SC-001 ('100% of accesses audited'). The injection forces exactly this missing-audit state.",
+      "inject_violation": "fact MUTATE_AuditCompletenesViolation { some op: Operation | op.response != Resp503Unavail and (no ae: AuditEntry | ae.records_op = op) }"
+    }
+  ]
+}

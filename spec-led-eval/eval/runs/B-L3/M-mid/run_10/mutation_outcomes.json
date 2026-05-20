@@ -1,0 +1,48 @@
+{
+  "F_CrossTeamIsolation": {
+    "targeted_asserts": {
+      "FR_006_CrossTeamIsolationAbsolute": "VACUOUS_OVERCONSTRAINT",
+      "NoInformationLeakage": "VACUOUS_OVERCONSTRAINT",
+      "FR_014_ByteEquivalentDenial": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_OwnerOnlyShareControl": {
+    "targeted_asserts": {
+      "FR_010_OwnerOnlyShareControl": "VACUOUS_OVERCONSTRAINT",
+      "SC_011_OnlyOwnerChangesShareList": "VACUOUS_OVERCONSTRAINT",
+      "LeastPrivilege": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_AppendOnlyAuditEntries": {
+    "targeted_asserts": {
+      "AppendOnly": "BIT",
+      "FR_017_AuditAppendOnly": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AuditCompleteness": {
+    "targeted_asserts": {
+      "AuditCompleteness": "BIT",
+      "FR_015_AuditPerEvent": "BIT",
+      "FR_018_NoStateChangeWithoutAudit": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_ShareeCannotDelete": {
+    "targeted_asserts": {
+      "FR_011_ShareePermissions": "VACUOUS_OVERCONSTRAINT",
+      "OwnershipBasedAccess": "VACUOUS_OVERCONSTRAINT",
+      "NoInformationLeakage": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_AuditActorRoleSnapshot": {
+    "targeted_asserts": {
+      "AttributionCorrectness": "BIT",
+      "FR_016_AuditAttribution": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  }
+}

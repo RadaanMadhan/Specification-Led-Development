@@ -1,0 +1,136 @@
+{
+  "feature_id": "A-L2",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "ValidationBeforeMutation",
+    "ConcurrencySafety"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_CustomerCanSubmitAndView",
+    "FR_003_LoanOfficerCanDecide",
+    "FR_004_ComplianceReviewerCanViewOnly",
+    "FR_008_OneInFlightPerCustomer",
+    "FR_012_ConcurrentClaimSafety",
+    "FR_013_OnlyAssignedOfficerDecides",
+    "FR_016_ImmutableDecidedApplication",
+    "FR_018_AuditAppendOnly",
+    "FR_019_OneAuditPerStatusChange",
+    "FR_020_CustomerVisibilityRestriction",
+    "FR_023_ComplianceReviewerReadOnly"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_CustomerCanSubmitAndView",
+      "LeastPrivilege"
+    ],
+    "FR-003": [
+      "FR_003_LoanOfficerCanDecide",
+      "LeastPrivilege"
+    ],
+    "FR-004": [
+      "FR_004_ComplianceReviewerCanViewOnly",
+      "LeastPrivilege"
+    ],
+    "FR-008": [
+      "FR_008_OneInFlightPerCustomer"
+    ],
+    "FR-012": [
+      "FR_012_ConcurrentClaimSafety",
+      "ConcurrencySafety"
+    ],
+    "FR-013": [
+      "FR_013_OnlyAssignedOfficerDecides"
+    ],
+    "FR-016": [
+      "FR_016_ImmutableDecidedApplication"
+    ],
+    "FR-017": [
+      "AuditCompleteness",
+      "AttributionCorrectness"
+    ],
+    "FR-018": [
+      "FR_018_AuditAppendOnly",
+      "AppendOnly"
+    ],
+    "FR-019": [
+      "FR_019_OneAuditPerStatusChange"
+    ],
+    "FR-020": [
+      "FR_020_CustomerVisibilityRestriction",
+      "OwnershipBasedAccess"
+    ],
+    "FR-023": [
+      "FR_023_ComplianceReviewerReadOnly"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "PermissionCompleteness",
+        "FR_002_CustomerCanSubmitAndView",
+        "FR_003_LoanOfficerCanDecide",
+        "FR_004_ComplianceReviewerCanViewOnly",
+        "FR_023_ComplianceReviewerReadOnly"
+      ],
+      "rationale": "The permission matrix is the load-bearing fact enforcing role-based access control. Removing it allows Alloy to construct instances where customers can decide applications, compliance reviewers can modify data, or any role can perform unauthorized actions.",
+      "inject_violation": "fact MUTATE_PermissionViolation { CustomerRole -> DecideApplication in PermMatrix.Allowed and ComplianceReviewerRole -> PostApplications in PermMatrix.Allowed }"
+    },
+    {
+      "fact_name": "F_AuditTrailCompleteness",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_019_OneAuditPerStatusChange"
+      ],
+      "rationale": "This fact ensures every status change is recorded in exactly one audit entry. Removing it allows applications to transition states without corresponding audit entries, violating the audit-trail completeness requirement.",
+      "inject_violation": "fact MUTATE_AuditMissing { some app: LoanApplication | app.status = UnderReview and no ae: AuditEntry | ae.application = app and ae.newStatus = UnderReview }"
+    },
+    {
+      "fact_name": "F_OnlyAssignedOfficerDecides",
+      "asserts_violated": [
+        "FR_013_OnlyAssignedOfficerDecides"
+      ],
+      "rationale": "This fact enforces that only the assigned loan officer can decide an application. Removing it allows any loan officer to decide any application regardless of assignment, violating the permission model and authorization constraints.",
+      "inject_violation": "fact MUTATE_UnauthorizedDecide { some disj o1, o2: User, app: LoanApplication | o1.role = LoanOfficerRole and o2.role = LoanOfficerRole and o1 != o2 and app.assignedOfficer = o1 and some d: Decision | d.application = app and d.decidedByOfficer = o2 }"
+    },
+    {
+      "fact_name": "F_OneInFlightPerCustomer",
+      "asserts_violated": [
+        "FR_008_OneInFlightPerCustomer"
+      ],
+      "rationale": "This fact prevents customers from having multiple in-flight applications simultaneously. Removing it allows a single customer to submit two applications both in Submitted or Under Review status at the same time, violating the application-lifecycle constraint.",
+      "inject_violation": "fact MUTATE_MultipleInflight { some c: User, disj app1, app2: LoanApplication | c.role = CustomerRole and c = app1.customer and c = app2.customer and app1.status = Submitted and app2.status = Submitted }"
+    },
+    {
+      "fact_name": "F_AuditAppendOnly",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_018_AuditAppendOnly"
+      ],
+      "rationale": "This fact enforces the append-only invariant by preventing duplicate audit entries (no two entries with identical transition timestamp). Removing it allows the model to create multiple identical audit records for the same transition, violating immutability.",
+      "inject_violation": "fact MUTATE_AuditDuplicate { some disj ae1, ae2: AuditEntry | ae1.application = ae2.application and ae1.previousStatus = ae2.previousStatus and ae1.newStatus = ae2.newStatus and ae1.occurredAt = ae2.occurredAt }"
+    },
+    {
+      "fact_name": "F_ImmutableDecidedApplication",
+      "asserts_violated": [
+        "FR_016_ImmutableDecidedApplication"
+      ],
+      "rationale": "This fact prevents any status change after an application reaches Approved or Rejected. Removing it allows applications to revert from decided states back to Submitted or Under Review, violating the finality of decisions.",
+      "inject_violation": "fact MUTATE_ReDecision { some app: LoanApplication, ae: AuditEntry | app.status = Approved and ae.application = app and ae.newStatus = UnderReview }"
+    }
+  ]
+}

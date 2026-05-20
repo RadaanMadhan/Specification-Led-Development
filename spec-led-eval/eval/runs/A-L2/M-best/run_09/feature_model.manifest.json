@@ -1,0 +1,180 @@
+{
+  "feature_id": "A-L2",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthAndOneRole",
+    "FR_002_CustomerActionScope",
+    "FR_003_LoanOfficerNoSubmit",
+    "FR_004_ComplianceReadOnly",
+    "FR_005_CustomerIdentityBound",
+    "FR_006_StructuralValidation",
+    "FR_008_OneInFlightPerCustomer",
+    "FR_009_SubmissionAudit",
+    "FR_010_QueueAccess",
+    "FR_011_ClaimAssignsOfficer",
+    "FR_012_OneOfficerPerApp",
+    "FR_013_OnlyAssignedDecides",
+    "FR_014_DecisionHasDecider",
+    "FR_015_DecisionAtomicity",
+    "FR_016_DecidedImmutable",
+    "FR_017_AuditFieldsValid",
+    "FR_018_AuditAppendOnly",
+    "FR_019_OneAuditPerTransition",
+    "FR_020_CustomerSeesOwnOnly",
+    "FR_021_OfficerIdHiddenFromCustomer",
+    "FR_022_AuditRetained",
+    "FR_023_ComplianceNoWrites"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthAndOneRole",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_CustomerActionScope",
+      "LeastPrivilege"
+    ],
+    "FR-003": [
+      "FR_003_LoanOfficerNoSubmit",
+      "LeastPrivilege"
+    ],
+    "FR-004": [
+      "FR_004_ComplianceReadOnly",
+      "LeastPrivilege"
+    ],
+    "FR-005": [
+      "FR_005_CustomerIdentityBound"
+    ],
+    "FR-006": [
+      "FR_006_StructuralValidation"
+    ],
+    "FR-007": [
+      "FR_006_StructuralValidation"
+    ],
+    "FR-008": [
+      "FR_008_OneInFlightPerCustomer"
+    ],
+    "FR-009": [
+      "FR_009_SubmissionAudit",
+      "AuditCompleteness",
+      "AttributionCorrectness"
+    ],
+    "FR-010": [
+      "FR_010_QueueAccess",
+      "PermissionCompleteness"
+    ],
+    "FR-011": [
+      "FR_011_ClaimAssignsOfficer"
+    ],
+    "FR-012": [
+      "FR_012_OneOfficerPerApp"
+    ],
+    "FR-013": [
+      "FR_013_OnlyAssignedDecides"
+    ],
+    "FR-014": [
+      "FR_014_DecisionHasDecider"
+    ],
+    "FR-015": [
+      "FR_015_DecisionAtomicity"
+    ],
+    "FR-016": [
+      "FR_016_DecidedImmutable"
+    ],
+    "FR-017": [
+      "FR_017_AuditFieldsValid",
+      "AttributionCorrectness"
+    ],
+    "FR-018": [
+      "FR_018_AuditAppendOnly",
+      "AppendOnly"
+    ],
+    "FR-019": [
+      "FR_019_OneAuditPerTransition",
+      "AuditCompleteness"
+    ],
+    "FR-020": [
+      "FR_020_CustomerSeesOwnOnly",
+      "OwnershipBasedAccess",
+      "NoInformationLeakage"
+    ],
+    "FR-021": [
+      "FR_021_OfficerIdHiddenFromCustomer"
+    ],
+    "FR-022": [
+      "FR_022_AuditRetained"
+    ],
+    "FR-023": [
+      "FR_023_ComplianceNoWrites",
+      "LeastPrivilege"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_PermissionGate",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_002_CustomerActionScope",
+        "FR_021_OfficerIdHiddenFromCustomer"
+      ],
+      "rationale": "Removing the permission gate lets a Success outcome occur on a (role, op) cell that is not in the matrix. Injecting a CustomerRole caller succeeding at OpGetAudit (denied by the matrix) is a direct counterexample to least-privilege, customer-action-scope, and the no-audit-for-customers rule.",
+      "inject_violation": "fact MUTATE_LeastPrivilegeViolation { some op: Operation, u: User | u.role = CustomerRole and op.caller = u and op.kind = OpGetAudit and op.outcome = Success }"
+    },
+    {
+      "fact_name": "F_AuditEntryExists",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_009_SubmissionAudit",
+        "FR_019_OneAuditPerTransition",
+        "FR_022_AuditRetained"
+      ],
+      "rationale": "Removing the existence half of audit-trail completeness lets the model invent an application that has reached UnderReview with zero audit entries \u2014 violating completeness, the submission-audit guarantee, and retention.",
+      "inject_violation": "fact MUTATE_AuditMissingViolation { some a: LoanApplication | a.status = UnderReviewSt and (no e: AuditEntry | e.application = a) }"
+    },
+    {
+      "fact_name": "F_AuditNoDuplicates",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_018_AuditAppendOnly"
+      ],
+      "rationale": "Removing duplicate-prevention lets the model fabricate two distinct audit entries recording the same applied transition for one application \u2014 the canonical append-only / no-rewrites violation.",
+      "inject_violation": "fact MUTATE_AuditDuplicateViolation { some disj e1, e2: AuditEntry | e1.application = e2.application and e1.newStatus = e2.newStatus }"
+    },
+    {
+      "fact_name": "F_NoLeakNotFound",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "OwnershipBasedAccess",
+        "FR_020_CustomerSeesOwnOnly"
+      ],
+      "rationale": "Removing the no-leak/no-foreign-read constraint lets a customer successfully GET an application owned by another customer, violating both ownership-based access and the no-existence-leak rule.",
+      "inject_violation": "fact MUTATE_LeakViolation { some op: Operation, a: LoanApplication, u: User | u.role = CustomerRole and op.caller = u and op.kind = OpGetApp and op.target = a and a.customer != u and op.outcome = Success }"
+    },
+    {
+      "fact_name": "F_DecideOnlyByAssigned",
+      "asserts_violated": [
+        "FR_013_OnlyAssignedDecides"
+      ],
+      "rationale": "Removing the assigned-officer gate on Decide lets a non-assigned loan officer successfully decide somebody else's claimed application \u2014 precisely SC-005's never-event.",
+      "inject_violation": "fact MUTATE_NonAssignedDecideViolation { some op: Operation, a: LoanApplication, disj u1, u2: User | u1.role = LoanOfficerRole and u2.role = LoanOfficerRole and op.caller = u1 and op.kind = OpDecide and op.target = a and a.assignedOfficer = u2 and op.outcome = Success }"
+    },
+    {
+      "fact_name": "F_OneInFlightPerCustomer",
+      "asserts_violated": [
+        "FR_008_OneInFlightPerCustomer"
+      ],
+      "rationale": "Removing the in-flight uniqueness fact lets the same customer have two simultaneous Submitted/UnderReview applications, breaking FR-008's partial unique index invariant.",
+      "inject_violation": "fact MUTATE_TwoInFlightViolation { some disj a1, a2: LoanApplication | a1.customer = a2.customer and a1.status = SubmittedSt and a2.status = UnderReviewSt }"
+    }
+  ]
+}

@@ -1,0 +1,146 @@
+{
+  "feature_id": "006-task-management",
+  "patterns_applied": [
+    "AuthRequiredEverywhere",
+    "AppendOnly",
+    "AuditCompleteness",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "ValidationBeforeMutation"
+  ],
+  "feature_specific_predicates": [
+    "FR_002_IdentityFromContext",
+    "FR_003_SingleWorkspace",
+    "FR_004_FlatPermissions",
+    "FR_005_TitlePresent",
+    "FR_006_DescriptionStructural",
+    "FR_007_DueDateOptional",
+    "FR_008_AtMostOneAssignee",
+    "FR_009_CreatorRecorded",
+    "FR_010_StatusInEnum",
+    "FR_011_ClosedTaskEditRule",
+    "FR_012_PermanentDeletion",
+    "FR_013_ScopeEnumerated",
+    "FR_014_NoVisibilityPartition",
+    "FR_015_FilterFieldsPresent",
+    "FR_016_ClearFiltersReturnsAll",
+    "FR_017_TimestampsPresent",
+    "FR_018_DeletionLogged"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_IdentityFromContext"
+    ],
+    "FR-003": [
+      "FR_003_SingleWorkspace"
+    ],
+    "FR-004": [
+      "FR_004_FlatPermissions"
+    ],
+    "FR-005": [
+      "FR_005_TitlePresent",
+      "ValidationBeforeMutation"
+    ],
+    "FR-006": [
+      "FR_006_DescriptionStructural"
+    ],
+    "FR-007": [
+      "FR_007_DueDateOptional"
+    ],
+    "FR-008": [
+      "FR_008_AtMostOneAssignee",
+      "OwnershipExclusivity"
+    ],
+    "FR-009": [
+      "FR_009_CreatorRecorded",
+      "OwnershipExclusivity"
+    ],
+    "FR-010": [
+      "FR_010_StatusInEnum"
+    ],
+    "FR-011": [
+      "FR_011_ClosedTaskEditRule"
+    ],
+    "FR-012": [
+      "FR_012_PermanentDeletion",
+      "AppendOnly"
+    ],
+    "FR-013": [
+      "FR_013_ScopeEnumerated"
+    ],
+    "FR-014": [
+      "FR_014_NoVisibilityPartition"
+    ],
+    "FR-015": [
+      "FR_015_FilterFieldsPresent"
+    ],
+    "FR-016": [
+      "FR_016_ClearFiltersReturnsAll"
+    ],
+    "FR-017": [
+      "FR_017_TimestampsPresent"
+    ],
+    "FR-018": [
+      "FR_018_DeletionLogged",
+      "AuditCompleteness",
+      "AttributionCorrectness",
+      "AppendOnly"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_AuthRequired",
+      "asserts_violated": [
+        "AuthRequiredEverywhere",
+        "FR_004_FlatPermissions"
+      ],
+      "rationale": "Clearing the auth boundary lets the model invent a successful operation with authenticated=False, which is exactly what AuthRequiredEverywhere is supposed to forbid.",
+      "inject_violation": "fact MUTATE_AuthBypass { some op: Operation | op.outcome = Success and op.authenticated = False }"
+    },
+    {
+      "fact_name": "F_AppendOnlyDeletions",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_012_PermanentDeletion"
+      ],
+      "rationale": "Clearing the uniqueness constraints lets two TaskDeletion entries reference the same task, which is the canonical violation of an append-only log and permanent deletion.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some disj d1, d2: TaskDeletion | d1.deletedTask = d2.deletedTask }"
+    },
+    {
+      "fact_name": "F_DeletionAuditCompleteness",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_018_DeletionLogged"
+      ],
+      "rationale": "Clearing audit completeness lets a successful delete op exist with no corresponding log entry, breaking the per-delete one-to-one audit invariant.",
+      "inject_violation": "fact MUTATE_MissingDeletionLog { some op: Operation | op.kind = OpDelete and op.outcome = Success and (no d: TaskDeletion | d.producedByOp = op) }"
+    },
+    {
+      "fact_name": "F_AttributionCorrectness",
+      "asserts_violated": [
+        "AttributionCorrectness"
+      ],
+      "rationale": "Clearing the attribution fact lets a log entry record a deleter different from the actual op caller \u2014 exactly the misattribution case the assertion is designed to detect.",
+      "inject_violation": "fact MUTATE_WrongDeleter { some d: TaskDeletion | d.deletedBy != d.producedByOp.caller }"
+    },
+    {
+      "fact_name": "F_IdentityFromContext",
+      "asserts_violated": [
+        "FR_002_IdentityFromContext"
+      ],
+      "rationale": "Clearing the identity-from-context fact lets a task's recorded creator diverge from its create-op's authenticated caller, modelling the payload-spoofing bug FR-002 forbids.",
+      "inject_violation": "fact MUTATE_SpoofedCreator { some t: Task | t.creator != t.createdByOp.caller }"
+    },
+    {
+      "fact_name": "F_ClosedTaskEditRule",
+      "asserts_violated": [
+        "FR_011_ClosedTaskEditRule"
+      ],
+      "rationale": "Clearing the closed-task edit rule lets a successful edit on a Done task keep the status as Done, which is precisely the PATCH-on-closed bug FR-011 forbids.",
+      "inject_violation": "fact MUTATE_EditClosedNoReopen { some op: Operation | op.kind = OpEdit and op.outcome = Success and op.preStatus = Done and op.setsStatus = Done }"
+    }
+  ]
+}

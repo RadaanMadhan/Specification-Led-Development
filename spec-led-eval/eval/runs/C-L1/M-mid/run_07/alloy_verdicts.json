@@ -1,0 +1,19 @@
+{
+  "LeastPrivilege": "PASS",
+  "PermissionCompleteness": "PASS",
+  "AuthRequiredEverywhere": "PASS",
+  "AuditCompleteness": "PASS",
+  "AppendOnly": "PASS",
+  "AttributionCorrectness": "PASS",
+  "OwnershipBasedAccess": "FAIL",
+  "NoInformationLeakage": "FAIL",
+  "FR_001_AuthRequired": "PASS",
+  "FR_002_RoleResolution": "PASS",
+  "FR_006_CareTeamGating": "FAIL",
+  "FR_007_ByteEquivalentDenyNotFound": "FAIL",
+  "FR_008_AlwaysAudit": "PASS",
+  "FR_009_AuditEntryShape": "PASS",
+  "FR_010_AuditImmutable": "PASS",
+  "FR_011_AuditOfficerOnly": "FAIL",
+  "FR_013_AuditBeforeAccess": "FAIL"
+}

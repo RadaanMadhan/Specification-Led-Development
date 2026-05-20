@@ -1,0 +1,155 @@
+{
+  "feature_id": "A-L1",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "PrivilegeMonotonicity",
+    "AuthRequiredEverywhere",
+    "AppendOnly",
+    "AuditCompleteness",
+    "AttributionCorrectness",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "ValidationBeforeMutation",
+    "ConcurrencySafety"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_ValidationBeforeSubmission",
+    "FR_003_ValidTermOptions",
+    "FR_004_UniqueReference",
+    "FR_005_OnePendingPerCustomer",
+    "FR_009_DecisionRequiresReason",
+    "FR_010_DecisionPersisted",
+    "FR_011_DecisionImmutability",
+    "FR_012_NoDoubleDecision",
+    "FR_013_CustomerSeesOnlyOwnApps",
+    "FR_014_NotificationOnDecision",
+    "FR_015_StaffOnlyDecisionAccess",
+    "FR_016_AuditTrailComplete",
+    "FR_017_RetentionNoDeletion"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_ValidationBeforeSubmission",
+      "ValidationBeforeMutation"
+    ],
+    "FR-003": [
+      "FR_003_ValidTermOptions",
+      "ValidationBeforeMutation"
+    ],
+    "FR-004": [
+      "FR_004_UniqueReference"
+    ],
+    "FR-005": [
+      "FR_005_OnePendingPerCustomer"
+    ],
+    "FR-006": [
+      "FR_004_UniqueReference"
+    ],
+    "FR-007": [
+      "LeastPrivilege",
+      "FR_015_StaffOnlyDecisionAccess"
+    ],
+    "FR-008": [
+      "LeastPrivilege",
+      "FR_015_StaffOnlyDecisionAccess"
+    ],
+    "FR-009": [
+      "FR_009_DecisionRequiresReason"
+    ],
+    "FR-010": [
+      "FR_010_DecisionPersisted",
+      "AuditCompleteness"
+    ],
+    "FR-011": [
+      "FR_011_DecisionImmutability",
+      "ConcurrencySafety"
+    ],
+    "FR-012": [
+      "FR_012_NoDoubleDecision",
+      "ConcurrencySafety"
+    ],
+    "FR-013": [
+      "FR_013_CustomerSeesOnlyOwnApps",
+      "OwnershipBasedAccess",
+      "NoInformationLeakage"
+    ],
+    "FR-014": [
+      "FR_014_NotificationOnDecision"
+    ],
+    "FR-015": [
+      "FR_015_StaffOnlyDecisionAccess",
+      "LeastPrivilege"
+    ],
+    "FR-016": [
+      "FR_016_AuditTrailComplete",
+      "AppendOnly",
+      "AuditCompleteness",
+      "AttributionCorrectness"
+    ],
+    "FR-017": [
+      "FR_017_RetentionNoDeletion"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_AppendOnlyAuditEntries",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_016_AuditTrailComplete"
+      ],
+      "rationale": "Removing F_AppendOnlyAuditEntries allows Alloy to place two ApplicationEvents with the same (application, eventType) pair, directly violating the append-only invariant. The injection forces exactly such a duplicate into existence, making both AppendOnly and FR_016_AuditTrailComplete find a counterexample.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some disj e1, e2: ApplicationEvent | e1.application = e2.application and e1.eventType = e2.eventType }"
+    },
+    {
+      "fact_name": "F_OnePendingPerCustomer",
+      "asserts_violated": [
+        "FR_005_OnePendingPerCustomer"
+      ],
+      "rationale": "Removing F_OnePendingPerCustomer allows a customer to hold two PendingReview applications simultaneously, violating FR-005. The injection forces two distinct PendingReview applications with the same customer, producing a counterexample.",
+      "inject_violation": "fact MUTATE_TwoPendingViolation { some disj a1, a2: LoanApplication | a1.customer = a2.customer and a1.status = PendingReview and a2.status = PendingReview }"
+    },
+    {
+      "fact_name": "F_DecisionImmutability",
+      "asserts_violated": [
+        "FR_011_DecisionImmutability",
+        "FR_012_NoDoubleDecision",
+        "ConcurrencySafety"
+      ],
+      "rationale": "Removing F_DecisionImmutability allows two Decision rows to reference the same LoanApplication, violating the at-most-one-decision invariant central to FR-011 and FR-012. The injection forces two decisions on the same application.",
+      "inject_violation": "fact MUTATE_DoubleDecisionViolation { some disj d1, d2: Decision | d1.application = d2.application }"
+    },
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "PermissionCompleteness",
+        "FR_015_StaffOnlyDecisionAccess"
+      ],
+      "rationale": "Clearing F_PermissionMatrix removes the closed-world assignment of PermMatrix.Allowed, so Alloy can freely assign any (Role, OperationKind) pair as allowed. The injection explicitly grants Customer the PostDecision operation, breaking LeastPrivilege and FR_015.",
+      "inject_violation": "fact MUTATE_PermissionMatrixViolation { Customer -> PostDecision in PermMatrix.Allowed }"
+    },
+    {
+      "fact_name": "F_AttributionDecisionEvents",
+      "asserts_violated": [
+        "AttributionCorrectness",
+        "FR_016_AuditTrailComplete"
+      ],
+      "rationale": "Removing F_AttributionDecisionEvents allows a Customer-role user to be the actor on an EvtApproved or EvtRejected event. The injection forces exactly that misattribution, making AttributionCorrectness find a counterexample.",
+      "inject_violation": "fact MUTATE_MisattributionViolation { some e: ApplicationEvent | (e.eventType = EvtApproved or e.eventType = EvtRejected) and e.actor.role = Customer }"
+    },
+    {
+      "fact_name": "F_NotificationOnDecision",
+      "asserts_violated": [
+        "FR_014_NotificationOnDecision"
+      ],
+      "rationale": "Removing F_NotificationOnDecision allows an approved or rejected application to exist with no corresponding NotificationLog entry. The injection forces an approved application that has no notification record, making FR_014_NotificationOnDecision find a counterexample.",
+      "inject_violation": "fact MUTATE_MissingNotificationViolation { some a: LoanApplication | a.status = StatusApproved and (no n: NotificationLog | n.application = a) }"
+    }
+  ]
+}

@@ -1,0 +1,132 @@
+$ /Users/leonhausmann/opt/anaconda3/bin/python3 -m speceval.cli verify-design --no-cache --model M-best --java-bin /Users/leonhausmann/opt/anaconda3/lib/python3.9/site-packages/jdk4py/java-runtime/bin/java /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/eval/specs/C-L3
+
+[parse]   feature 'C-L3', 20 FRs, 5 user stories
+[lift]    calling LLM (anthropic: tier=M-best, model=claude-opus-4-7)...
+[lift]    fresh lift (sha=67797346526e)
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/C-L3/feature_model.als
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/C-L3/cost_log.json
+[alloy]   running alloy.jar on feature_model.als...
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/C-L3/alloy_verdicts.json
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/C-L3/mutation_outcomes.json
+
+==============================================================================
+  Design Compliance Report  (Phase 3 — feature_model.als)
+  feature       : C-L3
+  spec source   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/eval/specs/C-L3
+  alloy model   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/C-L3/feature_model.als
+  patterns      : AuthRequiredEverywhere, LeastPrivilege, PermissionCompleteness, AuditCompleteness, AttributionCorrectness, AppendOnly, OwnershipBasedAccess, NoInformationLeakage
+  fr count      : 20 declared in spec.md
+  assertions    : 23 total (23/23 PASS via Alloy)
+==============================================================================
+
+  Compliance matrix
+  ----------------------------------------------------------------------------
+  Assertion                          Verdict   Anchor
+  -----------------------------------------------------------------------
+  AuthRequiredEverywhere             PASS      PATTERN AuthRequiredEverywhere: spec.md FR-001
+  LeastPrivilege                     PASS      PATTERN LeastPrivilege: contracts/http-api.md permission matrix; spec.md FR-004..FR-007
+  PermissionCompleteness             PASS      PATTERN PermissionCompleteness: contracts/http-api.md permission matrix
+  AuditCompleteness                  PASS      PATTERN AuditCompleteness: spec.md FR-013; data-model.md audit_entries
+  AttributionCorrectness             PASS      PATTERN AttributionCorrectness: spec.md FR-014; data-model.md audit-entry fields
+  AppendOnly                         PASS      PATTERN AppendOnly: spec.md FR-012, FR-015; data-model.md notes/audit append-only
+  OwnershipBasedAccess               PASS      PATTERN OwnershipBasedAccess: spec.md FR-004 (care team), FR-006 (patient own record)
+  NoInformationLeakage               PASS      PATTERN NoInformationLeakage: spec.md FR-008; SC-003
+  FR_002_OneRolePerUser              PASS      FEATURE-SPECIFIC: FR-002 — exactly one role per user
+  FR_003_PatientAssignedRecord       PASS      FEATURE-SPECIFIC: FR-003 — patient ⇔ assigned_record_id pairing
+  FR_004_ClinicianCareTeamGating     PASS      FEATURE-SPECIFIC: FR-004 — clinician read/append gated by care-team membership
+  FR_005_ClinicianAuditAccess        PASS      FEATURE-SPECIFIC: FR-005 — clinician per-record audit requires care team; no access-log for clinicians
+  FR_006_PatientSelfAccess           PASS      FEATURE-SPECIFIC: FR-006 — patient may only access own record; no append; no access-log
+  FR_007_ComplianceContentForbidden  PASS      FEATURE-SPECIFIC: FR-007 — compliance officer cannot read clinical content nor append notes
+  FR_008_ByteEquivalentDenied        PASS      FEATURE-SPECIFIC: FR-008 — byte-equivalent unauthorised response: denied ⇒ no clinical side-effect
+  FR_011_NoteFieldsSnapshot          PASS      FEATURE-SPECIFIC: FR-010/FR-011 — note structural invariants (author/record snapshot)
+  FR_012_NotesAppendOnly             PASS      FEATURE-SPECIFIC: FR-012 — clinical notes append-only (each note ↔ one creating op)
+  FR_013_OneAuditPerOperation        PASS      FEATURE-SPECIFIC: FR-013 — every operation produces exactly one audit entry
+  FR_014_AuditFieldsCorrect          PASS      FEATURE-SPECIFIC: FR-014 — audit-entry fields mirror the operation faithfully
+  FR_015_AuditImmutable              PASS      FEATURE-SPECIFIC: FR-015 — audit entries immutable: each audit row is uniquely linked
+  FR_018_AccessLogComplianceOnly     PASS      FEATURE-SPECIFIC: FR-018 — /access-log is compliance-officer-only
+  FR_019_ComplianceContentBlindness  PASS      FEATURE-SPECIFIC: FR-019 — compliance content-blindness: no compliance officer authors or reads clinical content
+  FR_020_RecordIdHandle              PASS      FEATURE-SPECIFIC: FR-020 — record_id only in URL paths (target is a Record handle, not a User)
+
+  FR coverage
+  ----------------------------------------------------------------------------
+  FR-001  →  AuthRequiredEverywhere=PASS
+  FR-002  →  FR_002_OneRolePerUser=PASS
+  FR-003  →  FR_003_PatientAssignedRecord=PASS
+  FR-004  →  FR_004_ClinicianCareTeamGating=PASS, OwnershipBasedAccess=PASS, LeastPrivilege=PASS
+  FR-005  →  FR_005_ClinicianAuditAccess=PASS
+  FR-006  →  FR_006_PatientSelfAccess=PASS, OwnershipBasedAccess=PASS
+  FR-007  →  FR_007_ComplianceContentForbidden=PASS, LeastPrivilege=PASS
+  FR-008  →  FR_008_ByteEquivalentDenied=PASS, NoInformationLeakage=PASS
+  FR-009  →  FR_004_ClinicianCareTeamGating=PASS
+  FR-010  →  FR_011_NoteFieldsSnapshot=PASS
+  FR-011  →  FR_011_NoteFieldsSnapshot=PASS
+  FR-012  →  FR_012_NotesAppendOnly=PASS, AppendOnly=PASS
+  FR-013  →  FR_013_OneAuditPerOperation=PASS, AuditCompleteness=PASS
+  FR-014  →  FR_014_AuditFieldsCorrect=PASS, AttributionCorrectness=PASS
+  FR-015  →  FR_015_AuditImmutable=PASS, AppendOnly=PASS
+  FR-016  →  FR_013_OneAuditPerOperation=PASS
+  FR-017  →  FR_015_AuditImmutable=PASS
+  FR-018  →  FR_018_AccessLogComplianceOnly=PASS, LeastPrivilege=PASS
+  FR-019  →  FR_019_ComplianceContentBlindness=PASS
+  FR-020  →  FR_020_RecordIdHandle=PASS
+
+  All FRs have at least one matching assertion.
+
+==============================================================================
+  Mutation tests  (assertion-strength validation)
+==============================================================================
+
+  Strategy: replace each named fact's body with `{}` (no constraint),
+  then re-run Alloy. Each listed assertion should now FAIL on the
+  mutated model. If it still PASSes, the assertion is vacuous and
+  must be strengthened.
+
+  - MUTATE F_PermissionRule  → runs/C-L3/mutated_F_PermissionRule.als
+    rationale: Clearing F_PermissionRule decouples Operation.outcome from IsPermitted. The injection then asks Alloy to find a Permitted Operation whose (role, opKind) cell (ComplianceOfficer, ReadRecord) is explicitly denied by the matrix — a direct counterexample to LeastPrivilege and the compliance-content-forbidden assertions.
+    expected to FAIL: LeastPrivilege, FR_007_ComplianceContentForbidden, FR_019_ComplianceContentBlindness
+      - LeastPrivilege: FAIL (expected)
+      - FR_007_ComplianceContentForbidden: FAIL (expected)
+      - FR_019_ComplianceContentBlindness: FAIL (expected)
+
+  - MUTATE F_OneAuditPerOperation  → runs/C-L3/mutated_F_OneAuditPerOperation.als
+    rationale: Clearing this fact removes the one-audit-per-operation constraint. The injection forces an Operation that has no associated AuditEntry, directly contradicting the audit-completeness assertions.
+    expected to FAIL: AuditCompleteness, FR_013_OneAuditPerOperation
+      - AuditCompleteness: FAIL (expected)
+      - FR_013_OneAuditPerOperation: FAIL (expected)
+
+  - MUTATE F_AuditAttribution  → runs/C-L3/mutated_F_AuditAttribution.als
+    rationale: Clearing the attribution fact lets the AuditEntry's accessor field drift from the underlying Operation's actor. The injection forces such a misattributed audit entry into the instance.
+    expected to FAIL: AttributionCorrectness, FR_014_AuditFieldsCorrect
+      - AttributionCorrectness: FAIL (expected)
+      - FR_014_AuditFieldsCorrect: FAIL (expected)
+
+  - MUTATE F_NoteOpLink  → runs/C-L3/mutated_F_NoteOpLink.als
+    rationale: F_NoteOpLink is the bijection between ClinicalNote and permitted-append Operations. Clearing it lets a 'phantom' note exist with no creating operation — exactly the append-only / provenance violation the AppendOnly assertion is meant to catch.
+    expected to FAIL: AppendOnly, FR_012_NotesAppendOnly, FR_011_NoteFieldsSnapshot
+      - AppendOnly: FAIL (expected)
+      - FR_012_NotesAppendOnly: FAIL (expected)
+      - FR_011_NoteFieldsSnapshot: FAIL (expected)
+
+  - MUTATE F_PermissionRule  → runs/C-L3/mutated_F_PermissionRule.als
+    rationale: Clearing the permission rule severs the link between Permitted outcomes and the care-team membership precondition. The injection forces a clinician to be granted a Permitted ReadRecord on a record they are NOT on the care team for — the canonical ownership/care-team violation.
+    expected to FAIL: OwnershipBasedAccess, FR_004_ClinicianCareTeamGating
+      - OwnershipBasedAccess: FAIL (expected)
+      - FR_004_ClinicianCareTeamGating: FAIL (expected)
+
+  - MUTATE F_NoteOpLink  → runs/C-L3/mutated_F_NoteOpLink.als
+    rationale: Clearing F_NoteOpLink decouples a Denied operation from its (forbidden) side effects. The injection forces a Denied operation that nonetheless produced a clinical note — a state change leaking through the byte-equivalent 403 envelope.
+    expected to FAIL: NoInformationLeakage, FR_008_ByteEquivalentDenied
+      - NoInformationLeakage: FAIL (expected)
+      - FR_008_ByteEquivalentDenied: FAIL (expected)
+
+  Mutation summary
+  ----------------------------------------------------------------------------
+  - F_PermissionRule: ASSERTIONS BIT (LeastPrivilege, FR_007_ComplianceContentForbidden, FR_019_ComplianceContentBlindness)
+  - F_OneAuditPerOperation: ASSERTIONS BIT (AuditCompleteness, FR_013_OneAuditPerOperation)
+  - F_AuditAttribution: ASSERTIONS BIT (AttributionCorrectness, FR_014_AuditFieldsCorrect)
+  - F_NoteOpLink: ASSERTIONS BIT (AppendOnly, FR_012_NotesAppendOnly, FR_011_NoteFieldsSnapshot)
+  - F_PermissionRule: ASSERTIONS BIT (OwnershipBasedAccess, FR_004_ClinicianCareTeamGating)
+  - F_NoteOpLink: ASSERTIONS BIT (NoInformationLeakage, FR_008_ByteEquivalentDenied)
+
+
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/C-L3/report.txt

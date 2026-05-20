@@ -1,0 +1,174 @@
+{
+  "feature_id": "005-fca-loan-applications",
+  "patterns_applied": [
+    "AuthRequiredEverywhere",
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AppendOnly",
+    "AuditCompleteness",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "NoSelfMutation"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_RoleMutex",
+    "FR_003_ApplicantScope",
+    "FR_004_OfficerScope",
+    "FR_005_AuditorScope",
+    "FR_007_StatusEnum",
+    "FR_008_OneInFlight",
+    "FR_009_ValidTransitions",
+    "FR_010_OfficerHasRole",
+    "FR_011_NoSelfAssignment",
+    "FR_012_OnlyAssignedOfficerPatches",
+    "FR_013_NoSelfDecision",
+    "FR_014_ReasonRequired",
+    "FR_015_NoChangesAfterDecided",
+    "FR_016_AuditFields",
+    "FR_018_AppendOnly",
+    "FR_020_ByteEquivNotFound",
+    "FR_023_AuditOnlyForAuditor",
+    "FR_024_ApplicantCannotModify"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_RoleMutex"
+    ],
+    "FR-003": [
+      "FR_003_ApplicantScope",
+      "LeastPrivilege"
+    ],
+    "FR-004": [
+      "FR_004_OfficerScope",
+      "LeastPrivilege"
+    ],
+    "FR-005": [
+      "FR_005_AuditorScope",
+      "LeastPrivilege"
+    ],
+    "FR-007": [
+      "FR_007_StatusEnum"
+    ],
+    "FR-008": [
+      "FR_008_OneInFlight"
+    ],
+    "FR-009": [
+      "FR_009_ValidTransitions"
+    ],
+    "FR-010": [
+      "FR_010_OfficerHasRole",
+      "OwnershipExclusivity"
+    ],
+    "FR-011": [
+      "FR_011_NoSelfAssignment",
+      "NoSelfMutation",
+      "OwnershipExclusivity"
+    ],
+    "FR-012": [
+      "FR_012_OnlyAssignedOfficerPatches",
+      "OwnershipBasedAccess"
+    ],
+    "FR-013": [
+      "FR_013_NoSelfDecision",
+      "NoSelfMutation"
+    ],
+    "FR-014": [
+      "FR_014_ReasonRequired",
+      "FR_016_AuditFields"
+    ],
+    "FR-015": [
+      "FR_015_NoChangesAfterDecided"
+    ],
+    "FR-016": [
+      "FR_016_AuditFields",
+      "AuditCompleteness",
+      "AttributionCorrectness"
+    ],
+    "FR-018": [
+      "FR_018_AppendOnly",
+      "AppendOnly"
+    ],
+    "FR-020": [
+      "FR_020_ByteEquivNotFound",
+      "NoInformationLeakage"
+    ],
+    "FR-021": [
+      "FR_020_ByteEquivNotFound",
+      "NoInformationLeakage"
+    ],
+    "FR-022": [
+      "NoInformationLeakage"
+    ],
+    "FR-023": [
+      "FR_023_AuditOnlyForAuditor",
+      "OwnershipBasedAccess"
+    ],
+    "FR-024": [
+      "FR_024_ApplicantCannotModify",
+      "LeastPrivilege"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_AuthRequired",
+      "asserts_violated": [
+        "AuthRequiredEverywhere",
+        "FR_001_AuthRequired"
+      ],
+      "rationale": "Removing F_AuthRequired lets the model invent a granted operation with no upstream authentication; the injection forces exactly such an operation and the assertion that 'granted implies authenticated' must fail.",
+      "inject_violation": "fact MUTATE_AuthBypass { some op: Operation | op.granted = True and op.authenticated = False }"
+    },
+    {
+      "fact_name": "F_LeastPrivilegeEnforcement",
+      "asserts_violated": [
+        "LeastPrivilege"
+      ],
+      "rationale": "Removing the matrix-lookup fact lets a role escalate beyond its permitted operation kinds. The injection forces an auditor-only caller to be granted POST /applications, which the permission matrix forbids.",
+      "inject_violation": "fact MUTATE_PrivEsc { some op: Operation, u: User | op.caller = u and op.kind = OpPost and u.roles = RAuditor and op.granted = True and op.authenticated = True }"
+    },
+    {
+      "fact_name": "F_AuditAppendOnly",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_018_AppendOnly"
+      ],
+      "rationale": "Removing the per-(application, newStatus) uniqueness lets the model record two distinct audit entries for the same logical transition, which is exactly the duplication an append-only log forbids.",
+      "inject_violation": "fact MUTATE_AuditDup { some disj e1, e2: AuditEntry | e1.application = e2.application and e1.newStatus = e2.newStatus }"
+    },
+    {
+      "fact_name": "F_OwnershipBasedAccessEnforcement",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_012_OnlyAssignedOfficerPatches"
+      ],
+      "rationale": "Without the ownership filter, a granted GET /applications/{id} can land on a caller who is neither the applicant, the assigned officer, nor an auditor \u2014 leaking another customer's application.",
+      "inject_violation": "fact MUTATE_OwnerLeak { some op: Operation, a: LoanApplication, u: User | op.kind = OpGetApp and op.granted = True and op.target = a and op.caller = u and a.applicant != u and a.assignedOfficer != u and RAuditor not in u.roles and op.authenticated = True }"
+    },
+    {
+      "fact_name": "F_NoSelfAssignment",
+      "asserts_violated": [
+        "NoSelfMutation",
+        "FR_011_NoSelfAssignment",
+        "OwnershipExclusivity"
+      ],
+      "rationale": "Removing the disjointness between an application's applicant and its assigned officer lets a user be auto-assigned to their own application, which is the structural precondition the self-decision rule defends against.",
+      "inject_violation": "fact MUTATE_SelfAssign { some a: LoanApplication, u: User | a.applicant = u and a.assignedOfficer = u }"
+    },
+    {
+      "fact_name": "F_NoInformationLeakageEnforcement",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "FR_020_ByteEquivNotFound"
+      ],
+      "rationale": "Removing the canonical-response rule lets a denied authenticated GET return ForbiddenResp instead of the byte-equivalent NotFoundResp, leaking existence of another customer's application.",
+      "inject_violation": "fact MUTATE_LeakResponse { some op: Operation | op.kind = OpGetApp and op.authenticated = True and op.granted = False and op.response = ForbiddenResp }"
+    }
+  ]
+}

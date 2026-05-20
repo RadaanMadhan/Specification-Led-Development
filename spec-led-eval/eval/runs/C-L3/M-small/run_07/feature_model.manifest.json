@@ -1,0 +1,121 @@
+{
+  "feature_id": "C-L3",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "AppendOnly",
+    "AuditCompleteness",
+    "AttributionCorrectness",
+    "AuthRequiredEverywhere",
+    "NoInformationLeakage"
+  ],
+  "feature_specific_predicates": [
+    "FR_004_CareTeamGating",
+    "FR_005_ClinicianAuditAccess",
+    "FR_007_ComplianceNoRecordRead",
+    "FR_008_ByteEquivalentForbidden",
+    "FR_012_NotesAppendOnly",
+    "FR_013_AlwaysOnAudit",
+    "FR_014_AuditCapturesIP",
+    "FR_015_AuditImmutable",
+    "FR_019_ComplianceContentBlind"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "AuthRequiredEverywhere"
+    ],
+    "FR-004": [
+      "LeastPrivilege",
+      "FR_004_CareTeamGating"
+    ],
+    "FR-005": [
+      "FR_005_ClinicianAuditAccess"
+    ],
+    "FR-006": [
+      "OwnershipBasedAccess"
+    ],
+    "FR-007": [
+      "LeastPrivilege",
+      "FR_007_ComplianceNoRecordRead"
+    ],
+    "FR-008": [
+      "NoInformationLeakage",
+      "FR_008_ByteEquivalentForbidden"
+    ],
+    "FR-012": [
+      "AppendOnly",
+      "FR_012_NotesAppendOnly"
+    ],
+    "FR-013": [
+      "AuditCompleteness",
+      "FR_013_AlwaysOnAudit"
+    ],
+    "FR-014": [
+      "AttributionCorrectness",
+      "FR_014_AuditCapturesIP"
+    ],
+    "FR-015": [
+      "AppendOnly",
+      "FR_015_AuditImmutable"
+    ],
+    "FR-019": [
+      "FR_019_ComplianceContentBlind"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_LeastPrivilege",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_004_CareTeamGating",
+        "FR_007_ComplianceNoRecordRead"
+      ],
+      "rationale": "Removing F_LeastPrivilege allows clinicians to read records they are not on the care team for, compliance officers to read clinical records, and non-clinicians to append notes. This directly violates the permission matrix that is the core access control invariant.",
+      "inject_violation": "fact MUTATE_LeastPrivilegeViolation { some u: User, ae: AuditEntry, r: Record | u.role = Clinician and ae.accessor_user_id = u.user_id and ae.operation = ReadOp and ae.outcome = Permitted and ae.record_id = r.record_id and (no m: CareTeamMembership | m.clinician = u and m.record = r and m.status = Active) }"
+    },
+    {
+      "fact_name": "F_OwnershipExclusivity",
+      "asserts_violated": [
+        "OwnershipExclusivity"
+      ],
+      "rationale": "Removing F_OwnershipExclusivity allows two different patients to own the same record or a patient to own no record, violating the one-to-one assigned_record_id invariant.",
+      "inject_violation": "fact MUTATE_OwnershipExclusivityViolation { some disj u1, u2: User, r: Record | u1.role = Patient and u2.role = Patient and u1.assigned_record_id = r.record_id and u2.assigned_record_id = r.record_id }"
+    },
+    {
+      "fact_name": "F_AppendOnlyNotes",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_012_NotesAppendOnly"
+      ],
+      "rationale": "Removing F_AppendOnlyNotes allows clinical notes to be mutated after creation (e.g., two notes with the same note_id but different bodies), violating the append-only invariant that is critical for HIPAA audit trail integrity.",
+      "inject_violation": "fact MUTATE_AppendOnlyNotesViolation { some disj n1, n2: ClinicalNote | n1.note_id = n2.note_id and n1.body != n2.body }"
+    },
+    {
+      "fact_name": "F_AuditCompleteness",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_013_AlwaysOnAudit"
+      ],
+      "rationale": "Removing F_AuditCompleteness allows clinical notes to exist without a corresponding audit entry, violating the requirement that every record modification must be audited (FR-013).",
+      "inject_violation": "fact MUTATE_AuditCompletenessViolation { some n: ClinicalNote | no ae: AuditEntry | ae.note_id = n.note_id and ae.operation = AppendOp and ae.outcome = Permitted }"
+    },
+    {
+      "fact_name": "F_AuthRequiredEverywhere",
+      "asserts_violated": [
+        "AuthRequiredEverywhere"
+      ],
+      "rationale": "Removing F_AuthRequiredEverywhere allows audit entries to be created for unauthenticated users (users that don't exist in the system), violating the fundamental requirement that all operations must be by authenticated users (FR-001).",
+      "inject_violation": "fact MUTATE_AuthRequiredViolation { some ae: AuditEntry | no u: User | u.user_id = ae.accessor_user_id }"
+    },
+    {
+      "fact_name": "F_NoInformationLeakage",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "FR_008_ByteEquivalentForbidden"
+      ],
+      "rationale": "Removing F_NoInformationLeakage allows different audit outcomes for the same (user, record, operation) tuple, which means the HTTP response could differ between 'record exists but you cannot access it' and 'record does not exist', leaking information (FR-008 violation).",
+      "inject_violation": "fact MUTATE_NoInformationLeakageViolation { some disj ae1, ae2: AuditEntry | ae1.accessor_user_id = ae2.accessor_user_id and ae1.record_id = ae2.record_id and ae1.operation = ae2.operation and ae1.outcome != ae2.outcome }"
+    }
+  ]
+}

@@ -1,0 +1,162 @@
+{
+  "feature_id": "003-loan-application",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionGrounding",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "ValidationBeforeMutation",
+    "ConcurrencySafety"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_CustomerCanSubmit",
+    "FR_002_NoInvalidPersistedApplications",
+    "FR_003_StatusEnumClosed",
+    "FR_004_UniqueReferencePerApplication",
+    "FR_005_OnePendingPerCustomer",
+    "FR_006_ApplicationHasReferenceAndStatus",
+    "FR_007_StaffCanListApplications",
+    "FR_008_StaffCanViewApplicationDetail",
+    "FR_009_DecisionRequiresReason",
+    "FR_010_DecisionChangesStatus",
+    "FR_011_NoSecondDecision",
+    "FR_012_SingleDecisionUnderConcurrency",
+    "FR_013_CustomerScopedToOwnApps",
+    "FR_014_NotificationEventOnDecision",
+    "FR_015_DecisionStaffOnly",
+    "FR_016_AuditEveryStatusChange",
+    "FR_017_ReferentialIntegrityForRetention"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_CustomerCanSubmit",
+      "LeastPrivilege"
+    ],
+    "FR-002": [
+      "FR_002_NoInvalidPersistedApplications",
+      "ValidationBeforeMutation"
+    ],
+    "FR-003": [
+      "FR_003_StatusEnumClosed"
+    ],
+    "FR-004": [
+      "FR_004_UniqueReferencePerApplication"
+    ],
+    "FR-005": [
+      "FR_005_OnePendingPerCustomer"
+    ],
+    "FR-006": [
+      "FR_006_ApplicationHasReferenceAndStatus"
+    ],
+    "FR-007": [
+      "FR_007_StaffCanListApplications"
+    ],
+    "FR-008": [
+      "FR_008_StaffCanViewApplicationDetail"
+    ],
+    "FR-009": [
+      "FR_009_DecisionRequiresReason"
+    ],
+    "FR-010": [
+      "FR_010_DecisionChangesStatus",
+      "AuditCompleteness"
+    ],
+    "FR-011": [
+      "FR_011_NoSecondDecision",
+      "AppendOnly"
+    ],
+    "FR-012": [
+      "FR_012_SingleDecisionUnderConcurrency",
+      "ConcurrencySafety"
+    ],
+    "FR-013": [
+      "FR_013_CustomerScopedToOwnApps",
+      "OwnershipBasedAccess",
+      "NoInformationLeakage"
+    ],
+    "FR-014": [
+      "FR_014_NotificationEventOnDecision"
+    ],
+    "FR-015": [
+      "FR_015_DecisionStaffOnly",
+      "LeastPrivilege"
+    ],
+    "FR-016": [
+      "FR_016_AuditEveryStatusChange",
+      "AuditCompleteness",
+      "AttributionCorrectness"
+    ],
+    "FR-017": [
+      "FR_017_ReferentialIntegrityForRetention"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_OperationsRespectMatrix",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_015_DecisionStaffOnly"
+      ],
+      "rationale": "Clearing this fact lets the model invent an Operation whose (caller.role, kind) pair is outside the permission matrix; the injection forces such a violating operation to exist, so LeastPrivilege must produce a counterexample.",
+      "inject_violation": "fact MUTATE_PermissionViolation { some op: Operation | op.caller.role = Customer and op.kind = PostDecision }"
+    },
+    {
+      "fact_name": "F_AtMostOneEventPerStatusChange",
+      "asserts_violated": [
+        "AppendOnly"
+      ],
+      "rationale": "Removing the canonicality fact lets two distinct ApplicationEvent atoms record the same status change for the same application; the injection forces that duplication, which is the structural shape of an append-only violation in a snapshot model.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some disj e1, e2: ApplicationEvent | e1.application = e2.application and e1.eventType = e2.eventType }"
+    },
+    {
+      "fact_name": "F_AtMostOneDecisionPerApplication",
+      "asserts_violated": [
+        "ConcurrencySafety",
+        "FR_011_NoSecondDecision",
+        "FR_012_SingleDecisionUnderConcurrency"
+      ],
+      "rationale": "Clearing this fact allows two Decision atoms for the same application; the injection demands exactly that, so the concurrency-safety assertion must find a counterexample.",
+      "inject_violation": "fact MUTATE_TwoDecisions { some disj d1, d2: Decision | d1.application = d2.application }"
+    },
+    {
+      "fact_name": "F_CustomerOpsScopedToOwnedApps",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "NoInformationLeakage",
+        "FR_013_CustomerScopedToOwnApps"
+      ],
+      "rationale": "Clearing this fact lets a Customer-roled caller's Operation target an application owned by someone else; the injection forces that scenario, which is exactly the FR-013 leak.",
+      "inject_violation": "fact MUTATE_OwnershipViolation { some op: Operation, u: User | op.caller.role = Customer and some op.target and op.target.customer = u and u != op.caller and u.role = Customer }"
+    },
+    {
+      "fact_name": "F_OnePendingPerCustomer",
+      "asserts_violated": [
+        "FR_005_OnePendingPerCustomer"
+      ],
+      "rationale": "Clearing the partial-unique-index fact lets a single customer hold two Pending Review applications simultaneously; the injection forces that state to exist.",
+      "inject_violation": "fact MUTATE_TwoPendingPerCustomer { some disj a1, a2: LoanApplication | a1.customer = a2.customer and a1.status = PendingReview and a2.status = PendingReview }"
+    },
+    {
+      "fact_name": "F_SubmittedEventPerApplication",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_016_AuditEveryStatusChange"
+      ],
+      "rationale": "Clearing this fact lets an application exist without its corresponding submitted audit event; the injection forces that gap, so AuditCompleteness must counterexample.",
+      "inject_violation": "fact MUTATE_MissingSubmittedEvent { some a: LoanApplication | no e: ApplicationEvent | e.application = a and e.eventType = SubmittedEvent }"
+    },
+    {
+      "fact_name": "F_DecisionEventActorMatchesDecider",
+      "asserts_violated": [
+        "AttributionCorrectness"
+      ],
+      "rationale": "Clearing this fact lets a decision event's actor differ from the actual decider; the injection forces a decision event with an actor that no Decision row attests, which is the precise shape of misattribution.",
+      "inject_violation": "fact MUTATE_AttributionMismatch { some e: ApplicationEvent | (e.eventType = ApprovedEvent or e.eventType = RejectedEvent) and (no d: Decision | d.application = e.application and d.decidedBy = e.actor) }"
+    }
+  ]
+}

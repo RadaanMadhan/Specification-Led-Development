@@ -1,0 +1,140 @@
+{
+  "feature_id": "A-L2",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "PermissionGrounding",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthenticationRequired",
+    "FR_002_CustomerPermissions",
+    "FR_003_LoanOfficerPermissions",
+    "FR_004_ComplianceReviewerReadOnly",
+    "FR_008_OneInflightPerCustomer",
+    "FR_011_ClaimTransition",
+    "FR_012_OneOfficerPerApplication",
+    "FR_013_OnlyAssignedOfficerDecides",
+    "FR_016_ImmutabilityOfDecided",
+    "FR_017_AuditPerStatusChange",
+    "FR_019_OneEntryPerTransition",
+    "FR_020_CustomerDataIsolation",
+    "FR_021_OfficerHiddenFromCustomer"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthenticationRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_CustomerPermissions",
+      "LeastPrivilege"
+    ],
+    "FR-003": [
+      "FR_003_LoanOfficerPermissions",
+      "LeastPrivilege"
+    ],
+    "FR-004": [
+      "FR_004_ComplianceReviewerReadOnly",
+      "LeastPrivilege"
+    ],
+    "FR-008": [
+      "FR_008_OneInflightPerCustomer"
+    ],
+    "FR-011": [
+      "FR_011_ClaimTransition"
+    ],
+    "FR-012": [
+      "FR_012_OneOfficerPerApplication"
+    ],
+    "FR-013": [
+      "FR_013_OnlyAssignedOfficerDecides"
+    ],
+    "FR-016": [
+      "FR_016_ImmutabilityOfDecided"
+    ],
+    "FR-017": [
+      "FR_017_AuditPerStatusChange",
+      "AuditCompleteness"
+    ],
+    "FR-018": [
+      "AppendOnly"
+    ],
+    "FR-019": [
+      "FR_019_OneEntryPerTransition",
+      "AuditCompleteness"
+    ],
+    "FR-020": [
+      "FR_020_CustomerDataIsolation",
+      "OwnershipBasedAccess"
+    ],
+    "FR-021": [
+      "FR_021_OfficerHiddenFromCustomer",
+      "NoInformationLeakage"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "PermissionGrounding",
+        "FR_002_CustomerPermissions",
+        "FR_003_LoanOfficerPermissions",
+        "FR_004_ComplianceReviewerReadOnly"
+      ],
+      "rationale": "Removing this fact allows arbitrary permissions to be added to the matrix. The LeastPrivilege assertion checks that only documented permissions exist; if the fact is cleared and a compliance reviewer is granted RecordDecision, the assertion fails because the implication fails (ComplianceReviewer \u2192 RecordDecision is in allowed, but not in the documented set).",
+      "inject_violation": "fact MUTATE_ExtraPermission { ComplianceReviewer -> RecordDecision in PermMatrix.allowed }"
+    },
+    {
+      "fact_name": "F_AuditTrailCompleteness",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_017_AuditPerStatusChange",
+        "FR_019_OneEntryPerTransition"
+      ],
+      "rationale": "Removing this fact allows applications to exist without their corresponding audit entries. The AuditCompleteness assertion requires that every app has exactly one matching entry; without the fact, Alloy can create an app at UnderReview with zero (Submitted \u2192 UnderReview) entries, falsifying the assertion.",
+      "inject_violation": "fact MUTATE_MissingAuditEntry { some app: LoanApplication | app.status = UnderReview and no evt: ApplicationEvent | evt.application = app and evt.new_status = UnderReview }"
+    },
+    {
+      "fact_name": "F_OneInflightPerCustomer",
+      "asserts_violated": [
+        "FR_008_OneInflightPerCustomer"
+      ],
+      "rationale": "Removing this fact allows a customer to have multiple in-flight applications simultaneously. The assertion checks that at most one in-flight app per customer exists; without the fact, Alloy can create two applications with Submitted/UnderReview status for the same customer, violating the lone quantifier.",
+      "inject_violation": "fact MUTATE_TwoInflightApps { some disj app1, app2: LoanApplication | app1.customer = app2.customer and (app1.status = Submitted or app1.status = UnderReview) and (app2.status = Submitted or app2.status = UnderReview) }"
+    },
+    {
+      "fact_name": "F_DecisionRules",
+      "asserts_violated": [
+        "FR_013_OnlyAssignedOfficerDecides",
+        "FR_016_ImmutabilityOfDecided"
+      ],
+      "rationale": "Removing this fact allows multiple decisions per application or decisions by non-assigned officers. The assertion FR_013 checks that every decision's decided_by equals the application's assigned_officer; without the fact, Alloy can create a decision where decided_by is a different officer, falsifying the assertion.",
+      "inject_violation": "fact MUTATE_TwoDecisions { some app: LoanApplication, disj d1, d2: Decision | d1.application = app and d2.application = app }"
+    },
+    {
+      "fact_name": "F_AssignedOfficerCoherence",
+      "asserts_violated": [
+        "FR_011_ClaimTransition",
+        "FR_012_OneOfficerPerApplication"
+      ],
+      "rationale": "Removing this fact allows assigned_officer to be set even when status is Submitted, breaking the state-machine invariant. The assertion FR_012 checks that UnderReview/Approved/Rejected apps have exactly one officer; without the fact, Alloy can create a Submitted app with an assigned_officer, violating the iff constraint, though the assertion itself may still hold if officers are present for non-Submitted apps.",
+      "inject_violation": "fact MUTATE_AssignedWithoutClaim { some app: LoanApplication | app.status = Submitted and some app.assigned_officer }"
+    },
+    {
+      "fact_name": "F_AuditActorCorrectness",
+      "asserts_violated": [
+        "AttributionCorrectness"
+      ],
+      "rationale": "Removing this fact allows audit entries to be created with any actor, not just the ones specified by the state machine. The AttributionCorrectness assertion checks that submission events have the customer as actor; without the fact, Alloy can create a (none \u2192 Submitted) event with a loan officer as actor, falsifying the assertion.",
+      "inject_violation": "fact MUTATE_WrongActor { some evt: ApplicationEvent | evt.previous_status = none and evt.new_status = Submitted and evt.actor.role = LoanOfficer }"
+    }
+  ]
+}

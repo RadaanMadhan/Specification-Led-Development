@@ -1,0 +1,181 @@
+{
+  "feature_id": "A-L3",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "NoSelfMutation",
+    "ValidationBeforeMutation"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_RoleMultiplicity",
+    "FR_003_ApplicantScope",
+    "FR_004_OfficerScope",
+    "FR_005_AuditorReadOnly",
+    "FR_008_OneInFlight",
+    "FR_009_ValidTransitions",
+    "FR_010_AutoAssignment",
+    "FR_011_NoSelfAssignment",
+    "FR_012_OnlyAssignedOfficerPatches",
+    "FR_013_NoSelfDecision",
+    "FR_014_ReasonRequired",
+    "FR_015_NoPostDecisionTransition",
+    "FR_016_AuditFields",
+    "FR_017_AuditPairedWithTransition",
+    "FR_018_AuditAppendOnly",
+    "FR_019_NoAuditDeletion",
+    "FR_020_ByteEquivalentUnauthorisedRead",
+    "FR_023_AuditEndpointAuditorOnly",
+    "FR_024_ApplicantCannotModify"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_RoleMultiplicity"
+    ],
+    "FR-003": [
+      "FR_003_ApplicantScope",
+      "OwnershipBasedAccess"
+    ],
+    "FR-004": [
+      "FR_004_OfficerScope",
+      "OwnershipBasedAccess"
+    ],
+    "FR-005": [
+      "FR_005_AuditorReadOnly"
+    ],
+    "FR-006": [
+      "AttributionCorrectness"
+    ],
+    "FR-007": [
+      "ValidationBeforeMutation"
+    ],
+    "FR-008": [
+      "FR_008_OneInFlight"
+    ],
+    "FR-009": [
+      "FR_009_ValidTransitions"
+    ],
+    "FR-010": [
+      "FR_010_AutoAssignment"
+    ],
+    "FR-011": [
+      "FR_011_NoSelfAssignment",
+      "NoSelfMutation"
+    ],
+    "FR-012": [
+      "FR_012_OnlyAssignedOfficerPatches",
+      "OwnershipBasedAccess"
+    ],
+    "FR-013": [
+      "FR_013_NoSelfDecision",
+      "NoSelfMutation"
+    ],
+    "FR-014": [
+      "FR_014_ReasonRequired"
+    ],
+    "FR-015": [
+      "FR_015_NoPostDecisionTransition"
+    ],
+    "FR-016": [
+      "FR_016_AuditFields",
+      "AttributionCorrectness"
+    ],
+    "FR-017": [
+      "FR_017_AuditPairedWithTransition",
+      "AuditCompleteness",
+      "ValidationBeforeMutation"
+    ],
+    "FR-018": [
+      "FR_018_AuditAppendOnly",
+      "AppendOnly"
+    ],
+    "FR-019": [
+      "FR_019_NoAuditDeletion"
+    ],
+    "FR-020": [
+      "FR_020_ByteEquivalentUnauthorisedRead",
+      "NoInformationLeakage"
+    ],
+    "FR-021": [
+      "FR_020_ByteEquivalentUnauthorisedRead",
+      "NoInformationLeakage"
+    ],
+    "FR-022": [
+      "NoInformationLeakage"
+    ],
+    "FR-023": [
+      "FR_023_AuditEndpointAuditorOnly",
+      "NoInformationLeakage"
+    ],
+    "FR-024": [
+      "FR_024_ApplicantCannotModify"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_NoSelfAssignment",
+      "asserts_violated": [
+        "NoSelfMutation",
+        "FR_011_NoSelfAssignment"
+      ],
+      "rationale": "Clearing this fact lets Alloy assign an application's applicant as its own assigned officer \u2014 the conflict-of-interest violation FR-011 forbids. No other fact enforces applicant != assignedOfficer at the application level.",
+      "inject_violation": "fact MUTATE_SelfAssign { some a: LoanApplication | some a.assignedOfficer and a.assignedOfficer = a.applicant }"
+    },
+    {
+      "fact_name": "F_AuditPairing",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "AppendOnly",
+        "FR_017_AuditPairedWithTransition",
+        "FR_018_AuditAppendOnly",
+        "FR_019_NoAuditDeletion"
+      ],
+      "rationale": "Clearing this fact lets a successful state-changing operation exist with no audit entry and lets orphan audit entries exist that no operation produced \u2014 exactly the audit-completeness and append-only violations.",
+      "inject_violation": "fact MUTATE_AuditMissing { some op: Operation | op.succeeded = BTrue and op.kind = PatchStatus and no op.produces }"
+    },
+    {
+      "fact_name": "F_OneInFlightPerApplicant",
+      "asserts_violated": [
+        "FR_008_OneInFlight"
+      ],
+      "rationale": "Clearing this fact lets one applicant hold two simultaneous in-flight applications, violating the FR-008 partial-unique-index rule from data-model.md.",
+      "inject_violation": "fact MUTATE_TwoInFlight { some disj a1, a2: LoanApplication | a1.applicant = a2.applicant and a1.status = Pending and a2.status = Pending }"
+    },
+    {
+      "fact_name": "F_RoleMultiplicity",
+      "asserts_violated": [
+        "FR_002_RoleMultiplicity"
+      ],
+      "rationale": "Clearing this fact allows a user to hold both officer and auditor at once, which FR-002 explicitly forbids; no other fact rules out the combination.",
+      "inject_violation": "fact MUTATE_OfficerAndAuditor { some u: User | ROfficer in u.roles and RAuditor in u.roles }"
+    },
+    {
+      "fact_name": "F_NoInfoLeakage",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "FR_020_ByteEquivalentUnauthorisedRead"
+      ],
+      "rationale": "Clearing this fact lets an unauthorised authenticated GET return a non-NotFound response (e.g., Forbidden), leaking that the application exists \u2014 exactly the FR-020/021/022 byte-equivalence breach.",
+      "inject_violation": "fact MUTATE_LeakResp { some op: Operation | some op.caller and op.kind = GetApplication and op.succeeded = BFalse and op.response = ForbiddenResp }"
+    },
+    {
+      "fact_name": "F_OwnershipBasedAccess",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_003_ApplicantScope"
+      ],
+      "rationale": "Clearing this fact lets an applicant-only caller successfully GET an application they don't own and aren't an officer for, violating ownership-conditional read access (FR-003).",
+      "inject_violation": "fact MUTATE_CrossRead { some op: Operation | op.succeeded = BTrue and op.kind = GetApplication and some op.caller and op.caller.roles = RApplicant and op.caller != op.target.applicant and op.caller != op.target.assignedOfficer }"
+    }
+  ]
+}

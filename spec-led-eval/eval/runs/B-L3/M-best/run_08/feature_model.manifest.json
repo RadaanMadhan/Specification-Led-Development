@@ -1,0 +1,171 @@
+{
+  "feature_id": "008-task-sharing",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "AuthRequiredEverywhere"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_OneTeamOneRole",
+    "FR_003_MemberPermissions",
+    "FR_004_NoUnauthorizedMember",
+    "FR_005_AdminFullTeamAccess",
+    "FR_006_CrossTeamIsolation",
+    "FR_007_TaskHasOwner",
+    "FR_008_TaskInOneTeam",
+    "FR_009_OwnerTeamConsistent",
+    "FR_010_OwnerOnlyShares",
+    "FR_011_ShareeViewEditNoDelete",
+    "FR_012_NoCrossTeamSharing",
+    "FR_013_ShareEventsAudited",
+    "FR_014_ByteEquivIsolation",
+    "FR_015_OneAuditPerCreate",
+    "FR_016_AuditFieldsPresent",
+    "FR_017_AuditAppendOnly",
+    "FR_018_AuditTiedToMutation",
+    "FR_019_AuditReadAccess",
+    "FR_020_AuditOutlivesTask",
+    "FR_021_DeterministicOwnership"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_OneTeamOneRole"
+    ],
+    "FR-003": [
+      "FR_003_MemberPermissions"
+    ],
+    "FR-004": [
+      "FR_004_NoUnauthorizedMember",
+      "LeastPrivilege"
+    ],
+    "FR-005": [
+      "FR_005_AdminFullTeamAccess"
+    ],
+    "FR-006": [
+      "FR_006_CrossTeamIsolation",
+      "NoInformationLeakage"
+    ],
+    "FR-007": [
+      "FR_007_TaskHasOwner"
+    ],
+    "FR-008": [
+      "FR_008_TaskInOneTeam"
+    ],
+    "FR-009": [
+      "FR_009_OwnerTeamConsistent",
+      "OwnershipExclusivity"
+    ],
+    "FR-010": [
+      "FR_010_OwnerOnlyShares",
+      "LeastPrivilege"
+    ],
+    "FR-011": [
+      "FR_011_ShareeViewEditNoDelete",
+      "LeastPrivilege"
+    ],
+    "FR-012": [
+      "FR_012_NoCrossTeamSharing",
+      "OwnershipBasedAccess"
+    ],
+    "FR-013": [
+      "FR_013_ShareEventsAudited"
+    ],
+    "FR-014": [
+      "FR_014_ByteEquivIsolation",
+      "NoInformationLeakage"
+    ],
+    "FR-015": [
+      "FR_015_OneAuditPerCreate",
+      "AuditCompleteness"
+    ],
+    "FR-016": [
+      "FR_016_AuditFieldsPresent",
+      "AttributionCorrectness"
+    ],
+    "FR-017": [
+      "FR_017_AuditAppendOnly",
+      "AppendOnly"
+    ],
+    "FR-018": [
+      "FR_018_AuditTiedToMutation"
+    ],
+    "FR-019": [
+      "FR_019_AuditReadAccess"
+    ],
+    "FR-020": [
+      "FR_020_AuditOutlivesTask"
+    ],
+    "FR-021": [
+      "FR_021_DeterministicOwnership"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_010_OwnerOnlyShares",
+        "FR_011_ShareeViewEditNoDelete"
+      ],
+      "rationale": "Clearing the matrix definition lets Alloy invent any (Relationship, OperationKind) cell. The injected fact forces a Sharee-can-delete cell, which directly violates the least-privilege and Q3=B sharee-cannot-delete invariants.",
+      "inject_violation": "fact MUTATE_LeastPrivilegeViolation { ShareeRel -> DeleteTask in PermMatrix.Allowed and ShareeRel -> PatchTaskShared in PermMatrix.Allowed }"
+    },
+    {
+      "fact_name": "F_OneCreatedPerTask",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_015_OneAuditPerCreate"
+      ],
+      "rationale": "Removing the 'exactly one created entry per task' fact lets Alloy build a task with no created audit entry, which is exactly what AuditCompleteness must reject.",
+      "inject_violation": "fact MUTATE_AuditCompletenessViolation { some t: Task | no a: AuditEntry | a.auditTask = t and a.auditOp = OpCreated }"
+    },
+    {
+      "fact_name": "F_AtMostOneDeletedPerTask",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_017_AuditAppendOnly"
+      ],
+      "rationale": "Append-only forbids two deletion entries for the same task. Clearing the fact and forcing two such entries directly exhibits the mutation/replay scenario the assertion must catch.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some disj a1, a2: AuditEntry | a1.auditTask = a2.auditTask and a1.auditOp = OpDeleted and a2.auditOp = OpDeleted }"
+    },
+    {
+      "fact_name": "F_AuditActorInTaskTeam",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "FR_006_CrossTeamIsolation",
+        "FR_014_ByteEquivIsolation"
+      ],
+      "rationale": "If the actor-in-team constraint is removed, a user in team T could be recorded as having mutated a task in team U \u2014 exactly the cross-team leak that FR-014's byte-equivalent 404 is built to prevent.",
+      "inject_violation": "fact MUTATE_CrossTeamLeakViolation { some a: AuditEntry | a.actor.userTeam != a.auditTask.taskTeam }"
+    },
+    {
+      "fact_name": "F_AuditAttribution",
+      "asserts_violated": [
+        "AttributionCorrectness",
+        "FR_016_AuditFieldsPresent"
+      ],
+      "rationale": "Without the snapshot-matches-actor constraint, Alloy can fabricate an audit entry whose recorded role contradicts the actor's actual role, exhibiting misattribution.",
+      "inject_violation": "fact MUTATE_AttributionViolation { some a: AuditEntry | a.actorRoleSnapshot != a.actor.userRole }"
+    },
+    {
+      "fact_name": "F_SharedWithSameTeam",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_012_NoCrossTeamSharing"
+      ],
+      "rationale": "Removing the same-team constraint on sharedWith allows a cross-team user_id in the share list, which FR-012 forbids and OwnershipBasedAccess is structured to catch.",
+      "inject_violation": "fact MUTATE_CrossTeamShareViolation { some t: Task, u: t.sharedWith | u.userTeam != t.taskTeam }"
+    }
+  ]
+}

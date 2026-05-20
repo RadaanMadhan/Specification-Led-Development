@@ -1,0 +1,124 @@
+{
+  "feature_id": "A-L2",
+  "patterns_applied": [
+    "AuthRequiredEverywhere",
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "PermissionGrounding",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage"
+  ],
+  "feature_specific_predicates": [
+    "FR_008_OneInFlightPerCustomer",
+    "FR_013_OnlyAssignedOfficerDecides",
+    "FR_016_ImmutabilityOfDecidedApplications",
+    "FR_020_CustomerCannotSeeOthersApplications"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "LeastPrivilege"
+    ],
+    "FR-003": [
+      "LeastPrivilege"
+    ],
+    "FR-004": [
+      "LeastPrivilege"
+    ],
+    "FR-005": [
+      "PermissionGrounding"
+    ],
+    "FR-008": [
+      "FR_008_OneInFlightPerCustomer"
+    ],
+    "FR-009": [
+      "PermissionGrounding"
+    ],
+    "FR-010": [
+      "PermissionGrounding"
+    ],
+    "FR-011": [
+      "OwnershipExclusivity"
+    ],
+    "FR-013": [
+      "FR_013_OnlyAssignedOfficerDecides"
+    ],
+    "FR-016": [
+      "FR_016_ImmutabilityOfDecidedApplications"
+    ],
+    "FR-017": [
+      "AttributionCorrectness",
+      "AuditCompleteness"
+    ],
+    "FR-018": [
+      "AppendOnly"
+    ],
+    "FR-019": [
+      "AuditCompleteness"
+    ],
+    "FR-020": [
+      "OwnershipBasedAccess",
+      "FR_020_CustomerCannotSeeOthersApplications"
+    ],
+    "FR-023": [
+      "LeastPrivilege",
+      "PermissionGrounding"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege"
+      ],
+      "rationale": "F_PermissionMatrix defines the permission matrix structure that gates which roles can perform which operations. Removing it allows PermMatrix.Allowed to be unconstrained. Without the constraint prohibiting ComplianceReviewerRole from decision operations, Alloy can find a model where a compliance reviewer appears as an audit actor performing writes, violating LeastPrivilege.",
+      "inject_violation": "fact MUTATE_PermissionViolation { some ae: AuditEntry | ae.actor.role = ComplianceReviewerRole and ae.previous_status = UnderReview }"
+    },
+    {
+      "fact_name": "F_OneInFlightPerCustomer",
+      "asserts_violated": [
+        "FR_008_OneInFlightPerCustomer"
+      ],
+      "rationale": "F_OneInFlightPerCustomer enforces that each customer has at most one in-flight (Submitted or UnderReview) application at any time. Removing it allows Alloy to model multiple simultaneous in-flight applications per customer, directly violating FR-008.",
+      "inject_violation": "fact MUTATE_MultipleInFlightViolation { some disj app1, app2: LoanApplication, c: User | c.role = CustomerRole and app1.customer = c and app2.customer = c and (app1.status = Submitted or app1.status = UnderReview) and (app2.status = Submitted or app2.status = UnderReview) }"
+    },
+    {
+      "fact_name": "F_AuditCompleteness",
+      "asserts_violated": [
+        "AuditCompleteness"
+      ],
+      "rationale": "F_AuditCompleteness ensures that for each application, the audit trail has exactly the entries corresponding to its current status progression. Specifically, an application at status X must have the requisite audit entries showing how it reached that status. Removing it allows applications to exist at a status without the corresponding audit entry, violating audit completeness.",
+      "inject_violation": "fact MUTATE_MissingAuditViolation { some app: LoanApplication | app.status = Approved and (no ae: AuditEntry | ae.application = app and ae.previous_status = UnderReview and ae.new_status = Approved) }"
+    },
+    {
+      "fact_name": "F_DecisionInvariant",
+      "asserts_violated": [
+        "FR_013_OnlyAssignedOfficerDecides"
+      ],
+      "rationale": "F_DecisionInvariant enforces that decisions are made only by the officer assigned to the application. Removing it allows Alloy to model a Decision made by an officer who is not the application's assigned officer, directly violating FR-013's requirement that only the assigned officer can decide.",
+      "inject_violation": "fact MUTATE_WrongOfficerViolation { some d: Decision, u: User | u.role = LoanOfficerRole and d.decided_by = u and d.decided_by != d.application.assigned_officer }"
+    },
+    {
+      "fact_name": "F_ImmutableDecidedApplications",
+      "asserts_violated": [
+        "FR_016_ImmutabilityOfDecidedApplications"
+      ],
+      "rationale": "F_ImmutableDecidedApplications prevents any audit entries from showing a transition originating from a decided (Approved or Rejected) state. Removing it allows Alloy to model an audit entry showing a change after decision, violating the immutability invariant required by FR-016.",
+      "inject_violation": "fact MUTATE_ChangeAfterDecisionViolation { some ae: AuditEntry | (ae.previous_status = Approved or ae.previous_status = Rejected) }"
+    },
+    {
+      "fact_name": "F_AuditAttribution",
+      "asserts_violated": [
+        "AttributionCorrectness"
+      ],
+      "rationale": "F_AuditAttribution ensures that audit entries are attributed to the correct actor: the customer for submission, and the assigned loan officer for claim and decision. Removing it allows Alloy to model audit entries attributed to the wrong actor, violating the attribution correctness requirement of FR-017.",
+      "inject_violation": "fact MUTATE_WrongActorViolation { some ae: AuditEntry | ae.previous_status = UnderReview and ae.actor != ae.application.assigned_officer }"
+    }
+  ]
+}

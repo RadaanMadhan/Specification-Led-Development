@@ -1,0 +1,43 @@
+{
+  "F_AppendOnlyAuditEntries": {
+    "targeted_asserts": {
+      "AppendOnly": "VACUOUS_OVERCONSTRAINT",
+      "FR_018_AuditImmutable": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_NoSelfApproval": {
+    "targeted_asserts": {
+      "NoSelfMutation": "VACUOUS_OVERCONSTRAINT",
+      "FR_013_NoSelfApproval": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_PermissionMatrix": {
+    "targeted_asserts": {
+      "LeastPrivilege": "VACUOUS_OVERCONSTRAINT",
+      "PermissionCompleteness": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_AuditCountMatchesStatus": {
+    "targeted_asserts": {},
+    "all_bit": false,
+    "skipped": true,
+    "skip_reason": "mutation target fact `F_AuditCountMatchesStatus` not found in feature_model.als"
+  },
+  "F_PatchOwnershipAndNonSelf": {
+    "targeted_asserts": {
+      "OwnershipBasedAccess": "VACUOUS_OVERCONSTRAINT",
+      "FR_012_OnlyAssignedOfficerCanPatch": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_NoInformationLeakageOnRead": {
+    "targeted_asserts": {
+      "NoInformationLeakage": "VACUOUS_OVERCONSTRAINT",
+      "FR_020_ByteEquivalentUnauthorisedGet": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  }
+}

@@ -1,0 +1,284 @@
+{
+  "run_id": "B-L1/M-best/run_04",
+  "cell": "B-L1",
+  "model": "M-best",
+  "rep": 4,
+  "D1": 1.0,
+  "D2": 1.0,
+  "D3": 1.0,
+  "D4": 1.0,
+  "aqs_partial": 1.0,
+  "scored_at": "2026-05-20T04:29:04.285190+00:00",
+  "details": {
+    "D1": {
+      "n_assertions": 23,
+      "n_verdicts": 23
+    },
+    "D2": {
+      "patterns_applied": [
+        "AuthRequiredEverywhere",
+        "AppendOnly",
+        "AuditCompleteness",
+        "AttributionCorrectness",
+        "OwnershipExclusivity",
+        "ValidationBeforeMutation"
+      ],
+      "per_pattern": {
+        "AuthRequiredEverywhere": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "AppendOnly": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "AuditCompleteness": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "AttributionCorrectness": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "OwnershipExclusivity": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "ValidationBeforeMutation": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        }
+      }
+    },
+    "D3": {
+      "per_target": {
+        "F_AuthRequired": {
+          "targeted_asserts": {
+            "AuthRequiredEverywhere": "BIT",
+            "FR_004_FlatPermissions": "BIT"
+          },
+          "score": 1.0
+        },
+        "F_AppendOnlyDeletions": {
+          "targeted_asserts": {
+            "AppendOnly": "BIT",
+            "FR_012_PermanentDeletion": "BIT"
+          },
+          "score": 1.0
+        },
+        "F_DeletionAuditCompleteness": {
+          "targeted_asserts": {
+            "AuditCompleteness": "BIT",
+            "FR_018_DeletionLogged": "BIT"
+          },
+          "score": 1.0
+        },
+        "F_AttributionCorrectness": {
+          "targeted_asserts": {
+            "AttributionCorrectness": "BIT"
+          },
+          "score": 1.0
+        },
+        "F_IdentityFromContext": {
+          "targeted_asserts": {
+            "FR_002_IdentityFromContext": "BIT"
+          },
+          "score": 1.0
+        },
+        "F_ClosedTaskEditRule": {
+          "targeted_asserts": {
+            "FR_011_ClosedTaskEditRule": "BIT"
+          },
+          "score": 1.0
+        }
+      },
+      "skipped": []
+    },
+    "D4": {
+      "per_fr": {
+        "FR-001": {
+          "covers": [
+            "AuthRequiredEverywhere"
+          ],
+          "verdicts": {
+            "AuthRequiredEverywhere": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-002": {
+          "covers": [
+            "FR_002_IdentityFromContext"
+          ],
+          "verdicts": {
+            "FR_002_IdentityFromContext": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-003": {
+          "covers": [
+            "FR_003_SingleWorkspace"
+          ],
+          "verdicts": {
+            "FR_003_SingleWorkspace": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-004": {
+          "covers": [
+            "FR_004_FlatPermissions"
+          ],
+          "verdicts": {
+            "FR_004_FlatPermissions": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-005": {
+          "covers": [
+            "FR_005_TitlePresent",
+            "ValidationBeforeMutation"
+          ],
+          "verdicts": {
+            "FR_005_TitlePresent": "PASS",
+            "ValidationBeforeMutation": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-006": {
+          "covers": [
+            "FR_006_DescriptionStructural"
+          ],
+          "verdicts": {
+            "FR_006_DescriptionStructural": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-007": {
+          "covers": [
+            "FR_007_DueDateOptional"
+          ],
+          "verdicts": {
+            "FR_007_DueDateOptional": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-008": {
+          "covers": [
+            "FR_008_AtMostOneAssignee",
+            "OwnershipExclusivity"
+          ],
+          "verdicts": {
+            "FR_008_AtMostOneAssignee": "PASS",
+            "OwnershipExclusivity": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-009": {
+          "covers": [
+            "FR_009_CreatorRecorded",
+            "OwnershipExclusivity"
+          ],
+          "verdicts": {
+            "FR_009_CreatorRecorded": "PASS",
+            "OwnershipExclusivity": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-010": {
+          "covers": [
+            "FR_010_StatusInEnum"
+          ],
+          "verdicts": {
+            "FR_010_StatusInEnum": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-011": {
+          "covers": [
+            "FR_011_ClosedTaskEditRule"
+          ],
+          "verdicts": {
+            "FR_011_ClosedTaskEditRule": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-012": {
+          "covers": [
+            "FR_012_PermanentDeletion",
+            "AppendOnly"
+          ],
+          "verdicts": {
+            "FR_012_PermanentDeletion": "PASS",
+            "AppendOnly": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-013": {
+          "covers": [
+            "FR_013_ScopeEnumerated"
+          ],
+          "verdicts": {
+            "FR_013_ScopeEnumerated": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-014": {
+          "covers": [
+            "FR_014_NoVisibilityPartition"
+          ],
+          "verdicts": {
+            "FR_014_NoVisibilityPartition": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-015": {
+          "covers": [
+            "FR_015_FilterFieldsPresent"
+          ],
+          "verdicts": {
+            "FR_015_FilterFieldsPresent": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-016": {
+          "covers": [
+            "FR_016_ClearFiltersReturnsAll"
+          ],
+          "verdicts": {
+            "FR_016_ClearFiltersReturnsAll": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-017": {
+          "covers": [
+            "FR_017_TimestampsPresent"
+          ],
+          "verdicts": {
+            "FR_017_TimestampsPresent": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-018": {
+          "covers": [
+            "FR_018_DeletionLogged",
+            "AuditCompleteness",
+            "AttributionCorrectness",
+            "AppendOnly"
+          ],
+          "verdicts": {
+            "FR_018_DeletionLogged": "PASS",
+            "AuditCompleteness": "PASS",
+            "AttributionCorrectness": "PASS",
+            "AppendOnly": "PASS"
+          },
+          "score": 1.0
+        }
+      }
+    }
+  }
+}

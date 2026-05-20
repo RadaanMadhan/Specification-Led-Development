@@ -1,0 +1,85 @@
+{
+  "feature_id": "B-L1",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AppendOnly"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthenticationRequired",
+    "FR_003_004_FlatPermissionsModel",
+    "FR_008_AssigneeIsCurrentMember",
+    "FR_009_CreatorRecordedAtCreation",
+    "FR_010_StatusCanTransitionFreely",
+    "FR_018_DeletionLogged"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthenticationRequired",
+      "LeastPrivilege"
+    ],
+    "FR-003": [
+      "FR_003_004_FlatPermissionsModel"
+    ],
+    "FR-004": [
+      "FR_003_004_FlatPermissionsModel"
+    ],
+    "FR-008": [
+      "FR_008_AssigneeIsCurrentMember"
+    ],
+    "FR-009": [
+      "FR_009_CreatorRecordedAtCreation"
+    ],
+    "FR-010": [
+      "FR_010_StatusCanTransitionFreely"
+    ],
+    "FR-018": [
+      "FR_018_DeletionLogged",
+      "AppendOnly"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_LeastPrivilege",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_001_AuthenticationRequired"
+      ],
+      "rationale": "Removing this fact permits arbitrary role-operation bindings in the permission matrix. LeastPrivilege checks that Unauthenticated has no permissions; without this fact, the assertion fails because Alloy can construct a model where Unauthenticated is granted operations. This directly tests the core authorization invariant from FR-001.",
+      "inject_violation": "fact MUTATE_UnauthenticatedGetsPermission { (Unauthenticated -> PostTasks) in PermMatrix.Allowed }"
+    },
+    {
+      "fact_name": "F_AssigneeValidity",
+      "asserts_violated": [
+        "FR_008_AssigneeIsCurrentMember"
+      ],
+      "rationale": "Removing this fact allows Tasks to be assigned to non-existent Members. FR_008_AssigneeIsCurrentMember asserts that every assigned task references a valid member; without the fact, Alloy can construct a counterexample where a Task has an assignee not in the Member set.",
+      "inject_violation": "fact MUTATE_NonexistentAssignee { some t: Task | (some t.assignee) and (t.assignee not in Member) }"
+    },
+    {
+      "fact_name": "F_CreatorValidity",
+      "asserts_violated": [
+        "FR_009_CreatorRecordedAtCreation"
+      ],
+      "rationale": "Removing this fact allows Tasks to have invalid creators (not in the Member set). FR_009_CreatorRecordedAtCreation asserts creator validity; without the fact, Alloy finds a model where a Task.created_by is not a Member, violating referential integrity from FR-009.",
+      "inject_violation": "fact MUTATE_NonexistentCreator { some t: Task | t.created_by not in Member }"
+    },
+    {
+      "fact_name": "F_AppendOnlyDeletionLog",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_018_DeletionLogged"
+      ],
+      "rationale": "Removing this fact permits TaskDeletion records to reference non-existent Members as deleters, violating audit integrity. Both AppendOnly and FR_018_DeletionLogged assert that all deleters are valid; without the fact, Alloy constructs a model with invalid deletions, forcing mutation detection.",
+      "inject_violation": "fact MUTATE_InvalidDeleter { some td: TaskDeletion | td.deleted_by not in Member }"
+    },
+    {
+      "fact_name": "F_TaskStatusValid",
+      "asserts_violated": [
+        "FR_010_StatusCanTransitionFreely"
+      ],
+      "rationale": "Removing this fact allows Tasks to have status values outside the enumeration (Todo, InProgress, Done). FR_010_StatusCanTransitionFreely asserts all statuses are valid; without the fact, Alloy finds a task with an invalid status (neither Todo nor InProgress nor Done).",
+      "inject_violation": "fact MUTATE_InvalidStatus { some t: Task | t.status not in (Todo | InProgress | Done) }"
+    }
+  ]
+}

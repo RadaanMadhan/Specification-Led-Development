@@ -1,0 +1,21 @@
+{
+  "AuthRequiredEverywhere": "PASS",
+  "AppendOnly": "PASS",
+  "AuditCompleteness": "PASS",
+  "AttributionCorrectness": "PASS",
+  "OwnershipExclusivity": "PASS",
+  "ValidationBeforeMutation": "FAIL",
+  "FR_001_AuthRequired": "PASS",
+  "FR_002_IdentityFromAuthContext": "FAIL",
+  "FR_004_FlatPermissions": "PASS",
+  "FR_008_AssigneeIsMember": "PASS",
+  "FR_009_CreatorRecordedOnCreation": "FAIL",
+  "FR_010_InitialStatusTodo": "FAIL",
+  "FR_010_ValidStatusSet": "PASS",
+  "FR_011_ClosedTaskEditRule": "FAIL",
+  "FR_011_ReopenSetsNonDoneStatus": "FAIL",
+  "FR_012_DeletionPermanentAndLogged": "PASS",
+  "FR_017_EditorAlwaysRecorded": "FAIL",
+  "FR_018_DeletionLogHasDeleterIdentity": "PASS",
+  "FR_018_UniqueDeletionLogEntry": "PASS"
+}

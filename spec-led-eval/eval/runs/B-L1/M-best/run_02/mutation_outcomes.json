@@ -1,0 +1,47 @@
+{
+  "F_AuthRequired": {
+    "targeted_asserts": {
+      "AuthRequiredEverywhere": "BIT",
+      "FR_001_AuthRequired": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_TokenBinding": {
+    "targeted_asserts": {
+      "FR_002_IdentityFromAuth": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_ClosedTaskEditRule": {
+    "targeted_asserts": {
+      "FR_011_ClosedTaskEditRule": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_DeletionLog": {
+    "targeted_asserts": {
+      "AuditCompleteness": "BIT",
+      "FR_012_DeletionLogged": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_DeletionAttribution": {
+    "targeted_asserts": {
+      "AttributionCorrectness": "BIT",
+      "FR_018_DeletionLog": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_DeletionLogAppendOnly": {
+    "targeted_asserts": {
+      "AppendOnly": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_FlatPermissions": {
+    "targeted_asserts": {
+      "FR_004_FlatPermissions": "BIT"
+    },
+    "all_bit": true
+  }
+}

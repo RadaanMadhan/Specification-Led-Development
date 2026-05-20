@@ -1,0 +1,150 @@
+{
+  "feature_id": "003-loan-application",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "PermissionGrounding",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthenticatedCustomerSubmits",
+    "FR_002_SuccessImpliesPersistedTarget",
+    "FR_003_WellFormedSubmission",
+    "FR_004_UniqueReference",
+    "FR_005_OnePendingPerCustomer",
+    "FR_006_SubmissionLandsPending",
+    "FR_007_StaffMayListApplications",
+    "FR_008_StaffMayViewAnyApplication",
+    "FR_009_NonEmptyDecisionReason",
+    "FR_010_DecisionStatusConsistency",
+    "FR_011_AtMostOneDecisionPerApp",
+    "FR_012_NoTwoDecisionsPerApp",
+    "FR_013_CustomerSeesOnlyOwn",
+    "FR_014_DecisionEventEmitted",
+    "FR_015_OnlyStaffDecide",
+    "FR_016_AuditTrail",
+    "FR_017_RetainedApplications"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthenticatedCustomerSubmits",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_SuccessImpliesPersistedTarget"
+    ],
+    "FR-003": [
+      "FR_003_WellFormedSubmission"
+    ],
+    "FR-004": [
+      "FR_004_UniqueReference"
+    ],
+    "FR-005": [
+      "FR_005_OnePendingPerCustomer"
+    ],
+    "FR-006": [
+      "FR_006_SubmissionLandsPending"
+    ],
+    "FR-007": [
+      "FR_007_StaffMayListApplications",
+      "LeastPrivilege"
+    ],
+    "FR-008": [
+      "FR_008_StaffMayViewAnyApplication",
+      "LeastPrivilege"
+    ],
+    "FR-009": [
+      "FR_009_NonEmptyDecisionReason"
+    ],
+    "FR-010": [
+      "FR_010_DecisionStatusConsistency"
+    ],
+    "FR-011": [
+      "FR_011_AtMostOneDecisionPerApp"
+    ],
+    "FR-012": [
+      "FR_012_NoTwoDecisionsPerApp"
+    ],
+    "FR-013": [
+      "FR_013_CustomerSeesOnlyOwn",
+      "OwnershipBasedAccess",
+      "NoInformationLeakage"
+    ],
+    "FR-014": [
+      "FR_014_DecisionEventEmitted"
+    ],
+    "FR-015": [
+      "FR_015_OnlyStaffDecide",
+      "LeastPrivilege",
+      "PermissionGrounding"
+    ],
+    "FR-016": [
+      "FR_016_AuditTrail",
+      "AuditCompleteness",
+      "AppendOnly",
+      "AttributionCorrectness"
+    ],
+    "FR-017": [
+      "FR_017_RetainedApplications"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_LeastPrivilege",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_015_OnlyStaffDecide"
+      ],
+      "rationale": "Clearing F_LeastPrivilege removes the constraint that a Success outcome must come from an allowed (role, kind) cell; the injection forces Alloy to construct exactly such a counterexample (a successful op whose caller's role is not in the permission matrix for the requested endpoint).",
+      "inject_violation": "fact MUTATE_LeastPrivilegeViolation { some op: Operation | op.outcome = Success and some op.caller and (op.caller.role -> op.kind) not in PermMatrix.Allowed }"
+    },
+    {
+      "fact_name": "F_AuditCompleteness",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_016_AuditTrail"
+      ],
+      "rationale": "Clearing F_AuditCompleteness lifts the rule that every application has its 'submitted' event (and the matching decision events). The injection forces an application with no SubmittedEv recorded, exactly the bug the assertion guards against.",
+      "inject_violation": "fact MUTATE_AuditCompletenessViolation { some a: LoanApplication | no e: ApplicationEvent | e.application = a and e.eventType = SubmittedEv }"
+    },
+    {
+      "fact_name": "F_AppendOnlyAuditEntries",
+      "asserts_violated": [
+        "AppendOnly"
+      ],
+      "rationale": "Clearing F_AppendOnlyAuditEntries removes the at-most-one-per-(app,type) rule on audit events. The injection forces two distinct ApplicationEvent rows for the same application and event type \u2014 the canonical 'someone overwrote/appended a duplicate audit row' bug.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some disj e1, e2: ApplicationEvent | e1.application = e2.application and e1.eventType = e2.eventType }"
+    },
+    {
+      "fact_name": "F_OnePendingPerCustomer",
+      "asserts_violated": [
+        "FR_005_OnePendingPerCustomer"
+      ],
+      "rationale": "Clearing F_OnePendingPerCustomer drops the partial-unique-index protection of FR-005. The injection forces two distinct Pending Review applications owned by the same customer, which is exactly the state FR-005 forbids.",
+      "inject_violation": "fact MUTATE_OnePendingViolation { some disj a1, a2: LoanApplication | a1.customer = a2.customer and a1.status = PendingReview and a2.status = PendingReview }"
+    },
+    {
+      "fact_name": "F_OwnershipBasedAccess",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_013_CustomerSeesOnlyOwn"
+      ],
+      "rationale": "Clearing F_OwnershipBasedAccess removes the rule that a customer's successful detail-read proves ownership. The injection forces a customer to receive a Success on GET /applications/{ref} for an application owned by a different customer \u2014 the cross-tenant leak FR-013/SC-004 forbid.",
+      "inject_violation": "fact MUTATE_OwnershipViolation { some op: Operation | op.outcome = Success and op.kind = GetApplicationByRef and some op.caller and op.caller.role = CustomerRole and some op.target and op.target.customer != op.caller }"
+    },
+    {
+      "fact_name": "F_StaffDecide",
+      "asserts_violated": [
+        "FR_015_OnlyStaffDecide"
+      ],
+      "rationale": "Clearing F_StaffDecide drops the role-of-decider invariant. The injection writes a Decision whose decider has the customer role, the exact privilege-escalation bug FR-015/SC-004 forbid.",
+      "inject_violation": "fact MUTATE_StaffDecideViolation { some d: Decision | d.decidedBy.role = CustomerRole }"
+    }
+  ]
+}

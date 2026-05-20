@@ -1,0 +1,151 @@
+{
+  "feature_id": "B-L3",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AppendOnly",
+    "AuditCompleteness",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequiredEverywhere",
+    "FR_002_OneTeamPerUser",
+    "FR_003_MemberAccessRequiresOwnershipOrShare",
+    "FR_005_AdminCanDeleteAnyTeamTask",
+    "FR_006_AbsoluteCrossTeamIsolation",
+    "FR_009_OwnerAndTeamImmutable",
+    "FR_010_OwnerOnlyShareControl",
+    "FR_011_ShareeCannotDelete",
+    "FR_012_CrossTeamSharingForbidden",
+    "FR_013_ShareAuditLogged",
+    "FR_014_CrossTeamByteEquivalent",
+    "FR_015_PerEventAuditSemantics",
+    "FR_015_DeleteProducesExactlyOneAuditEntry",
+    "FR_016_AuditEntryFieldsPresent",
+    "FR_017_AuditImmutableAndOutlivesTask",
+    "FR_019_AuditReadableByReadSet"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_OneTeamPerUser"
+    ],
+    "FR-003": [
+      "FR_003_MemberAccessRequiresOwnershipOrShare",
+      "OwnershipBasedAccess"
+    ],
+    "FR-004": [
+      "FR_003_MemberAccessRequiresOwnershipOrShare",
+      "LeastPrivilege"
+    ],
+    "FR-005": [
+      "FR_005_AdminCanDeleteAnyTeamTask"
+    ],
+    "FR-006": [
+      "FR_006_AbsoluteCrossTeamIsolation",
+      "NoInformationLeakage"
+    ],
+    "FR-009": [
+      "FR_009_OwnerAndTeamImmutable",
+      "OwnershipExclusivity"
+    ],
+    "FR-010": [
+      "FR_010_OwnerOnlyShareControl",
+      "OwnershipBasedAccess"
+    ],
+    "FR-011": [
+      "FR_011_ShareeCannotDelete"
+    ],
+    "FR-012": [
+      "FR_012_CrossTeamSharingForbidden"
+    ],
+    "FR-013": [
+      "FR_013_ShareAuditLogged"
+    ],
+    "FR-014": [
+      "FR_014_CrossTeamByteEquivalent",
+      "NoInformationLeakage"
+    ],
+    "FR-015": [
+      "FR_015_PerEventAuditSemantics",
+      "FR_015_DeleteProducesExactlyOneAuditEntry",
+      "AuditCompleteness"
+    ],
+    "FR-016": [
+      "FR_016_AuditEntryFieldsPresent",
+      "AttributionCorrectness"
+    ],
+    "FR-017": [
+      "FR_017_AuditImmutableAndOutlivesTask",
+      "AppendOnly"
+    ],
+    "FR-019": [
+      "FR_019_AuditReadableByReadSet"
+    ],
+    "FR-021": []
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_010_OwnerOnlyShareControl",
+        "FR_011_ShareeCannotDelete",
+        "FR_014_CrossTeamByteEquivalent",
+        "NoInformationLeakage"
+      ],
+      "rationale": "Clearing the permission matrix body removes all constraints on the Allowed relation, letting Alloy freely assign any (Relationship \u00d7 OperationKind) pair. The injected violation explicitly grants Sharee the PatchSharedWith right and Outsider the GetTask right, directly violating OwnerOnlyShareControl, ShareeCannotDelete, LeastPrivilege, and NoInformationLeakage assertions.",
+      "inject_violation": "fact MUTATE_PermMatrixViolation { (Sharee -> PatchSharedWith) in PermMatrix.Allowed  (Outsider -> GetTask) in PermMatrix.Allowed  (InTeamNone -> DeleteTask) in PermMatrix.Allowed }"
+    },
+    {
+      "fact_name": "F_AuditEntryBelongsToOneMutation",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_015_PerEventAuditSemantics",
+        "AuditCompleteness"
+      ],
+      "rationale": "Clearing this fact allows an AuditEntry to be shared between two Mutation atoms, which models an 'update' re-use of an existing entry \u2014 exactly what AppendOnly forbids. The injected fact forces two distinct Mutations to share the same AuditEntry, triggering the AppendOnly and PerEventAuditSemantics counterexample.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some ae: AuditEntry | some disj m1, m2: Mutation | ae in m1.mutAudit and ae in m2.mutAudit }"
+    },
+    {
+      "fact_name": "F_ShareeSameTeam",
+      "asserts_violated": [
+        "FR_012_CrossTeamSharingForbidden",
+        "FR_006_AbsoluteCrossTeamIsolation"
+      ],
+      "rationale": "Clearing this fact removes the constraint that sharees must be in the same team as the task. The injected violation creates a TaskShare where the sharee belongs to a different team, directly violating FR_012_CrossTeamSharingForbidden and FR_006_AbsoluteCrossTeamIsolation.",
+      "inject_violation": "fact MUTATE_CrossTeamShareViolation { some ts: TaskShare | ts.sharee.userTeam != ts.shareTask.taskTeam }"
+    },
+    {
+      "fact_name": "F_AuditRoleMatchesActor",
+      "asserts_violated": [
+        "AttributionCorrectness"
+      ],
+      "rationale": "Clearing this fact allows the recorded actorRole on an audit entry to differ from the actor's actual role. The injection forces an AuditEntry where entryRole is TeamAdmin but the actor's userRole is Member, directly counterexampling AttributionCorrectness.",
+      "inject_violation": "fact MUTATE_MisattributionViolation { some ae: AuditEntry | ae.entryRole = TeamAdmin and ae.entryActor.userRole = Member }"
+    },
+    {
+      "fact_name": "F_MutationAuditNonEmpty",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_015_PerEventAuditSemantics"
+      ],
+      "rationale": "Clearing this fact allows a Mutation to have an empty mutAudit set, meaning a successful state change has no audit record. The injection explicitly creates a Mutation with no audit entries, providing the counterexample that AuditCompleteness is designed to catch.",
+      "inject_violation": "fact MUTATE_NoAuditViolation { some m: Mutation | no m.mutAudit }"
+    },
+    {
+      "fact_name": "F_MutationActorInTaskTeam",
+      "asserts_violated": [
+        "FR_006_AbsoluteCrossTeamIsolation",
+        "NoInformationLeakage"
+      ],
+      "rationale": "Clearing this fact allows a Mutation to be performed by a user in a different team than the task. The injection forces exactly such a state, directly violating the absolute cross-team isolation invariant.",
+      "inject_violation": "fact MUTATE_CrossTeamMutationViolation { some m: Mutation | m.mutActor.userTeam != m.mutTask.taskTeam }"
+    }
+  ]
+}

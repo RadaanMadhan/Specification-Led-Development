@@ -1,0 +1,100 @@
+{
+  "feature_id": "B-L1",
+  "patterns_applied": [
+    "AuthRequiredEverywhere",
+    "OwnershipExclusivity",
+    "AppendOnly"
+  ],
+  "feature_specific_predicates": [
+    "FR_002_IdentityFromContext",
+    "FR_005_TitleConstraint",
+    "FR_006_DescriptionLength",
+    "FR_007_DueDateOptional",
+    "FR_008_AssigneeIsMember",
+    "FR_010_StatusSet",
+    "FR_017_TimestampSemantics"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_IdentityFromContext"
+    ],
+    "FR-005": [
+      "FR_005_TitleConstraint"
+    ],
+    "FR-006": [
+      "FR_006_DescriptionLength"
+    ],
+    "FR-007": [
+      "FR_007_DueDateOptional"
+    ],
+    "FR-008": [
+      "FR_008_AssigneeIsMember"
+    ],
+    "FR-009": [
+      "OwnershipExclusivity"
+    ],
+    "FR-010": [
+      "FR_010_StatusSet"
+    ],
+    "FR-017": [
+      "FR_017_TimestampSemantics"
+    ],
+    "FR-018": [
+      "AppendOnly"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_AuthRequiredEverywhere",
+      "asserts_violated": [
+        "AuthRequiredEverywhere",
+        "FR_002_IdentityFromContext"
+      ],
+      "rationale": "If every task must have a creator from the User set, removing this fact allows Alloy to construct Tasks with no creator (since created_by is lone, not one). Both assertions check that creators exist and are Users.",
+      "inject_violation": "some t: Task | no t.created_by"
+    },
+    {
+      "fact_name": "F_OwnershipExclusivity",
+      "asserts_violated": [
+        "OwnershipExclusivity"
+      ],
+      "rationale": "If every task must have exactly one creator, removing this fact allows Tasks to have zero creators. The OwnershipExclusivity assertion directly enforces one-to-one creator relationship.",
+      "inject_violation": "some t: Task | no t.created_by"
+    },
+    {
+      "fact_name": "F_AppendOnly",
+      "asserts_violated": [
+        "AppendOnly"
+      ],
+      "rationale": "If every TaskDeletion record must have a deleter, removing this fact allows deletions with no associated user. AppendOnly checks that all deletion records are attributed to a User.",
+      "inject_violation": "some d: TaskDeletion | no d.deleted_by"
+    },
+    {
+      "fact_name": "F_FR_005_TitleConstraint",
+      "asserts_violated": [
+        "FR_005_TitleConstraint"
+      ],
+      "rationale": "If all task titles must be valid (in ValidTitle), removing this fact allows invalid titles to exist. FR_005_TitleConstraint requires that at least one task has a valid title, which fails when all titles can be invalid.",
+      "inject_violation": "some t: Task | t.title !in ValidTitle"
+    },
+    {
+      "fact_name": "F_FR_008_AssigneeIsMember",
+      "asserts_violated": [
+        "FR_008_AssigneeIsMember"
+      ],
+      "rationale": "If assigned tasks must assign to existing members, removing this fact allows non-member assignees. FR_008_AssigneeIsMember checks that all assignees belong to the User set.",
+      "inject_violation": "some t: Task | (some t.assignee and t.assignee !in User)"
+    },
+    {
+      "fact_name": "F_FR_006_DescriptionLength",
+      "asserts_violated": [
+        "FR_006_DescriptionLength"
+      ],
+      "rationale": "If all task descriptions must be valid (in ValidDescription), removing this fact allows invalid descriptions. FR_006_DescriptionLength requires that at least one task has a valid description.",
+      "inject_violation": "some t: Task | t.description !in ValidDescription"
+    }
+  ]
+}

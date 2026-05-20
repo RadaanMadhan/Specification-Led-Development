@@ -1,0 +1,166 @@
+{
+  "feature_id": "012-hospital-clinical-records",
+  "patterns_applied": [
+    "AuthRequiredEverywhere",
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "ValidationBeforeMutation",
+    "AttributionCorrectness",
+    "AppendOnly",
+    "AuditCompleteness"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_OneRolePerUser",
+    "FR_003_PatientIdInBody",
+    "FR_004_CareTeamGating",
+    "FR_005_AdminNoClinical",
+    "FR_006_ByteEquivalent",
+    "FR_007_RecordReadShape",
+    "FR_008_SummaryScope",
+    "FR_009_ValidationBeforeMutation",
+    "FR_010_NotePersistence",
+    "FR_011_NotesAppendOnly",
+    "FR_012_AuditCompleteness",
+    "FR_013_AuditAttribution",
+    "FR_014_AuditAppendOnly",
+    "FR_015_NoPermittedWithoutAudit",
+    "FR_016_AuditRetained",
+    "FR_017_AdminOnlyAudit",
+    "FR_018_AdminContentBlind",
+    "FR_019_SafetyFieldsFirst",
+    "FR_020_NotesCountTiedToPatient"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired"
+    ],
+    "FR-002": [
+      "FR_002_OneRolePerUser"
+    ],
+    "FR-003": [
+      "FR_003_PatientIdInBody"
+    ],
+    "FR-004": [
+      "FR_004_CareTeamGating",
+      "OwnershipBasedAccess"
+    ],
+    "FR-005": [
+      "FR_005_AdminNoClinical",
+      "LeastPrivilege"
+    ],
+    "FR-006": [
+      "FR_006_ByteEquivalent",
+      "NoInformationLeakage"
+    ],
+    "FR-007": [
+      "FR_007_RecordReadShape"
+    ],
+    "FR-008": [
+      "FR_008_SummaryScope"
+    ],
+    "FR-009": [
+      "FR_009_ValidationBeforeMutation"
+    ],
+    "FR-010": [
+      "FR_010_NotePersistence"
+    ],
+    "FR-011": [
+      "FR_011_NotesAppendOnly"
+    ],
+    "FR-012": [
+      "FR_012_AuditCompleteness"
+    ],
+    "FR-013": [
+      "FR_013_AuditAttribution"
+    ],
+    "FR-014": [
+      "FR_014_AuditAppendOnly"
+    ],
+    "FR-015": [
+      "FR_015_NoPermittedWithoutAudit"
+    ],
+    "FR-016": [
+      "FR_016_AuditRetained"
+    ],
+    "FR-017": [
+      "FR_017_AdminOnlyAudit",
+      "LeastPrivilege"
+    ],
+    "FR-018": [
+      "FR_018_AdminContentBlind"
+    ],
+    "FR-019": [
+      "FR_019_SafetyFieldsFirst"
+    ],
+    "FR-020": [
+      "FR_020_NotesCountTiedToPatient"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_UnauthNoAudit",
+      "asserts_violated": [
+        "FR_001_AuthRequired"
+      ],
+      "rationale": "Clearing F_UnauthNoAudit removes the rule that unauthenticated operations cannot have audit entries or permitted outcomes; the injection forces an unauthenticated operation with an audit, which is the precise violation FR_001_AuthRequired exists to catch.",
+      "inject_violation": "fact MUTATE_UnauthHasAudit { some op: Operation | op.authenticated = False and some op.audit }"
+    },
+    {
+      "fact_name": "F_CareTeamRequired",
+      "asserts_violated": [
+        "FR_004_CareTeamGating",
+        "OwnershipBasedAccess"
+      ],
+      "rationale": "Clearing F_CareTeamRequired removes the care-team predicate gating ReadRecord/AddNote; the injection witnesses a permitted clinical access for a clinician with no active care-team membership for that patient, which OwnershipBasedAccess and FR_004 must reject.",
+      "inject_violation": "fact MUTATE_NoCareTeamButPermitted { some op: Operation | op.opOutcome = Permitted and op.opKind = ReadRecord and (no m: CareTeamMembership | m.clinician = op.caller and m.carePatient = op.opPatient and m.status = Active) }"
+    },
+    {
+      "fact_name": "F_AdminNoClinicalContent",
+      "asserts_violated": [
+        "FR_005_AdminNoClinical",
+        "FR_018_AdminContentBlind",
+        "LeastPrivilege"
+      ],
+      "rationale": "Clearing F_AdminNoClinicalContent removes the rule that hospital administrators cannot get a Permitted outcome on clinical endpoints; the injection forces an admin successfully reading a record, violating both FR-005 and least privilege.",
+      "inject_violation": "fact MUTATE_AdminReadsClinical { some op: Operation | op.caller.role = HospitalAdministrator and op.opKind = ReadRecord and op.opOutcome = Permitted }"
+    },
+    {
+      "fact_name": "F_AuditCompleteness",
+      "asserts_violated": [
+        "FR_012_AuditCompleteness",
+        "FR_015_NoPermittedWithoutAudit"
+      ],
+      "rationale": "Clearing F_AuditCompleteness removes the always-on audit rule for clinical endpoints; the injection witnesses an authenticated, validated ReadRecord operation with no audit entry, which FR-012 exists to forbid.",
+      "inject_violation": "fact MUTATE_MissingAudit { some op: Operation | op.authenticated = True and op.validated = True and op.opKind = ReadRecord and no op.audit }"
+    },
+    {
+      "fact_name": "F_AppendOnlyAuditEntries",
+      "asserts_violated": [
+        "FR_014_AuditAppendOnly",
+        "FR_016_AuditRetained"
+      ],
+      "rationale": "Clearing F_AppendOnlyAuditEntries removes the rule that every audit entry is uniquely owned by some operation; the injection introduces an orphan AuditEntry no operation maps to, exactly the kind of fabricated/edited row append-only is supposed to prevent.",
+      "inject_violation": "fact MUTATE_OrphanAudit { some a: AuditEntry | all op: Operation | op.audit != a }"
+    },
+    {
+      "fact_name": "F_NoteAuthorIsClinical",
+      "asserts_violated": [
+        "FR_008_SummaryScope",
+        "FR_018_AdminContentBlind"
+      ],
+      "rationale": "Clearing F_NoteAuthorIsClinical removes the schema CHECK that excludes hospital_administrator from authorship; the injection witnesses a note whose snapshotted author_role is the administrator, violating the content-blindness invariant.",
+      "inject_violation": "fact MUTATE_AdminAuthorsNote { some n: ClinicalNote | n.authorRoleSnapshot = HospitalAdministrator }"
+    },
+    {
+      "fact_name": "F_ValidationGate",
+      "asserts_violated": [
+        "FR_009_ValidationBeforeMutation"
+      ],
+      "rationale": "Clearing F_ValidationGate removes the rule that an invalid request creates no state and no audit; the injection witnesses a validated=False operation that nonetheless created a note, which the ValidationBeforeMutation pattern must catch.",
+      "inject_violation": "fact MUTATE_InvalidCreatesNote { some op: Operation | op.validated = False and some op.noteCreated }"
+    }
+  ]
+}

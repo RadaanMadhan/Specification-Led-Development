@@ -1,0 +1,91 @@
+==============================================================================
+  Design Compliance Report  (Phase 3 — feature_model.als)
+  feature       : C-L1
+  spec source   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/eval/specs/C-L1
+  alloy model   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/C-L1/feature_model.als
+  patterns      : LeastPrivilege, PermissionCompleteness, PermissionGrounding, AuthRequiredEverywhere, OwnershipBasedAccess, AuditCompleteness, AppendOnly, AttributionCorrectness, NoInformationLeakage
+  fr count      : 15 declared in spec.md
+  assertions    : 13 total (13/13 PASS via Alloy)
+==============================================================================
+
+  Compliance matrix
+  ----------------------------------------------------------------------------
+  Assertion                    Verdict   Anchor
+  -----------------------------------------------------------------
+  LeastPrivilege               PASS      PATTERN LeastPrivilege: contracts/http-api.md permission matrix; FR-005, FR-006
+  PermissionCompleteness       PASS      PATTERN PermissionCompleteness: contracts/http-api.md
+  PermissionGrounding          PASS      PATTERN PermissionGrounding: spec.md FR-005, FR-006, FR-011; contracts/http-api.md
+  AuthRequiredEverywhere       PASS      PATTERN AuthRequiredEverywhere: FR-001; contracts/http-api.md
+  OwnershipBasedAccess         PASS      PATTERN OwnershipBasedAccess: FR-006; contracts/http-api.md authorisation
+  AuditCompleteness            PASS      PATTERN AuditCompleteness: FR-008, FR-009; data-model.md
+  AppendOnly                   PASS      PATTERN AppendOnly: FR-010; contracts/http-api.md
+  AttributionCorrectness       PASS      PATTERN AttributionCorrectness: FR-009; data-model.md AuditEntry
+  NoInformationLeakage         PASS      PATTERN NoInformationLeakage: FR-007; contracts/http-api.md byte-equivalent response
+  FR_002_RoleResolution        PASS      FEATURE-SPECIFIC: FR-002 role resolution
+  FR_005_ReadOnlyAccessScope   PASS      FEATURE-SPECIFIC: FR-005 read-only access scope
+  FR_008_AllAccessesAudited    PASS      FEATURE-SPECIFIC: FR-008, FR-013 all access attempts audited
+  FR_011_ClinicalRolesInAudit  PASS      FEATURE-SPECIFIC: FR-011 only IG role accesses audit endpoint
+
+  FR coverage
+  ----------------------------------------------------------------------------
+  FR-001  →  AuthRequiredEverywhere=PASS
+  FR-002  →  FR_002_RoleResolution=PASS
+  FR-003  [uncovered]
+  FR-004  →  LeastPrivilege=PASS
+  FR-005  →  FR_005_ReadOnlyAccessScope=PASS, LeastPrivilege=PASS
+  FR-006  →  OwnershipBasedAccess=PASS
+  FR-007  →  NoInformationLeakage=PASS
+  FR-008  →  FR_008_AllAccessesAudited=PASS, AuditCompleteness=PASS
+  FR-009  →  AuditCompleteness=PASS, AttributionCorrectness=PASS
+  FR-010  →  AppendOnly=PASS
+  FR-011  →  FR_011_ClinicalRolesInAudit=PASS, PermissionGrounding=PASS
+  FR-012  [uncovered]
+  FR-013  →  FR_008_AllAccessesAudited=PASS
+  FR-014  [uncovered]
+  FR-015  [uncovered]
+
+  WARNING: 4 FR(s) without any matching assertion: FR-003, FR-012, FR-014, FR-015
+
+==============================================================================
+  Mutation tests  (assertion-strength validation)
+==============================================================================
+
+  Strategy: replace each named fact's body with `{}` (no constraint),
+  then re-run Alloy. Each listed assertion should now FAIL on the
+  mutated model. If it still PASSes, the assertion is vacuous and
+  must be strengthened.
+
+  - MUTATE F_OwnershipBasedAccess  → runs/C-L1/mutated_F_OwnershipBasedAccess.als
+    rationale: This fact enforces that permitted accesses must have an active care-team membership. Removing it allows the model to construct permitted accesses without the required membership, which is the exact violation OwnershipBasedAccess is designed to catch.
+    expected to FAIL: OwnershipBasedAccess
+      - OwnershipBasedAccess: PASS (vacuous?)
+
+  - MUTATE F_AuditAppendOnly  → runs/C-L1/mutated_F_AuditAppendOnly.als
+    rationale: This fact prevents two distinct audit entries from having the same (clinician, patient_id, occurred_at) key but different outcomes. Removing it allows the injection of duplicates with conflicting data, which the AppendOnly assertion should reject.
+    expected to FAIL: AppendOnly
+      - AppendOnly: PASS (vacuous?)
+
+  - MUTATE F_AttributionCorrectness  → runs/C-L1/mutated_F_AttributionCorrectness.als
+    rationale: This fact ensures audit-entry snapshots (clinician_display_name, clinician_role) match the actual user data. Removing it allows mismatches, which the AttributionCorrectness assertion should catch.
+    expected to FAIL: AttributionCorrectness
+      - AttributionCorrectness: PASS (vacuous?)
+
+  - MUTATE F_NoInformationLeakage  → runs/C-L1/mutated_F_NoInformationLeakage.als
+    rationale: This fact enforces the internal distinction: Denied outcomes require an existing patient (clinician not on care team), and NotFoundOrDenied requires patient absence. Removing it allows violations where the outcome doesn't match patient existence, which NoInformationLeakage detects.
+    expected to FAIL: NoInformationLeakage
+      - NoInformationLeakage: PASS (vacuous?)
+
+  - MUTATE F_RecordsLookupIsForClinicalRoles  → runs/C-L1/mutated_F_RecordsLookupIsForClinicalRoles.als
+    rationale: This fact enforces that only clinical roles (not AuditOfficer) appear in the audit log for patient-record accesses. Removing it allows AuditOfficer entries, which violates the role-separation invariant.
+    expected to FAIL: LeastPrivilege, FR_011_ClinicalRolesInAudit
+      - LeastPrivilege: PASS (vacuous?)
+      - FR_011_ClinicalRolesInAudit: PASS (vacuous?)
+
+  Mutation summary
+  ----------------------------------------------------------------------------
+  - F_OwnershipBasedAccess: ASSERTION VACUOUS (OwnershipBasedAccess)
+  - F_AuditAppendOnly: ASSERTION VACUOUS (AppendOnly)
+  - F_AttributionCorrectness: ASSERTION VACUOUS (AttributionCorrectness)
+  - F_NoInformationLeakage: ASSERTION VACUOUS (NoInformationLeakage)
+  - F_RecordsLookupIsForClinicalRoles: ASSERTION VACUOUS (LeastPrivilege, FR_011_ClinicalRolesInAudit)
+

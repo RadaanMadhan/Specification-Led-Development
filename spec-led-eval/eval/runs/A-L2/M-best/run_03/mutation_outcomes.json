@@ -1,0 +1,51 @@
+{
+  "F_OperationAuthorized": {
+    "targeted_asserts": {
+      "LeastPrivilege": "BIT",
+      "FR_002_CustomerScope": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_PermissionMatrix": {
+    "targeted_asserts": {
+      "PermissionCompleteness": "BIT",
+      "FR_021_OfficerHidden": "BIT",
+      "FR_023_ComplianceReadOnly": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_NoDuplicateEvents": {
+    "targeted_asserts": {
+      "AppendOnly": "BIT",
+      "FR_018_AppendOnly": "BIT",
+      "FR_019_OneAuditPerChange": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AuditMatchesJourney": {
+    "targeted_asserts": {
+      "AuditCompleteness": "BIT",
+      "FR_017_AuditEveryChange": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_CustomerViewsOwn": {
+    "targeted_asserts": {
+      "OwnershipBasedAccess": "VACUOUS_OVERCONSTRAINT",
+      "FR_020_CustomerSeeOwn": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_NoLeakage": {
+    "targeted_asserts": {
+      "NoInformationLeakage": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AuditAttribution": {
+    "targeted_asserts": {
+      "AttributionCorrectness": "BIT"
+    },
+    "all_bit": true
+  }
+}

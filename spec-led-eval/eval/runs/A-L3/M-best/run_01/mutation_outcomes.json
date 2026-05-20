@@ -1,0 +1,44 @@
+{
+  "F_AuthRequired": {
+    "targeted_asserts": {
+      "AuthRequiredEverywhere": "VACUOUS_OVERCONSTRAINT",
+      "FR_001_AuthRequired": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_LeastPrivilegeEnforcement": {
+    "targeted_asserts": {
+      "LeastPrivilege": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_AuditAppendOnly": {
+    "targeted_asserts": {
+      "AppendOnly": "VACUOUS_OVERCONSTRAINT",
+      "FR_018_AppendOnly": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_OwnershipBasedAccessEnforcement": {
+    "targeted_asserts": {
+      "OwnershipBasedAccess": "VACUOUS_OVERCONSTRAINT",
+      "FR_012_OnlyAssignedOfficerPatches": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_NoSelfAssignment": {
+    "targeted_asserts": {
+      "NoSelfMutation": "VACUOUS_OVERCONSTRAINT",
+      "FR_011_NoSelfAssignment": "VACUOUS_OVERCONSTRAINT",
+      "OwnershipExclusivity": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_NoInformationLeakageEnforcement": {
+    "targeted_asserts": {
+      "NoInformationLeakage": "VACUOUS_OVERCONSTRAINT",
+      "FR_020_ByteEquivNotFound": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  }
+}

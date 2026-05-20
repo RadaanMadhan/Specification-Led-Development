@@ -1,0 +1,111 @@
+==============================================================================
+  Design Compliance Report  (Phase 3 — feature_model.als)
+  feature       : A-L1
+  spec source   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/eval/specs/A-L1
+  alloy model   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/A-L1/feature_model.als
+  patterns      : LeastPrivilege, PermissionCompleteness, AuthRequiredEverywhere, AuditCompleteness, AppendOnly, AttributionCorrectness, OwnershipExclusivity, OwnershipBasedAccess, NoInformationLeakage
+  fr count      : 17 declared in spec.md
+  assertions    : 20 total (20/20 PASS via Alloy)
+==============================================================================
+
+  Compliance matrix
+  ----------------------------------------------------------------------------
+  Assertion                     Verdict   Anchor
+  ------------------------------------------------------------------
+  LeastPrivilege                PASS      PATTERN LeastPrivilege: contracts/http-api.md permission matrix; spec.md FR-015
+  PermissionCompleteness        PASS      PATTERN PermissionCompleteness: contracts/http-api.md permission matrix
+  AuthRequiredEverywhere        PASS      PATTERN AuthRequiredEverywhere: contracts/http-api.md Authentication section; FR-001
+  AuditCompleteness             PASS      PATTERN AuditCompleteness: spec.md FR-016; data-model.md application_events
+  AppendOnly                    PASS      PATTERN AppendOnly: spec.md FR-016; data-model.md "no UPDATE/DELETE on application_events"
+  AttributionCorrectness        PASS      PATTERN AttributionCorrectness: data-model.md application_events.actor_user_id; FR-016
+  OwnershipExclusivity          PASS      PATTERN OwnershipExclusivity: data-model.md loan_applications.customer_id NOT NULL
+  OwnershipBasedAccess          PASS      PATTERN OwnershipBasedAccess: spec.md FR-013; contracts/http-api.md permission matrix
+  NoInformationLeakage          PASS      PATTERN NoInformationLeakage: spec.md FR-013; contracts/http-api.md (404, not 403, on non-owner)
+  FR_001_AuthRequired           PASS      FEATURE-SPECIFIC: FR-001 — every endpoint requires authentication
+  FR_004_SubmitterRecorded      PASS      FEATURE-SPECIFIC: FR-004 — submitter recorded; status reflects decision presence
+  FR_005_OnePendingPerCustomer  PASS      FEATURE-SPECIFIC: FR-005 — at most one Pending Review application per customer
+  FR_008_StaffCanView           PASS      FEATURE-SPECIFIC: FR-008 — staff can view any application (no ownership filter)
+  FR_009_NonEmptyReason         PASS      FEATURE-SPECIFIC: FR-009 — every recorded decision has a non-empty reason
+  FR_010_DecisionRecorded       PASS      FEATURE-SPECIFIC: FR-010 — decided applications carry a matching decision
+  FR_011_DecidedImmutable       PASS      FEATURE-SPECIFIC: FR-011 — decided status/type coherent; pending implies no decision
+  FR_012_AtMostOneDecision      PASS      FEATURE-SPECIFIC: FR-012 — at most one decision per application (concurrency winner)
+  FR_013_CustomerOwnAccess      PASS      FEATURE-SPECIFIC: FR-013 — customer can only see their own application
+  FR_015_StaffOnlyDecision      PASS      FEATURE-SPECIFIC: FR-015 — only bank staff can decide or read audit
+  FR_016_AuditAppendOnly        PASS      FEATURE-SPECIFIC: FR-016 — audit append-only and at minimum a Submitted entry per application
+
+  FR coverage
+  ----------------------------------------------------------------------------
+  FR-001  →  FR_001_AuthRequired=PASS, AuthRequiredEverywhere=PASS
+  FR-002  [uncovered]
+  FR-003  [uncovered]
+  FR-004  →  FR_004_SubmitterRecorded=PASS, OwnershipExclusivity=PASS
+  FR-005  →  FR_005_OnePendingPerCustomer=PASS
+  FR-006  [uncovered]
+  FR-007  [uncovered]
+  FR-008  →  FR_008_StaffCanView=PASS
+  FR-009  →  FR_009_NonEmptyReason=PASS
+  FR-010  →  FR_010_DecisionRecorded=PASS
+  FR-011  →  FR_011_DecidedImmutable=PASS
+  FR-012  →  FR_012_AtMostOneDecision=PASS
+  FR-013  →  FR_013_CustomerOwnAccess=PASS, OwnershipBasedAccess=PASS, NoInformationLeakage=PASS
+  FR-014  [uncovered]
+  FR-015  →  FR_015_StaffOnlyDecision=PASS, LeastPrivilege=PASS
+  FR-016  →  FR_016_AuditAppendOnly=PASS, AuditCompleteness=PASS, AppendOnly=PASS, AttributionCorrectness=PASS
+  FR-017  [uncovered]
+
+  WARNING: 6 FR(s) without any matching assertion: FR-002, FR-003, FR-006, FR-007, FR-014, FR-017
+
+==============================================================================
+  Mutation tests  (assertion-strength validation)
+==============================================================================
+
+  Strategy: replace each named fact's body with `{}` (no constraint),
+  then re-run Alloy. Each listed assertion should now FAIL on the
+  mutated model. If it still PASSes, the assertion is vacuous and
+  must be strengthened.
+
+  - MUTATE F_AppendOnlyAuditEntries  → runs/A-L1/mutated_F_AppendOnlyAuditEntries.als
+    rationale: Removing this fact lifts the no-duplicate-per-(application,eventType) constraint; injecting two indistinguishable audit entries for the same application+event forces a counterexample within the Alloy scope, which both append-only assertions must detect.
+    expected to FAIL: AppendOnly, FR_016_AuditAppendOnly
+      - AppendOnly: FAIL (expected)
+      - FR_016_AuditAppendOnly: FAIL (expected)
+
+  - MUTATE F_LeastPrivilege  → runs/A-L1/mutated_F_LeastPrivilege.als
+    rationale: Removing this fact lets Alloy invent an Operation whose (role, kind) is not in the permission matrix; the injection forces a customer-issued PostDecision, which is a denied cell, so both the catalogue LeastPrivilege check and the staff-only-decision FR must fail.
+    expected to FAIL: LeastPrivilege, FR_015_StaffOnlyDecision
+      - LeastPrivilege: FAIL (expected)
+      - FR_015_StaffOnlyDecision: FAIL (expected)
+
+  - MUTATE F_AuditCompleteness  → runs/A-L1/mutated_F_AuditCompleteness.als
+    rationale: Removing this fact lets an application exist without a Submitted audit entry; injection forces such an application into existence within scope, so both the per-application Submitted-event check and the audit-completeness pattern must fail.
+    expected to FAIL: AuditCompleteness, FR_016_AuditAppendOnly
+      - AuditCompleteness: FAIL (expected)
+      - FR_016_AuditAppendOnly: FAIL (expected)
+
+  - MUTATE F_OwnershipBasedAccess  → runs/A-L1/mutated_F_OwnershipBasedAccess.als
+    rationale: Removing this fact lifts the customer/own-resource gate on GetApplicationById; the injection constructs an Operation where a customer successfully sees another customer's application, which is exactly the leak FR-013 and the two patterns must catch.
+    expected to FAIL: OwnershipBasedAccess, NoInformationLeakage, FR_013_CustomerOwnAccess
+      - OwnershipBasedAccess: FAIL (expected)
+      - NoInformationLeakage: FAIL (expected)
+      - FR_013_CustomerOwnAccess: FAIL (expected)
+
+  - MUTATE F_AuthRequired  → runs/A-L1/mutated_F_AuthRequired.als
+    rationale: Removing this fact lets an unauthenticated Operation reach a handler; the injection forces existence of an op with authenticated=False, which both auth-required assertions must reject.
+    expected to FAIL: AuthRequiredEverywhere, FR_001_AuthRequired
+      - AuthRequiredEverywhere: FAIL (expected)
+      - FR_001_AuthRequired: FAIL (expected)
+
+  - MUTATE F_OnePendingPerCustomer  → runs/A-L1/mutated_F_OnePendingPerCustomer.als
+    rationale: Removing this fact lets one customer hold two simultaneous Pending Review applications; the injection makes two such applications co-exist for the same customer, which violates the partial unique index and so the FR-005 assertion.
+    expected to FAIL: FR_005_OnePendingPerCustomer
+      - FR_005_OnePendingPerCustomer: FAIL (expected)
+
+  Mutation summary
+  ----------------------------------------------------------------------------
+  - F_AppendOnlyAuditEntries: ASSERTIONS BIT (AppendOnly, FR_016_AuditAppendOnly)
+  - F_LeastPrivilege: ASSERTIONS BIT (LeastPrivilege, FR_015_StaffOnlyDecision)
+  - F_AuditCompleteness: ASSERTIONS BIT (AuditCompleteness, FR_016_AuditAppendOnly)
+  - F_OwnershipBasedAccess: ASSERTIONS BIT (OwnershipBasedAccess, NoInformationLeakage, FR_013_CustomerOwnAccess)
+  - F_AuthRequired: ASSERTIONS BIT (AuthRequiredEverywhere, FR_001_AuthRequired)
+  - F_OnePendingPerCustomer: ASSERTIONS BIT (FR_005_OnePendingPerCustomer)
+

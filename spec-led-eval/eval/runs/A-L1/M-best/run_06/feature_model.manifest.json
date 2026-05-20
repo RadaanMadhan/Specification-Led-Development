@@ -1,0 +1,157 @@
+{
+  "feature_id": "003-loan-application",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "PermissionGrounding",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "ConcurrencySafety"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_CustomerSubmits",
+    "FR_002_AllFieldsPopulated",
+    "FR_003_StatusInClosedSet",
+    "FR_004_InitialStatusPending",
+    "FR_005_OnePendingPerCustomer",
+    "FR_006_SubmissionEventExists",
+    "FR_007_StaffCanListApplications",
+    "FR_008_StaffCanViewAnyApplication",
+    "FR_009_DecisionHasReason",
+    "FR_010_DecisionPersistedAtomically",
+    "FR_011_DecisionImmutable",
+    "FR_012_NoTwoDecisions",
+    "FR_013_CustomerCannotSeeOthers",
+    "FR_014_DecisionEventForEveryDecision",
+    "FR_015_StaffOnlyDecisions",
+    "FR_016_AuditTrailComplete",
+    "FR_017_DecisionsRetained"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_CustomerSubmits",
+      "PermissionGrounding"
+    ],
+    "FR-002": [
+      "FR_002_AllFieldsPopulated"
+    ],
+    "FR-003": [
+      "FR_003_StatusInClosedSet"
+    ],
+    "FR-004": [
+      "FR_004_InitialStatusPending"
+    ],
+    "FR-005": [
+      "FR_005_OnePendingPerCustomer"
+    ],
+    "FR-006": [
+      "FR_006_SubmissionEventExists"
+    ],
+    "FR-007": [
+      "FR_007_StaffCanListApplications",
+      "PermissionGrounding"
+    ],
+    "FR-008": [
+      "FR_008_StaffCanViewAnyApplication"
+    ],
+    "FR-009": [
+      "FR_009_DecisionHasReason"
+    ],
+    "FR-010": [
+      "FR_010_DecisionPersistedAtomically"
+    ],
+    "FR-011": [
+      "FR_011_DecisionImmutable",
+      "ConcurrencySafety"
+    ],
+    "FR-012": [
+      "FR_012_NoTwoDecisions",
+      "ConcurrencySafety"
+    ],
+    "FR-013": [
+      "FR_013_CustomerCannotSeeOthers",
+      "OwnershipExclusivity",
+      "OwnershipBasedAccess",
+      "NoInformationLeakage"
+    ],
+    "FR-014": [
+      "FR_014_DecisionEventForEveryDecision"
+    ],
+    "FR-015": [
+      "FR_015_StaffOnlyDecisions",
+      "LeastPrivilege"
+    ],
+    "FR-016": [
+      "FR_016_AuditTrailComplete",
+      "AuditCompleteness",
+      "AppendOnly",
+      "AttributionCorrectness"
+    ],
+    "FR-017": [
+      "FR_017_DecisionsRetained"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_OnePendingPerCustomer",
+      "asserts_violated": [
+        "FR_005_OnePendingPerCustomer"
+      ],
+      "rationale": "Clearing the single-pending-per-customer fact lets Alloy build two pending applications owned by the same customer; the injection forces exactly that, which FR_005_OnePendingPerCustomer forbids.",
+      "inject_violation": "fact MUTATE_OnePendingViolation { some disj a1, a2: LoanApplication | (a1.customer = a2.customer) and (a1.status = PendingReview) and (a2.status = PendingReview) }"
+    },
+    {
+      "fact_name": "F_DecisionByBankStaff",
+      "asserts_violated": [
+        "FR_015_StaffOnlyDecisions"
+      ],
+      "rationale": "Clearing the staff-only-decider fact removes the role check on Decision.decidedBy; the injection forces a Decision whose decider has Customer role, which FR_015 says is impossible.",
+      "inject_violation": "fact MUTATE_StaffOnlyViolation { some d: Decision | d.decidedBy.role = Customer }"
+    },
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_015_StaffOnlyDecisions"
+      ],
+      "rationale": "Clearing the permission-matrix definition makes Allowed unconstrained; the injection forces Customer->PostDecision into the matrix, directly violating LeastPrivilege and FR-015's denial clause.",
+      "inject_violation": "fact MUTATE_LeastPrivilegeViolation { (Customer -> PostDecision) in PermMatrix.Allowed }"
+    },
+    {
+      "fact_name": "F_DecisionEventIffDecided",
+      "asserts_violated": [
+        "AppendOnly",
+        "AuditCompleteness",
+        "FR_016_AuditTrailComplete"
+      ],
+      "rationale": "Clearing the decision-event/status binding lets pending applications acquire decision events; the injection forces a pending application carrying an ApprovedEvent, which AppendOnly forbids and which AuditCompleteness's pending/decided partitioning rejects.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some a: LoanApplication, e: ApplicationEvent | (a.status = PendingReview) and (e.application = a) and (e.eventType = ApprovedEvent) }"
+    },
+    {
+      "fact_name": "F_AtMostOneDecisionPerApp",
+      "asserts_violated": [
+        "FR_011_DecisionImmutable",
+        "FR_012_NoTwoDecisions",
+        "ConcurrencySafety"
+      ],
+      "rationale": "Clearing the at-most-one-decision constraint allows two Decision atoms to point at the same application; the injection forces that pair, which FR-011, FR-012 and ConcurrencySafety all rule out.",
+      "inject_violation": "fact MUTATE_TwoDecisionsViolation { some disj d1, d2: Decision | d1.application = d2.application }"
+    },
+    {
+      "fact_name": "F_ApplicationCustomerIsCustomerRole",
+      "asserts_violated": [
+        "OwnershipExclusivity",
+        "FR_001_CustomerSubmits",
+        "FR_013_CustomerCannotSeeOthers",
+        "NoInformationLeakage"
+      ],
+      "rationale": "Clearing the customer-role fact lets a LoanApplication be owned by a bank_staff user; the injection forces such an instance, breaking OwnershipExclusivity's role typing and FR-001/FR-013's customer-only origination.",
+      "inject_violation": "fact MUTATE_OwnershipViolation { some a: LoanApplication | a.customer.role = BankStaff }"
+    }
+  ]
+}

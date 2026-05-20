@@ -1,0 +1,168 @@
+{
+  "feature_id": "008-task-sharing",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "AuthRequiredEverywhere",
+    "ValidationBeforeMutation"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_RoleFromToken",
+    "FR_003_MemberPermissions",
+    "FR_004_MemberCannotAccessUnowned",
+    "FR_005_AdminTeamAccess",
+    "FR_006_NoCrossTeamAccess",
+    "FR_009_OwnerTeamImmutable",
+    "FR_010_OwnerOnlySharesChange",
+    "FR_011_ShareeCannotDelete",
+    "FR_012_NoCrossTeamSharing",
+    "FR_013_ShareAuditEntries",
+    "FR_014_ByteEquivalent404",
+    "FR_015_PerEventAudit",
+    "FR_016_AuditFields",
+    "FR_017_AuditAppendOnly",
+    "FR_018_NoOrphanStateChange",
+    "FR_019_AuditAccess"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_RoleFromToken"
+    ],
+    "FR-002a": [
+      "FR_002_RoleFromToken"
+    ],
+    "FR-003": [
+      "FR_003_MemberPermissions",
+      "OwnershipBasedAccess",
+      "LeastPrivilege"
+    ],
+    "FR-004": [
+      "FR_004_MemberCannotAccessUnowned",
+      "OwnershipBasedAccess"
+    ],
+    "FR-005": [
+      "FR_005_AdminTeamAccess",
+      "LeastPrivilege"
+    ],
+    "FR-006": [
+      "FR_006_NoCrossTeamAccess",
+      "NoInformationLeakage"
+    ],
+    "FR-007": [],
+    "FR-008": [],
+    "FR-009": [
+      "FR_009_OwnerTeamImmutable",
+      "OwnershipExclusivity"
+    ],
+    "FR-010": [
+      "FR_010_OwnerOnlySharesChange",
+      "LeastPrivilege"
+    ],
+    "FR-011": [
+      "FR_011_ShareeCannotDelete",
+      "LeastPrivilege"
+    ],
+    "FR-012": [
+      "FR_012_NoCrossTeamSharing"
+    ],
+    "FR-013": [
+      "FR_013_ShareAuditEntries"
+    ],
+    "FR-014": [
+      "FR_014_ByteEquivalent404",
+      "NoInformationLeakage"
+    ],
+    "FR-015": [
+      "FR_015_PerEventAudit",
+      "AuditCompleteness"
+    ],
+    "FR-016": [
+      "FR_016_AuditFields",
+      "AttributionCorrectness"
+    ],
+    "FR-017": [
+      "FR_017_AuditAppendOnly",
+      "AppendOnly"
+    ],
+    "FR-018": [
+      "FR_018_NoOrphanStateChange",
+      "AuditCompleteness",
+      "ValidationBeforeMutation"
+    ],
+    "FR-019": [
+      "FR_019_AuditAccess",
+      "LeastPrivilege"
+    ],
+    "FR-020": [],
+    "FR-021": []
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_AccessControl",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "OwnershipBasedAccess",
+        "FR_011_ShareeCannotDelete",
+        "FR_010_OwnerOnlySharesChange"
+      ],
+      "rationale": "F_AccessControl is the load-bearing constraint tying (relationship, opKind) to the permission matrix. Clearing it removes the link; the injection forces an explicit sharee-doing-DELETE success, which the matrix forbids \u2014 so LeastPrivilege and the related FRs must produce a counterexample.",
+      "inject_violation": "fact MUTATE_AccessControlViolation { some op: Operation | op.outcome = SuccessOutcome and op.opKind = DeleteTask and some op.targetTask and op.caller in op.targetTask.sharedWith and op.caller != op.targetTask.owner and op.caller.userRole = MemberRole }"
+    },
+    {
+      "fact_name": "F_AppendOnlyAuditEntries",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_017_AuditAppendOnly"
+      ],
+      "rationale": "Clearing this fact lets two AuditEntries describe the same logical operation event (a rewrite/duplicate), which is exactly what append-only forbids. The injection forces two such entries to coexist.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some disj ae1, ae2: AuditEntry | ae1.forOperation = ae2.forOperation }"
+    },
+    {
+      "fact_name": "F_AuditOnePerMutation",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_015_PerEventAudit",
+        "FR_018_NoOrphanStateChange"
+      ],
+      "rationale": "Clearing this removes the requirement that every successful mutating operation be backed by an audit entry; the injection constructs an orphan state change \u2014 a successful PATCH with no matching AuditEntry \u2014 which violates the per-event audit invariant.",
+      "inject_violation": "fact MUTATE_OrphanMutation { some op: Operation | op.outcome = SuccessOutcome and op.opKind = PatchFields and (no ae: AuditEntry | ae.forOperation = op) }"
+    },
+    {
+      "fact_name": "F_AuditAttribution",
+      "asserts_violated": [
+        "AttributionCorrectness",
+        "FR_016_AuditFields"
+      ],
+      "rationale": "Clearing this lets an AuditEntry record an actor that is not the operation's caller, i.e., misattribution. The injection forces a recordedActor mismatch.",
+      "inject_violation": "fact MUTATE_MisattributedAudit { some ae: AuditEntry | ae.recordedActor != ae.forOperation.caller }"
+    },
+    {
+      "fact_name": "F_SharedWithSameTeam",
+      "asserts_violated": [
+        "FR_012_NoCrossTeamSharing"
+      ],
+      "rationale": "Removing this fact lets a sharee live in a different team than the task \u2014 exactly the cross-team-sharing escape FR-012 prohibits. The injection makes such a configuration exist.",
+      "inject_violation": "fact MUTATE_CrossTeamShare { some t: Task, u: t.sharedWith | u.userTeam != t.taskTeam }"
+    },
+    {
+      "fact_name": "F_UnauthenticatedRejected",
+      "asserts_violated": [
+        "AuthRequiredEverywhere",
+        "FR_001_AuthRequired"
+      ],
+      "rationale": "Clearing this fact removes the gate forcing successful operations to be authenticated. The injection produces a successful unauthenticated operation, breaking the auth invariant.",
+      "inject_violation": "fact MUTATE_UnauthenticatedSuccess { some op: Operation | op.outcome = SuccessOutcome and op.auth = Unauthenticated }"
+    }
+  ]
+}

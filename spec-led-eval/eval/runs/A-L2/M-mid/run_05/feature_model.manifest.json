@@ -1,0 +1,183 @@
+{
+  "feature_id": "A-L2",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_CustomerActions",
+    "FR_003_LoanOfficerActions",
+    "FR_004_ComplianceReadOnly",
+    "FR_005_CustomerIdentityFromAuth",
+    "FR_008_OneInflightPerCustomer",
+    "FR_009_SubmissionCreatesAuditEntry",
+    "FR_011_ClaimCreatesAuditEntry",
+    "FR_012_ExactlyOneClaim",
+    "FR_013_OnlyAssignedOfficerDecides",
+    "FR_015_DecisionAtomicWithAudit",
+    "FR_016_ImmutableDecidedApps",
+    "FR_017_EveryTransitionHasAuditEntry",
+    "FR_018_AuditAppendOnly",
+    "FR_019_ExactlyOneEntryPerTransition",
+    "FR_020_CustomerOwnershipFilter",
+    "FR_021_OfficerIdentityHiddenFromCustomer",
+    "FR_023_ComplianceNoWrite"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_CustomerActions",
+      "LeastPrivilege"
+    ],
+    "FR-003": [
+      "FR_003_LoanOfficerActions",
+      "LeastPrivilege"
+    ],
+    "FR-004": [
+      "FR_004_ComplianceReadOnly",
+      "FR_023_ComplianceNoWrite",
+      "LeastPrivilege"
+    ],
+    "FR-005": [
+      "FR_005_CustomerIdentityFromAuth",
+      "OwnershipExclusivity"
+    ],
+    "FR-006": [
+      "FR_005_CustomerIdentityFromAuth"
+    ],
+    "FR-007": [
+      "FR_005_CustomerIdentityFromAuth"
+    ],
+    "FR-008": [
+      "FR_008_OneInflightPerCustomer"
+    ],
+    "FR-009": [
+      "FR_009_SubmissionCreatesAuditEntry",
+      "AuditCompleteness"
+    ],
+    "FR-010": [
+      "FR_003_LoanOfficerActions"
+    ],
+    "FR-011": [
+      "FR_011_ClaimCreatesAuditEntry",
+      "AuditCompleteness"
+    ],
+    "FR-012": [
+      "FR_012_ExactlyOneClaim"
+    ],
+    "FR-013": [
+      "FR_013_OnlyAssignedOfficerDecides"
+    ],
+    "FR-014": [
+      "FR_013_OnlyAssignedOfficerDecides"
+    ],
+    "FR-015": [
+      "FR_015_DecisionAtomicWithAudit",
+      "AuditCompleteness"
+    ],
+    "FR-016": [
+      "FR_016_ImmutableDecidedApps"
+    ],
+    "FR-017": [
+      "FR_017_EveryTransitionHasAuditEntry",
+      "AuditCompleteness",
+      "AttributionCorrectness"
+    ],
+    "FR-018": [
+      "FR_018_AuditAppendOnly",
+      "AppendOnly"
+    ],
+    "FR-019": [
+      "FR_019_ExactlyOneEntryPerTransition",
+      "AuditCompleteness"
+    ],
+    "FR-020": [
+      "FR_020_CustomerOwnershipFilter",
+      "OwnershipBasedAccess",
+      "NoInformationLeakage"
+    ],
+    "FR-021": [
+      "FR_021_OfficerIdentityHiddenFromCustomer",
+      "NoInformationLeakage"
+    ],
+    "FR-022": [
+      "FR_016_ImmutableDecidedApps"
+    ],
+    "FR-023": [
+      "FR_023_ComplianceNoWrite",
+      "FR_004_ComplianceReadOnly",
+      "LeastPrivilege"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_AppendOnlyAuditEntries",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_018_AuditAppendOnly",
+        "FR_019_ExactlyOneEntryPerTransition"
+      ],
+      "rationale": "Removing this fact allows duplicate audit entries for the same (application, prevStatus, newStatus) triple. The AppendOnly and FR_018_AuditAppendOnly assertions both require no two entries on the same application to share the same (prev, new) pair, so they find counterexamples once the uniqueness constraint is lifted.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some disj ae1, ae2: AuditEntry | ae1.entryApp = ae2.entryApp and ae1.prevStatus = ae2.prevStatus and ae1.newStatus = ae2.newStatus }"
+    },
+    {
+      "fact_name": "F_DecisionByAssignedOfficer",
+      "asserts_violated": [
+        "FR_013_OnlyAssignedOfficerDecides",
+        "AttributionCorrectness"
+      ],
+      "rationale": "Removing this fact allows a Decision to be recorded by any loan officer, not just the one assigned to the application. The FR_013_OnlyAssignedOfficerDecides assertion checks that d.decidedBy = d.forApp.assignedOfficer for all decisions, so it fails when a non-assigned officer's decision is injected.",
+      "inject_violation": "fact MUTATE_WrongOfficerDecides { some d: Decision | some u: User | u.userRole = LoanOfficer and u != d.forApp.assignedOfficer and d.decidedBy = u }"
+    },
+    {
+      "fact_name": "F_OneInflightPerCustomer",
+      "asserts_violated": [
+        "FR_008_OneInflightPerCustomer"
+      ],
+      "rationale": "Removing this fact allows a single customer to have two simultaneously in-flight (Submitted or UnderReview) applications. The FR_008_OneInflightPerCustomer assertion directly checks that no such pair exists, so it fails when the pair is injected.",
+      "inject_violation": "fact MUTATE_TwoInflightSameCustomer { some disj a1, a2: LoanApplication | a1.appCustomer = a2.appCustomer and (a1.status = Submitted or a1.status = UnderReview) and (a2.status = Submitted or a2.status = UnderReview) }"
+    },
+    {
+      "fact_name": "F_OperationsAreAuthorised",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_002_CustomerActions",
+        "FR_004_ComplianceReadOnly",
+        "FR_023_ComplianceNoWrite"
+      ],
+      "rationale": "Removing this fact allows operations whose caller's role is not in the permitted set for that operation kind. The LeastPrivilege assertion checks that every operation is covered by an allowed cell; a counterexample is forced by injecting a ComplianceReviewer calling PostClaim.",
+      "inject_violation": "fact MUTATE_UnauthorisedOperation { some op: Operation | op.opCaller.userRole = ComplianceReviewer and op.opKind = PostClaim }"
+    },
+    {
+      "fact_name": "F_AuditHasDecisionEntry",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_015_DecisionAtomicWithAudit",
+        "FR_017_EveryTransitionHasAuditEntry"
+      ],
+      "rationale": "Removing this fact allows a decided application to exist without its corresponding UnderReview\u2192Approved/Rejected audit entry. The AuditCompleteness and FR_015_DecisionAtomicWithAudit assertions both require this entry to exist; they find counterexamples when an Approved application has no such audit entry.",
+      "inject_violation": "fact MUTATE_MissingDecisionAuditEntry { some app: LoanApplication | app.status = Approved and (no ae: AuditEntry | ae.entryApp = app and ae.prevStatus = UnderReview and ae.newStatus = Approved) }"
+    },
+    {
+      "fact_name": "F_ComplianceReadOnly",
+      "asserts_violated": [
+        "FR_004_ComplianceReadOnly",
+        "FR_023_ComplianceNoWrite",
+        "LeastPrivilege"
+      ],
+      "rationale": "Removing this fact allows a ComplianceReviewer-role user to appear as the caller of a PostDecision operation. The FR_004_ComplianceReadOnly and FR_023_ComplianceNoWrite assertions both forbid this; they detect the counterexample immediately.",
+      "inject_violation": "fact MUTATE_ComplianceWriteViolation { some op: Operation | op.opCaller.userRole = ComplianceReviewer and op.opKind = PostDecision }"
+    }
+  ]
+}

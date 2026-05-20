@@ -1,0 +1,102 @@
+{
+  "feature_id": "B-L2",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage"
+  ],
+  "feature_specific_predicates": [
+    "FR_014_CrossTeamIsolation",
+    "FR_017_AuditVisibilityToMembers"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "AuthRequiredEverywhere"
+    ],
+    "FR-005": [
+      "FR_005_TaskTeamImmutable"
+    ],
+    "FR-006": [
+      "OwnershipExclusivity"
+    ],
+    "FR-008": [
+      "OwnershipBasedAccess"
+    ],
+    "FR-009": [
+      "OwnershipBasedAccess"
+    ],
+    "FR-010": [
+      "OwnershipBasedAccess"
+    ],
+    "FR-014": [
+      "FR_014_CrossTeamIsolation",
+      "NoInformationLeakage"
+    ],
+    "FR-015": [
+      "AuditCompleteness",
+      "AttributionCorrectness"
+    ],
+    "FR-016": [
+      "AppendOnly"
+    ],
+    "FR-017": [
+      "FR_017_AuditVisibilityToMembers"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_AppendOnlyAuditEntries",
+      "asserts_violated": [
+        "AppendOnly"
+      ],
+      "rationale": "Removing this fact eliminates the constraint that audit entries are immutable and complete. The AppendOnly assertion requires at least one audit entry with all required fields; clearing the fact allows Alloy to generate an empty AuditEntry or one with unset fields, violating the assertion.",
+      "inject_violation": "fact MUTATE_AuditEntryModifiable { some ae: AuditEntry | ae not in AuditEntry }"
+    },
+    {
+      "fact_name": "F_AuditAttributionCorrect",
+      "asserts_violated": [
+        "AttributionCorrectness"
+      ],
+      "rationale": "Removing this fact allows audit entries to have an actor role that does not match any real team membership. The AttributionCorrectness assertion requires every audit entry's role to be a snapshot of a genuine team membership; without this fact, the role can be arbitrary.",
+      "inject_violation": "fact MUTATE_BadAttribution { some ae: AuditEntry, u: User, r: Role, t: Team | ae.actor = u and ae.actor_role = r and ae.task.team = t and not (some m: TeamMembership | m.user = u and m.team = t and m.role = r) }"
+    },
+    {
+      "fact_name": "F_AuditCompleteness",
+      "asserts_violated": [
+        "AuditCompleteness"
+      ],
+      "rationale": "Removing this fact allows tasks to exist without any audit entries. The AuditCompleteness assertion requires every task to have at least one audit entry; without the fact, Alloy can create tasks with no corresponding audit entries.",
+      "inject_violation": "fact MUTATE_MissingAuditEntry { some t: Task | no ae: AuditEntry | ae.task = t }"
+    },
+    {
+      "fact_name": "F_OwnershipExclusivity",
+      "asserts_violated": [
+        "OwnershipExclusivity"
+      ],
+      "rationale": "Removing this fact eliminates the constraint that every task has exactly one owner. The OwnershipExclusivity assertion checks this; without the fact, a task could have zero owners or multiple owners.",
+      "inject_violation": "fact MUTATE_NoOwner { some t: Task | no u: User | t.owner = u }"
+    },
+    {
+      "fact_name": "F_AuthenticationRequired",
+      "asserts_violated": [
+        "AuthRequiredEverywhere"
+      ],
+      "rationale": "Removing this fact allows tasks to be created without an authenticated owner and audit entries without an authenticated actor. The assertion requires one owner per task and one actor per audit entry; without the fact, these can be unset.",
+      "inject_violation": "fact MUTATE_UnauthenticatedActor { some t: Task | no u: User | t.owner = u }"
+    },
+    {
+      "fact_name": "F_OneRolePerTeamPerUser",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "OwnershipBasedAccess"
+      ],
+      "rationale": "Removing this fact allows a user to have multiple roles in the same team, creating ambiguity in permission evaluation. The permission predicates assume a unique role per (user, team) pair; duplicate memberships would break the determinism of access checks.",
+      "inject_violation": "fact MUTATE_DuplicateMembership { some disj m1, m2: TeamMembership | m1.user = m2.user and m1.team = m2.team and m1.role != m2.role }"
+    }
+  ]
+}

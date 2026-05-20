@@ -1,0 +1,21 @@
+{
+  "LeastPrivilege": "PASS",
+  "PermissionCompleteness": "PASS",
+  "AuthRequiredEverywhere": "PASS",
+  "AuditCompleteness": "PASS",
+  "AppendOnly": "PASS",
+  "AttributionCorrectness": "PASS",
+  "OwnershipExclusivity": "PASS",
+  "OwnershipBasedAccess": "PASS",
+  "NoInformationLeakage": "PASS",
+  "FR_001_AuthRequired": "PASS",
+  "FR_003_TeamContextRequired": "PASS",
+  "FR_004_CallerIsMember": "PASS",
+  "FR_007_OneRolePerUserPerTeam": "PASS",
+  "FR_009_NonOwnerNonAdminCannotMutate": "PASS",
+  "FR_011_CrossTeamIsolation": "PASS",
+  "FR_012_AssigneeSameTeam": "PASS",
+  "FR_015_AuditAttribution": "PASS",
+  "FR_016_AuditAppendOnly": "PASS",
+  "FR_017_AuditReadableByMembers": "PASS"
+}

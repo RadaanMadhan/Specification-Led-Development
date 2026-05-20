@@ -1,0 +1,125 @@
+{
+  "feature_id": "C-L3",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "PermissionGrounding",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "ValidationBeforeMutation"
+  ],
+  "feature_specific_predicates": [
+    "FR_002_SingleRole",
+    "FR_003_PatientRecordAssignment",
+    "FR_004_CareTeamGating",
+    "FR_010_NoteValidation",
+    "FR_012_AppendOnlyConstruction",
+    "FR_013_AuditForEveryAccess",
+    "FR_015_AuditImmutable",
+    "FR_019_ComplianceContentBlindness"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_SingleRole"
+    ],
+    "FR-003": [
+      "FR_003_PatientRecordAssignment"
+    ],
+    "FR-004": [
+      "LeastPrivilege",
+      "PermissionGrounding",
+      "FR_004_CareTeamGating"
+    ],
+    "FR-006": [
+      "OwnershipBasedAccess"
+    ],
+    "FR-007": [
+      "LeastPrivilege"
+    ],
+    "FR-008": [
+      "NoInformationLeakage"
+    ],
+    "FR-010": [
+      "ValidationBeforeMutation",
+      "FR_010_NoteValidation"
+    ],
+    "FR-012": [
+      "AppendOnly",
+      "FR_012_AppendOnlyConstruction"
+    ],
+    "FR-013": [
+      "AuditCompleteness",
+      "FR_013_AuditForEveryAccess"
+    ],
+    "FR-014": [
+      "AttributionCorrectness"
+    ],
+    "FR-015": [
+      "AppendOnly",
+      "FR_015_AuditImmutable"
+    ],
+    "FR-019": [
+      "FR_019_ComplianceContentBlindness"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_LeastPrivilege",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "PermissionGrounding"
+      ],
+      "rationale": "Removing this fact allows the model to construct a state where a clinician creates a note without being on the care team, or a patient reads another patient's record, or a compliance officer reads clinical content. This is exactly what LeastPrivilege and PermissionGrounding are meant to prevent.",
+      "inject_violation": "fact MUTATE_LeastPrivilegeViolation { some disj u: User, r: Record, cn: ClinicalNote | u.role = Clinician and cn.author = u and cn.record = r and no m: CareTeamMembership | m.clinician = u and m.record = r and m.is_active = true }"
+    },
+    {
+      "fact_name": "F_AuditCompleteness",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_013_AuditForEveryAccess"
+      ],
+      "rationale": "Removing this fact permits a clinical note to exist without a corresponding audit entry, violating the required one-to-one mapping between note creation and audit events.",
+      "inject_violation": "fact MUTATE_AuditCompletenessViolation { some cn: ClinicalNote | no ae: AuditEntry | ae.record = cn.record and ae.accessor = cn.author and ae.operation = OpAppend and ae.outcome = Permitted }"
+    },
+    {
+      "fact_name": "F_AppendOnly",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_012_AppendOnlyConstruction"
+      ],
+      "rationale": "Removing this fact allows duplicate note IDs or audit entries to exist, which violates the immutable append-only invariant that requires every note and entry to be uniquely identifiable.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some disj cn1, cn2: ClinicalNote | cn1.note_id = cn2.note_id }"
+    },
+    {
+      "fact_name": "F_AuthRequiredEverywhere",
+      "asserts_violated": [
+        "AuthRequiredEverywhere"
+      ],
+      "rationale": "Removing this fact allows audit entries or clinical notes to exist without an accessor or author, which violates the requirement that all operations be performed by authenticated users.",
+      "inject_violation": "fact MUTATE_AuthViolation { some ae: AuditEntry | no ae.accessor }"
+    },
+    {
+      "fact_name": "F_OwnershipBasedAccess",
+      "asserts_violated": [
+        "OwnershipBasedAccess"
+      ],
+      "rationale": "Removing this fact allows a patient to access (read/write) a record they do not own, violating the ownership-based access control that restricts patients to their own assigned record.",
+      "inject_violation": "fact MUTATE_OwnershipViolation { some ae: AuditEntry, u: User | u.role = Patient and ae.accessor = u and ae.outcome = Permitted and ae.record.id != u.assigned_record_id }"
+    },
+    {
+      "fact_name": "F_CareTeamGating",
+      "asserts_violated": [
+        "FR_004_CareTeamGating"
+      ],
+      "rationale": "Removing this fact allows a clinician author to create a clinical note without active care-team membership, violating the requirement that clinicians must be active members of the care team for a record before they can write notes to it.",
+      "inject_violation": "fact MUTATE_CareTeamViolation { some u: User, r: Record, cn: ClinicalNote | u.role = Clinician and cn.author = u and cn.record = r and no m: CareTeamMembership | m.clinician = u and m.record = r and m.is_active = true }"
+    }
+  ]
+}

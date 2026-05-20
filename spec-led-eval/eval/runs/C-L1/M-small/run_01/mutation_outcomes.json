@@ -1,0 +1,40 @@
+{
+  "F_PermissionMatrixDef": {
+    "targeted_asserts": {
+      "LeastPrivilege": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_CareTeamGating": {
+    "targeted_asserts": {
+      "OwnershipBasedAccess": "BIT",
+      "FR_006_CareTeamRequirement": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AuditCompleteness": {
+    "targeted_asserts": {
+      "AuditCompleteness": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_NoInfoLeakage": {
+    "targeted_asserts": {
+      "NoInformationLeakage": "VACUOUS_OVERCONSTRAINT",
+      "FR_007_DenialIndistinguishability": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_AttributionCorrect": {
+    "targeted_asserts": {
+      "AttributionCorrectness": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_AuditOfficerCannotAccessRecords": {
+    "targeted_asserts": {
+      "FR_011_AuditOfficerRecordAccess": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  }
+}

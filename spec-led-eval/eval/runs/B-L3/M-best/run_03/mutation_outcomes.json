@@ -1,0 +1,51 @@
+{
+  "F_AppendOnlyAuditEntries": {
+    "targeted_asserts": {
+      "AppendOnly": "BIT",
+      "FR_017_AuditImmutable": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_OwnerOnlySharedWith": {
+    "targeted_asserts": {
+      "LeastPrivilege": "BIT",
+      "FR_010_OwnerOnlyShareControl": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_SharedWithSameTeam": {
+    "targeted_asserts": {
+      "FR_012_NoCrossTeamSharing": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_GetTaskAccessRule": {
+    "targeted_asserts": {
+      "OwnershipBasedAccess": "BIT",
+      "FR_004_InTeamNoRelBlocked": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_DeleteAccessRule": {
+    "targeted_asserts": {
+      "FR_011_ShareeNoDelete": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_CrossTeamIsolation": {
+    "targeted_asserts": {
+      "NoInformationLeakage": "BIT",
+      "FR_006_CrossTeamBlocked": "BIT",
+      "FR_014_CrossTeamByteEquiv": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AuditPerMutation": {
+    "targeted_asserts": {
+      "AuditCompleteness": "BIT",
+      "FR_015_NoOrphanAudit": "BIT",
+      "FR_018_AuditAtomicity": "BIT"
+    },
+    "all_bit": true
+  }
+}

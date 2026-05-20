@@ -1,0 +1,311 @@
+{
+  "run_id": "A-L1/M-mid/run_03",
+  "cell": "A-L1",
+  "model": "M-mid",
+  "rep": 3,
+  "D1": 1.0,
+  "D2": 1.0,
+  "D3": 0.8333333333333334,
+  "D4": 1.0,
+  "aqs_partial": 0.9583333333333334,
+  "scored_at": "2026-05-20T04:29:03.896671+00:00",
+  "details": {
+    "D1": {
+      "n_assertions": 22,
+      "n_verdicts": 22
+    },
+    "D2": {
+      "patterns_applied": [
+        "LeastPrivilege",
+        "PermissionCompleteness",
+        "AuthRequiredEverywhere",
+        "AuditCompleteness",
+        "AppendOnly",
+        "AttributionCorrectness",
+        "OwnershipExclusivity",
+        "OwnershipBasedAccess",
+        "NoInformationLeakage",
+        "ConcurrencySafety"
+      ],
+      "per_pattern": {
+        "LeastPrivilege": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "PermissionCompleteness": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "AuthRequiredEverywhere": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "AuditCompleteness": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "AppendOnly": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "AttributionCorrectness": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "OwnershipExclusivity": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "OwnershipBasedAccess": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "NoInformationLeakage": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "ConcurrencySafety": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        }
+      }
+    },
+    "D3": {
+      "per_target": {
+        "F_AppendOnlyAuditEntries": {
+          "targeted_asserts": {
+            "AppendOnly": "BIT",
+            "FR_016_AuditAppendOnly": "BIT"
+          },
+          "score": 1.0
+        },
+        "F_OnePendingPerCustomer": {
+          "targeted_asserts": {
+            "FR_005_OnePendingPerCustomer": "BIT"
+          },
+          "score": 1.0
+        },
+        "F_PermissionMatrix": {
+          "targeted_asserts": {
+            "LeastPrivilege": "BIT",
+            "FR_015_StaffOnlyDecisionAudit": "VACUOUS_OVERCONSTRAINT"
+          },
+          "score": 0.5
+        },
+        "F_AtMostOneDecisionPerApplication": {
+          "targeted_asserts": {
+            "ConcurrencySafety": "BIT",
+            "FR_012_AtMostOneDecisionPerApp": "BIT",
+            "FR_011_DecisionImmutability": "BIT"
+          },
+          "score": 1.0
+        },
+        "F_OwnershipBasedAccess": {
+          "targeted_asserts": {
+            "OwnershipBasedAccess": "BIT",
+            "FR_013_CustomerIsolation": "BIT",
+            "NoInformationLeakage": "BIT"
+          },
+          "score": 1.0
+        },
+        "F_AuditAttribution": {
+          "targeted_asserts": {
+            "AttributionCorrectness": "BIT",
+            "FR_016_AuditAppendOnly": "VACUOUS_OVERCONSTRAINT"
+          },
+          "score": 0.5
+        }
+      },
+      "skipped": []
+    },
+    "D4": {
+      "per_fr": {
+        "FR-001": {
+          "covers": [
+            "FR_001_AuthRequired",
+            "AuthRequiredEverywhere"
+          ],
+          "verdicts": {
+            "FR_001_AuthRequired": "PASS",
+            "AuthRequiredEverywhere": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-002": {
+          "covers": [
+            "FR_002_ValidationBeforeMutation"
+          ],
+          "verdicts": {
+            "FR_002_ValidationBeforeMutation": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-003": {
+          "covers": [
+            "FR_002_ValidationBeforeMutation"
+          ],
+          "verdicts": {
+            "FR_002_ValidationBeforeMutation": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-004": {
+          "covers": [
+            "FR_004_UniqueReferenceAndOwner"
+          ],
+          "verdicts": {
+            "FR_004_UniqueReferenceAndOwner": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-005": {
+          "covers": [
+            "FR_005_OnePendingPerCustomer"
+          ],
+          "verdicts": {
+            "FR_005_OnePendingPerCustomer": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-006": {
+          "covers": [
+            "FR_004_UniqueReferenceAndOwner"
+          ],
+          "verdicts": {
+            "FR_004_UniqueReferenceAndOwner": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-007": {
+          "covers": [
+            "LeastPrivilege",
+            "FR_015_StaffOnlyDecisionAudit"
+          ],
+          "verdicts": {
+            "LeastPrivilege": "PASS",
+            "FR_015_StaffOnlyDecisionAudit": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-008": {
+          "covers": [
+            "LeastPrivilege"
+          ],
+          "verdicts": {
+            "LeastPrivilege": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-009": {
+          "covers": [
+            "FR_009_DecisionReasonRequired"
+          ],
+          "verdicts": {
+            "FR_009_DecisionReasonRequired": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-010": {
+          "covers": [
+            "FR_010_DecisionRecordsDecider",
+            "AttributionCorrectness"
+          ],
+          "verdicts": {
+            "FR_010_DecisionRecordsDecider": "PASS",
+            "AttributionCorrectness": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-011": {
+          "covers": [
+            "FR_011_DecisionImmutability",
+            "ConcurrencySafety"
+          ],
+          "verdicts": {
+            "FR_011_DecisionImmutability": "PASS",
+            "ConcurrencySafety": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-012": {
+          "covers": [
+            "FR_012_AtMostOneDecisionPerApp",
+            "ConcurrencySafety"
+          ],
+          "verdicts": {
+            "FR_012_AtMostOneDecisionPerApp": "PASS",
+            "ConcurrencySafety": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-013": {
+          "covers": [
+            "FR_013_CustomerIsolation",
+            "OwnershipBasedAccess",
+            "NoInformationLeakage"
+          ],
+          "verdicts": {
+            "FR_013_CustomerIsolation": "FAIL",
+            "OwnershipBasedAccess": "PASS",
+            "NoInformationLeakage": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-014": {
+          "covers": [
+            "AttributionCorrectness"
+          ],
+          "verdicts": {
+            "AttributionCorrectness": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-015": {
+          "covers": [
+            "FR_015_StaffOnlyDecisionAudit",
+            "LeastPrivilege"
+          ],
+          "verdicts": {
+            "FR_015_StaffOnlyDecisionAudit": "PASS",
+            "LeastPrivilege": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-016": {
+          "covers": [
+            "FR_016_AuditAppendOnly",
+            "AppendOnly",
+            "AuditCompleteness",
+            "AttributionCorrectness"
+          ],
+          "verdicts": {
+            "FR_016_AuditAppendOnly": "PASS",
+            "AppendOnly": "PASS",
+            "AuditCompleteness": "PASS",
+            "AttributionCorrectness": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-017": {
+          "covers": [
+            "FR_017_RetentionNoDelete"
+          ],
+          "verdicts": {
+            "FR_017_RetentionNoDelete": "PASS"
+          },
+          "score": 1.0
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "F_AppendOnlyAuditEntries": {
+    "targeted_asserts": {
+      "AppendOnly": "BIT",
+      "FR_016_AuditTrailComplete": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_OnePendingPerCustomer": {
+    "targeted_asserts": {
+      "FR_005_OnePendingPerCustomer": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_LeastPrivilege": {
+    "targeted_asserts": {
+      "LeastPrivilege": "BIT",
+      "FR_015_StaffOnlyDecideAndAudit": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_NoInformationLeakage": {
+    "targeted_asserts": {
+      "NoInformationLeakage": "BIT",
+      "FR_013_CustomerSeesOnlyOwnApps": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_AuditDecisionEvent": {
+    "targeted_asserts": {
+      "AuditCompleteness": "BIT",
+      "FR_016_AuditTrailComplete": "BIT",
+      "AttributionCorrectness": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_AtMostOneDecision": {
+    "targeted_asserts": {
+      "ConcurrencySafety": "VACUOUS_OVERCONSTRAINT",
+      "FR_012_ConcurrentDecisionRejected": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  }
+}

@@ -1,0 +1,163 @@
+{
+  "feature_id": "008-task-sharing",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "PrivilegeMonotonicity",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "ValidationBeforeMutation"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_UserSingleTeamRole",
+    "FR_004_InTeamNonRelDenied",
+    "FR_005_AdminCanActInTeam",
+    "FR_006_CrossTeamForbidden",
+    "FR_009_TaskTeamOwnerSingle",
+    "FR_010_OwnerOnlyShares",
+    "FR_011_ShareeCannotDelete",
+    "FR_012_SameTeamSharing",
+    "FR_013_ShareAuditEntries",
+    "FR_014_ByteEquivalent404",
+    "FR_015_AuditPerMutation",
+    "FR_016_AuditFieldsConsistent",
+    "FR_017_AuditAppendOnly",
+    "FR_019_AuditVisibility"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_UserSingleTeamRole"
+    ],
+    "FR-003": [
+      "LeastPrivilege",
+      "OwnershipBasedAccess"
+    ],
+    "FR-004": [
+      "FR_004_InTeamNonRelDenied",
+      "NoInformationLeakage"
+    ],
+    "FR-005": [
+      "FR_005_AdminCanActInTeam",
+      "PrivilegeMonotonicity"
+    ],
+    "FR-006": [
+      "FR_006_CrossTeamForbidden",
+      "NoInformationLeakage"
+    ],
+    "FR-007": [
+      "FR_009_TaskTeamOwnerSingle"
+    ],
+    "FR-008": [
+      "FR_009_TaskTeamOwnerSingle"
+    ],
+    "FR-009": [
+      "FR_009_TaskTeamOwnerSingle",
+      "OwnershipExclusivity"
+    ],
+    "FR-010": [
+      "FR_010_OwnerOnlyShares",
+      "OwnershipBasedAccess"
+    ],
+    "FR-011": [
+      "FR_011_ShareeCannotDelete"
+    ],
+    "FR-012": [
+      "FR_012_SameTeamSharing"
+    ],
+    "FR-013": [
+      "FR_013_ShareAuditEntries"
+    ],
+    "FR-014": [
+      "FR_014_ByteEquivalent404",
+      "NoInformationLeakage"
+    ],
+    "FR-015": [
+      "FR_015_AuditPerMutation",
+      "AuditCompleteness",
+      "ValidationBeforeMutation"
+    ],
+    "FR-016": [
+      "FR_016_AuditFieldsConsistent",
+      "AttributionCorrectness"
+    ],
+    "FR-017": [
+      "FR_017_AuditAppendOnly",
+      "AppendOnly"
+    ],
+    "FR-018": [
+      "ValidationBeforeMutation"
+    ],
+    "FR-019": [
+      "FR_019_AuditVisibility"
+    ],
+    "FR-020": [
+      "FR_017_AuditAppendOnly"
+    ],
+    "FR-021": []
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_AppendOnlyUniqueEvents",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_017_AuditAppendOnly"
+      ],
+      "rationale": "Clearing the unique-event constraint lets Alloy construct two distinct AuditEntries that describe the same logical event (same recording operation, same auditOp, same affectedSharee) \u2014 the structural signature of an audit log that has been mutated/duplicated, which is exactly what AppendOnly rejects.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some disj ae1, ae2: AuditEntry | ae1.recordedBy = ae2.recordedBy and ae1.auditOp = ae2.auditOp and ae1.affectedSharee = ae2.affectedSharee }"
+    },
+    {
+      "fact_name": "F_PermissionEnforced",
+      "asserts_violated": [
+        "LeastPrivilege"
+      ],
+      "rationale": "Removing the permission-enforcement fact lets the model invent a successful operation whose (relationship, kind) is not in the permission matrix \u2014 the canonical least-privilege violation (e.g., an in-team non-related member who successfully GETs a task).",
+      "inject_violation": "fact MUTATE_LeastPrivilegeViolation { some op: Operation | op.successful = BTrue and (op.effectiveRel -> op.kind) not in PermMatrix.Allowed }"
+    },
+    {
+      "fact_name": "F_ByteEquivalent404",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "FR_014_ByteEquivalent404"
+      ],
+      "rationale": "Clearing the 404-response rule frees a cross-team caller to receive a non-404 response, revealing existence of a task in another tenant \u2014 the multi-tenant information-leakage failure FR-014 is designed to block.",
+      "inject_violation": "fact MUTATE_LeakageViolation { some op: Operation | op.authenticated = BTrue and op.effectiveRel = RelOutsider and op.response != RespNotFound }"
+    },
+    {
+      "fact_name": "F_AuditPerSuccessfulMutation",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_015_AuditPerMutation"
+      ],
+      "rationale": "Removing the audit-per-mutation linkage lets a successful PATCH/DELETE exist with no AuditEntry \u2014 a direct violation of SC-007's 'no observable state change without an audit entry' invariant.",
+      "inject_violation": "fact MUTATE_AuditCompletenessViolation { some op: Operation | op.successful = BTrue and op.kind = DeleteTaskKind and (no ae: AuditEntry | ae.recordedBy = op) }"
+    },
+    {
+      "fact_name": "F_AuthRequiredEverywhere",
+      "asserts_violated": [
+        "AuthRequiredEverywhere",
+        "FR_001_AuthRequired"
+      ],
+      "rationale": "Clearing the auth gate lets an unauthenticated request flag itself as successful, which is the canonical FR-001 failure (handler runs before token introspection).",
+      "inject_violation": "fact MUTATE_AuthViolation { some op: Operation | op.authenticated = BFalse and op.successful = BTrue }"
+    },
+    {
+      "fact_name": "F_AuditAttribution",
+      "asserts_violated": [
+        "AttributionCorrectness",
+        "FR_016_AuditFieldsConsistent"
+      ],
+      "rationale": "Removing the attribution fact lets the actor recorded on an AuditEntry diverge from the caller of the recording Operation \u2014 misattribution, which FR-016 forbids.",
+      "inject_violation": "fact MUTATE_AttributionViolation { some ae: AuditEntry | ae.actor != ae.recordedBy.caller }"
+    }
+  ]
+}

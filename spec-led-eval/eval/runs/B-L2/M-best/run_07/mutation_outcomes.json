@@ -1,0 +1,45 @@
+{
+  "F_AuthRequired": {
+    "targeted_asserts": {
+      "AuthRequiredEverywhere": "BIT",
+      "FR_001_AuthRequired": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AppendOnly": {
+    "targeted_asserts": {
+      "AppendOnly": "BIT",
+      "FR_016_AuditAppendOnly": "BIT",
+      "FR_018_AuditRetention": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_PermissionEnforcement": {
+    "targeted_asserts": {
+      "LeastPrivilege": "BIT",
+      "OwnershipBasedAccess": "BIT",
+      "FR_009_NonOwnerMemberCannotEdit": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_CrossTeamIsolation": {
+    "targeted_asserts": {
+      "NoInformationLeakage": "VACUOUS_OVERCONSTRAINT",
+      "FR_011_NoCrossTeamRegardlessOfRole": "VACUOUS_OVERCONSTRAINT",
+      "FR_014_ByteEquivalentNotFound": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_OwnerImmutable": {
+    "targeted_asserts": {
+      "FR_006_OwnerImmutable": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AuditCompleteness": {
+    "targeted_asserts": {
+      "AuditCompleteness": "BIT"
+    },
+    "all_bit": true
+  }
+}

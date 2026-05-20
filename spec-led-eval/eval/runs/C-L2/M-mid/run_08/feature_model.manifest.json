@@ -1,0 +1,146 @@
+{
+  "feature_id": "C-L2",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "PermissionGrounding",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_004_CareTeamGating",
+    "FR_004_AdminNotOnCareTeam",
+    "FR_005_AdminCannotAccessClinicalContent",
+    "FR_006_DeniedLooksLikeNotFound",
+    "FR_009_NoteOnlyOnPermittedAddNote",
+    "FR_010_NoteAuthorIsClinical",
+    "FR_011_NotesAppendOnly",
+    "FR_012_AlwaysOnAudit",
+    "FR_013_AuditNoteIdConstraint",
+    "FR_013_AuditAttributionSnapshot",
+    "FR_014_AuditImmutable",
+    "FR_017_AdminOnlyAuditSearch"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-004": [
+      "FR_004_CareTeamGating",
+      "FR_004_AdminNotOnCareTeam",
+      "OwnershipBasedAccess"
+    ],
+    "FR-005": [
+      "FR_005_AdminCannotAccessClinicalContent",
+      "FR_017_AdminOnlyAuditSearch",
+      "LeastPrivilege"
+    ],
+    "FR-006": [
+      "FR_006_DeniedLooksLikeNotFound",
+      "NoInformationLeakage"
+    ],
+    "FR-009": [
+      "FR_009_NoteOnlyOnPermittedAddNote"
+    ],
+    "FR-010": [
+      "FR_010_NoteAuthorIsClinical"
+    ],
+    "FR-011": [
+      "FR_011_NotesAppendOnly",
+      "AppendOnly"
+    ],
+    "FR-012": [
+      "FR_012_AlwaysOnAudit",
+      "AuditCompleteness"
+    ],
+    "FR-013": [
+      "FR_013_AuditNoteIdConstraint",
+      "FR_013_AuditAttributionSnapshot",
+      "AttributionCorrectness"
+    ],
+    "FR-014": [
+      "FR_014_AuditImmutable",
+      "AppendOnly"
+    ],
+    "FR-015": [
+      "FR_009_NoteOnlyOnPermittedAddNote",
+      "AuditCompleteness"
+    ],
+    "FR-016": [
+      "FR_014_AuditImmutable"
+    ],
+    "FR-017": [
+      "FR_017_AdminOnlyAuditSearch",
+      "LeastPrivilege"
+    ],
+    "FR-018": [
+      "FR_005_AdminCannotAccessClinicalContent",
+      "NoInformationLeakage"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_CareTeamGating",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_004_CareTeamGating"
+      ],
+      "rationale": "Removing F_CareTeamGating allows Alloy to construct a world where a clinical user without any active care-team row has Permitted outcome on RecordsLookup or AddNote. The injection forces exactly that scenario, which OwnershipBasedAccess and FR_004_CareTeamGating are designed to catch.",
+      "inject_violation": "fact MUTATE_CareTeamGatingViolation { some op: Operation | (op.opKind = RecordsLookup or op.opKind = AddNote) and op.opOutcome = Permitted and op.opUser.userRole != HospitalAdministrator and (no ctm: CareTeamMembership | ctm.ctClinician = op.opUser and ctm.ctPatient = op.opPatient and ctm.ctStatus = Active) }"
+    },
+    {
+      "fact_name": "F_NoteLinkedToOperation",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_011_NotesAppendOnly"
+      ],
+      "rationale": "Removing F_NoteLinkedToOperation allows a ClinicalNote to exist that is not produced by any Operation, or to be claimed by two different Operations, violating the append-only and one-creator invariants. The injection forces two distinct operations to reference the same note, which AppendOnly and FR_011_NotesAppendOnly catch.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some disj op1, op2: Operation | op1.opNote = op2.opNote and some op1.opNote }"
+    },
+    {
+      "fact_name": "F_AuditEntriesAppendOnly",
+      "asserts_violated": [
+        "AppendOnly",
+        "AuditCompleteness",
+        "FR_012_AlwaysOnAudit",
+        "FR_014_AuditImmutable"
+      ],
+      "rationale": "Removing F_AuditEntriesAppendOnly allows two distinct Operations to share a single AuditEntry, violating both the one-audit-per-operation invariant and the immutability/append-only guarantee. The injection forces exactly that.",
+      "inject_violation": "fact MUTATE_AuditAppendOnlyViolation { some disj op1, op2: Operation | op1.opAudit = op2.opAudit }"
+    },
+    {
+      "fact_name": "F_LeastPrivilegeEnforced",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_005_AdminCannotAccessClinicalContent",
+        "FR_017_AdminOnlyAuditSearch"
+      ],
+      "rationale": "Removing F_LeastPrivilegeEnforced allows a HospitalAdministrator to have a Permitted RecordsLookup or AddNote outcome, which LeastPrivilege is designed to catch. The injection forces that forbidden cell to be present.",
+      "inject_violation": "fact MUTATE_LeastPrivilegeViolation { some op: Operation | op.opUser.userRole = HospitalAdministrator and op.opKind = RecordsLookup and op.opOutcome = Permitted }"
+    },
+    {
+      "fact_name": "F_NoteAuthorIsClinical",
+      "asserts_violated": [
+        "FR_010_NoteAuthorIsClinical",
+        "FR_005_AdminCannotAccessClinicalContent"
+      ],
+      "rationale": "Removing F_NoteAuthorIsClinical allows a ClinicalNote to have noteAuthorRole = HospitalAdministrator, which the data-model CHECK and FR-005 prohibit. The injection forces a note whose author role is the administrator role.",
+      "inject_violation": "fact MUTATE_NoteAuthorViolation { some n: ClinicalNote | n.noteAuthorRole = HospitalAdministrator }"
+    },
+    {
+      "fact_name": "F_AuditNoteIdConstraint",
+      "asserts_violated": [
+        "FR_013_AuditNoteIdConstraint",
+        "NoInformationLeakage"
+      ],
+      "rationale": "Removing F_AuditNoteIdConstraint allows an AuditEntry with aeOutcome=Denied to carry a non-null aeNoteRef, which would leak the existence of a note to a denied accessor and violate the structural CHECK in the data model. The injection forces a denied audit entry to carry a note reference.",
+      "inject_violation": "fact MUTATE_AuditNoteIdViolation { some ae: AuditEntry | ae.aeOutcome = Denied and ae.aeAccessType = AddNoteAccess and one ae.aeNoteRef }"
+    }
+  ]
+}

@@ -1,0 +1,143 @@
+{
+  "feature_id": "C-L2",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "PrivilegeMonotonicity",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_OneRolePerUser",
+    "FR_004_CareTeamGating",
+    "FR_005_AdminContentBlindness",
+    "FR_006_ByteEquivalentUnauthorised",
+    "FR_011_NotesAppendOnly",
+    "FR_012_AlwaysOnAudit",
+    "FR_013_NoteIdConsistency",
+    "FR_014_AuditImmutability",
+    "FR_017_AuditSearchAdminOnly",
+    "FR_018_AdminResponseContentBlind"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_OneRolePerUser"
+    ],
+    "FR-003": [],
+    "FR-004": [
+      "FR_004_CareTeamGating",
+      "OwnershipBasedAccess"
+    ],
+    "FR-005": [
+      "FR_005_AdminContentBlindness",
+      "LeastPrivilege"
+    ],
+    "FR-006": [
+      "FR_006_ByteEquivalentUnauthorised",
+      "NoInformationLeakage"
+    ],
+    "FR-007": [],
+    "FR-008": [],
+    "FR-009": [],
+    "FR-010": [],
+    "FR-011": [
+      "FR_011_NotesAppendOnly",
+      "AppendOnly"
+    ],
+    "FR-012": [
+      "FR_012_AlwaysOnAudit",
+      "AuditCompleteness"
+    ],
+    "FR-013": [
+      "FR_013_NoteIdConsistency",
+      "AttributionCorrectness"
+    ],
+    "FR-014": [
+      "FR_014_AuditImmutability",
+      "AppendOnly"
+    ],
+    "FR-015": [],
+    "FR-016": [],
+    "FR-017": [
+      "FR_017_AuditSearchAdminOnly",
+      "LeastPrivilege"
+    ],
+    "FR-018": [
+      "FR_018_AdminResponseContentBlind",
+      "LeastPrivilege"
+    ],
+    "FR-019": [],
+    "FR-020": []
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "PermissionCompleteness",
+        "PrivilegeMonotonicity",
+        "FR_017_AuditSearchAdminOnly",
+        "FR_018_AdminResponseContentBlind"
+      ],
+      "rationale": "Clearing the permission matrix fact allows Alloy to assign any Role->OperationKind combination as Allowed, immediately violating LeastPrivilege (e.g. HospitalAdministrator -> RecordLookup becomes permitted). The injection forces exactly the violating cell to exist.",
+      "inject_violation": "fact MUTATE_PermMatrixViolation { HospitalAdministrator -> RecordLookup in PermMatrix.Allowed }"
+    },
+    {
+      "fact_name": "F_CareTeamGating",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_004_CareTeamGating"
+      ],
+      "rationale": "Removing care-team gating allows a Permitted RecordLookup operation to exist for a clinician with no active CareTeamMembership, violating the core ownership-based access invariant. The injection forces such an operation into the model.",
+      "inject_violation": "fact MUTATE_CareTeamGatingViolation { some op: Operation | op.opKind = RecordLookup and op.opOutcome = Permitted and (no m: CareTeamMembership | m.ctmClinician = op.opCaller and m.ctmPatient = op.opPatient and m.ctmStatus = ActiveStatus) }"
+    },
+    {
+      "fact_name": "F_AppendOnlyNotes",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_011_NotesAppendOnly"
+      ],
+      "rationale": "Removing the append-only note fact allows a ClinicalNote to exist that is not produced by any permitted AddNote operation, or allows two permitted AddNote operations to produce the same note object, violating the one-note-per-operation invariant.",
+      "inject_violation": "fact MUTATE_AppendOnlyNotesViolation { some n: ClinicalNote | no op: Operation | op.opKind = AddNote and op.opOutcome = Permitted and op.opNote = n }"
+    },
+    {
+      "fact_name": "F_AppendOnlyAuditEntries",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_014_AuditImmutability",
+        "AuditCompleteness"
+      ],
+      "rationale": "Removing the audit-immutability fact allows an AuditEntry to exist that is not owned by any Operation, representing a spurious or orphaned audit record, which violates the bijection between Operations and AuditEntries that the AuditCompleteness assertion checks.",
+      "inject_violation": "fact MUTATE_AppendOnlyAuditViolation { some ae: AuditEntry | no op: Operation | op.opAudit = ae }"
+    },
+    {
+      "fact_name": "F_AuditCompleteness",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_012_AlwaysOnAudit"
+      ],
+      "rationale": "Clearing the audit-completeness fact allows two distinct Operations to share one AuditEntry, or an Operation to have no AuditEntry, directly contradicting the always-on one-to-one audit requirement from FR-012.",
+      "inject_violation": "fact MUTATE_AuditCompletenesViolation { some disj op1, op2: Operation | op1.opAudit = op2.opAudit }"
+    },
+    {
+      "fact_name": "F_AdminNotClinical",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "FR_005_AdminContentBlindness",
+        "FR_018_AdminResponseContentBlind",
+        "LeastPrivilege"
+      ],
+      "rationale": "Removing the administrator-cannot-access-clinical-content fact allows a HospitalAdministrator to have a Permitted RecordLookup operation, meaning the administrator could observe clinical content, violating the content-blindness invariants.",
+      "inject_violation": "fact MUTATE_AdminNotClinicalViolation { some op: Operation | op.opCaller.userRole = HospitalAdministrator and op.opKind = RecordLookup and op.opOutcome = Permitted }"
+    }
+  ]
+}

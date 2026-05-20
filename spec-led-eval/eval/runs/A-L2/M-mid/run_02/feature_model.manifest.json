@@ -1,0 +1,181 @@
+{
+  "feature_id": "A-L2",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "PermissionGrounding",
+    "AppendOnly",
+    "AuditCompleteness",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_CustomerPermissions",
+    "FR_003_LoanOfficerPermissions",
+    "FR_004_ComplianceReviewerReadOnly",
+    "FR_005_CustomerIdentityFromAuth",
+    "FR_008_OneInFlightPerCustomer",
+    "FR_009_SubmissionAuditEntry",
+    "FR_009_ValidStatusValues",
+    "FR_011_ClaimSetsOfficerAndAudit",
+    "FR_011_SubmittedHasNoOfficer",
+    "FR_012_ExclusiveClaim",
+    "FR_013_AssignedOfficerDecides",
+    "FR_015_AtomicDecision",
+    "FR_016_DecidedImmutability",
+    "FR_019_ExactlyOneAuditPerTransition",
+    "FR_020_CustomerIsolation",
+    "FR_021_OfficerIdentityHiddenFromCustomer",
+    "FR_022_RetentionNoOrphans",
+    "FR_023_ComplianceWriteDenied"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired"
+    ],
+    "FR-002": [
+      "FR_002_CustomerPermissions",
+      "LeastPrivilege"
+    ],
+    "FR-003": [
+      "FR_003_LoanOfficerPermissions",
+      "LeastPrivilege"
+    ],
+    "FR-004": [
+      "FR_004_ComplianceReviewerReadOnly",
+      "FR_023_ComplianceWriteDenied",
+      "LeastPrivilege"
+    ],
+    "FR-005": [
+      "FR_005_CustomerIdentityFromAuth",
+      "OwnershipExclusivity"
+    ],
+    "FR-006": [
+      "FR_005_CustomerIdentityFromAuth"
+    ],
+    "FR-007": [
+      "FR_005_CustomerIdentityFromAuth"
+    ],
+    "FR-008": [
+      "FR_008_OneInFlightPerCustomer"
+    ],
+    "FR-009": [
+      "FR_009_SubmissionAuditEntry",
+      "FR_009_ValidStatusValues",
+      "AuditCompleteness"
+    ],
+    "FR-010": [
+      "FR_003_LoanOfficerPermissions"
+    ],
+    "FR-011": [
+      "FR_011_ClaimSetsOfficerAndAudit",
+      "FR_011_SubmittedHasNoOfficer",
+      "AuditCompleteness"
+    ],
+    "FR-012": [
+      "FR_012_ExclusiveClaim"
+    ],
+    "FR-013": [
+      "FR_013_AssignedOfficerDecides"
+    ],
+    "FR-014": [
+      "FR_013_AssignedOfficerDecides"
+    ],
+    "FR-015": [
+      "FR_015_AtomicDecision",
+      "AttributionCorrectness"
+    ],
+    "FR-016": [
+      "FR_016_DecidedImmutability",
+      "FR_015_AtomicDecision"
+    ],
+    "FR-017": [
+      "AuditCompleteness",
+      "AttributionCorrectness",
+      "FR_009_SubmissionAuditEntry"
+    ],
+    "FR-018": [
+      "AppendOnly"
+    ],
+    "FR-019": [
+      "FR_019_ExactlyOneAuditPerTransition",
+      "AuditCompleteness"
+    ],
+    "FR-020": [
+      "FR_020_CustomerIsolation",
+      "OwnershipBasedAccess",
+      "NoInformationLeakage"
+    ],
+    "FR-021": [
+      "FR_021_OfficerIdentityHiddenFromCustomer"
+    ],
+    "FR-022": [
+      "FR_022_RetentionNoOrphans"
+    ],
+    "FR-023": [
+      "FR_023_ComplianceWriteDenied",
+      "FR_004_ComplianceReviewerReadOnly"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_002_CustomerPermissions",
+        "FR_003_LoanOfficerPermissions",
+        "FR_004_ComplianceReviewerReadOnly",
+        "FR_023_ComplianceWriteDenied",
+        "PermissionGrounding"
+      ],
+      "rationale": "Clearing F_PermissionMatrix leaves PermMatrix.Allowed unconstrained; the injection forces a forbidden cell (ComplianceReviewer \u2192 ClaimApplication) into the Allowed set, which LeastPrivilege and FR_004_ComplianceReviewerReadOnly must detect.",
+      "inject_violation": "fact MUTATE_PermissionMatrixViolation { ComplianceReviewer -> ClaimApplication in PermMatrix.Allowed }"
+    },
+    {
+      "fact_name": "F_DecidedByAssignedOfficer",
+      "asserts_violated": [
+        "FR_013_AssignedOfficerDecides"
+      ],
+      "rationale": "Clearing this fact removes the constraint that the deciding officer must be the assigned officer. The injection forces a Decision whose decidedBy differs from the application's assignedOfficer, directly violating FR_013_AssignedOfficerDecides.",
+      "inject_violation": "fact MUTATE_NonAssignedOfficerDecides { some d: Decision | some u: User | u.role = LoanOfficer and u != d.application.assignedOfficer and d.decidedBy = u }"
+    },
+    {
+      "fact_name": "F_AtMostOneInFlightPerCustomer",
+      "asserts_violated": [
+        "FR_008_OneInFlightPerCustomer"
+      ],
+      "rationale": "Clearing this fact removes the in-flight uniqueness constraint. The injection forces a single customer to own two Submitted applications simultaneously, violating FR-008.",
+      "inject_violation": "fact MUTATE_TwoInFlightSameCustomer { some disj a1, a2: LoanApplication | a1.customer = a2.customer and a1.status = Submitted and a2.status = Submitted }"
+    },
+    {
+      "fact_name": "F_ExactlyOneInitialAuditEntry",
+      "asserts_violated": [
+        "FR_009_SubmissionAuditEntry",
+        "AuditCompleteness",
+        "FR_019_ExactlyOneAuditPerTransition"
+      ],
+      "rationale": "Clearing this fact removes the requirement that every application has exactly one submission audit entry. The injection forces an application to have no initial audit entry, violating AuditCompleteness and FR_009_SubmissionAuditEntry.",
+      "inject_violation": "fact MUTATE_MissingInitialAuditEntry { some a: LoanApplication | no e: ApplicationEvent | e.application = a and no e.previousStatus }"
+    },
+    {
+      "fact_name": "F_DecisionExistsIffDecided",
+      "asserts_violated": [
+        "FR_015_AtomicDecision"
+      ],
+      "rationale": "Clearing this fact removes the coupling between decision records and application status. The injection forces an Approved application to have no associated Decision, violating the atomicity invariant in FR_015_AtomicDecision.",
+      "inject_violation": "fact MUTATE_DecidedWithoutDecisionRecord { some a: LoanApplication | a.status = Approved and no d: Decision | d.application = a }"
+    },
+    {
+      "fact_name": "F_AuditValidTransitions",
+      "asserts_violated": [
+        "FR_016_DecidedImmutability",
+        "AppendOnly"
+      ],
+      "rationale": "Clearing this fact removes the restriction on which (previous, new) status pairs are valid in audit events. The injection forces an audit entry with previousStatus=Approved (a terminal state), violating FR_016_DecidedImmutability's assertion that no event departs from a decided status.",
+      "inject_violation": "fact MUTATE_TransitionFromApproved { some e: ApplicationEvent | e.previousStatus = Approved and e.newStatus = Rejected }"
+    }
+  ]
+}

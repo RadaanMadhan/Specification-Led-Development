@@ -1,0 +1,128 @@
+{
+  "feature_id": "C-L3",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "PermissionGrounding",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage"
+  ],
+  "feature_specific_predicates": [
+    "FR_002_SingleRoleAndPatientRecordPairing",
+    "FR_004_CareTeamMembershipGating",
+    "FR_006_PatientSelfAccessOnly",
+    "FR_007_ComplianceOfficerContentBlindness",
+    "FR_010_ClinicalNoteValidation",
+    "FR_012_NotesAppendOnly",
+    "FR_013_AuditForEveryAccess",
+    "FR_014_AuditEntryFields",
+    "FR_015_AuditImmutable",
+    "FR_018_ComplianceAccessLog"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_SingleRoleAndPatientRecordPairing"
+    ],
+    "FR-004": [
+      "FR_004_CareTeamMembershipGating",
+      "OwnershipBasedAccess"
+    ],
+    "FR-006": [
+      "FR_006_PatientSelfAccessOnly",
+      "OwnershipBasedAccess"
+    ],
+    "FR-007": [
+      "FR_007_ComplianceOfficerContentBlindness",
+      "LeastPrivilege"
+    ],
+    "FR-008": [
+      "NoInformationLeakage"
+    ],
+    "FR-010": [
+      "FR_010_ClinicalNoteValidation"
+    ],
+    "FR-012": [
+      "FR_012_NotesAppendOnly",
+      "AppendOnlyNotes"
+    ],
+    "FR-013": [
+      "FR_013_AuditForEveryAccess",
+      "AuditCompleteness"
+    ],
+    "FR-014": [
+      "FR_014_AuditEntryFields"
+    ],
+    "FR-015": [
+      "FR_015_AuditImmutable",
+      "AppendOnlyAuditEntries"
+    ],
+    "FR-018": [
+      "FR_018_ComplianceAccessLog"
+    ],
+    "FR-019": [
+      "FR_007_ComplianceOfficerContentBlindness"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_UserRoleConstraints",
+      "asserts_violated": [
+        "FR_002_SingleRoleAndPatientRecordPairing"
+      ],
+      "rationale": "Removing this fact allows patients without assigned records and non-patients with assigned records, violating FR-002's single-role and patient-record-pairing invariant.",
+      "inject_violation": "fact MUTATE_BadUserRole { some u: User | u.role = Patient and no u.assigned_record }"
+    },
+    {
+      "fact_name": "F_CareTeamMembership",
+      "asserts_violated": [
+        "FR_004_CareTeamMembershipGating",
+        "OwnershipBasedAccess"
+      ],
+      "rationale": "Removing this fact allows non-clinicians or inactive memberships to exist in CareTeamMembership, violating FR-004's requirement that only active clinician-record pairs grant access.",
+      "inject_violation": "fact MUTATE_InvalidCareTeam { some ctm: CareTeamMembership | ctm.clinician.role != Clinician or ctm.is_active != 1 }"
+    },
+    {
+      "fact_name": "F_AuditCompleteness",
+      "asserts_violated": [
+        "FR_013_AuditForEveryAccess",
+        "AuditCompleteness"
+      ],
+      "rationale": "Removing this fact allows clinical notes to exist without corresponding audit entries, violating FR-013's audit completeness requirement.",
+      "inject_violation": "fact MUTATE_NoAuditForNote { some cn: ClinicalNote | no ae: AuditEntry | ae.note_id = cn and ae.operation = Append and ae.outcome = Permitted }"
+    },
+    {
+      "fact_name": "F_AuditEntryStructure",
+      "asserts_violated": [
+        "FR_014_AuditEntryFields"
+      ],
+      "rationale": "Removing this fact allows malformed audit entries (e.g., note_id present on read operations, record absent for non-system-wide operations), violating FR-014's structural requirements.",
+      "inject_violation": "fact MUTATE_MalformedAudit { some ae: AuditEntry | (ae.operation = Read and one ae.note_id) or (ae.operation = Append and ae.outcome = Permitted and no ae.note_id) }"
+    },
+    {
+      "fact_name": "F_AppendOnlyAuditEntries",
+      "asserts_violated": [
+        "FR_015_AuditImmutable",
+        "AppendOnlyAuditEntries"
+      ],
+      "rationale": "Removing this fact allows duplicate audit entries (same accessor, operation, record), violating FR-015's immutability and the audit log's append-only semantics.",
+      "inject_violation": "fact MUTATE_DuplicateAudit { some disj ae1, ae2: AuditEntry | ae1.accessor = ae2.accessor and ae1.operation = ae2.operation and ae1.record = ae2.record }"
+    },
+    {
+      "fact_name": "F_ClinicalNoteStructure",
+      "asserts_violated": [
+        "FR_010_ClinicalNoteValidation",
+        "FR_012_NotesAppendOnly"
+      ],
+      "rationale": "Removing this fact allows non-clinicians to author notes, violating FR-010's validation requirement that only clinicians author clinical notes.",
+      "inject_violation": "fact MUTATE_PatientAuthoredNote { some cn: ClinicalNote | cn.author.role != Clinician }"
+    }
+  ]
+}

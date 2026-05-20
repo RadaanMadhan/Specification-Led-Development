@@ -1,0 +1,313 @@
+{
+  "run_id": "B-L3/M-small/run_03",
+  "cell": "B-L3",
+  "model": "M-small",
+  "rep": 3,
+  "D1": 1.0,
+  "D2": 1.0,
+  "D3": 0.6,
+  "D4": 0.6666666666666666,
+  "aqs_partial": 0.8166666666666667,
+  "scored_at": "2026-05-20T04:29:04.670990+00:00",
+  "details": {
+    "D1": {
+      "n_assertions": 25,
+      "n_verdicts": 25
+    },
+    "D2": {
+      "patterns_applied": [
+        "OwnershipExclusivity",
+        "OwnershipBasedAccess",
+        "NoInformationLeakage",
+        "AppendOnly",
+        "AuditCompleteness",
+        "AttributionCorrectness",
+        "AuthRequiredEverywhere",
+        "LeastPrivilege",
+        "PrivilegeMonotonicity",
+        "PermissionCompleteness"
+      ],
+      "per_pattern": {
+        "OwnershipExclusivity": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "OwnershipBasedAccess": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "NoInformationLeakage": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "AppendOnly": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "AuditCompleteness": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "AttributionCorrectness": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "AuthRequiredEverywhere": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "LeastPrivilege": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "PrivilegeMonotonicity": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "PermissionCompleteness": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        }
+      }
+    },
+    "D3": {
+      "per_target": {
+        "F_AuditCompleteness": {
+          "targeted_asserts": {
+            "AuditCompleteness": "BIT",
+            "FR_015_OneAuditPerEvent": "BIT"
+          },
+          "score": 1.0
+        },
+        "F_CrossTeamIsolation": {
+          "targeted_asserts": {
+            "NoInformationLeakage": "VACUOUS_OVERCONSTRAINT",
+            "FR_014_ByteEquivalent404": "VACUOUS_OVERCONSTRAINT",
+            "FR_006_NoTeamCrossAccess": "VACUOUS_OVERCONSTRAINT"
+          },
+          "score": 0.5
+        },
+        "F_OwnershipBasedAccess": {
+          "targeted_asserts": {
+            "OwnershipBasedAccess": "BIT",
+            "FR_011_ShareePermissions": "BIT",
+            "FR_012_SameTeamSharing": "VACUOUS_OVERCONSTRAINT"
+          },
+          "score": 0.5
+        },
+        "F_OwnershipExclusivity": {
+          "targeted_asserts": {
+            "OwnershipExclusivity": "VACUOUS_OVERCONSTRAINT",
+            "FR_009_ImmutableOwnerTeam": "VACUOUS_OVERCONSTRAINT"
+          },
+          "score": 0.5
+        },
+        "F_AppendOnlyAuditEntries": {
+          "targeted_asserts": {
+            "AppendOnly": "VACUOUS_OVERCONSTRAINT",
+            "FR_017_AuditImmutable": "VACUOUS_OVERCONSTRAINT"
+          },
+          "score": 0.5
+        }
+      },
+      "skipped": []
+    },
+    "D4": {
+      "per_fr": {
+        "FR-001": {
+          "covers": [
+            "FR_001_AuthRequired",
+            "AuthRequiredEverywhere"
+          ],
+          "verdicts": {
+            "FR_001_AuthRequired": "PASS",
+            "AuthRequiredEverywhere": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-002": {
+          "covers": [
+            "FR_002_UserIdentityFromToken"
+          ],
+          "verdicts": {
+            "FR_002_UserIdentityFromToken": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-003": {
+          "covers": [
+            "FR_003_MemberPermissions"
+          ],
+          "verdicts": {
+            "FR_003_MemberPermissions": "FAIL"
+          },
+          "score": 0.5
+        },
+        "FR-004": {
+          "covers": [
+            "FR_004_MemberViewRestricted"
+          ],
+          "verdicts": {
+            "FR_004_MemberViewRestricted": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-005": {
+          "covers": [
+            "FR_005_AdminFullAccess"
+          ],
+          "verdicts": {
+            "FR_005_AdminFullAccess": "FAIL"
+          },
+          "score": 0.5
+        },
+        "FR-006": {
+          "covers": [
+            "FR_006_NoTeamCrossAccess",
+            "NoInformationLeakage"
+          ],
+          "verdicts": {
+            "FR_006_NoTeamCrossAccess": "PASS",
+            "NoInformationLeakage": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-007": {
+          "covers": [],
+          "verdicts": {},
+          "score": 0.0
+        },
+        "FR-008": {
+          "covers": [],
+          "verdicts": {},
+          "score": 0.0
+        },
+        "FR-009": {
+          "covers": [
+            "FR_009_ImmutableOwnerTeam",
+            "OwnershipExclusivity"
+          ],
+          "verdicts": {
+            "FR_009_ImmutableOwnerTeam": "PASS",
+            "OwnershipExclusivity": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-010": {
+          "covers": [
+            "FR_010_OwnerOnlyChangeSharedWith",
+            "OwnershipBasedAccess"
+          ],
+          "verdicts": {
+            "FR_010_OwnerOnlyChangeSharedWith": "PASS",
+            "OwnershipBasedAccess": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-011": {
+          "covers": [
+            "FR_011_ShareePermissions"
+          ],
+          "verdicts": {
+            "FR_011_ShareePermissions": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-012": {
+          "covers": [
+            "FR_012_SameTeamSharing",
+            "OwnershipBasedAccess"
+          ],
+          "verdicts": {
+            "FR_012_SameTeamSharing": "PASS",
+            "OwnershipBasedAccess": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-013": {
+          "covers": [],
+          "verdicts": {},
+          "score": 0.0
+        },
+        "FR-014": {
+          "covers": [
+            "FR_014_ByteEquivalent404",
+            "NoInformationLeakage"
+          ],
+          "verdicts": {
+            "FR_014_ByteEquivalent404": "PASS",
+            "NoInformationLeakage": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-015": {
+          "covers": [
+            "FR_015_OneAuditPerEvent",
+            "AuditCompleteness"
+          ],
+          "verdicts": {
+            "FR_015_OneAuditPerEvent": "FAIL",
+            "AuditCompleteness": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-016": {
+          "covers": [
+            "FR_016_AuditFieldsComplete",
+            "AttributionCorrectness"
+          ],
+          "verdicts": {
+            "FR_016_AuditFieldsComplete": "PASS",
+            "AttributionCorrectness": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-017": {
+          "covers": [
+            "FR_017_AuditImmutable",
+            "AppendOnly"
+          ],
+          "verdicts": {
+            "FR_017_AuditImmutable": "PASS",
+            "AppendOnly": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-018": {
+          "covers": [],
+          "verdicts": {},
+          "score": 0.0
+        },
+        "FR-019": {
+          "covers": [
+            "FR_019_AuditReadable"
+          ],
+          "verdicts": {
+            "FR_019_AuditReadable": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-020": {
+          "covers": [],
+          "verdicts": {},
+          "score": 0.0
+        },
+        "FR-021": {
+          "covers": [],
+          "verdicts": {},
+          "score": 0.0
+        }
+      }
+    }
+  }
+}

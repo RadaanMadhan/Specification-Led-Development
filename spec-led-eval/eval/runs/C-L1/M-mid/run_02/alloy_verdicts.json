@@ -1,0 +1,22 @@
+{
+  "LeastPrivilege": "PASS",
+  "PermissionCompleteness": "PASS",
+  "AuthRequiredEverywhere": "PASS",
+  "AuditCompleteness": "PASS",
+  "AppendOnly": "PASS",
+  "AttributionCorrectness": "PASS",
+  "OwnershipBasedAccess": "PASS",
+  "NoInformationLeakage": "PASS",
+  "FR_001_AuthRequired": "PASS",
+  "FR_002_RoleResolution": "PASS",
+  "FR_005_ReadOnly": "PASS",
+  "FR_006_CareTeamGating": "PASS",
+  "FR_007_ByteEquivalentResponse": "PASS",
+  "FR_008_AlwaysOnAudit": "PASS",
+  "FR_009_AuditFields": "PASS",
+  "FR_010_AuditImmutable": "PASS",
+  "FR_011_IGOnlyAuditAccess": "PASS",
+  "FR_013_NoRecordWithoutAudit": "PASS",
+  "FR_014_AllergiesFirstInView": "PASS",
+  "FR_015_PatientIdDoBFirst": "PASS"
+}

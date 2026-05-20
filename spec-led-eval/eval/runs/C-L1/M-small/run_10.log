@@ -1,0 +1,144 @@
+$ /Users/leonhausmann/opt/anaconda3/bin/python3 -m speceval.cli verify-design --no-cache --model M-small --java-bin /Users/leonhausmann/opt/anaconda3/lib/python3.9/site-packages/jdk4py/java-runtime/bin/java /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/eval/specs/C-L1
+
+[parse]   feature 'C-L1', 15 FRs, 2 user stories
+[lift]    calling LLM (anthropic: tier=M-small, model=claude-haiku-4-5)...
+[lift]    fresh lift (sha=bd803dd85990)
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/C-L1/feature_model.als
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/C-L1/cost_log.json
+[alloy]   running alloy.jar on feature_model.als...
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/C-L1/alloy_verdicts.json
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/C-L1/mutation_outcomes.json
+
+==============================================================================
+  Design Compliance Report  (Phase 3 — feature_model.als)
+  feature       : C-L1
+  spec source   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/eval/specs/C-L1
+  alloy model   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/C-L1/feature_model.als
+  patterns      : LeastPrivilege, AuthRequiredEverywhere, AuditCompleteness, AppendOnly, AttributionCorrectness, NoInformationLeakage
+  fr count      : 15 declared in spec.md
+  assertions    : 15 total (8/15 PASS via Alloy)
+==============================================================================
+
+  Compliance matrix
+  ----------------------------------------------------------------------------
+  Assertion                            Verdict   Anchor
+  -------------------------------------------------------------------------
+  LeastPrivilege                       FAIL      PATTERN LeastPrivilege: contracts/http-api.md permission matrix; spec.md FR-006, FR-011
+  AuthRequiredEverywhere               PASS      PATTERN AuthRequiredEverywhere: spec.md FR-001, FR-002; contracts/http-api.md authentication section
+  AuditCompleteness                    FAIL      PATTERN AuditCompleteness: spec.md FR-008, FR-009; data-model.md audit_entries
+  AppendOnly                           PASS      PATTERN AppendOnly: spec.md FR-010, FR-012; contracts/http-api.md no UPDATE/DELETE
+  AttributionCorrectness               FAIL      PATTERN AttributionCorrectness: spec.md FR-009 snapshot semantics
+  NoInformationLeakage                 PASS      PATTERN NoInformationLeakage: spec.md FR-007; contracts/http-api.md byte-equivalent response
+  FR_001_AuthenticationRequired        PASS      FEATURE-SPECIFIC: spec.md FR-001 authentication required
+  FR_002_ClinicianIdentityResolution   PASS      FEATURE-SPECIFIC: spec.md FR-002 clinician identity resolution
+  FR_005_ReadOnlyAccess                FAIL      FEATURE-SPECIFIC: spec.md FR-005 read-only access
+  FR_006_CareTeamMembershipGating      FAIL      FEATURE-SPECIFIC: spec.md FR-006 care-team membership gating
+  FR_007_ByteEquivalentDeniedNotFound  PASS      FEATURE-SPECIFIC: spec.md FR-007 byte-equivalent denied/not-found responses
+  FR_008_AlwaysOnAudit                 FAIL      FEATURE-SPECIFIC: spec.md FR-008 always-on audit
+  FR_009_AuditEntryShape               PASS      FEATURE-SPECIFIC: spec.md FR-009 audit entry shape and contents
+  FR_010_AuditImmutability             PASS      FEATURE-SPECIFIC: spec.md FR-010 audit immutability
+  FR_011_AuditReadableByIGOnly         FAIL      FEATURE-SPECIFIC: spec.md FR-011 audit readable by IG only
+
+  Counterexamples (Alloy SAT)
+  ----------------------------------------------------------------------------
+  LeastPrivilege  [PATTERN LeastPrivilege: contracts/http-api.md permission matrix; spec.md FR-006, FR-011]
+    Alloy: 00. check LeastPrivilege           0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  AuditCompleteness  [PATTERN AuditCompleteness: spec.md FR-008, FR-009; data-model.md audit_entries]
+    Alloy: 02. check AuditCompleteness        0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  AttributionCorrectness  [PATTERN AttributionCorrectness: spec.md FR-009 snapshot semantics]
+    Alloy: 04. check AttributionCorrectness     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR_005_ReadOnlyAccess  [FEATURE-SPECIFIC: spec.md FR-005 read-only access]
+    Alloy: 08. check FR_005_ReadOnlyAccess     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR_006_CareTeamMembershipGating  [FEATURE-SPECIFIC: spec.md FR-006 care-team membership gating]
+    Alloy: 09. check FR_006_CareTeamMembershipGating     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR_008_AlwaysOnAudit  [FEATURE-SPECIFIC: spec.md FR-008 always-on audit]
+    Alloy: 11. check FR_008_AlwaysOnAudit     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR_011_AuditReadableByIGOnly  [FEATURE-SPECIFIC: spec.md FR-011 audit readable by IG only]
+    Alloy: 14. check FR_011_AuditReadableByIGOnly     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR coverage
+  ----------------------------------------------------------------------------
+  FR-001  →  FR_001_AuthenticationRequired=PASS, AuthRequiredEverywhere=PASS
+  FR-002  →  FR_002_ClinicianIdentityResolution=PASS
+  FR-003  [uncovered]
+  FR-004  [uncovered]
+  FR-005  →  FR_005_ReadOnlyAccess=FAIL
+  FR-006  →  FR_006_CareTeamMembershipGating=FAIL, LeastPrivilege=FAIL
+  FR-007  →  FR_007_ByteEquivalentDeniedNotFound=PASS, NoInformationLeakage=PASS
+  FR-008  →  FR_008_AlwaysOnAudit=FAIL, AuditCompleteness=FAIL
+  FR-009  →  FR_009_AuditEntryShape=PASS
+  FR-010  →  FR_010_AuditImmutability=PASS, AppendOnly=PASS
+  FR-011  →  FR_011_AuditReadableByIGOnly=FAIL, LeastPrivilege=FAIL
+  FR-012  [uncovered]
+  FR-013  [uncovered]
+  FR-014  [uncovered]
+  FR-015  [uncovered]
+
+  WARNING: 6 FR(s) without any matching assertion: FR-003, FR-004, FR-012, FR-013, FR-014, FR-015
+
+==============================================================================
+  Mutation tests  (assertion-strength validation)
+==============================================================================
+
+  Strategy: replace each named fact's body with `{}` (no constraint),
+  then re-run Alloy. Each listed assertion should now FAIL on the
+  mutated model. If it still PASSes, the assertion is vacuous and
+  must be strengthened.
+
+  - MUTATE F_CareTeamMembershipGates  → runs/C-L1/mutated_F_CareTeamMembershipGates.als
+    rationale: Removing this fact allows the model to invent access attempts where a clinician who is NOT on the care team can still have a Permitted outcome. This directly violates the care-team-membership gating rule, which is the core authorization invariant.
+    expected to FAIL: FR_006_CareTeamMembershipGating, LeastPrivilege
+      - FR_006_CareTeamMembershipGating: FAIL (expected)
+      - LeastPrivilege: FAIL (expected)
+
+  - MUTATE F_AuditEntriesMatchAttempts  → runs/C-L1/mutated_F_AuditEntriesMatchAttempts.als
+    rationale: Removing this fact breaks the one-to-one correspondence between access attempts and audit entries, and allows audit entries to be disconnected from the attempts they record. This violates both the completeness and attribution correctness invariants.
+    expected to FAIL: AuditCompleteness, AttributionCorrectness
+      - AuditCompleteness: FAIL (expected)
+      - AttributionCorrectness: FAIL (expected)
+
+  - MUTATE F_AuthorisationBasisConsistency  → runs/C-L1/mutated_F_AuthorisationBasisConsistency.als
+    rationale: Removing this fact allows audit entries to have inconsistent authorisation basis (e.g., Permitted outcome with NotCareTeamMember basis, which is logically impossible). This violates the audit entry shape constraint.
+    expected to FAIL: FR_009_AuditEntryShape, FR_008_AlwaysOnAudit
+      - FR_009_AuditEntryShape: PASS (vacuous?)
+      - FR_008_AlwaysOnAudit: FAIL (expected)
+
+  - MUTATE F_NonEmptyUniverse  → runs/C-L1/mutated_F_NonEmptyUniverse.als
+    rationale: When the universe is empty, universally quantified predicates like 'all audit: AuditEntry | ...' become vacuously true. Removing this fact causes assertions to pass trivially without constraining anything meaningful. This is a test of predicate non-vacuity.
+    expected to FAIL: AppendOnly, AuditCompleteness, AuthRequiredEverywhere
+      - AppendOnly: PASS (vacuous?)
+      - AuditCompleteness: FAIL (expected)
+      - AuthRequiredEverywhere: PASS (vacuous?)
+
+  - MUTATE LeastPrivilege: ERROR — mutation target fact `LeastPrivilege` not found in feature_model.als
+
+  - MUTATE F_AllOutcomesCovered  → runs/C-L1/mutated_F_AllOutcomesCovered.als
+    rationale: Removing this fact allows the model to invent outcomes outside the defined set, violating the closed-world assumption on access outcomes and making it impossible to ensure all paths are audited with valid outcomes.
+    expected to FAIL: FR_008_AlwaysOnAudit, AuditCompleteness
+      - FR_008_AlwaysOnAudit: PASS (vacuous?)
+      - AuditCompleteness: PASS (vacuous?)
+
+  Mutation summary
+  ----------------------------------------------------------------------------
+  - F_CareTeamMembershipGates: ASSERTIONS BIT (FR_006_CareTeamMembershipGating, LeastPrivilege)
+  - F_AuditEntriesMatchAttempts: ASSERTIONS BIT (AuditCompleteness, AttributionCorrectness)
+  - F_AuthorisationBasisConsistency: ASSERTION VACUOUS (FR_009_AuditEntryShape, FR_008_AlwaysOnAudit)
+  - F_NonEmptyUniverse: ASSERTION VACUOUS (AppendOnly, AuditCompleteness, AuthRequiredEverywhere)
+  - MUTATE LeastPrivilege: skipped (fact not found)
+  - F_AllOutcomesCovered: ASSERTION VACUOUS (FR_008_AlwaysOnAudit, AuditCompleteness)
+
+
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/C-L1/report.txt

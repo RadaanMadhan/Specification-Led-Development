@@ -1,0 +1,146 @@
+{
+  "feature_id": "C-L2",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_OneRolePerUser",
+    "FR_004_CareTeamGating",
+    "FR_004_ActiveMembershipShape",
+    "FR_005_AdminContentBlindness",
+    "FR_009_ValidationBeforeMutation",
+    "FR_011_NotesAppendOnly",
+    "FR_012_AuditAlwaysOn",
+    "FR_013_NoteRefConstraint",
+    "FR_014_AuditImmutability",
+    "FR_017_AuditSearchAdminOnly",
+    "FR_018_AdminResponseNoClinicalContent"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_OneRolePerUser"
+    ],
+    "FR-003": [],
+    "FR-004": [
+      "FR_004_CareTeamGating",
+      "FR_004_ActiveMembershipShape",
+      "OwnershipBasedAccess"
+    ],
+    "FR-005": [
+      "FR_005_AdminContentBlindness",
+      "LeastPrivilege"
+    ],
+    "FR-006": [
+      "NoInformationLeakage"
+    ],
+    "FR-007": [],
+    "FR-008": [],
+    "FR-009": [
+      "FR_009_ValidationBeforeMutation"
+    ],
+    "FR-010": [
+      "FR_011_NotesAppendOnly",
+      "AttributionCorrectness"
+    ],
+    "FR-011": [
+      "FR_011_NotesAppendOnly",
+      "AppendOnly"
+    ],
+    "FR-012": [
+      "FR_012_AuditAlwaysOn",
+      "AuditCompleteness"
+    ],
+    "FR-013": [
+      "FR_013_NoteRefConstraint",
+      "AttributionCorrectness"
+    ],
+    "FR-014": [
+      "FR_014_AuditImmutability",
+      "AppendOnly"
+    ],
+    "FR-015": [],
+    "FR-016": [
+      "FR_014_AuditImmutability"
+    ],
+    "FR-017": [
+      "FR_017_AuditSearchAdminOnly",
+      "LeastPrivilege"
+    ],
+    "FR-018": [
+      "FR_018_AdminResponseNoClinicalContent",
+      "NoInformationLeakage"
+    ],
+    "FR-019": [],
+    "FR-020": []
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_005_AdminContentBlindness",
+        "FR_017_AuditSearchAdminOnly"
+      ],
+      "rationale": "Clearing F_PermissionMatrix removes the closed-world enumeration of allowed cells. The injected violation adds HospitalAdministrator -> RecordsLookup to the allowed set, enabling a permitted admin record-read, which directly falsifies LeastPrivilege and FR_005_AdminContentBlindness.",
+      "inject_violation": "fact MUTATE_PermMatrixViolation { HospitalAdministrator -> RecordsLookup in PermMatrix.Allowed some op: Operation | op.opCaller.userRole = HospitalAdministrator and op.opKind = RecordsLookup and op.opOutcome = Permitted }"
+    },
+    {
+      "fact_name": "F_CareTeamGating",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_004_CareTeamGating"
+      ],
+      "rationale": "Clearing F_CareTeamGating removes the constraint that a Permitted clinical operation requires an active care-team membership. The injection forces a Permitted RecordsLookup operation for a user with no matching ActiveMembership, falsifying OwnershipBasedAccess.",
+      "inject_violation": "fact MUTATE_CareTeamGatingViolation { some op: Operation, u: User, p: Patient | op.opCaller = u and op.opPatient = p and op.opKind = RecordsLookup and op.opOutcome = Permitted and u.userRole = Doctor and (no m: ActiveMembership | m.memberClinician = u and m.memberPatient = p) }"
+    },
+    {
+      "fact_name": "F_AuditEntryBijection",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_012_AuditAlwaysOn"
+      ],
+      "rationale": "Clearing F_AuditEntryBijection allows two Operations to share the same AuditEntry (one entry covers two accesses), and allows AuditEntries that belong to no Operation. The injection forces two distinct Operations to share one AuditEntry, directly falsifying AuditCompleteness.",
+      "inject_violation": "fact MUTATE_AuditBijectionViolation { some disj o1, o2: Operation | o1.opAudit = o2.opAudit }"
+    },
+    {
+      "fact_name": "F_AppendOnlyAuditEntries",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_014_AuditImmutability"
+      ],
+      "rationale": "Clearing F_AppendOnlyAuditEntries removes the uniqueness constraint on audit entry identity triples. The injection forces two distinct AuditEntry atoms with the same (entryUser, entryPatient, entryAccessType, entryOutcome), modelling an in-place mutation of an existing entry.",
+      "inject_violation": "fact MUTATE_AuditMutationViolation { some disj ae1, ae2: AuditEntry | ae1.entryUser = ae2.entryUser and ae1.entryPatient = ae2.entryPatient and ae1.entryAccessType = ae2.entryAccessType and ae1.entryOutcome = ae2.entryOutcome }"
+    },
+    {
+      "fact_name": "F_AppendOnlyClinicalNotes",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_011_NotesAppendOnly"
+      ],
+      "rationale": "Clearing F_AppendOnlyClinicalNotes removes the uniqueness constraint on the note identity triple. The injection forces two distinct ClinicalNote atoms with the same (noteAuthor, notePatient, noteAuthorRole), modelling an edit of an existing note as a second atom, falsifying FR_011_NotesAppendOnly.",
+      "inject_violation": "fact MUTATE_NotesMutationViolation { some disj n1, n2: ClinicalNote | n1.noteAuthor = n2.noteAuthor and n1.notePatient = n2.notePatient and n1.noteAuthorRole = n2.noteAuthorRole }"
+    },
+    {
+      "fact_name": "F_AdminCannotAccessClinicalContent",
+      "asserts_violated": [
+        "FR_005_AdminContentBlindness",
+        "LeastPrivilege",
+        "FR_018_AdminResponseNoClinicalContent"
+      ],
+      "rationale": "Clearing F_AdminCannotAccessClinicalContent lets a HospitalAdministrator Operation on RecordsLookup have outcome Permitted. The injection forces exactly that scenario, falsifying FR_005_AdminContentBlindness and LeastPrivilege.",
+      "inject_violation": "fact MUTATE_AdminClinicalAccessViolation { some op: Operation | op.opCaller.userRole = HospitalAdministrator and op.opKind = RecordsLookup and op.opOutcome = Permitted }"
+    }
+  ]
+}

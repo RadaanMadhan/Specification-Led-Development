@@ -1,0 +1,170 @@
+{
+  "feature_id": "C-L3",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_SingleRolePerUser",
+    "FR_003_PatientAssignedRecord",
+    "FR_004_CareTeamGating",
+    "FR_005_ClinicianAuditAccess",
+    "FR_006_PatientSelfAccess",
+    "FR_007_ComplianceContentBlind",
+    "FR_008_ByteEquivalentForbidden",
+    "FR_012_NotesAppendOnly",
+    "FR_013_AlwaysOnAudit",
+    "FR_014_AuditEntryFields",
+    "FR_015_AuditImmutable",
+    "FR_017_AuditRetention",
+    "FR_018_AccessLogComplianceOnly",
+    "FR_020_RecordIdOnlyInPaths"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_SingleRolePerUser"
+    ],
+    "FR-003": [
+      "FR_003_PatientAssignedRecord"
+    ],
+    "FR-004": [
+      "FR_004_CareTeamGating",
+      "LeastPrivilege",
+      "OwnershipBasedAccess"
+    ],
+    "FR-005": [
+      "FR_005_ClinicianAuditAccess"
+    ],
+    "FR-006": [
+      "FR_006_PatientSelfAccess",
+      "OwnershipBasedAccess"
+    ],
+    "FR-007": [
+      "FR_007_ComplianceContentBlind",
+      "LeastPrivilege"
+    ],
+    "FR-008": [
+      "FR_008_ByteEquivalentForbidden",
+      "NoInformationLeakage"
+    ],
+    "FR-009": [
+      "FR_004_CareTeamGating",
+      "LeastPrivilege"
+    ],
+    "FR-010": [
+      "FR_012_NotesAppendOnly"
+    ],
+    "FR-011": [
+      "FR_014_AuditEntryFields",
+      "AttributionCorrectness"
+    ],
+    "FR-012": [
+      "FR_012_NotesAppendOnly",
+      "AppendOnly"
+    ],
+    "FR-013": [
+      "FR_013_AlwaysOnAudit",
+      "AuditCompleteness"
+    ],
+    "FR-014": [
+      "FR_014_AuditEntryFields",
+      "AttributionCorrectness"
+    ],
+    "FR-015": [
+      "FR_015_AuditImmutable",
+      "AppendOnly"
+    ],
+    "FR-016": [
+      "FR_013_AlwaysOnAudit"
+    ],
+    "FR-017": [
+      "FR_017_AuditRetention",
+      "AppendOnly"
+    ],
+    "FR-018": [
+      "FR_018_AccessLogComplianceOnly"
+    ],
+    "FR-019": [
+      "FR_007_ComplianceContentBlind",
+      "LeastPrivilege"
+    ],
+    "FR-020": [
+      "FR_020_RecordIdOnlyInPaths"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_007_ComplianceContentBlind",
+        "FR_004_CareTeamGating",
+        "FR_018_AccessLogComplianceOnly"
+      ],
+      "rationale": "Removing the closed-world Allowed assignment lets Alloy add arbitrary (Relationship, OperationKind) pairs; injecting ComplianceOfficerRel -> GetRecord forces a state where a compliance officer can read clinical content, directly violating LeastPrivilege and FR_007.",
+      "inject_violation": "fact MUTATE_PermissionMatrixViolation { ComplianceOfficerRel -> GetRecord in PermMatrix.Allowed }"
+    },
+    {
+      "fact_name": "F_AuditBijection",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_013_AlwaysOnAudit",
+        "FR_017_AuditRetention"
+      ],
+      "rationale": "Removing F_AuditBijection breaks the surjectivity and injectivity of opAudit; injecting an orphan AuditEntry (with no owning Operation) forces a state where an audit entry exists without a matching access attempt \u2014 violating the always-on audit bijection.",
+      "inject_violation": "fact MUTATE_AuditBijectionViolation { some ae: AuditEntry | no op: Operation | op.opAudit = ae }"
+    },
+    {
+      "fact_name": "F_AuditAttributionCorrect",
+      "asserts_violated": [
+        "AttributionCorrectness",
+        "FR_014_AuditEntryFields",
+        "FR_015_AuditImmutable"
+      ],
+      "rationale": "Removing F_AuditAttributionCorrect breaks the requirement that entryRole matches the caller's role; injecting a mismatch forces a state where an operation's audit entry records the wrong role, violating attribution correctness.",
+      "inject_violation": "fact MUTATE_AttributionViolation { some op: Operation | op.opAudit.entryRole != op.opCaller.role }"
+    },
+    {
+      "fact_name": "F_NotesOnlyFromPermittedAppend",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_012_NotesAppendOnly"
+      ],
+      "rationale": "Removing F_NotesOnlyFromPermittedAppend lets ClinicalNote atoms exist without a backing permitted PostNote operation; injecting an orphan note forces the model to contain a note that was never created by an authorised append, directly violating the append-only invariant.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some n: ClinicalNote | no op: Operation | op.opKind = PostNote and op.opOutcome = Permitted and op.opAudit.entryNote = n }"
+    },
+    {
+      "fact_name": "F_PatientAssignedRecordPairing",
+      "asserts_violated": [
+        "FR_003_PatientAssignedRecord",
+        "FR_006_PatientSelfAccess",
+        "OwnershipBasedAccess"
+      ],
+      "rationale": "Removing F_PatientAssignedRecordPairing allows a Patient to have no assignedRecord or an extra assignedRecord; injecting a patient without an assignedRecord causes the PatientOwn relationship to become impossible to satisfy, undermining ownership-based access control.",
+      "inject_violation": "fact MUTATE_PatientPairingViolation { some u: User | u.role = Patient and no u.assignedRecord }"
+    },
+    {
+      "fact_name": "F_OutcomeFromPermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_004_CareTeamGating",
+        "FR_006_PatientSelfAccess",
+        "FR_007_ComplianceContentBlind",
+        "NoInformationLeakage"
+      ],
+      "rationale": "Removing F_OutcomeFromPermissionMatrix severs the tie between the Allowed matrix and opOutcome; injecting a NonCareTeamClinician operation with Permitted outcome on GetRecord forces the model into a state that violates the care-team gating and least-privilege invariants simultaneously.",
+      "inject_violation": "fact MUTATE_OutcomeMismatch { some op: Operation | op.opRelationship = NonCareTeamClinician and op.opKind = GetRecord and op.opOutcome = Permitted }"
+    }
+  ]
+}

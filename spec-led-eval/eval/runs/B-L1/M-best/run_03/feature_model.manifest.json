@@ -1,0 +1,150 @@
+{
+  "feature_id": "006-task-management",
+  "patterns_applied": [
+    "AuthRequiredEverywhere",
+    "PermissionCompleteness",
+    "LeastPrivilege",
+    "AppendOnly",
+    "AuditCompleteness",
+    "AttributionCorrectness",
+    "ValidationBeforeMutation"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_IdentityFromAuth",
+    "FR_003_SingleWorkspace",
+    "FR_004_FlatPermissions",
+    "FR_005_TitleValidated",
+    "FR_006_DescriptionValidated",
+    "FR_007_DueDateOptional",
+    "FR_008_AssigneeIsMember",
+    "FR_009_CreatorRecorded",
+    "FR_010_StatusSet",
+    "FR_011_ClosedTaskRule",
+    "FR_012_AnyMemberDeletes",
+    "FR_013_ScopeLimited",
+    "FR_014_DefaultOrdering",
+    "FR_015_FilterableFields",
+    "FR_016_ClearFilters",
+    "FR_017_Timestamps",
+    "FR_018_DeletionLogged"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere",
+      "LeastPrivilege"
+    ],
+    "FR-002": [
+      "FR_002_IdentityFromAuth"
+    ],
+    "FR-003": [
+      "FR_003_SingleWorkspace"
+    ],
+    "FR-004": [
+      "FR_004_FlatPermissions",
+      "PermissionCompleteness"
+    ],
+    "FR-005": [
+      "FR_005_TitleValidated",
+      "ValidationBeforeMutation"
+    ],
+    "FR-006": [
+      "FR_006_DescriptionValidated",
+      "ValidationBeforeMutation"
+    ],
+    "FR-007": [
+      "FR_007_DueDateOptional"
+    ],
+    "FR-008": [
+      "FR_008_AssigneeIsMember"
+    ],
+    "FR-009": [
+      "FR_009_CreatorRecorded"
+    ],
+    "FR-010": [
+      "FR_010_StatusSet"
+    ],
+    "FR-011": [
+      "FR_011_ClosedTaskRule"
+    ],
+    "FR-012": [
+      "FR_012_AnyMemberDeletes"
+    ],
+    "FR-013": [
+      "FR_013_ScopeLimited"
+    ],
+    "FR-014": [
+      "FR_014_DefaultOrdering"
+    ],
+    "FR-015": [
+      "FR_015_FilterableFields"
+    ],
+    "FR-016": [
+      "FR_016_ClearFilters"
+    ],
+    "FR-017": [
+      "FR_017_Timestamps"
+    ],
+    "FR-018": [
+      "FR_018_DeletionLogged",
+      "AuditCompleteness",
+      "AppendOnly",
+      "AttributionCorrectness"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_AuthRequired",
+      "asserts_violated": [
+        "AuthRequiredEverywhere",
+        "FR_001_AuthRequired",
+        "FR_002_IdentityFromAuth"
+      ],
+      "rationale": "Clearing this fact removes the rule that unauthenticated operations are rejected; the injected fact then forces an existing Operation atom to be both Unauthenticated and Successful, which AuthRequiredEverywhere claims is impossible.",
+      "inject_violation": "fact MUTATE_AuthBypass { some op: Operation | op.role = Unauthenticated and op.outcome = Success }"
+    },
+    {
+      "fact_name": "F_DeletionCompleteness",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_018_DeletionLogged"
+      ],
+      "rationale": "Clearing this fact removes the requirement that a successful DELETE produces a TaskDeletion log entry; the injection forces a successful DeleteTask op with no producesDeletion, directly contradicting the AuditCompleteness assertion.",
+      "inject_violation": "fact MUTATE_MissingDeletionLog { some op: Operation | op.kind = DeleteTask and op.outcome = Success and no op.producesDeletion }"
+    },
+    {
+      "fact_name": "F_AttributionCorrectness",
+      "asserts_violated": [
+        "AttributionCorrectness"
+      ],
+      "rationale": "Clearing this fact removes the constraint that a deletion log entry's deletedBy matches the operation's caller; the injection forces a misattributed log row to exist, which the assertion is designed to catch.",
+      "inject_violation": "fact MUTATE_MisattributedDeletion { some op: Operation, td: TaskDeletion | op.producesDeletion = td and td.deletedBy != op.caller }"
+    },
+    {
+      "fact_name": "F_DeletionUniqueOrigin",
+      "asserts_violated": [
+        "AppendOnly"
+      ],
+      "rationale": "Clearing this fact lets two distinct Operations share the same TaskDeletion entry, simulating a mutated/re-attributed log row. The injection forces exactly that shared-origin scenario, breaking AppendOnly.",
+      "inject_violation": "fact MUTATE_SharedDeletionOrigin { some disj op1, op2: Operation | some op1.producesDeletion and op1.producesDeletion = op2.producesDeletion }"
+    },
+    {
+      "fact_name": "F_ClosedTaskRule",
+      "asserts_violated": [
+        "FR_011_ClosedTaskRule"
+      ],
+      "rationale": "Clearing this fact removes the closed-task PATCH guard; the injection then forces a successful PATCH on a Done task that does not reopen it, which FR_011_ClosedTaskRule forbids.",
+      "inject_violation": "fact MUTATE_ClosedTaskEdited { some op: Operation | op.kind = PatchTask and op.outcome = Success and op.preStatus = Done and (no op.intendedNewStatus or op.intendedNewStatus = Done) }"
+    },
+    {
+      "fact_name": "F_ValidationBeforeMutation",
+      "asserts_violated": [
+        "ValidationBeforeMutation",
+        "FR_005_TitleValidated"
+      ],
+      "rationale": "Clearing this fact removes the rule that an invalid payload must lead to rejection; the injection forces an Operation with payloadValid=False and outcome=Success, the exact counterexample ValidationBeforeMutation is meant to rule out.",
+      "inject_violation": "fact MUTATE_InvalidPayloadAccepted { some op: Operation | op.payloadValid = False and op.outcome = Success }"
+    }
+  ]
+}

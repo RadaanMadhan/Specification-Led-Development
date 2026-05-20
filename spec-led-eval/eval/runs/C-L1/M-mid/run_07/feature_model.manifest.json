@@ -1,0 +1,130 @@
+{
+  "feature_id": "C-L1",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_RoleResolution",
+    "FR_006_CareTeamGating",
+    "FR_007_ByteEquivalentDenyNotFound",
+    "FR_008_AlwaysAudit",
+    "FR_009_AuditEntryShape",
+    "FR_010_AuditImmutable",
+    "FR_011_AuditOfficerOnly",
+    "FR_013_AuditBeforeAccess"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_RoleResolution"
+    ],
+    "FR-003": [
+      "FR_009_AuditEntryShape"
+    ],
+    "FR-005": [
+      "LeastPrivilege",
+      "PermissionCompleteness"
+    ],
+    "FR-006": [
+      "FR_006_CareTeamGating",
+      "OwnershipBasedAccess"
+    ],
+    "FR-007": [
+      "FR_007_ByteEquivalentDenyNotFound",
+      "NoInformationLeakage"
+    ],
+    "FR-008": [
+      "FR_008_AlwaysAudit",
+      "AuditCompleteness"
+    ],
+    "FR-009": [
+      "FR_009_AuditEntryShape",
+      "AttributionCorrectness"
+    ],
+    "FR-010": [
+      "FR_010_AuditImmutable",
+      "AppendOnly"
+    ],
+    "FR-011": [
+      "FR_011_AuditOfficerOnly",
+      "LeastPrivilege"
+    ],
+    "FR-012": [
+      "AppendOnly",
+      "FR_010_AuditImmutable"
+    ],
+    "FR-013": [
+      "FR_013_AuditBeforeAccess",
+      "AuditCompleteness"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_AppendOnlyAuditEntries",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_010_AuditImmutable",
+        "AuditCompleteness"
+      ],
+      "rationale": "Clearing this fact removes the constraint that distinct operations must own distinct AuditEntry atoms. The injection then forces two operations to share one entry, which is the structural equivalent of an in-place mutation/overwrite \u2014 exactly what AppendOnly and FR_010_AuditImmutable forbid. AuditCompleteness also breaks because the one-to-one invariant no longer holds.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some disj op1, op2: Operation | op1.audit = op2.audit }"
+    },
+    {
+      "fact_name": "F_CareTeamGating",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_006_CareTeamGating"
+      ],
+      "rationale": "Clearing this fact removes the rule that Permitted outcomes require an active CareTeamMembership. The injection forces a Permitted operation whose caller has no active membership for the target patient, directly violating the care-team-only access rule (FR-006, SC-010).",
+      "inject_violation": "fact MUTATE_CareTeamGatingViolation { some op: Operation | op.kind = RecordsLookup and op.outcome = Permitted and (no m: CareTeamMembership | m.clinician = op.caller and m.status = Active) }"
+    },
+    {
+      "fact_name": "F_NoInformationLeakageFact",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "FR_007_ByteEquivalentDenyNotFound"
+      ],
+      "rationale": "Clearing this fact removes the byte-equivalence rule between Denied and NotFoundOrDenied responses. The injection forces a Denied operation to return OkResponse (distinct from NotFoundResponse), making the two branches distinguishable to an external observer \u2014 exactly the information leak FR-007 and SC-003 forbid.",
+      "inject_violation": "fact MUTATE_LeakageViolation { some op: Operation | op.outcome = Denied and op.observedResponse = OkResponse }"
+    },
+    {
+      "fact_name": "F_AuditOneToOne",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_008_AlwaysAudit"
+      ],
+      "rationale": "Clearing this fact removes the requirement that every AuditEntry is owned by exactly one Operation. The injection introduces an orphan AuditEntry not attached to any operation, violating SC-002 ('zero occurrences where an audit entry exists without a matching attempted access') and breaking the always-on audit guarantee of FR-008.",
+      "inject_violation": "fact MUTATE_OrphanAuditEntry { some ae: AuditEntry | no op: Operation | op.audit = ae }"
+    },
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "PermissionCompleteness",
+        "FR_011_AuditOfficerOnly"
+      ],
+      "rationale": "Clearing this fact empties the Allowed relation (or allows any assignment). The injection grants AuditOfficer access to RecordsLookup, which directly violates LeastPrivilege (AuditOfficer must not use the clinical endpoint), PermissionCompleteness (the matrix no longer matches the specified cells), and FR_011_AuditOfficerOnly.",
+      "inject_violation": "fact MUTATE_PermMatrixViolation { AuditOfficer -> RecordsLookup in PermMatrix.Allowed }"
+    },
+    {
+      "fact_name": "F_AuditRoleSnapshotCorrect",
+      "asserts_violated": [
+        "AttributionCorrectness",
+        "FR_009_AuditEntryShape"
+      ],
+      "rationale": "Clearing this fact removes the requirement that the role snapshot in an AuditEntry matches the caller's actual role at the time of the operation. The injection forces a mismatch \u2014 an audit entry records a different role than the caller held \u2014 which is precisely the misattribution scenario FR-009 (snapshot semantics) and AttributionCorrectness guard against.",
+      "inject_violation": "fact MUTATE_RoleSnapshotMismatch { some op: Operation | op.audit.clinicianRoleSnapshot != op.caller.role }"
+    }
+  ]
+}

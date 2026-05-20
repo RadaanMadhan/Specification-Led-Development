@@ -1,0 +1,47 @@
+{
+  "F_PermissionMatrix": {
+    "targeted_asserts": {
+      "LeastPrivilege": "BIT",
+      "FR_010_OwnerOnlyShareControl": "BIT",
+      "FR_011_ShareeCannotDelete": "BIT",
+      "FR_014_CrossTeamByteEquivalent": "BIT",
+      "NoInformationLeakage": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AuditEntryBelongsToOneMutation": {
+    "targeted_asserts": {
+      "AppendOnly": "BIT",
+      "FR_015_PerEventAuditSemantics": "BIT",
+      "AuditCompleteness": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_ShareeSameTeam": {
+    "targeted_asserts": {
+      "FR_012_CrossTeamSharingForbidden": "BIT",
+      "FR_006_AbsoluteCrossTeamIsolation": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AuditRoleMatchesActor": {
+    "targeted_asserts": {
+      "AttributionCorrectness": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_MutationAuditNonEmpty": {
+    "targeted_asserts": {
+      "AuditCompleteness": "BIT",
+      "FR_015_PerEventAuditSemantics": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_MutationActorInTaskTeam": {
+    "targeted_asserts": {
+      "FR_006_AbsoluteCrossTeamIsolation": "VACUOUS_OVERCONSTRAINT",
+      "NoInformationLeakage": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  }
+}

@@ -1,0 +1,129 @@
+{
+  "feature_id": "C-L1",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage"
+  ],
+  "feature_specific_predicates": [
+    "FR_002_RoleFromIdentity",
+    "FR_005_ReadOnly",
+    "FR_006_NoBreakGlass",
+    "FR_009_AuditEntryFields",
+    "FR_011_AuditIGOnly",
+    "FR_013_NoRecordWithoutAudit",
+    "SC_011_AuditEndpointHidden"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired"
+    ],
+    "FR-002": [
+      "FR_002_RoleFromIdentity"
+    ],
+    "FR-005": [
+      "FR_005_ReadOnly"
+    ],
+    "FR-006": [
+      "FR_006_CareTeamGating",
+      "FR_006_NoBreakGlass",
+      "LeastPrivilege"
+    ],
+    "FR-007": [
+      "FR_007_NoInformationLeakage"
+    ],
+    "FR-008": [
+      "FR_008_AlwaysOnAudit",
+      "FR_013_NoRecordWithoutAudit"
+    ],
+    "FR-009": [
+      "FR_009_AuditEntryFields",
+      "AttributionCorrectness"
+    ],
+    "FR-010": [
+      "FR_010_AuditImmutable",
+      "AppendOnly"
+    ],
+    "FR-011": [
+      "FR_011_AuditIGOnly",
+      "LeastPrivilege",
+      "SC_011_AuditEndpointHidden"
+    ],
+    "FR-012": [
+      "AppendOnly",
+      "FR_010_AuditImmutable"
+    ],
+    "FR-013": [
+      "FR_013_NoRecordWithoutAudit"
+    ],
+    "FR-014": [
+      "FR_005_ReadOnly"
+    ],
+    "FR-015": [
+      "FR_005_ReadOnly"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "PermissionCompleteness",
+        "FR_006_NoBreakGlass"
+      ],
+      "rationale": "Clearing F_PermissionMatrix allows Alloy to choose any Allowed relation, including AuditOfficer\u2192RecordsLookup; the injected fact forces exactly that forbidden cell, which LeastPrivilege must then catch.",
+      "inject_violation": "fact MUTATE_PermissionMatrix { AuditOfficer -> RecordsLookup in PermMatrix.Allowed and (some a: RecordAccessAttempt | a.caller.role = AuditOfficer and a.outcome = Permitted) }"
+    },
+    {
+      "fact_name": "F_CareTeamGating",
+      "asserts_violated": [
+        "FR_006_CareTeamGating",
+        "FR_006_NoBreakGlass"
+      ],
+      "rationale": "Clearing F_CareTeamGating removes the bidirectional care-team constraint; the injection forces a Permitted outcome for a caller who has no ActiveMembership, proving a break-glass path could exist.",
+      "inject_violation": "fact MUTATE_CareTeamGating { some a: RecordAccessAttempt | a.outcome = Permitted and (no m: ActiveMembership | m.member = a.caller) }"
+    },
+    {
+      "fact_name": "F_AuditOneToOne",
+      "asserts_violated": [
+        "FR_008_AlwaysOnAudit",
+        "AppendOnly",
+        "FR_010_AuditImmutable"
+      ],
+      "rationale": "Clearing F_AuditOneToOne removes the bijection between AuditEntry and RecordAccessAttempt; the injection creates two AuditEntries that share the same records link, violating both completeness (a second write counts as a mutation) and injectivity.",
+      "inject_violation": "fact MUTATE_AuditOneToOne { some disj ae1, ae2: AuditEntry | ae1.records = ae2.records }"
+    },
+    {
+      "fact_name": "F_AttributionCorrect",
+      "asserts_violated": [
+        "AttributionCorrectness",
+        "FR_009_AuditEntryFields"
+      ],
+      "rationale": "Clearing F_AttributionCorrect allows a role snapshot that differs from the caller's actual role; the injection forces one such mismatch, which AttributionCorrectness must detect.",
+      "inject_violation": "fact MUTATE_AttributionCorrect { some ae: AuditEntry | ae.roleSnapshot != ae.records.caller.role }"
+    },
+    {
+      "fact_name": "F_ByteEquivalentResponse",
+      "asserts_violated": [
+        "FR_007_NoInformationLeakage"
+      ],
+      "rationale": "Clearing F_ByteEquivalentResponse permits Denied or NotFoundOrDenied outcomes to carry a PermittedResponse shape; the injection forces exactly this, letting an observer distinguish a denied patient from a non-existent one.",
+      "inject_violation": "fact MUTATE_ByteEquivalentResponse { some a: RecordAccessAttempt | a.outcome = Denied and a.extResponse = PermittedResponse }"
+    },
+    {
+      "fact_name": "F_AuditSearchGating",
+      "asserts_violated": [
+        "FR_011_AuditIGOnly",
+        "SC_011_AuditEndpointHidden",
+        "LeastPrivilege"
+      ],
+      "rationale": "Clearing F_AuditSearchGating removes the AuditOfficer-only constraint on audit search; the injection places a Doctor as the searcher of an AuditSearchAttempt, which FR_011_AuditIGOnly must flag.",
+      "inject_violation": "fact MUTATE_AuditSearchGating { some s: AuditSearchAttempt | s.searcher.role = Doctor }"
+    }
+  ]
+}

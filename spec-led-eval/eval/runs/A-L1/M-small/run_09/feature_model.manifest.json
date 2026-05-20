@@ -1,0 +1,121 @@
+{
+  "feature_id": "A-L1",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "ValidationBeforeMutation"
+  ],
+  "feature_specific_predicates": [
+    "FR_005_OnePendingPerCustomer",
+    "FR_003_AmountAndTermValid",
+    "FR_009_DecisionReasonNonEmpty",
+    "FR_011_UniqueDecisionPerApplication",
+    "FR_004_UniqueApplicationReference",
+    "FR_010_DecisionWithTimestamp",
+    "FR_015_StaffOnlyDecisions",
+    "FR_016_AuditTrail"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "ValidationBeforeMutation",
+      "F_NonEmptyIncome"
+    ],
+    "FR-002": [
+      "ValidationBeforeMutation"
+    ],
+    "FR-003": [
+      "FR_003_AmountAndTermValid"
+    ],
+    "FR-004": [
+      "FR_004_UniqueApplicationReference",
+      "FR_010_DecisionWithTimestamp"
+    ],
+    "FR-005": [
+      "FR_005_OnePendingPerCustomer"
+    ],
+    "FR-009": [
+      "FR_009_DecisionReasonNonEmpty"
+    ],
+    "FR-010": [
+      "FR_010_DecisionWithTimestamp"
+    ],
+    "FR-011": [
+      "FR_011_UniqueDecisionPerApplication"
+    ],
+    "FR-012": [
+      "FR_011_UniqueDecisionPerApplication"
+    ],
+    "FR-013": [
+      "OwnershipBasedAccess",
+      "NoInformationLeakage"
+    ],
+    "FR-015": [
+      "FR_015_StaffOnlyDecisions",
+      "LeastPrivilege"
+    ],
+    "FR-016": [
+      "FR_016_AuditTrail",
+      "AuditCompleteness"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_015_StaffOnlyDecisions"
+      ],
+      "rationale": "Removing the permission matrix fact allows customers to be assigned record-decision operations, directly violating the least privilege principle and staff-only decision enforcement. When removed and the injection added, the model permits customers to perform decision actions.",
+      "inject_violation": "fact MUTATE_CustomerCanDecide { some d: Decision | d.decided_by.role = Customer }"
+    },
+    {
+      "fact_name": "F_OnePendingPerCustomer",
+      "asserts_violated": [
+        "FR_005_OnePendingPerCustomer"
+      ],
+      "rationale": "Removing this constraint allows multiple pending applications per customer. The injection forces a customer to have two simultaneous pending applications, violating the one-in-flight invariant that underpins the entire feature workflow.",
+      "inject_violation": "fact MUTATE_MultiplePendingPerCustomer { some c: User | some disj a1, a2: LoanApplication | a1.customer = c and a2.customer = c and a1.status = PendingReview and a2.status = PendingReview }"
+    },
+    {
+      "fact_name": "F_AuditCompleteness",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_016_AuditTrail"
+      ],
+      "rationale": "Removing the audit completeness requirement allows approved or rejected applications to lack corresponding audit events. The injection creates an approved application with no approved event, violating the completeness of the audit trail.",
+      "inject_violation": "fact MUTATE_MissingApprovedEvent { some app: LoanApplication | app.status = Approved and no ae: ApplicationEvent | ae.application = app and ae.event_type = ApprovedEvent }"
+    },
+    {
+      "fact_name": "F_OneDecisionPerApplication",
+      "asserts_violated": [
+        "FR_011_UniqueDecisionPerApplication"
+      ],
+      "rationale": "Removing this constraint allows multiple decisions to be recorded against a single application. The injection forces a second decision on an already-decided application, directly violating the uniqueness guarantee required by FR-011 and concurrency safety (FR-012).",
+      "inject_violation": "fact MUTATE_MultipleDecisionsPerApp { some app: LoanApplication | some disj d1, d2: Decision | d1.application = app and d2.application = app }"
+    },
+    {
+      "fact_name": "F_ApplicationSubmittedByCustomer",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "OwnershipExclusivity"
+      ],
+      "rationale": "Removing the constraint that an application's customer matches its submitter breaks the ownership chain. The injection allows an application to be submitted by a user who does not own it, violating the principle that each application is owned by the customer who submitted it.",
+      "inject_violation": "fact MUTATE_BrokenOwnership { some app: LoanApplication | app.customer.id != app.submitted_by.id }"
+    },
+    {
+      "fact_name": "F_AppendOnlyAuditEntries",
+      "asserts_violated": [
+        "AppendOnly",
+        "AuditCompleteness"
+      ],
+      "rationale": "Removing the append-only constraint on audit entries allows them to be modified or duplicated. The injection introduces duplicate audit events with identical application, event type, actor, and timestamp, violating the immutability property of the audit log.",
+      "inject_violation": "fact MUTATE_DuplicateAuditEntries { some disj ae1, ae2: ApplicationEvent | ae1.application = ae2.application and ae1.event_type = ae2.event_type and ae1.actor = ae2.actor and ae1.occurred_at = ae2.occurred_at }"
+    }
+  ]
+}

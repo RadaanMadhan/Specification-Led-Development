@@ -1,0 +1,46 @@
+{
+  "F_PermissionMatrix": {
+    "targeted_asserts": {
+      "LeastPrivilege": "BIT",
+      "FR_002_CustomerPermissions": "BIT",
+      "FR_003_LoanOfficerPermissions": "BIT",
+      "FR_004_ComplianceReviewerReadOnly": "BIT",
+      "FR_023_ComplianceWriteDenied": "BIT",
+      "PermissionGrounding": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_DecidedByAssignedOfficer": {
+    "targeted_asserts": {
+      "FR_013_AssignedOfficerDecides": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AtMostOneInFlightPerCustomer": {
+    "targeted_asserts": {
+      "FR_008_OneInFlightPerCustomer": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_ExactlyOneInitialAuditEntry": {
+    "targeted_asserts": {
+      "FR_009_SubmissionAuditEntry": "BIT",
+      "AuditCompleteness": "BIT",
+      "FR_019_ExactlyOneAuditPerTransition": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_DecisionExistsIffDecided": {
+    "targeted_asserts": {
+      "FR_015_AtomicDecision": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_AuditValidTransitions": {
+    "targeted_asserts": {
+      "FR_016_DecidedImmutability": "BIT",
+      "AppendOnly": "BIT"
+    },
+    "all_bit": true
+  }
+}

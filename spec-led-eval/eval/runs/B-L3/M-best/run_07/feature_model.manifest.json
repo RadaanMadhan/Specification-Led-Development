@@ -1,0 +1,165 @@
+{
+  "feature_id": "B-L3",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionGrounding",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_OneTeamOneRole",
+    "FR_004_NonOwnerNonShareeNoAccess",
+    "FR_005_AdminBoundedByOwnerOnShare",
+    "FR_006_NoCrossTeam",
+    "FR_009_OwnerTeamConsistent",
+    "FR_010_OwnerOnlyShare",
+    "FR_011_ShareeNoDelete",
+    "FR_012_NoCrossTeamShare",
+    "FR_013_ShareAudit",
+    "FR_014_NoLeakage",
+    "FR_015_PerEventAudit",
+    "FR_016_AuditFields",
+    "FR_017_AuditImmutable",
+    "FR_018_NoStateWithoutAudit",
+    "FR_019_AuditReadable"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_OneTeamOneRole"
+    ],
+    "FR-002a": [
+      "FR_002_OneTeamOneRole",
+      "FR_001_AuthRequired"
+    ],
+    "FR-003": [
+      "LeastPrivilege",
+      "PermissionGrounding"
+    ],
+    "FR-004": [
+      "FR_004_NonOwnerNonShareeNoAccess",
+      "LeastPrivilege"
+    ],
+    "FR-005": [
+      "FR_005_AdminBoundedByOwnerOnShare",
+      "PermissionGrounding"
+    ],
+    "FR-006": [
+      "FR_006_NoCrossTeam",
+      "NoInformationLeakage"
+    ],
+    "FR-007": [],
+    "FR-008": [],
+    "FR-009": [
+      "FR_009_OwnerTeamConsistent",
+      "OwnershipExclusivity"
+    ],
+    "FR-010": [
+      "FR_010_OwnerOnlyShare",
+      "OwnershipBasedAccess"
+    ],
+    "FR-011": [
+      "FR_011_ShareeNoDelete",
+      "LeastPrivilege",
+      "PermissionGrounding"
+    ],
+    "FR-012": [
+      "FR_012_NoCrossTeamShare"
+    ],
+    "FR-013": [
+      "FR_013_ShareAudit",
+      "AuditCompleteness"
+    ],
+    "FR-014": [
+      "FR_014_NoLeakage",
+      "NoInformationLeakage"
+    ],
+    "FR-015": [
+      "FR_015_PerEventAudit",
+      "AuditCompleteness"
+    ],
+    "FR-016": [
+      "FR_016_AuditFields",
+      "AttributionCorrectness"
+    ],
+    "FR-017": [
+      "FR_017_AuditImmutable",
+      "AppendOnly"
+    ],
+    "FR-018": [
+      "FR_018_NoStateWithoutAudit"
+    ],
+    "FR-019": [
+      "FR_019_AuditReadable"
+    ],
+    "FR-020": [],
+    "FR-021": []
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_OnlyAllowedSucceeds",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_004_NonOwnerNonShareeNoAccess",
+        "FR_011_ShareeNoDelete"
+      ],
+      "rationale": "removing this fact lets the model invent a successful DeleteTask by a same-team member who is not the owner and not a sharee \u2014 exactly the permission-bypass LeastPrivilege guards against. With the matrix only granting DeleteTask to OwnerRel and AdminRel, an InTeamNoneRel success is a counterexample.",
+      "inject_violation": "fact MUTATE_LeastPrivilegeViolation { some op: Operation | op.successful = BTrue and op.kind = DeleteTask and one op.target and op.caller != op.target.owner and op.caller.role = Member and op.caller not in op.target.sharedWith and op.caller.team = op.target.taskTeam and op.authenticated = BTrue }"
+    },
+    {
+      "fact_name": "F_AppendOnlyAudit",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_017_AuditImmutable"
+      ],
+      "rationale": "removing this fact lets two distinct operations share a single AuditEntry, which is the structural shape of an entry being re-used or rewritten \u2014 the exact thing the FR-017 append-only invariant forbids.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some disj op1, op2: Operation, ae: AuditEntry | ae in op1.producedAudit and ae in op2.producedAudit }"
+    },
+    {
+      "fact_name": "F_AuditCompleteness",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_015_PerEventAudit",
+        "FR_018_NoStateWithoutAudit",
+        "FR_013_ShareAudit"
+      ],
+      "rationale": "removing this fact lets a successful mutation exist with no audit entry, which is the missing-audit failure mode FR-015 and AuditCompleteness are meant to catch.",
+      "inject_violation": "fact MUTATE_AuditCompletenessViolation { some op: Operation | op.successful = BTrue and op.kind = PatchTaskFields and one op.target and op.caller = op.target.owner and op.authenticated = BTrue and no op.producedAudit }"
+    },
+    {
+      "fact_name": "F_AuthRequired",
+      "asserts_violated": [
+        "AuthRequiredEverywhere",
+        "FR_001_AuthRequired"
+      ],
+      "rationale": "removing this fact lets the model invent a successful operation with no authentication \u2014 the precise scenario AuthRequiredEverywhere is designed to forbid (FR-001 401-before-business-logic).",
+      "inject_violation": "fact MUTATE_AuthRequiredViolation { some op: Operation | op.successful = BTrue and op.authenticated = BFalse and op.kind = GetTask }"
+    },
+    {
+      "fact_name": "F_AuditAttribution",
+      "asserts_violated": [
+        "AttributionCorrectness",
+        "FR_016_AuditFields"
+      ],
+      "rationale": "removing this fact lets an audit entry record an actor different from the operation's actual caller \u2014 the misattribution AttributionCorrectness guards against (FR-016 actor/role snapshot fidelity).",
+      "inject_violation": "fact MUTATE_AttributionViolation { some op: Operation, ae: AuditEntry | ae in op.producedAudit and ae.actor != op.caller }"
+    },
+    {
+      "fact_name": "F_SharedWithSameTeam",
+      "asserts_violated": [
+        "FR_012_NoCrossTeamShare"
+      ],
+      "rationale": "removing this fact lets a task be shared with a user outside the owner's team, the cross-team sharing leak FR-012 explicitly forbids and which would break the FR-014 byte-equivalence invariant through the sharing path.",
+      "inject_violation": "fact MUTATE_CrossTeamShareViolation { some t: Task, u: t.sharedWith | u.team != t.taskTeam }"
+    }
+  ]
+}

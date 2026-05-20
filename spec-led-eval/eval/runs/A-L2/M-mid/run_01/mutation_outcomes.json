@@ -1,0 +1,47 @@
+{
+  "F_PermissionMatrix": {
+    "targeted_asserts": {
+      "LeastPrivilege": "BIT",
+      "FR_002_CustomerPermissions": "BIT",
+      "FR_003_LoanOfficerPermissions": "BIT",
+      "FR_004_ComplianceReviewerReadOnly": "BIT",
+      "PermissionCompleteness": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_OneInFlightPerCustomer": {
+    "targeted_asserts": {
+      "FR_008_OneInFlightPerCustomer": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_DecisionByAssignedOfficer": {
+    "targeted_asserts": {
+      "FR_013_OnlyAssignedOfficerDecides": "BIT",
+      "AttributionCorrectness": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_AuditInitialEvent": {
+    "targeted_asserts": {
+      "AuditCompleteness": "BIT",
+      "FR_017_OneAuditEntryPerTransition": "BIT",
+      "FR_022_RetentionNoDelete": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AppendOnlyAuditEntries": {
+    "targeted_asserts": {
+      "AppendOnly": "BIT",
+      "FR_018_AuditAppendOnly": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AssignedOfficerStatusConsistency": {
+    "targeted_asserts": {
+      "FR_011_AssignedOfficerStatusLink": "BIT",
+      "FR_012_ExactlyOneOfficerPerApplication": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  }
+}

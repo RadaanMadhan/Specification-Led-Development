@@ -1,0 +1,187 @@
+{
+  "feature_id": "A-L3",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "NoSelfMutation",
+    "ValidationBeforeMutation"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_RoleExclusivity",
+    "FR_003_ApplicantScope",
+    "FR_004_OfficerAssignedOnly",
+    "FR_005_AuditorReadOnly",
+    "FR_008_OneInFlight",
+    "FR_009_ValidTransitions",
+    "FR_010_AssignedIsOfficer",
+    "FR_011_NoSelfAssignment",
+    "FR_012_OnlyAssignedOfficer",
+    "FR_013_NoSelfDecision",
+    "FR_015_TerminalNoFurther",
+    "FR_016_AuditFields",
+    "FR_018_AppendOnly",
+    "FR_020_ByteEquivalent",
+    "FR_023_AuditAuditorOnly",
+    "FR_024_NoApplicantMutation"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_RoleExclusivity"
+    ],
+    "FR-003": [
+      "FR_003_ApplicantScope",
+      "LeastPrivilege"
+    ],
+    "FR-004": [
+      "FR_004_OfficerAssignedOnly",
+      "LeastPrivilege"
+    ],
+    "FR-005": [
+      "FR_005_AuditorReadOnly",
+      "LeastPrivilege"
+    ],
+    "FR-006": [
+      "AttributionCorrectness"
+    ],
+    "FR-007": [
+      "ValidationBeforeMutation"
+    ],
+    "FR-008": [
+      "FR_008_OneInFlight"
+    ],
+    "FR-009": [
+      "FR_009_ValidTransitions"
+    ],
+    "FR-010": [
+      "FR_010_AssignedIsOfficer",
+      "AuditCompleteness"
+    ],
+    "FR-011": [
+      "FR_011_NoSelfAssignment",
+      "NoSelfMutation"
+    ],
+    "FR-012": [
+      "FR_012_OnlyAssignedOfficer",
+      "OwnershipBasedAccess"
+    ],
+    "FR-013": [
+      "FR_013_NoSelfDecision",
+      "NoSelfMutation"
+    ],
+    "FR-014": [
+      "ValidationBeforeMutation"
+    ],
+    "FR-015": [
+      "FR_015_TerminalNoFurther"
+    ],
+    "FR-016": [
+      "FR_016_AuditFields",
+      "AttributionCorrectness",
+      "AuditCompleteness"
+    ],
+    "FR-017": [
+      "AuditCompleteness"
+    ],
+    "FR-018": [
+      "FR_018_AppendOnly",
+      "AppendOnly"
+    ],
+    "FR-019": [
+      "AppendOnly"
+    ],
+    "FR-020": [
+      "FR_020_ByteEquivalent",
+      "NoInformationLeakage"
+    ],
+    "FR-021": [
+      "FR_020_ByteEquivalent",
+      "NoInformationLeakage"
+    ],
+    "FR-022": [
+      "NoInformationLeakage"
+    ],
+    "FR-023": [
+      "FR_023_AuditAuditorOnly",
+      "NoInformationLeakage"
+    ],
+    "FR-024": [
+      "FR_024_NoApplicantMutation"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_LeastPrivilegeEnforced",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_005_AuditorReadOnly"
+      ],
+      "rationale": "Removing the enforcement that successful operations require an allowed role lets the model construct a Success operation whose caller's role set has no cell in the permission matrix for the op kind (e.g., an auditor-only user successfully POSTing).",
+      "inject_violation": "fact MUTATE_LeastPrivilegeViolation { some op: Operation, u: User | op.caller = u and u.roles = AuditorRole and op.kind = PostApplications and op.outcome = Success and op.authenticated = BTrue }"
+    },
+    {
+      "fact_name": "F_AuthRequiredBeforeBusinessLogic",
+      "asserts_violated": [
+        "AuthRequiredEverywhere",
+        "FR_001_AuthRequired"
+      ],
+      "rationale": "Removing the auth-before-business-logic fact lets the model invent an unauthenticated operation that nonetheless succeeds, which AuthRequiredEverywhere is meant to catch.",
+      "inject_violation": "fact MUTATE_AuthRequiredViolation { some op: Operation | op.authenticated = BFalse and op.outcome = Success }"
+    },
+    {
+      "fact_name": "F_AuditCompletenessForTransitions",
+      "asserts_violated": [
+        "AuditCompleteness"
+      ],
+      "rationale": "Removing the audit-completeness fact allows a successful state-changing operation to exist without a paired audit entry, which AuditCompleteness must flag.",
+      "inject_violation": "fact MUTATE_AuditCompletenessViolation { some op: Operation | op.outcome = Success and op.kind = PostApplications and no op.audit }"
+    },
+    {
+      "fact_name": "F_AppendOnlyAuditEntries",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_018_AppendOnly"
+      ],
+      "rationale": "Without the append-only fact, two distinct audit entries can record the same transition on the same application, which is exactly the duplication AppendOnly forbids.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some disj ae1, ae2: AuditEntry | ae1.application = ae2.application and ae1.prevStatus = ae2.prevStatus and ae1.newStatus = ae2.newStatus }"
+    },
+    {
+      "fact_name": "F_NoSelfAssignment",
+      "asserts_violated": [
+        "NoSelfMutation",
+        "FR_011_NoSelfAssignment",
+        "FR_013_NoSelfDecision"
+      ],
+      "rationale": "Removing no-self-assignment lets an application be assigned to its own applicant; combined with the assigned-officer-patches rule, this yields a successful PATCH where caller == applicant, violating no-self-mutation.",
+      "inject_violation": "fact MUTATE_NoSelfAssignmentViolation { some app: LoanApplication, op: Operation | app.assignedOfficer = app.applicant and op.target = app and op.kind = PatchStatus and op.outcome = Success and op.caller = app.applicant }"
+    },
+    {
+      "fact_name": "F_NoInformationLeakageOnRead",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "FR_020_ByteEquivalent"
+      ],
+      "rationale": "Removing the not-found-on-denial fact lets the model expose a Forbidden outcome for an authenticated GET denial, which leaks resource existence and is exactly what NoInformationLeakage forbids.",
+      "inject_violation": "fact MUTATE_NoInformationLeakageViolation { some op: Operation | op.authenticated = BTrue and op.kind = GetApplicationById and op.outcome = Forbidden }"
+    },
+    {
+      "fact_name": "F_OwnershipBasedReadAccess",
+      "asserts_violated": [
+        "OwnershipBasedAccess"
+      ],
+      "rationale": "Removing ownership-gated read access lets a stranger (not applicant, not assigned officer, not auditor) successfully GET an application, which OwnershipBasedAccess must catch.",
+      "inject_violation": "fact MUTATE_OwnershipBasedAccessViolation { some op: Operation, u: User | op.caller = u and op.kind = GetApplicationById and op.outcome = Success and u != op.target.applicant and u != op.target.assignedOfficer and AuditorRole not in u.roles }"
+    }
+  ]
+}

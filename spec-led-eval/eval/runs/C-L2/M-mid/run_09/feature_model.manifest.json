@@ -1,0 +1,155 @@
+{
+  "feature_id": "C-L2",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "PermissionGrounding",
+    "PrivilegeMonotonicity",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "ValidationBeforeMutation"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_OneRolePerUser",
+    "FR_004_CareTeamGating",
+    "FR_005_AdminCannotAccessClinical",
+    "FR_005_AdminCannotAddNote",
+    "FR_006_DeniedEqualsNotFound",
+    "FR_011_NotesAppendOnly",
+    "FR_012_AlwaysOnAudit",
+    "FR_013_AuditEntryShape",
+    "FR_014_AuditImmutability",
+    "FR_017_AdminOnlyAuditSearch",
+    "FR_017_CliniciansCannotAuditSearch",
+    "FR_018_AdminContentBlindness",
+    "FR_009_NoteAuthorOnCareTeam",
+    "FR_010_NoteAuthorIsClinical",
+    "FR_013_AuthBasisConsistency"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_OneRolePerUser"
+    ],
+    "FR-003": [],
+    "FR-004": [
+      "FR_004_CareTeamGating",
+      "OwnershipBasedAccess"
+    ],
+    "FR-005": [
+      "FR_005_AdminCannotAccessClinical",
+      "FR_005_AdminCannotAddNote",
+      "FR_018_AdminContentBlindness"
+    ],
+    "FR-006": [
+      "FR_006_DeniedEqualsNotFound",
+      "NoInformationLeakage"
+    ],
+    "FR-007": [],
+    "FR-008": [],
+    "FR-009": [
+      "FR_009_NoteAuthorOnCareTeam",
+      "ValidationBeforeMutation"
+    ],
+    "FR-010": [
+      "FR_010_NoteAuthorIsClinical"
+    ],
+    "FR-011": [
+      "FR_011_NotesAppendOnly",
+      "AppendOnly"
+    ],
+    "FR-012": [
+      "FR_012_AlwaysOnAudit",
+      "AuditCompleteness"
+    ],
+    "FR-013": [
+      "FR_013_AuditEntryShape",
+      "FR_013_AuthBasisConsistency",
+      "AttributionCorrectness"
+    ],
+    "FR-014": [
+      "FR_014_AuditImmutability"
+    ],
+    "FR-015": [],
+    "FR-016": [],
+    "FR-017": [
+      "FR_017_AdminOnlyAuditSearch",
+      "FR_017_CliniciansCannotAuditSearch",
+      "LeastPrivilege"
+    ],
+    "FR-018": [
+      "FR_018_AdminContentBlindness"
+    ],
+    "FR-019": [],
+    "FR-020": []
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_LeastPrivilege",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_005_AdminCannotAccessClinical",
+        "FR_017_CliniciansCannotAuditSearch"
+      ],
+      "rationale": "Removing F_LeastPrivilege allows the model to generate an AuditEntry where a HospitalAdministrator has outcome=Permitted for RecordLookup or a Doctor has outcome=Permitted for AuditSearch. The injected fact forces exactly such a violating instance.",
+      "inject_violation": "fact MUTATE_LeastPrivilegeViolation { some ae: AuditEntry | ae.accessor.role = HospitalAdministrator and ae.opKind = RecordLookup and ae.outcome = Permitted }"
+    },
+    {
+      "fact_name": "F_CareTeamGating",
+      "asserts_violated": [
+        "FR_004_CareTeamGating",
+        "OwnershipBasedAccess",
+        "FR_009_NoteAuthorOnCareTeam"
+      ],
+      "rationale": "Removing F_CareTeamGating allows a Permitted clinical access to exist without any ActiveMembership row. The injected fact forces a Permitted RecordLookup for a user/patient pair with no membership, which violates OwnershipBasedAccess and FR_004_CareTeamGating.",
+      "inject_violation": "fact MUTATE_CareTeamGatingViolation { some ae: AuditEntry, u: User, p: Patient | ae.accessor = u and ae.auditPatient = p and ae.opKind = RecordLookup and ae.outcome = Permitted and u.role = Doctor and no m: ActiveMembership | m.clinician = u and m.patient = p }"
+    },
+    {
+      "fact_name": "F_AdminCannotAddNote",
+      "asserts_violated": [
+        "FR_005_AdminCannotAddNote",
+        "FR_010_NoteAuthorIsClinical",
+        "FR_018_AdminContentBlindness"
+      ],
+      "rationale": "Removing F_AdminCannotAddNote allows the model to create a ClinicalNote whose author holds the HospitalAdministrator role. The injected fact forces exactly this, violating the content-blindness and clinical-authorship invariants.",
+      "inject_violation": "fact MUTATE_AdminCannotAddNoteViolation { some n: ClinicalNote | n.author.role = HospitalAdministrator }"
+    },
+    {
+      "fact_name": "F_AuditCompleteness",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_011_NotesAppendOnly",
+        "FR_012_AlwaysOnAudit",
+        "ValidationBeforeMutation"
+      ],
+      "rationale": "Removing F_AuditCompleteness allows a ClinicalNote to exist with no corresponding AddNote+Permitted AuditEntry. The injected fact forces a note to exist with no matching audit event, directly violating always-on-audit and append-only correctness.",
+      "inject_violation": "fact MUTATE_AuditCompletenesViolation { some n: ClinicalNote | no ae: AuditEntry | ae.opKind = AddNote and ae.outcome = Permitted and ae.noteRef = n }"
+    },
+    {
+      "fact_name": "F_AppendOnlyAuditEntries",
+      "asserts_violated": [
+        "FR_014_AuditImmutability"
+      ],
+      "rationale": "Removing F_AppendOnlyAuditEntries allows two structurally identical AuditEntries to coexist, representing duplicate (phantom) records of the same event \u2014 a form of audit tampering. The injected fact forces two distinct AuditEntry atoms with identical content tuples.",
+      "inject_violation": "fact MUTATE_AppendOnlyAuditViolation { some disj ae1, ae2: AuditEntry | ae1.accessor = ae2.accessor and ae1.auditPatient = ae2.auditPatient and ae1.opKind = ae2.opKind and ae1.outcome = ae2.outcome and ae1.authBasis = ae2.authBasis and ae1.noteRef = ae2.noteRef }"
+    },
+    {
+      "fact_name": "F_AdminContentBlindness",
+      "asserts_violated": [
+        "FR_018_AdminContentBlindness",
+        "FR_017_AdminOnlyAuditSearch",
+        "LeastPrivilege"
+      ],
+      "rationale": "Removing F_AdminContentBlindness allows a non-administrator user to trigger an AuditSearch, meaning a clinical-role caller could access the audit endpoint. The injected fact forces a Doctor to appear as the accessor on an AuditSearch entry, violating administrator-only access.",
+      "inject_violation": "fact MUTATE_AdminContentBlindnessViolation { some ae: AuditEntry | ae.opKind = AuditSearch and ae.accessor.role = Doctor }"
+    }
+  ]
+}

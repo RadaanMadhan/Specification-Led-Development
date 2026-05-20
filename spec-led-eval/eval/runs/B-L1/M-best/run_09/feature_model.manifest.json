@@ -1,0 +1,119 @@
+{
+  "feature_id": "006-task-management",
+  "patterns_applied": [
+    "AuthRequiredEverywhere",
+    "PermissionCompleteness",
+    "LeastPrivilege",
+    "AppendOnly",
+    "AuditCompleteness",
+    "AttributionCorrectness",
+    "OwnershipExclusivity"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_IdentityFromAuth",
+    "FR_003_SingleWorkspace",
+    "FR_004_FlatPermissions",
+    "FR_008_AtMostOneAssignee",
+    "FR_009_OneCreatorPerTask",
+    "FR_010_StatusInAllowedSet",
+    "FR_011_ClosedTaskEditRule",
+    "FR_012_NoOpAfterDeletion",
+    "FR_013_ScopeClosed",
+    "FR_018_DeletionLogged"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_IdentityFromAuth"
+    ],
+    "FR-003": [
+      "FR_003_SingleWorkspace"
+    ],
+    "FR-004": [
+      "FR_004_FlatPermissions",
+      "PermissionCompleteness",
+      "LeastPrivilege"
+    ],
+    "FR-008": [
+      "FR_008_AtMostOneAssignee"
+    ],
+    "FR-009": [
+      "FR_009_OneCreatorPerTask",
+      "OwnershipExclusivity"
+    ],
+    "FR-010": [
+      "FR_010_StatusInAllowedSet"
+    ],
+    "FR-011": [
+      "FR_011_ClosedTaskEditRule"
+    ],
+    "FR-012": [
+      "FR_012_NoOpAfterDeletion"
+    ],
+    "FR-013": [
+      "FR_013_ScopeClosed"
+    ],
+    "FR-018": [
+      "FR_018_DeletionLogged",
+      "AppendOnly",
+      "AuditCompleteness",
+      "AttributionCorrectness"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_AuthRequired",
+      "asserts_violated": [
+        "AuthRequiredEverywhere",
+        "FR_001_AuthRequired"
+      ],
+      "rationale": "removing F_AuthRequired lets the model invent a successful operation that was never authenticated, which is exactly the auth-bypass counterexample these assertions catch.",
+      "inject_violation": "fact MUTATE_AuthBypass { some op: Operation | op.succeeded = True and op.authenticated = False and op.kind = ListOp }"
+    },
+    {
+      "fact_name": "F_AppendOnlyDeletions",
+      "asserts_violated": [
+        "AppendOnly"
+      ],
+      "rationale": "removing the uniqueness constraint on TaskDeletion.task allows two log rows to reference the same task, simulating an UPDATE/DELETE on the append-only deletion log.",
+      "inject_violation": "fact MUTATE_DuplicateDeletionRow { some disj d1, d2: TaskDeletion | d1.task = d2.task }"
+    },
+    {
+      "fact_name": "F_AuditCompleteness",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_018_DeletionLogged"
+      ],
+      "rationale": "removing the completeness link allows a successful DeleteOp without a corresponding TaskDeletion row, which is the missing-audit-entry counterexample.",
+      "inject_violation": "fact MUTATE_MissingDeletionLog { some op: Operation | op.kind = DeleteOp and op.succeeded = True and op.authenticated = True and no op.deletionRecord }"
+    },
+    {
+      "fact_name": "F_AttributionCorrectness",
+      "asserts_violated": [
+        "AttributionCorrectness"
+      ],
+      "rationale": "removing the attribution constraint lets a deletion row record a different user than the operation's actual caller, the misattribution counterexample.",
+      "inject_violation": "fact MUTATE_MisattributedDeletion { some op: Operation | op.kind = DeleteOp and op.succeeded = True and op.authenticated = True and some op.deletionRecord and op.deletionRecord.deletedBy != op.caller }"
+    },
+    {
+      "fact_name": "F_ClosedTaskRule",
+      "asserts_violated": [
+        "FR_011_ClosedTaskEditRule"
+      ],
+      "rationale": "removing the closed-task rule lets the model invent a successful PATCH on a Done task that doesn't simultaneously reopen it \u2014 the exact 409 task_closed scenario the contract is built to forbid.",
+      "inject_violation": "fact MUTATE_EditDoneWithoutReopen { some op: Operation | op.kind = EditOp and op.succeeded = True and op.authenticated = True and op.target.status = Done and op.setsStatusToOpen = False }"
+    },
+    {
+      "fact_name": "F_NoOpOnDeletedTask",
+      "asserts_violated": [
+        "FR_012_NoOpAfterDeletion"
+      ],
+      "rationale": "removing the no-op-after-deletion rule allows a non-delete operation to target a task that has already been logged as deleted, breaking the 'deletion is permanent' guarantee.",
+      "inject_violation": "fact MUTATE_OpAfterDeletion { some op: Operation, d: TaskDeletion | op.succeeded = True and op.kind = EditOp and op.target = d.task }"
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "F_AppendOnlyAuditEntries": {
+    "targeted_asserts": {
+      "AppendOnly": "BIT",
+      "FR_017_AuditImmutableAndPersisted": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_OnlyOwnerCanShareOrUnshare": {
+    "targeted_asserts": {
+      "FR_010_OwnerOnlyShareControl": "BIT",
+      "OwnershipBasedAccess": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_ShareeInSameTeam": {
+    "targeted_asserts": {
+      "FR_012_CrossTeamSharingForbidden": "BIT",
+      "FR_006_CrossTeamIsolationAbsolute": "BIT",
+      "FR_014_CrossTeamIsolation": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AuditEntryHasOneMutation": {
+    "targeted_asserts": {
+      "AuditCompleteness": "BIT",
+      "FR_015_AuditCompletenessAndAtomicity": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AuditActorRoleMatchesUserRole": {
+    "targeted_asserts": {
+      "AttributionCorrectness": "VACUOUS_OVERCONSTRAINT",
+      "FR_016_AttributionSnapshot": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_DeleteByOwnerOrAdmin": {
+    "targeted_asserts": {
+      "FR_011_ShareeCannotDelete": "BIT",
+      "OwnershipBasedAccess": "BIT"
+    },
+    "all_bit": true
+  }
+}

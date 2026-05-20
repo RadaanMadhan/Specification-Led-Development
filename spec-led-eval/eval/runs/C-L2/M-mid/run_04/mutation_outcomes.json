@@ -1,0 +1,44 @@
+{
+  "F_CareTeamGating": {
+    "targeted_asserts": {
+      "OwnershipBasedAccess": "VACUOUS_OVERCONSTRAINT",
+      "FR_004_CareTeamGating": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_AuditInjective": {
+    "targeted_asserts": {
+      "AppendOnly": "VACUOUS_OVERCONSTRAINT",
+      "FR_014_AuditImmutable": "VACUOUS_OVERCONSTRAINT",
+      "AuditCompleteness": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_NoteAuthorIsClinical": {
+    "targeted_asserts": {
+      "FR_005_AdminContentBlindness": "VACUOUS_OVERCONSTRAINT",
+      "FR_010_NoteAuthorClinical": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_AuditNoteIdRule": {
+    "targeted_asserts": {
+      "FR_013_AuditNoteIdConsistency": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AuditSearchAdminOnly": {
+    "targeted_asserts": {
+      "FR_017_AuditSearchAdminOnly": "BIT",
+      "NoInformationLeakage": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AuditAttribution": {
+    "targeted_asserts": {
+      "AttributionCorrectness": "BIT",
+      "FR_013_AttributionIntegrity": "BIT"
+    },
+    "all_bit": true
+  }
+}

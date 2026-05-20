@@ -1,0 +1,170 @@
+{
+  "feature_id": "A-L2",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_CustomerRestricted",
+    "FR_004_ComplianceReadOnly",
+    "FR_008_OneInFlight",
+    "FR_011_ClaimTransition",
+    "FR_012_ExclusiveClaim",
+    "FR_013_OnlyAssignedOfficerDecides",
+    "FR_015_AtomicDecisionAudit",
+    "FR_016_TerminalStateImmutable",
+    "FR_019_ExactlyOneAuditPerTransition",
+    "FR_021_OfficerNotInCustomerOps",
+    "FR_023_ComplianceReadOnlyEnforced",
+    "FR_009_ValidStateMachine"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_CustomerRestricted",
+      "LeastPrivilege"
+    ],
+    "FR-003": [
+      "LeastPrivilege"
+    ],
+    "FR-004": [
+      "FR_004_ComplianceReadOnly",
+      "FR_023_ComplianceReadOnlyEnforced",
+      "LeastPrivilege"
+    ],
+    "FR-005": [
+      "OwnershipExclusivity"
+    ],
+    "FR-006": [
+      "FR_009_ValidStateMachine"
+    ],
+    "FR-007": [
+      "FR_009_ValidStateMachine"
+    ],
+    "FR-008": [
+      "FR_008_OneInFlight"
+    ],
+    "FR-009": [
+      "FR_009_ValidStateMachine",
+      "AuditCompleteness"
+    ],
+    "FR-010": [
+      "LeastPrivilege"
+    ],
+    "FR-011": [
+      "FR_011_ClaimTransition",
+      "AuditCompleteness"
+    ],
+    "FR-012": [
+      "FR_012_ExclusiveClaim"
+    ],
+    "FR-013": [
+      "FR_013_OnlyAssignedOfficerDecides"
+    ],
+    "FR-014": [
+      "FR_015_AtomicDecisionAudit"
+    ],
+    "FR-015": [
+      "FR_015_AtomicDecisionAudit",
+      "AuditCompleteness"
+    ],
+    "FR-016": [
+      "FR_016_TerminalStateImmutable",
+      "AppendOnly"
+    ],
+    "FR-017": [
+      "AuditCompleteness",
+      "AttributionCorrectness",
+      "FR_019_ExactlyOneAuditPerTransition"
+    ],
+    "FR-018": [
+      "AppendOnly"
+    ],
+    "FR-019": [
+      "FR_019_ExactlyOneAuditPerTransition",
+      "AuditCompleteness"
+    ],
+    "FR-020": [
+      "OwnershipBasedAccess",
+      "NoInformationLeakage"
+    ],
+    "FR-021": [
+      "FR_021_OfficerNotInCustomerOps"
+    ],
+    "FR-022": [
+      "AppendOnly"
+    ],
+    "FR-023": [
+      "FR_023_ComplianceReadOnlyEnforced",
+      "FR_004_ComplianceReadOnly"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_AppendOnlyAuditEntries",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_019_ExactlyOneAuditPerTransition"
+      ],
+      "rationale": "Clearing this fact removes the exact-count constraint on audit events per application status. The injected violation forces a Submitted application to carry zero audit events, violating AppendOnly (which requires exactly 1 event for Submitted) and FR_019_ExactlyOneAuditPerTransition.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some a: LoanApplication | a.status = Submitted and #{ e: ApplicationEvent | e.forApp = a } = 0 }"
+    },
+    {
+      "fact_name": "F_AuditDecisionEventExists",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_015_AtomicDecisionAudit"
+      ],
+      "rationale": "Clearing this fact removes the requirement that a terminal application has a corresponding UnderReview\u2192Approved/Rejected audit event. The injection forces an Approved application to exist without any such event, violating AuditCompleteness and FR_015_AtomicDecisionAudit.",
+      "inject_violation": "fact MUTATE_AuditDecisionMissing { some a: LoanApplication | a.status = Approved and no e: ApplicationEvent | (e.forApp = a and e.prevStatus = UnderReview and e.newStatus = Approved) }"
+    },
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_002_CustomerRestricted",
+        "FR_004_ComplianceReadOnly",
+        "FR_023_ComplianceReadOnlyEnforced"
+      ],
+      "rationale": "Clearing the permission matrix fact allows Alloy to assign any set of permissions. The injection adds ComplianceReviewer\u2192PostDecision to the Allowed set, directly violating LeastPrivilege, FR_004_ComplianceReadOnly, and FR_023_ComplianceReadOnlyEnforced.",
+      "inject_violation": "fact MUTATE_PermissionViolation { ComplianceReviewer -> PostDecision in PermMatrix.Allowed }"
+    },
+    {
+      "fact_name": "F_DecisionByAssignedOfficer",
+      "asserts_violated": [
+        "FR_013_OnlyAssignedOfficerDecides",
+        "AttributionCorrectness"
+      ],
+      "rationale": "Clearing this fact removes the constraint that the deciding officer equals the assigned officer. The injection creates an application where the decision is recorded by a different LoanOfficer than the one assigned, violating FR_013_OnlyAssignedOfficerDecides.",
+      "inject_violation": "fact MUTATE_WrongDecider { some a: LoanApplication | some a.appDecision and a.appDecision.decidedBy != a.assignedOfficer }"
+    },
+    {
+      "fact_name": "F_OneInFlightPerCustomer",
+      "asserts_violated": [
+        "FR_008_OneInFlight"
+      ],
+      "rationale": "Clearing this fact removes the uniqueness constraint on in-flight applications per customer. The injection forces two distinct applications owned by the same customer to both be in-flight simultaneously, directly violating FR_008_OneInFlight.",
+      "inject_violation": "fact MUTATE_TwoInFlight { some disj a1, a2: LoanApplication | a1.owner = a2.owner and a1.status = Submitted and a2.status = Submitted }"
+    },
+    {
+      "fact_name": "F_AuditNoSpuriousTransitions",
+      "asserts_violated": [
+        "FR_016_TerminalStateImmutable",
+        "FR_009_ValidStateMachine"
+      ],
+      "rationale": "Clearing this fact allows events with any prevStatus/newStatus combination. The injection creates an audit event whose prevStatus is Approved, representing an illegal transition out of a terminal state, violating FR_016_TerminalStateImmutable and FR_009_ValidStateMachine.",
+      "inject_violation": "fact MUTATE_TransitionFromTerminal { some e: ApplicationEvent | e.prevStatus = Approved and e.newStatus = Rejected }"
+    }
+  ]
+}

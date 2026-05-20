@@ -1,0 +1,148 @@
+{
+  "feature_id": "A-L3",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "NoSelfMutation"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_RoleMultiplicity",
+    "FR_007_ValidationConstraints",
+    "FR_008_OneInFlightPerApplicant",
+    "FR_009_AllowedTransitions",
+    "FR_010_AssignmentExcludesApplicant",
+    "FR_012_OnlyAssignedOfficerCanModify",
+    "FR_013_NoSelfApproval",
+    "FR_014_ReasonRequired",
+    "FR_015_NoChangesToDecided",
+    "FR_005_AuditorReadOnly",
+    "FR_023_AuditEndpointAuditorOnly",
+    "FR_024_ApplicantPostSubmissionImmutability"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_RoleMultiplicity"
+    ],
+    "FR-003": [
+      "OwnershipBasedAccess",
+      "FR_024_ApplicantPostSubmissionImmutability"
+    ],
+    "FR-004": [
+      "NoSelfMutation"
+    ],
+    "FR-005": [
+      "FR_005_AuditorReadOnly"
+    ],
+    "FR-007": [
+      "FR_007_ValidationConstraints"
+    ],
+    "FR-008": [
+      "FR_008_OneInFlightPerApplicant"
+    ],
+    "FR-009": [
+      "FR_009_AllowedTransitions"
+    ],
+    "FR-010": [
+      "FR_010_AssignmentExcludesApplicant"
+    ],
+    "FR-011": [
+      "FR_010_AssignmentExcludesApplicant"
+    ],
+    "FR-012": [
+      "FR_012_OnlyAssignedOfficerCanModify"
+    ],
+    "FR-013": [
+      "FR_013_NoSelfApproval"
+    ],
+    "FR-014": [
+      "FR_014_ReasonRequired"
+    ],
+    "FR-015": [
+      "FR_015_NoChangesToDecided"
+    ],
+    "FR-016": [
+      "AuditCompleteness"
+    ],
+    "FR-018": [
+      "AppendOnly"
+    ],
+    "FR-020": [
+      "NoInformationLeakage"
+    ],
+    "FR-021": [
+      "NoInformationLeakage"
+    ],
+    "FR-023": [
+      "FR_023_AuditEndpointAuditorOnly"
+    ],
+    "FR-024": [
+      "FR_024_ApplicantPostSubmissionImmutability"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_005_AuditorReadOnly",
+        "FR_023_AuditEndpointAuditorOnly",
+        "FR_024_ApplicantPostSubmissionImmutability"
+      ],
+      "rationale": "Removing the permission matrix definition would allow roles to have arbitrary permissions, violating least-privilege and role-specific access controls. The constraint is foundational to all permission-based assertions.",
+      "inject_violation": "fact MUTATE_PermissionViolation { (Applicant -> PatchApplicationStatus) in PermMatrix.Allowed }"
+    },
+    {
+      "fact_name": "F_OfficerAssignmentConstraint",
+      "asserts_violated": [
+        "NoSelfMutation",
+        "FR_010_AssignmentExcludesApplicant"
+      ],
+      "rationale": "Removing this constraint allows an application's assigned officer to be the same user as the applicant, violating the no-self-approval and conflict-of-interest prevention rules fundamental to the feature.",
+      "inject_violation": "fact MUTATE_SelfAssignmentViolation { some app: LoanApplication | app.assigned_officer = app.applicant }"
+    },
+    {
+      "fact_name": "F_InitialAuditEntry",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "AuthRequiredEverywhere"
+      ],
+      "rationale": "Removing this fact allows applications to exist without an initial audit entry, violating the audit-completeness invariant that every application creation must be recorded in the audit log.",
+      "inject_violation": "fact MUTATE_MissingInitialAudit { some app: LoanApplication | no ae: AuditEntry | ae.application = app and ae.previous_status = none }"
+    },
+    {
+      "fact_name": "F_ValidStatusTransitions",
+      "asserts_violated": [
+        "FR_009_AllowedTransitions"
+      ],
+      "rationale": "Removing this fact allows invalid state transitions (e.g., pending \u2192 approved, or transitions from terminal states), violating the state-machine invariant documented in FR-009.",
+      "inject_violation": "fact MUTATE_InvalidTransition { some ae: AuditEntry | ae.previous_status = Pending and ae.new_status = Approved }"
+    },
+    {
+      "fact_name": "F_OfficerDecisionConstraints",
+      "asserts_violated": [
+        "FR_012_OnlyAssignedOfficerCanModify",
+        "FR_013_NoSelfApproval"
+      ],
+      "rationale": "Removing this constraint allows non-assigned officers or applicants to create audit entries for status transitions, or allows an officer to decide their own application, violating both assignment and self-approval rules.",
+      "inject_violation": "fact MUTATE_UnauthorizedDecision { some ae: AuditEntry | ae.previous_status != none and ae.actor != ae.application.assigned_officer }"
+    },
+    {
+      "fact_name": "F_OneInFlightPerApplicant",
+      "asserts_violated": [
+        "FR_008_OneInFlightPerApplicant"
+      ],
+      "rationale": "Removing this constraint allows an applicant to submit multiple in-flight (pending/under_review) applications simultaneously, violating the one-in-flight rule that prevents concurrent application flooding.",
+      "inject_violation": "fact MUTATE_MultipleInFlight { some user: User | some disj app1, app2: LoanApplication | app1.applicant = user and app2.applicant = user and (app1.status = Pending or app1.status = UnderReview) and (app2.status = Pending or app2.status = UnderReview) }"
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "LeastPrivilege": "PASS",
+  "AuthRequiredEverywhere": "PASS",
+  "AuditCompleteness": "PASS",
+  "AppendOnly": "PASS",
+  "OwnershipBasedAccess": "PASS",
+  "NoInformationLeakage": "PASS",
+  "AttributionCorrectness": "PASS",
+  "FR_005_ReadOnlyScope": "PASS",
+  "FR_006_CareTeamRequirement": "PASS",
+  "FR_007_DenialIndistinguishability": "PASS",
+  "FR_011_AuditOfficerRecordAccess": "PASS",
+  "FR_010_AuditImmutability": "PASS"
+}

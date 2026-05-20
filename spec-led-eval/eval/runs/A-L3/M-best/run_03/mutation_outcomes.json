@@ -1,0 +1,42 @@
+{
+  "F_AppendOnlyAuditEntries": {
+    "targeted_asserts": {
+      "AppendOnly": "BIT",
+      "FR_018_AuditAppendOnly": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_NoSelfAssignment": {
+    "targeted_asserts": {
+      "NoSelfMutation": "BIT",
+      "FR_011_NoSelfAssignment": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_StatusReflectsAudit": {
+    "targeted_asserts": {
+      "AuditCompleteness": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_LeastPrivilege": {
+    "targeted_asserts": {
+      "LeastPrivilege": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_GetApplicationOutcome": {
+    "targeted_asserts": {
+      "NoInformationLeakage": "BIT",
+      "FR_020_ByteEquivalentNoLeak": "BIT",
+      "OwnershipBasedAccess": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_OneInFlightPerApplicant": {
+    "targeted_asserts": {
+      "FR_008_OneInFlight": "BIT"
+    },
+    "all_bit": true
+  }
+}

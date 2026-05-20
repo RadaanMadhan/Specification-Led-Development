@@ -1,0 +1,174 @@
+==============================================================================
+  Design Compliance Report  (Phase 3 — feature_model.als)
+  feature       : C-L1
+  spec source   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/eval/specs/C-L1
+  alloy model   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/C-L1/feature_model.als
+  patterns      : AuthRequiredEverywhere, LeastPrivilege, PermissionCompleteness, OwnershipBasedAccess, NoInformationLeakage, AuditCompleteness, AppendOnly, AttributionCorrectness
+  fr count      : 15 declared in spec.md
+  assertions    : 23 total (7/23 PASS via Alloy)
+==============================================================================
+
+  Compliance matrix
+  ----------------------------------------------------------------------------
+  Assertion                         Verdict   Anchor
+  ----------------------------------------------------------------------
+  AuthRequiredEverywhere            FAIL      PATTERN AuthRequiredEverywhere: spec.md FR-001, SC-004; contracts/http-api.md "Authentication"
+  LeastPrivilege                    FAIL      PATTERN LeastPrivilege: contracts/http-api.md authorisation; spec.md FR-005, FR-006, FR-011
+  PermissionCompleteness            PASS      PATTERN PermissionCompleteness: contracts/http-api.md authorisation tables
+  OwnershipBasedAccess              FAIL      PATTERN OwnershipBasedAccess: spec.md FR-006; data-model.md CareTeamMembership
+  NoInformationLeakage              FAIL      PATTERN NoInformationLeakage: spec.md FR-007, SC-003, FR-011, SC-011
+  AuditCompleteness                 FAIL      PATTERN AuditCompleteness: spec.md FR-008, SC-001, SC-002; contracts/http-api.md
+  AppendOnly                        FAIL      PATTERN AppendOnly: spec.md FR-010, SC-006; data-model.md "no UPDATE/DELETE on audit_entries"
+  AttributionCorrectness            FAIL      PATTERN AttributionCorrectness: spec.md FR-009; data-model.md AuditEntry
+  FR_001_AuthRequired               FAIL      FEATURE-SPECIFIC: FR-001 (authentication required; no audit for failed auth)
+  FR_002_OneRolePerUser             PASS      FEATURE-SPECIFIC: FR-002 (role/identity from host context; one role per user)
+  FR_003_AuditQueryablePerPatient   FAIL      FEATURE-SPECIFIC: FR-003 (NHS regulatory regime; audit queryable per patient)
+  FR_004_NoPatientIdInPath          PASS      FEATURE-SPECIFIC: FR-004 (patient_id never in URL path => only POST endpoints)
+  FR_005_ReadOnly                   PASS      FEATURE-SPECIFIC: FR-005 (v1 is read-only; only LookupRecord touches a record)
+  FR_006_CareTeamGating             FAIL      FEATURE-SPECIFIC: FR-006 (care-team-membership gating; no break-glass)
+  FR_007_ByteEquivDenyNotFound      FAIL      FEATURE-SPECIFIC: FR-007 (byte-equivalent deny vs not-found)
+  FR_008_AuditEveryAccess           FAIL      FEATURE-SPECIFIC: FR-008 (always-on audit on the clinical endpoint)
+  FR_009_AuditEntryShape            PASS      FEATURE-SPECIFIC: FR-009 (audit-entry shape: clinician, role, patient, outcome, basis, kind)
+  FR_010_AuditAppendOnly            FAIL      FEATURE-SPECIFIC: FR-010 (audit immutability; append-only)
+  FR_011_IGOnlyAuditEndpoint        FAIL      FEATURE-SPECIFIC: FR-011 (IG-only audit endpoint; hidden from clinical)
+  FR_012_RetentionNoDelete          FAIL      FEATURE-SPECIFIC: FR-012 (8-year retention floor; no DELETE path)
+  FR_013_NoRecordWithoutAudit       FAIL      FEATURE-SPECIFIC: FR-013 (2-second audit SLA; no record observed without audit)
+  FR_014_SafetyContentSurfaced      PASS      FEATURE-SPECIFIC: FR-014 (allergies + key-warnings at top of every record view)
+  FR_015_VerificationBlockSurfaced  PASS      FEATURE-SPECIFIC: FR-015 (patient identifier + DoB at top of every record view)
+
+  Counterexamples (Alloy SAT)
+  ----------------------------------------------------------------------------
+  AuthRequiredEverywhere  [PATTERN AuthRequiredEverywhere: spec.md FR-001, SC-004; contracts/http-api.md "Authentication"]
+    Alloy: 00. check AuthRequiredEverywhere     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  LeastPrivilege  [PATTERN LeastPrivilege: contracts/http-api.md authorisation; spec.md FR-005, FR-006, FR-011]
+    Alloy: 01. check LeastPrivilege           0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  OwnershipBasedAccess  [PATTERN OwnershipBasedAccess: spec.md FR-006; data-model.md CareTeamMembership]
+    Alloy: 03. check OwnershipBasedAccess     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  NoInformationLeakage  [PATTERN NoInformationLeakage: spec.md FR-007, SC-003, FR-011, SC-011]
+    Alloy: 04. check NoInformationLeakage     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  AuditCompleteness  [PATTERN AuditCompleteness: spec.md FR-008, SC-001, SC-002; contracts/http-api.md]
+    Alloy: 05. check AuditCompleteness        0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  AppendOnly  [PATTERN AppendOnly: spec.md FR-010, SC-006; data-model.md "no UPDATE/DELETE on audit_entries"]
+    Alloy: 06. check AppendOnly               0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  AttributionCorrectness  [PATTERN AttributionCorrectness: spec.md FR-009; data-model.md AuditEntry]
+    Alloy: 07. check AttributionCorrectness     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR_001_AuthRequired  [FEATURE-SPECIFIC: FR-001 (authentication required; no audit for failed auth)]
+    Alloy: 08. check FR_001_AuthRequired      0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR_003_AuditQueryablePerPatient  [FEATURE-SPECIFIC: FR-003 (NHS regulatory regime; audit queryable per patient)]
+    Alloy: 10. check FR_003_AuditQueryablePerPatient     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR_006_CareTeamGating  [FEATURE-SPECIFIC: FR-006 (care-team-membership gating; no break-glass)]
+    Alloy: 13. check FR_006_CareTeamGating     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR_007_ByteEquivDenyNotFound  [FEATURE-SPECIFIC: FR-007 (byte-equivalent deny vs not-found)]
+    Alloy: 14. check FR_007_ByteEquivDenyNotFound     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR_008_AuditEveryAccess  [FEATURE-SPECIFIC: FR-008 (always-on audit on the clinical endpoint)]
+    Alloy: 15. check FR_008_AuditEveryAccess     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR_010_AuditAppendOnly  [FEATURE-SPECIFIC: FR-010 (audit immutability; append-only)]
+    Alloy: 17. check FR_010_AuditAppendOnly     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR_011_IGOnlyAuditEndpoint  [FEATURE-SPECIFIC: FR-011 (IG-only audit endpoint; hidden from clinical)]
+    Alloy: 18. check FR_011_IGOnlyAuditEndpoint     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR_012_RetentionNoDelete  [FEATURE-SPECIFIC: FR-012 (8-year retention floor; no DELETE path)]
+    Alloy: 19. check FR_012_RetentionNoDelete     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR_013_NoRecordWithoutAudit  [FEATURE-SPECIFIC: FR-013 (2-second audit SLA; no record observed without audit)]
+    Alloy: 20. check FR_013_NoRecordWithoutAudit     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR coverage
+  ----------------------------------------------------------------------------
+  FR-001  →  FR_001_AuthRequired=FAIL, AuthRequiredEverywhere=FAIL
+  FR-002  →  FR_002_OneRolePerUser=PASS
+  FR-003  →  FR_003_AuditQueryablePerPatient=FAIL
+  FR-004  →  FR_004_NoPatientIdInPath=PASS
+  FR-005  →  FR_005_ReadOnly=PASS
+  FR-006  →  FR_006_CareTeamGating=FAIL, OwnershipBasedAccess=FAIL
+  FR-007  →  FR_007_ByteEquivDenyNotFound=FAIL, NoInformationLeakage=FAIL
+  FR-008  →  FR_008_AuditEveryAccess=FAIL, AuditCompleteness=FAIL
+  FR-009  →  FR_009_AuditEntryShape=PASS, AttributionCorrectness=FAIL
+  FR-010  →  FR_010_AuditAppendOnly=FAIL, AppendOnly=FAIL
+  FR-011  →  FR_011_IGOnlyAuditEndpoint=FAIL, LeastPrivilege=FAIL
+  FR-012  →  FR_012_RetentionNoDelete=FAIL
+  FR-013  →  FR_013_NoRecordWithoutAudit=FAIL
+  FR-014  →  FR_014_SafetyContentSurfaced=PASS
+  FR-015  →  FR_015_VerificationBlockSurfaced=PASS
+
+  All FRs have at least one matching assertion.
+
+==============================================================================
+  Mutation tests  (assertion-strength validation)
+==============================================================================
+
+  Strategy: replace each named fact's body with `{}` (no constraint),
+  then re-run Alloy. Each listed assertion should now FAIL on the
+  mutated model. If it still PASSes, the assertion is vacuous and
+  must be strengthened.
+
+  - MUTATE F_PermissionMatrix  → runs/C-L1/mutated_F_PermissionMatrix.als
+    rationale: Clearing the permission matrix removes the (Role x OperationKind) allow set; the injected fact then forces an AuditOfficer to invoke LookupRecord, which LeastPrivilege and FR_011 must catch.
+    expected to FAIL: LeastPrivilege, FR_011_IGOnlyAuditEndpoint, NoInformationLeakage
+      - LeastPrivilege: FAIL (expected)
+      - FR_011_IGOnlyAuditEndpoint: FAIL (expected)
+      - NoInformationLeakage: FAIL (expected)
+
+  - MUTATE F_AuditEntryWiring  → runs/C-L1/mutated_F_AuditEntryWiring.als
+    rationale: Clearing the audit-entry wiring removes the link between Operations and AuditEntries; the injection forces a Permitted LookupRecord operation with no audit entry, which the audit-completeness assertions must catch.
+    expected to FAIL: AuditCompleteness, FR_008_AuditEveryAccess, FR_013_NoRecordWithoutAudit
+      - AuditCompleteness: FAIL (expected)
+      - FR_008_AuditEveryAccess: FAIL (expected)
+      - FR_013_NoRecordWithoutAudit: FAIL (expected)
+
+  - MUTATE F_CallerRoleSnapshotMatchesCaller  → runs/C-L1/mutated_F_CallerRoleSnapshotMatchesCaller.als
+    rationale: Removing the snapshot=caller.role linkage allows AuditEntries whose recorded role differs from the actual caller's role, which AttributionCorrectness and AppendOnly are designed to catch.
+    expected to FAIL: AttributionCorrectness, AppendOnly, FR_010_AuditAppendOnly
+      - AttributionCorrectness: FAIL (expected)
+      - AppendOnly: FAIL (expected)
+      - FR_010_AuditAppendOnly: FAIL (expected)
+
+  - MUTATE F_NonEmptyUniverse  → runs/C-L1/mutated_F_NonEmptyUniverse.als
+    rationale: With universe witnesses removed, the injection still forces a concrete Permitted LookupRecord operation where the caller is NOT on the patient's care team — this is exactly the care-team gating violation that FR_006 and OwnershipBasedAccess must catch.
+    expected to FAIL: OwnershipBasedAccess, FR_006_CareTeamGating
+      - OwnershipBasedAccess: FAIL (expected)
+      - FR_006_CareTeamGating: FAIL (expected)
+
+  - MUTATE F_AuditEntryWiring  → runs/C-L1/mutated_F_AuditEntryWiring.als
+    rationale: Removing wiring lets the injection construct a non-care-team Permitted lookup, which leaks patient existence to non-care-team callers and breaks byte-equivalence guarantees.
+    expected to FAIL: NoInformationLeakage, FR_007_ByteEquivDenyNotFound
+      - NoInformationLeakage: FAIL (expected)
+      - FR_007_ByteEquivDenyNotFound: FAIL (expected)
+
+  Mutation summary
+  ----------------------------------------------------------------------------
+  - F_PermissionMatrix: ASSERTIONS BIT (LeastPrivilege, FR_011_IGOnlyAuditEndpoint, NoInformationLeakage)
+  - F_AuditEntryWiring: ASSERTIONS BIT (AuditCompleteness, FR_008_AuditEveryAccess, FR_013_NoRecordWithoutAudit)
+  - F_CallerRoleSnapshotMatchesCaller: ASSERTIONS BIT (AttributionCorrectness, AppendOnly, FR_010_AuditAppendOnly)
+  - F_NonEmptyUniverse: ASSERTIONS BIT (OwnershipBasedAccess, FR_006_CareTeamGating)
+  - F_AuditEntryWiring: ASSERTIONS BIT (NoInformationLeakage, FR_007_ByteEquivDenyNotFound)
+

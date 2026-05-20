@@ -1,0 +1,144 @@
+{
+  "feature_id": "B-L1",
+  "patterns_applied": [
+    "AuthRequiredEverywhere",
+    "PermissionCompleteness",
+    "AppendOnly",
+    "AuditCompleteness",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "ValidationBeforeMutation"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_IdentityFromAuthContext",
+    "FR_003_SingleWorkspace",
+    "FR_004_FlatPermissions",
+    "FR_008_AssigneeMustBeMember",
+    "FR_009_CreatorAndTimestampFixed",
+    "FR_010_StatusIsValid",
+    "FR_011_ClosedTaskEditRule",
+    "FR_012_AnyMemberMayDelete",
+    "FR_017_TimestampsAlwaysPresent",
+    "FR_018_DeletionLogged"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "AuthRequiredEverywhere",
+      "FR_001_AuthRequired"
+    ],
+    "FR-002": [
+      "FR_002_IdentityFromAuthContext"
+    ],
+    "FR-003": [
+      "FR_003_SingleWorkspace"
+    ],
+    "FR-004": [
+      "PermissionCompleteness",
+      "FR_004_FlatPermissions"
+    ],
+    "FR-005": [
+      "ValidationBeforeMutation"
+    ],
+    "FR-006": [
+      "ValidationBeforeMutation"
+    ],
+    "FR-007": [
+      "ValidationBeforeMutation"
+    ],
+    "FR-008": [
+      "OwnershipExclusivity",
+      "FR_008_AssigneeMustBeMember"
+    ],
+    "FR-009": [
+      "FR_009_CreatorAndTimestampFixed"
+    ],
+    "FR-010": [
+      "FR_010_StatusIsValid"
+    ],
+    "FR-011": [
+      "ValidationBeforeMutation",
+      "FR_011_ClosedTaskEditRule"
+    ],
+    "FR-012": [
+      "FR_012_AnyMemberMayDelete"
+    ],
+    "FR-013": [
+      "FR_012_AnyMemberMayDelete"
+    ],
+    "FR-014": [
+      "FR_003_SingleWorkspace"
+    ],
+    "FR-015": [
+      "FR_003_SingleWorkspace"
+    ],
+    "FR-016": [
+      "FR_003_SingleWorkspace"
+    ],
+    "FR-017": [
+      "FR_017_TimestampsAlwaysPresent"
+    ],
+    "FR-018": [
+      "AppendOnly",
+      "AuditCompleteness",
+      "AttributionCorrectness",
+      "FR_018_DeletionLogged"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_AuthRequired",
+      "asserts_violated": [
+        "AuthRequiredEverywhere",
+        "FR_001_AuthRequired"
+      ],
+      "rationale": "Removing F_AuthRequired allows the model to construct an Operation with no caller (unauthenticated) whose outcome is Succeeded. Both AuthRequiredEverywhere and FR_001_AuthRequired assert this cannot happen; clearing the fact makes a counterexample easy to find.",
+      "inject_violation": "fact MUTATE_AuthRequiredViolation { some op: Operation | no op.op_caller and op.op_outcome = Succeeded }"
+    },
+    {
+      "fact_name": "F_ClosedTaskEditRule",
+      "asserts_violated": [
+        "ValidationBeforeMutation",
+        "FR_011_ClosedTaskEditRule"
+      ],
+      "rationale": "Removing F_ClosedTaskEditRule lets the model produce an EditOperation on a Done task that Succeeded without supplying a non-Done new status, directly violating the closed-task invariant. The injected fact forces exactly that shape.",
+      "inject_violation": "fact MUTATE_ClosedTaskEditViolation { some eo: EditOperation | eo.edit_prior_status = Done and eo.op_outcome = Succeeded and eo.edit_new_status = Done }"
+    },
+    {
+      "fact_name": "F_DeletionLogComplete",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_018_DeletionLogged"
+      ],
+      "rationale": "Removing F_DeletionLogComplete decouples successful delete operations from TaskDeletion entries. The injected fact constructs a successful delete with a defined caller and target yet forces the TaskDeletion set to be empty, producing a counterexample to AuditCompleteness.",
+      "inject_violation": "fact MUTATE_DeletionLogMissing { some op: Operation | op.op_kind = OpDelete and op.op_outcome = Succeeded and some op.op_caller and some op.op_target and no TaskDeletion }"
+    },
+    {
+      "fact_name": "F_FlatPermissions",
+      "asserts_violated": [
+        "PermissionCompleteness",
+        "FR_004_FlatPermissions"
+      ],
+      "rationale": "Removing F_FlatPermissions lets the model assign OutcomePermDenied to an authenticated caller's operation, contradicting the flat peer model. The injected fact forces a Succeeded authenticated caller together with another authenticated caller receiving OutcomePermDenied on the same operation kind.",
+      "inject_violation": "fact MUTATE_FlatPermissionsViolation { some op: Operation | some op.op_caller and op.op_outcome = OutcomePermDenied }"
+    },
+    {
+      "fact_name": "F_AssigneeMustBeMember",
+      "asserts_violated": [
+        "OwnershipExclusivity",
+        "FR_008_AssigneeMustBeMember"
+      ],
+      "rationale": "Removing F_AssigneeMustBeMember permits a Task to have an assignee that is not in Member, or to have more than one assignee (since the lone cardinality of the sig field still holds but the fact that enforces membership is gone). The injected fact forces two distinct assignee slots to be occupied, violating lone.",
+      "inject_violation": "fact MUTATE_AssigneeViolation { some disj m1, m2: Member | some t: Task | m1 in t.task_assignee and m2 in t.task_assignee }"
+    },
+    {
+      "fact_name": "F_AppendOnlyDeletionLog",
+      "asserts_violated": [
+        "AppendOnly",
+        "AttributionCorrectness"
+      ],
+      "rationale": "Removing F_AppendOnlyDeletionLog allows TaskDeletion entries with no deleter or no task reference (partially cleared records). The injected fact manufactures a TaskDeletion with an empty tdel_deleter set, violating both AppendOnly (structural completeness of the log) and AttributionCorrectness.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some td: TaskDeletion | no td.tdel_deleter }"
+    }
+  ]
+}

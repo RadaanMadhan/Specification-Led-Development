@@ -1,0 +1,130 @@
+{
+  "feature_id": "A-L3",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "NoSelfMutation"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AllOperationsRequireAuth",
+    "FR_003_ApplicantPermissions",
+    "FR_005_AuditorCannotWrite",
+    "FR_008_OneInFlightPerApplicant",
+    "FR_009_ValidStatusMachine",
+    "FR_012_OnlyAssignedOfficerCanPatch",
+    "FR_013_NoSelfApprovalOrDecision"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AllOperationsRequireAuth",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "F_RoleExclusion"
+    ],
+    "FR-003": [
+      "FR_003_ApplicantPermissions",
+      "LeastPrivilege"
+    ],
+    "FR-005": [
+      "FR_005_AuditorCannotWrite",
+      "LeastPrivilege"
+    ],
+    "FR-008": [
+      "FR_008_OneInFlightPerApplicant"
+    ],
+    "FR-009": [
+      "FR_009_ValidStatusMachine"
+    ],
+    "FR-010": [
+      "F_ValidAssignment"
+    ],
+    "FR-011": [
+      "F_ValidAssignment"
+    ],
+    "FR-012": [
+      "FR_012_OnlyAssignedOfficerCanPatch"
+    ],
+    "FR-013": [
+      "FR_013_NoSelfApprovalOrDecision",
+      "NoSelfMutation"
+    ],
+    "FR-016": [
+      "AuditCompleteness",
+      "AttributionCorrectness"
+    ],
+    "FR-018": [
+      "AppendOnly"
+    ],
+    "FR-020": [
+      "NoInformationLeakage"
+    ],
+    "FR-021": [
+      "OwnershipBasedAccess",
+      "NoInformationLeakage"
+    ],
+    "FR-022": [
+      "NoInformationLeakage"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_AuditCompleteness",
+      "asserts_violated": [
+        "AuditCompleteness"
+      ],
+      "rationale": "Removing this fact allows the model to have applications with statuses that lack corresponding audit entries. The AuditCompleteness assertion directly checks that every status has exactly one audit entry; without the fact, Alloy will construct a counterexample where an application has a status but no audit entry.",
+      "inject_violation": "fact MUTATE_AuditCompletenessViolation { some app: Application | app.status = Approved and no ae: AuditEntry | ae.application = app and ae.new_status = Approved }"
+    },
+    {
+      "fact_name": "F_NoSelfApproval",
+      "asserts_violated": [
+        "FR_013_NoSelfApprovalOrDecision",
+        "NoSelfMutation"
+      ],
+      "rationale": "Removing this fact allows officers to approve applications where they are the applicant. The FR_013 and NoSelfMutation assertions verify that this never happens; without the fact, Alloy will find a counterexample with an officer deciding their own application.",
+      "inject_violation": "fact MUTATE_SelfApprovalViolation { some ae: AuditEntry, app: Application | ae.application = app and ae.actor_role = Officer and ae.new_status = Approved and ae.actor = app.applicant }"
+    },
+    {
+      "fact_name": "F_AssignedOfficerOnly",
+      "asserts_violated": [
+        "FR_012_OnlyAssignedOfficerCanPatch"
+      ],
+      "rationale": "Removing this fact allows any officer to patch any application, even if they are not assigned. The FR_012 assertion verifies that status changes only come from the assigned officer; without the fact, Alloy will construct a counterexample with an unassigned officer changing status.",
+      "inject_violation": "fact MUTATE_AssignedOfficerViolation { some ae: AuditEntry, app: Application | ae.application = app and ae.actor_role = Officer and ae.new_status = UnderReview and ae.actor != app.assigned_officer }"
+    },
+    {
+      "fact_name": "F_ValidTransitions",
+      "asserts_violated": [
+        "FR_009_ValidStatusMachine"
+      ],
+      "rationale": "Removing this fact allows invalid status transitions such as pending \u2192 approved (skipping under_review). The FR_009 assertion verifies that only the documented transitions occur; without the fact, Alloy will find a counterexample with an invalid transition.",
+      "inject_violation": "fact MUTATE_InvalidTransitionViolation { some ae: AuditEntry | ae.prev_status = Pending and ae.new_status = Approved }"
+    },
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_003_ApplicantPermissions",
+        "FR_005_AuditorCannotWrite"
+      ],
+      "rationale": "Removing this fact allows the permission matrix to be undefined or incorrect. The LeastPrivilege, FR_003, and FR_005 assertions verify the correctness of role-operation permissions; without the fact, Alloy will construct a model where forbidden operations appear to be allowed.",
+      "inject_violation": "fact MUTATE_PermissionViolation { (Applicant -> PatchStatus) in Permissions.allowed }"
+    },
+    {
+      "fact_name": "F_OneInFlightPerApplicant",
+      "asserts_violated": [
+        "FR_008_OneInFlightPerApplicant"
+      ],
+      "rationale": "Removing this fact allows applicants to have multiple in-flight applications simultaneously. The FR_008 assertion verifies the one-in-flight constraint; without the fact, Alloy will find a counterexample with duplicate pending/under_review applications for the same applicant.",
+      "inject_violation": "fact MUTATE_MultipleInFlightViolation { some disj app1, app2: Application, u: User | app1.applicant = u and app2.applicant = u and (app1.status = Pending or app1.status = UnderReview) and (app2.status = Pending or app2.status = UnderReview) }"
+    }
+  ]
+}

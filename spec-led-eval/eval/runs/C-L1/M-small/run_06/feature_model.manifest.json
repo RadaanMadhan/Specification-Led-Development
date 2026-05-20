@@ -1,0 +1,107 @@
+{
+  "feature_id": "C-L1",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "NoInformationLeakage"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthenticationRequired",
+    "FR_005_ReadOnlyScope",
+    "FR_006_CareTeamMembershipGating",
+    "FR_007_ByteEquivalentResponses",
+    "FR_008_AlwaysOnAudit",
+    "FR_009_AuditEntryCompleteness",
+    "FR_010_AuditImmutability",
+    "FR_011_AuditEndpointIGOnly"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthenticationRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-005": [
+      "FR_005_ReadOnlyScope"
+    ],
+    "FR-006": [
+      "FR_006_CareTeamMembershipGating",
+      "LeastPrivilege"
+    ],
+    "FR-007": [
+      "FR_007_ByteEquivalentResponses",
+      "NoInformationLeakage"
+    ],
+    "FR-008": [
+      "FR_008_AlwaysOnAudit",
+      "AuditCompleteness"
+    ],
+    "FR-009": [
+      "FR_009_AuditEntryCompleteness"
+    ],
+    "FR-010": [
+      "FR_010_AuditImmutability",
+      "AppendOnly"
+    ],
+    "FR-011": [
+      "FR_011_AuditEndpointIGOnly",
+      "LeastPrivilege"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege"
+      ],
+      "rationale": "Removing the permission matrix definition removes the structural constraint that controls which roles can access which endpoints. The LeastPrivilege assertion checks that clinical roles can access RecordsLookup and AuditOfficer can access AuditSearch; without this fact, Alloy can construct models where these permissions do not hold.",
+      "inject_violation": "fact MUTATE_PermissionViolation { Doctor -> AuditSearch in PermMatrix.Allowed }"
+    },
+    {
+      "fact_name": "F_AppendOnlyAuditEntries",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_010_AuditImmutability"
+      ],
+      "rationale": "Removing the immutability constraint on audit entries allows Alloy to construct a universe where two audit entries have identical values in all fields (a mutation). The AppendOnly assertion checks for structural distinctness; without this fact, duplicates become possible.",
+      "inject_violation": "fact MUTATE_AuditMutation { some disj ae1, ae2: AuditEntry | ae1.clinician_id = ae2.clinician_id and ae1.patient_id = ae2.patient_id and ae1.occurred_at = ae2.occurred_at and ae1.outcome = ae2.outcome }"
+    },
+    {
+      "fact_name": "F_CareTeamMembershipControls",
+      "asserts_violated": [
+        "FR_006_CareTeamMembershipGating"
+      ],
+      "rationale": "Removing the fact that permitted outcomes only occur when care-team membership exists allows a clinician to successfully access a patient without being on their care team. The assertion checks that permitted outcomes are always backed by an active membership; without the fact, this link is broken.",
+      "inject_violation": "fact MUTATE_CareTeamBypass { some c: Clinician, p: Patient, audit: AuditEntry | audit.clinician_id = c.clinician_id and audit.patient_id = p.patient_id and audit.outcome = Permitted and no membership: CareTeamMembership | membership.clinician = c and membership.patient = p and membership.is_active = 1 }"
+    },
+    {
+      "fact_name": "F_AuditCompleteness",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_008_AlwaysOnAudit"
+      ],
+      "rationale": "Removing the constraint that clinician data (display_name, role) in audit entries matches the actual clinician record allows audit entries to be written with incorrect snapshots. The assertion checks for consistency; without this fact, misattribution becomes possible.",
+      "inject_violation": "fact MUTATE_AuditMisattribution { some c: Clinician, audit: AuditEntry | audit.clinician_id = c.clinician_id and audit.clinician_display_name != c.display_name }"
+    },
+    {
+      "fact_name": "F_ByteEquivalentDenialResponses",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "FR_007_ByteEquivalentResponses"
+      ],
+      "rationale": "Removing the constraint that both Denied and NotFoundOrDenied outcomes exist in the model allows an incomplete state where only one of the two indistinguishable outcomes is ever produced. The assertion checks that both outcomes are reachable; without the fact, one becomes unreachable.",
+      "inject_violation": "fact MUTATE_InformationLeakage { all audit: AuditEntry | audit.outcome != NotFoundOrDenied }"
+    },
+    {
+      "fact_name": "F_AuthenticationRequired",
+      "asserts_violated": [
+        "AuthRequiredEverywhere",
+        "FR_001_AuthenticationRequired"
+      ],
+      "rationale": "Removing the fact that every audit entry is backed by an authenticated clinician allows the model to contain an audit entry with a clinician_id that has no corresponding Clinician in the universe. The assertion checks for this link; without the fact, it is broken.",
+      "inject_violation": "fact MUTATE_UnauthenticatedAccess { some audit: AuditEntry | no c: Clinician | c.clinician_id = audit.clinician_id }"
+    }
+  ]
+}

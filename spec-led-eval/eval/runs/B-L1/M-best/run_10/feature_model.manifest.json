@@ -1,0 +1,150 @@
+{
+  "feature_id": "B-L1",
+  "patterns_applied": [
+    "AuthRequiredEverywhere",
+    "PermissionCompleteness",
+    "AppendOnly",
+    "AuditCompleteness",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "ValidationBeforeMutation"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_IdentityFromContext",
+    "FR_003_SingleWorkspace",
+    "FR_004_FlatPermissions",
+    "FR_005_TitleLength",
+    "FR_006_DescriptionLength",
+    "FR_007_AssigneeOptional",
+    "FR_008_AssigneeIsMember",
+    "FR_009_CreatorRecorded",
+    "FR_010_StatusInSet",
+    "FR_011_ClosedTaskEditRule",
+    "FR_012_PermanentDeletion",
+    "FR_013_V1Scope",
+    "FR_014_ListOrdering",
+    "FR_015_Filtering",
+    "FR_016_ClearFilters",
+    "FR_017_Timestamps",
+    "FR_018_DeletionLog"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "AuthRequiredEverywhere",
+      "FR_001_AuthRequired"
+    ],
+    "FR-002": [
+      "FR_002_IdentityFromContext"
+    ],
+    "FR-003": [
+      "FR_003_SingleWorkspace"
+    ],
+    "FR-004": [
+      "FR_004_FlatPermissions",
+      "PermissionCompleteness"
+    ],
+    "FR-005": [
+      "FR_005_TitleLength",
+      "ValidationBeforeMutation"
+    ],
+    "FR-006": [
+      "FR_006_DescriptionLength",
+      "ValidationBeforeMutation"
+    ],
+    "FR-007": [
+      "FR_007_AssigneeOptional"
+    ],
+    "FR-008": [
+      "FR_008_AssigneeIsMember",
+      "OwnershipExclusivity"
+    ],
+    "FR-009": [
+      "FR_009_CreatorRecorded",
+      "OwnershipExclusivity"
+    ],
+    "FR-010": [
+      "FR_010_StatusInSet"
+    ],
+    "FR-011": [
+      "FR_011_ClosedTaskEditRule"
+    ],
+    "FR-012": [
+      "FR_012_PermanentDeletion"
+    ],
+    "FR-013": [
+      "FR_013_V1Scope"
+    ],
+    "FR-014": [
+      "FR_014_ListOrdering"
+    ],
+    "FR-015": [
+      "FR_015_Filtering"
+    ],
+    "FR-016": [
+      "FR_016_ClearFilters"
+    ],
+    "FR-017": [
+      "FR_017_Timestamps"
+    ],
+    "FR-018": [
+      "FR_018_DeletionLog",
+      "AuditCompleteness",
+      "AppendOnly",
+      "AttributionCorrectness"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_AuthRequired",
+      "asserts_violated": [
+        "AuthRequiredEverywhere",
+        "FR_001_AuthRequired"
+      ],
+      "rationale": "Clearing the auth-required fact lets Alloy invent a successful Operation that was never authenticated; the injection forces exactly such an op to exist within scope, so the universal assertion that succeeded implies authenticated must find a counterexample.",
+      "inject_violation": "fact MUTATE_AuthBypass { some op: Operation | op.succeeded = True and op.authenticated = False }"
+    },
+    {
+      "fact_name": "F_DeletionLogAppendOnly",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_018_DeletionLog"
+      ],
+      "rationale": "Clearing append-only allows two distinct DeletionLogEntry atoms to share the same deletedTaskId; the injection forces that configuration. AppendOnly's pairwise-distinct claim then has a witness counterexample.",
+      "inject_violation": "fact MUTATE_AppendOnlyDup { some disj e1, e2: DeletionLogEntry | e1.deletedTaskId = e2.deletedTaskId }"
+    },
+    {
+      "fact_name": "F_DeletionLogCompleteness",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_018_DeletionLog"
+      ],
+      "rationale": "Clearing the completeness fact allows a successful DeleteTaskKind operation to leave no matching log entry. The injection forces such an op to exist with no entry referencing its target, breaking AuditCompleteness.",
+      "inject_violation": "fact MUTATE_MissingLog { some op: Operation | op.kind = DeleteTaskKind and op.succeeded = True and some op.target and (no e: DeletionLogEntry | e.deletedTaskId = op.target) }"
+    },
+    {
+      "fact_name": "F_DeletionAttribution",
+      "asserts_violated": [
+        "AttributionCorrectness"
+      ],
+      "rationale": "Clearing the attribution fact allows a log entry whose deleter differs from the actual delete op's caller. The injection forces such a misattributed entry to coexist with a matching successful delete op.",
+      "inject_violation": "fact MUTATE_Misattribution { some op: Operation, e: DeletionLogEntry | op.kind = DeleteTaskKind and op.succeeded = True and op.target = e.deletedTaskId and e.deleter != op.caller }"
+    },
+    {
+      "fact_name": "F_ClosedTaskEditRule",
+      "asserts_violated": [
+        "FR_011_ClosedTaskEditRule"
+      ],
+      "rationale": "Clearing the closed-task fact allows a successful EDIT on a Done task whose body did not simultaneously reopen it. The injection forces precisely that violating shape into the universe.",
+      "inject_violation": "fact MUTATE_ClosedEditBypass { some op: Operation | op.kind = EditTaskKind and op.succeeded = True and some op.target and op.target.status = Done and op.bodyReopens = False }"
+    },
+    {
+      "fact_name": "F_IdentityFromContext",
+      "asserts_violated": [
+        "FR_002_IdentityFromContext"
+      ],
+      "rationale": "Clearing the identity-binding fact allows a successful create whose stored creator does not match the op's authenticated caller (e.g., payload-controlled creator). The injection forces such a mismatch.",
+      "inject_violation": "fact MUTATE_ImpersonatedCreate { some op: Operation, t: Task | op.kind = CreateTaskKind and op.succeeded = True and op.target = t and t.creator != op.caller }"
+    }
+  ]
+}

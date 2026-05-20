@@ -1,0 +1,153 @@
+{
+  "feature_id": "A-L1",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "ConcurrencySafety"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthenticatedCustomerSubmits",
+    "FR_002_ValidationBeforeMutation",
+    "FR_004_UniqueReferenceAndPendingInitial",
+    "FR_005_OnePendingPerCustomer",
+    "FR_009_NonEmptyReasonOnDecision",
+    "FR_010_DecisionPersistedWithDecider",
+    "FR_011_NoReDecisionOnDecidedApp",
+    "FR_013_CustomerSeesOnlyOwnApps",
+    "FR_014_NotificationOnStatusChange",
+    "FR_015_OnlyStaffCanDecide",
+    "FR_016_AuditTrailCompleteness",
+    "FR_017_RetentionNoDelete",
+    "FR_007_StaffCanAccessAuditAndQueue"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthenticatedCustomerSubmits",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_ValidationBeforeMutation"
+    ],
+    "FR-003": [
+      "FR_002_ValidationBeforeMutation"
+    ],
+    "FR-004": [
+      "FR_004_UniqueReferenceAndPendingInitial",
+      "OwnershipExclusivity"
+    ],
+    "FR-005": [
+      "FR_005_OnePendingPerCustomer"
+    ],
+    "FR-006": [
+      "FR_004_UniqueReferenceAndPendingInitial"
+    ],
+    "FR-007": [
+      "FR_007_StaffCanAccessAuditAndQueue",
+      "LeastPrivilege"
+    ],
+    "FR-008": [
+      "FR_007_StaffCanAccessAuditAndQueue",
+      "OwnershipBasedAccess"
+    ],
+    "FR-009": [
+      "FR_009_NonEmptyReasonOnDecision"
+    ],
+    "FR-010": [
+      "FR_010_DecisionPersistedWithDecider",
+      "AuditCompleteness"
+    ],
+    "FR-011": [
+      "FR_011_NoReDecisionOnDecidedApp",
+      "ConcurrencySafety"
+    ],
+    "FR-012": [
+      "ConcurrencySafety",
+      "FR_011_NoReDecisionOnDecidedApp"
+    ],
+    "FR-013": [
+      "FR_013_CustomerSeesOnlyOwnApps",
+      "OwnershipBasedAccess",
+      "NoInformationLeakage"
+    ],
+    "FR-014": [
+      "FR_014_NotificationOnStatusChange"
+    ],
+    "FR-015": [
+      "FR_015_OnlyStaffCanDecide",
+      "LeastPrivilege"
+    ],
+    "FR-016": [
+      "FR_016_AuditTrailCompleteness",
+      "AppendOnly",
+      "AttributionCorrectness",
+      "AuditCompleteness"
+    ],
+    "FR-017": [
+      "FR_017_RetentionNoDelete"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_OnePendingPerCustomer",
+      "asserts_violated": [
+        "FR_005_OnePendingPerCustomer",
+        "ConcurrencySafety"
+      ],
+      "rationale": "Removing this fact allows two LoanApplications with PendingReview status to share the same customer, directly violating FR-005 and the uniqueness invariant the assertion checks.",
+      "inject_violation": "fact MUTATE_OnePendingViolation { some disj a1, a2: LoanApplication | a1.status = PendingReview and a2.status = PendingReview and a1.customer = a2.customer }"
+    },
+    {
+      "fact_name": "F_AtMostOneDecisionPerApp",
+      "asserts_violated": [
+        "ConcurrencySafety",
+        "FR_011_NoReDecisionOnDecidedApp"
+      ],
+      "rationale": "Removing this fact permits two distinct Decision rows referencing the same application, modelling a failed concurrency guard (FR-012, SC-005). The ConcurrencySafety and FR_011 assertions should then find a counterexample.",
+      "inject_violation": "fact MUTATE_TwoDecisionsViolation { some disj d1, d2: Decision | d1.application = d2.application }"
+    },
+    {
+      "fact_name": "F_AppendOnlyAuditEntries",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_016_AuditTrailCompleteness",
+        "AuditCompleteness"
+      ],
+      "rationale": "Removing the append-only fact allows an ApplicationEvent with eventType EvtApproved to exist on an application that is still in PendingReview, simulating a forged or out-of-order audit entry \u2014 exactly what the AppendOnly assertion is meant to catch.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some e: ApplicationEvent | e.eventType = EvtApproved and e.application.status = PendingReview }"
+    },
+    {
+      "fact_name": "F_NoInfoLeakage",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "FR_013_CustomerSeesOnlyOwnApps"
+      ],
+      "rationale": "Removing this fact allows an Operation where a customer accesses another customer's application and receives Forbidden instead of NotFound, leaking existence information in violation of FR-013 and SC-004.",
+      "inject_violation": "fact MUTATE_LeakageViolation { some op: Operation | op.kind = OpGetApplicationByRef and op.caller.role = CustomerRole and some op.targetApp and op.targetApp.customer != op.caller and op.outcome = Forbidden }"
+    },
+    {
+      "fact_name": "F_DeciderHasBankStaffRole",
+      "asserts_violated": [
+        "FR_015_OnlyStaffCanDecide",
+        "LeastPrivilege"
+      ],
+      "rationale": "Removing this fact allows a Decision to be recorded by a user with CustomerRole as decidedBy, breaking the bank-staff-only restriction from FR-015. LeastPrivilege and FR_015 assertions should then fail.",
+      "inject_violation": "fact MUTATE_CustomerDeciderViolation { some d: Decision | d.decidedBy.role = CustomerRole }"
+    },
+    {
+      "fact_name": "F_AttributionDecision",
+      "asserts_violated": [
+        "AttributionCorrectness",
+        "FR_016_AuditTrailCompleteness"
+      ],
+      "rationale": "Removing this fact allows an EvtApproved audit event whose actor does not match the staff member in the corresponding Decision row \u2014 a misattribution that violates FR-016's requirement that the audit record names who decided.",
+      "inject_violation": "fact MUTATE_AttributionViolation { some e: ApplicationEvent | e.eventType = EvtApproved and (all d: Decision | d.application = e.application implies d.decidedBy != e.actor) }"
+    }
+  ]
+}

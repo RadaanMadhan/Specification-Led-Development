@@ -1,0 +1,99 @@
+{
+  "feature_id": "B-L1",
+  "patterns_applied": [
+    "AuthRequiredEverywhere",
+    "LeastPrivilege",
+    "AppendOnly",
+    "OwnershipExclusivity"
+  ],
+  "feature_specific_predicates": [
+    "FR_002_IdentityFromContext",
+    "FR_003_SingleWorkspace",
+    "FR_005_TitleValidation",
+    "FR_006_DescriptionValidation",
+    "FR_007_DueDateAllowed",
+    "FR_008_AssigneeValidation",
+    "FR_009_CreatorImmutable",
+    "FR_010_StatusTransitions",
+    "FR_011_ClosedTaskRule",
+    "FR_012_PermanentDeletion",
+    "FR_014_ListOrdering",
+    "FR_017_TimestampSemantics",
+    "FR_018_DeletionLog"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_IdentityFromContext"
+    ],
+    "FR-003": [
+      "FR_003_SingleWorkspace"
+    ],
+    "FR-004": [
+      "LeastPrivilege"
+    ],
+    "FR-005": [
+      "FR_005_TitleValidation"
+    ],
+    "FR-006": [
+      "FR_006_DescriptionValidation"
+    ],
+    "FR-007": [
+      "FR_007_DueDateAllowed"
+    ],
+    "FR-008": [
+      "FR_008_AssigneeValidation"
+    ],
+    "FR-009": [
+      "FR_009_CreatorImmutable",
+      "OwnershipExclusivity"
+    ],
+    "FR-010": [
+      "FR_010_StatusTransitions"
+    ],
+    "FR-011": [
+      "FR_011_ClosedTaskRule"
+    ],
+    "FR-012": [
+      "FR_012_PermanentDeletion"
+    ],
+    "FR-014": [
+      "FR_014_ListOrdering"
+    ],
+    "FR-017": [
+      "FR_017_TimestampSemantics"
+    ],
+    "FR-018": [
+      "FR_018_DeletionLog",
+      "AppendOnly"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_AppendOnlyDeletionLog",
+      "asserts_violated": [
+        "AppendOnly"
+      ],
+      "rationale": "The deletion log must be append-only with no duplicate entries for the same task. Removing this fact allows multiple TaskDeletion records with the same task_id, which violates the uniqueness constraint essential to FR-018 (operational log integrity).",
+      "inject_violation": "fact MUTATE_DupDeletion { some disj td1, td2: System.task_deletions | td1.task_id = td2.task_id }"
+    },
+    {
+      "fact_name": "F_FR_005_TitleValidation",
+      "asserts_violated": [
+        "FR_005_TitleValidation"
+      ],
+      "rationale": "Task titles must be non-empty (1-200 characters after trimming). Removing this fact allows empty titles to be created, directly violating the core input validation requirement from FR-005.",
+      "inject_violation": "fact MUTATE_EmptyTitle { some t: System.tasks | t.title = \"\" }"
+    },
+    {
+      "fact_name": "F_FR_012_PermanentDeletion",
+      "asserts_violated": [
+        "FR_012_PermanentDeletion"
+      ],
+      "rationale": "Deleted tasks must be permanently removed from the task list. Removing this fact allows a task to simultaneously exist in System.tasks and have a deletion record in System.task_deletions, violating the permanence and non-recoverability of deletion.",
+      "inject_violation": "fact MUTATE_RecoverableTask { some t: System.tasks | some td: System.task_deletions | td.task_id = t.id }"
+    }
+  ]
+}

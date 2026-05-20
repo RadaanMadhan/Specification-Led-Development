@@ -1,0 +1,18 @@
+{
+  "LeastPrivilege": "PASS",
+  "OwnershipExclusivity": "PASS",
+  "OwnershipBasedAccess": "PASS",
+  "AuditCompleteness": "PASS",
+  "AppendOnly": "PASS",
+  "AttributionCorrectness": "PASS",
+  "AuthRequiredEverywhere": "PASS",
+  "FR_002_OneRolePerUser": "PASS",
+  "FR_003_PatientRecordAssignment": "PASS",
+  "FR_004_CareTeamGating": "PASS",
+  "FR_006_PatientSelfAccess": "PASS",
+  "FR_007_ComplianceOfficerRestriction": "PASS",
+  "FR_012_AppendOnlyNotes": "PASS",
+  "FR_013_OneAuditPerAccess": "PASS",
+  "FR_014_AuditRoleSnapshot": "PASS",
+  "FR_015_AuditImmutability": "PASS"
+}

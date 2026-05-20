@@ -1,0 +1,192 @@
+{
+  "feature_id": "A-L2",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "ValidationBeforeMutation",
+    "ConcurrencySafety"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_CustomerPermissions",
+    "FR_003_LoanOfficerPermissions",
+    "FR_004_ComplianceReviewerPermissions",
+    "FR_005_CustomerIdentityFromAuth",
+    "FR_008_OneInFlightPerCustomer",
+    "FR_009_AuditOnSubmission",
+    "FR_011_ClaimTransitionAudit",
+    "FR_012_ExclusiveClaim",
+    "FR_013_OnlyAssignedOfficerDecides",
+    "FR_015_AtomicDecisionRecord",
+    "FR_016_TerminalStateImmutability",
+    "FR_017_AuditForEveryTransition",
+    "FR_018_AppendOnlyAudit",
+    "FR_019_ExactlyOneAuditPerTransition",
+    "FR_020_CustomerOwnsApplication",
+    "FR_021_OfficerIdentityHiddenFromCustomer",
+    "FR_023_ComplianceReadOnly"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_CustomerPermissions",
+      "LeastPrivilege"
+    ],
+    "FR-003": [
+      "FR_003_LoanOfficerPermissions",
+      "LeastPrivilege"
+    ],
+    "FR-004": [
+      "FR_004_ComplianceReviewerPermissions",
+      "FR_023_ComplianceReadOnly",
+      "LeastPrivilege"
+    ],
+    "FR-005": [
+      "FR_005_CustomerIdentityFromAuth",
+      "OwnershipExclusivity"
+    ],
+    "FR-006": [
+      "ValidationBeforeMutation"
+    ],
+    "FR-007": [
+      "ValidationBeforeMutation"
+    ],
+    "FR-008": [
+      "FR_008_OneInFlightPerCustomer",
+      "ConcurrencySafety"
+    ],
+    "FR-009": [
+      "FR_009_AuditOnSubmission",
+      "AuditCompleteness"
+    ],
+    "FR-010": [
+      "FR_003_LoanOfficerPermissions"
+    ],
+    "FR-011": [
+      "FR_011_ClaimTransitionAudit",
+      "AuditCompleteness"
+    ],
+    "FR-012": [
+      "FR_012_ExclusiveClaim",
+      "ConcurrencySafety"
+    ],
+    "FR-013": [
+      "FR_013_OnlyAssignedOfficerDecides",
+      "ValidationBeforeMutation"
+    ],
+    "FR-014": [
+      "ValidationBeforeMutation"
+    ],
+    "FR-015": [
+      "FR_015_AtomicDecisionRecord",
+      "AttributionCorrectness"
+    ],
+    "FR-016": [
+      "FR_016_TerminalStateImmutability"
+    ],
+    "FR-017": [
+      "FR_017_AuditForEveryTransition",
+      "AuditCompleteness",
+      "AttributionCorrectness"
+    ],
+    "FR-018": [
+      "FR_018_AppendOnlyAudit",
+      "AppendOnly"
+    ],
+    "FR-019": [
+      "FR_019_ExactlyOneAuditPerTransition",
+      "AuditCompleteness",
+      "AppendOnly"
+    ],
+    "FR-020": [
+      "FR_020_CustomerOwnsApplication",
+      "OwnershipBasedAccess",
+      "NoInformationLeakage"
+    ],
+    "FR-021": [
+      "FR_021_OfficerIdentityHiddenFromCustomer"
+    ],
+    "FR-022": [
+      "FR_016_TerminalStateImmutability"
+    ],
+    "FR-023": [
+      "FR_023_ComplianceReadOnly",
+      "FR_004_ComplianceReviewerPermissions"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_002_CustomerPermissions",
+        "FR_003_LoanOfficerPermissions",
+        "FR_004_ComplianceReviewerPermissions",
+        "FR_023_ComplianceReadOnly",
+        "PermissionCompleteness"
+      ],
+      "rationale": "Clearing the permission matrix body leaves PermMatrix.Allowed unconstrained, allowing Alloy to assign any set of (Role, OperationKind) pairs. The injected violation forces ComplianceReviewer to have DecideApplication, directly breaking LeastPrivilege and FR_004/FR_023 assertions.",
+      "inject_violation": "fact MUTATE_PermissionMatrixViolation { ComplianceReviewer -> DecideApplication in PermMatrix.Allowed }"
+    },
+    {
+      "fact_name": "F_OneInFlightPerCustomer",
+      "asserts_violated": [
+        "FR_008_OneInFlightPerCustomer",
+        "ConcurrencySafety"
+      ],
+      "rationale": "Clearing the one-in-flight constraint allows a customer to have two Submitted applications simultaneously. The injection forces exactly that scenario, which FR_008_OneInFlightPerCustomer and ConcurrencySafety must detect.",
+      "inject_violation": "fact MUTATE_OneInFlightViolation { some disj a1, a2: LoanApplication | a1.appCustomer = a2.appCustomer and a1.status = Submitted and a2.status = Submitted }"
+    },
+    {
+      "fact_name": "F_DeciderIsAssignedOfficer",
+      "asserts_violated": [
+        "FR_013_OnlyAssignedOfficerDecides",
+        "AttributionCorrectness",
+        "ValidationBeforeMutation"
+      ],
+      "rationale": "Clearing this fact decouples the deciding officer from the assigned officer. The injection creates a Decision where decidedBy differs from the application's assignedOfficer, directly violating FR_013 and AttributionCorrectness.",
+      "inject_violation": "fact MUTATE_DeciderNotAssigned { some d: Decision | some u: User | u.role = LoanOfficer and u != d.appDecision.assignedOfficer and d.decidedBy = u }"
+    },
+    {
+      "fact_name": "F_UniqueInitialAuditEntry",
+      "asserts_violated": [
+        "FR_009_AuditOnSubmission",
+        "FR_019_ExactlyOneAuditPerTransition",
+        "AppendOnly",
+        "FR_018_AppendOnlyAudit"
+      ],
+      "rationale": "Clearing uniqueness of the initial audit entry allows duplicate (null\u2192Submitted) entries for the same application. The injection forces two such entries to exist, violating FR_019, AppendOnly, and FR_018.",
+      "inject_violation": "fact MUTATE_DuplicateInitialAudit { some a: LoanApplication | some disj e1, e2: AuditEntry | e1.auditApp = a and e2.auditApp = a and no e1.prevStatus and no e2.prevStatus and e1.newStatus = Submitted and e2.newStatus = Submitted }"
+    },
+    {
+      "fact_name": "F_AtMostOneDecisionPerApplication",
+      "asserts_violated": [
+        "FR_015_AtomicDecisionRecord",
+        "FR_016_TerminalStateImmutability",
+        "AuditCompleteness"
+      ],
+      "rationale": "Clearing this fact allows two Decision rows for the same application. The injection forces exactly two decisions on the same application, which FR_015 and FR_016 must catch because the state machine guarantees at most one terminal decision.",
+      "inject_violation": "fact MUTATE_DuplicateDecision { some disj d1, d2: Decision | d1.appDecision = d2.appDecision }"
+    },
+    {
+      "fact_name": "F_AuditActorRolesMatchTransition",
+      "asserts_violated": [
+        "AttributionCorrectness",
+        "FR_021_OfficerIdentityHiddenFromCustomer",
+        "FR_017_AuditForEveryTransition"
+      ],
+      "rationale": "Clearing this fact allows a Customer-role user to be the actor on a claim or decision audit entry, breaking attribution and FR-021. The injection forces a Customer actor on an UnderReview transition entry.",
+      "inject_violation": "fact MUTATE_WrongActorRole { some e: AuditEntry | e.newStatus = UnderReview and e.actor.role = Customer }"
+    }
+  ]
+}

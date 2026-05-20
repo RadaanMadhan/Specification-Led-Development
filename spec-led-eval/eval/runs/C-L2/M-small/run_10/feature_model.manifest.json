@@ -1,0 +1,113 @@
+{
+  "feature_id": "C-L2",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "NoInformationLeakage"
+  ],
+  "feature_specific_predicates": [
+    "CareTeamGatingForClinicals",
+    "AdminCannotAccessClinical",
+    "AuditNoteIdConsistency",
+    "NoteAuthorMustBeClinical",
+    "NoInformationLeakageOnDenial",
+    "ListAuditOnlyByAdmin",
+    "ValidNoteTypeOnly",
+    "ValidAuditOutcome",
+    "ValidAuthorisationBasis"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "AuthRequiredEverywhere"
+    ],
+    "FR-004": [
+      "CareTeamGatingForClinicals",
+      "LeastPrivilege"
+    ],
+    "FR-005": [
+      "AdminCannotAccessClinical",
+      "LeastPrivilege"
+    ],
+    "FR-006": [
+      "NoInformationLeakageOnDenial"
+    ],
+    "FR-009": [
+      "ValidNoteTypeOnly"
+    ],
+    "FR-011": [
+      "NotesAppendOnly",
+      "NoteAuthorsAreClinical"
+    ],
+    "FR-012": [
+      "AuditCompletenessForNotes"
+    ],
+    "FR-013": [
+      "AuditNoteIdOnlyForAddNotePermitted",
+      "AuditUserRoleSnapshot",
+      "ValidAuditOutcome",
+      "ValidAuthorisationBasis"
+    ],
+    "FR-014": [
+      "AuditAppendOnly"
+    ],
+    "FR-017": [
+      "ListAuditOnlyByAdmin"
+    ],
+    "FR-018": [
+      "AdminCannotAccessClinical"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege"
+      ],
+      "rationale": "Removing the permission matrix definition allows audit entries with invalid role-operation pairs to exist, which LeastPrivilege must catch.",
+      "inject_violation": "fact MUTATE_InvalidPermission { some ae: AuditEntry | ae.user.role = Doctor and ae.access_type = ListAudit }"
+    },
+    {
+      "fact_name": "F_CareTeamGating",
+      "asserts_violated": [
+        "CareTeamGatingForClinicals"
+      ],
+      "rationale": "Removing care-team gating allows clinical users to succeed (Permitted outcome) without active care-team membership, directly violating the predicate.",
+      "inject_violation": "fact MUTATE_NoCareteamRequired { some ae: AuditEntry, u: User, p: Patient | ae.user = u and ae.patient = p and ae.outcome = Permitted and ae.access_type = RecordRead and (no ctm: CareTeamMembership | ctm.clinician = u and ctm.patient = p and ctm.status = Active) }"
+    },
+    {
+      "fact_name": "F_NotesAppendOnly",
+      "asserts_violated": [
+        "NotesAppendOnly"
+      ],
+      "rationale": "Removing the uniqueness constraint on note IDs allows duplicate note_id values, violating the append-only and immutability invariant.",
+      "inject_violation": "fact MUTATE_DuplicateNotes { some disj n1, n2: ClinicalNote | n1.note_id = n2.note_id }"
+    },
+    {
+      "fact_name": "F_AuditAppendOnly",
+      "asserts_violated": [
+        "AuditAppendOnly"
+      ],
+      "rationale": "Removing audit ID uniqueness allows duplicate audit_id values, violating immutability of audit entries.",
+      "inject_violation": "fact MUTATE_DuplicateAudit { some disj ae1, ae2: AuditEntry | ae1.audit_id = ae2.audit_id }"
+    },
+    {
+      "fact_name": "F_AuditCompletenessForNotes",
+      "asserts_violated": [
+        "AuditCompletenessForNotes"
+      ],
+      "rationale": "Removing the requirement that every note has a matching audit entry allows orphaned notes without audit records.",
+      "inject_violation": "fact MUTATE_OrphanedNote { some n: ClinicalNote | no ae: AuditEntry | ae.access_type = AddNote and ae.outcome = Permitted and ae.note_id = n.note_id }"
+    },
+    {
+      "fact_name": "F_NoInformationLeakageOnDenial",
+      "asserts_violated": [
+        "NoInformationLeakageOnDenial"
+      ],
+      "rationale": "Removing the requirement that denied clinical access use NotCareTeamMember basis allows leakage of PatientNotFound vs. denied distinction.",
+      "inject_violation": "fact MUTATE_LeakageOnDenial { some ae: AuditEntry | let clinicalRoles = Doctor + Nurse + Pharmacist + ClinicalAdmin | ae.user.role in clinicalRoles and ae.access_type = RecordRead and ae.outcome = Denied and ae.authorisation_basis = PatientNotFound }"
+    }
+  ]
+}

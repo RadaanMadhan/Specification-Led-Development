@@ -1,0 +1,165 @@
+{
+  "feature_id": "012-hospital-clinical-records",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AppendOnlyAudit",
+    "AttributionCorrectness",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "ValidationBeforeMutation"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_FiveRoleCatalogue",
+    "FR_003_PatientIdNotInUrl",
+    "FR_004_CareTeamGating",
+    "FR_005_AdminNoClinicalContent",
+    "FR_006_ByteEquivalentNotFound",
+    "FR_007_PermittedReadShape",
+    "FR_008_RecordPayloadScope",
+    "FR_009_NoNoteOnDenial",
+    "FR_010_NoteAttribution",
+    "FR_011_NotesAppendOnly",
+    "FR_012_AuditPerAccess",
+    "FR_013_AuditSnapshot",
+    "FR_014_AuditImmutable",
+    "FR_015_NoPermittedWithoutAudit",
+    "FR_016_AuditNotDeleted",
+    "FR_017_AdminOnlyListAudit",
+    "FR_018_AdminContentBlind",
+    "FR_019_SafetyFieldsFirst",
+    "FR_020_NotesCountBeforeNotes"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_FiveRoleCatalogue"
+    ],
+    "FR-003": [
+      "FR_003_PatientIdNotInUrl"
+    ],
+    "FR-004": [
+      "FR_004_CareTeamGating",
+      "OwnershipBasedAccess"
+    ],
+    "FR-005": [
+      "FR_005_AdminNoClinicalContent",
+      "LeastPrivilege"
+    ],
+    "FR-006": [
+      "FR_006_ByteEquivalentNotFound",
+      "NoInformationLeakage"
+    ],
+    "FR-007": [
+      "FR_007_PermittedReadShape"
+    ],
+    "FR-008": [
+      "FR_008_RecordPayloadScope"
+    ],
+    "FR-009": [
+      "FR_009_NoNoteOnDenial",
+      "ValidationBeforeMutation"
+    ],
+    "FR-010": [
+      "FR_010_NoteAttribution"
+    ],
+    "FR-011": [
+      "FR_011_NotesAppendOnly",
+      "AppendOnly"
+    ],
+    "FR-012": [
+      "FR_012_AuditPerAccess",
+      "AuditCompleteness"
+    ],
+    "FR-013": [
+      "FR_013_AuditSnapshot",
+      "AttributionCorrectness"
+    ],
+    "FR-014": [
+      "FR_014_AuditImmutable",
+      "AppendOnlyAudit"
+    ],
+    "FR-015": [
+      "FR_015_NoPermittedWithoutAudit"
+    ],
+    "FR-016": [
+      "FR_016_AuditNotDeleted"
+    ],
+    "FR-017": [
+      "FR_017_AdminOnlyListAudit",
+      "LeastPrivilege"
+    ],
+    "FR-018": [
+      "FR_018_AdminContentBlind"
+    ],
+    "FR-019": [
+      "FR_019_SafetyFieldsFirst"
+    ],
+    "FR-020": [
+      "FR_020_NotesCountBeforeNotes"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_LeastPrivilegeStructural",
+      "asserts_violated": [
+        "LeastPrivilege"
+      ],
+      "rationale": "Removing the role/op permission constraint and forcing a Doctor to succeed at the admin-only ListAudit endpoint produces an instance where a Permitted operation falls outside PermMatrix.Allowed \u2014 exactly what LeastPrivilege rules out.",
+      "inject_violation": "fact MUTATE_LeastPrivilegeViolation { some op: Operation | op.outcome = Permitted and op.caller.userRole = Doctor and op.opKind = ListAudit }"
+    },
+    {
+      "fact_name": "F_AuditCompletenessFact",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_012_AuditPerAccess",
+        "FR_015_NoPermittedWithoutAudit"
+      ],
+      "rationale": "Clearing the audit-completeness fact and inserting an authenticated RecordLookup that has no audit entry breaks the one-audit-per-clinical-access invariant.",
+      "inject_violation": "fact MUTATE_AuditCompletenessViolation { some op: Operation | some op.authenticated and op.opKind = RecordLookup and (no ae: AuditEntry | ae.ofOperation = op) }"
+    },
+    {
+      "fact_name": "F_CareTeamGating",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_004_CareTeamGating"
+      ],
+      "rationale": "Without care-team gating, a Permitted RecordLookup can exist for a caller with no membership row \u2014 directly violating the ownership-based access invariant.",
+      "inject_violation": "fact MUTATE_CareTeamGatingViolation { some op: Operation | op.outcome = Permitted and op.opKind = RecordLookup and (no ct: CareTeamMembership | ct.ctClinician = op.caller and ct.ctPatient = op.targetPatient and some ct.ctActive) }"
+    },
+    {
+      "fact_name": "F_AuditSnapshotsMatchOp",
+      "asserts_violated": [
+        "AttributionCorrectness",
+        "FR_013_AuditSnapshot"
+      ],
+      "rationale": "Without the snapshot-equality fact, an AuditEntry can record a different user than the operation's actual caller \u2014 a textbook misattribution counterexample.",
+      "inject_violation": "fact MUTATE_AttributionViolation { some ae: AuditEntry | ae.auditUser != ae.ofOperation.caller }"
+    },
+    {
+      "fact_name": "F_ExternalResponseShape",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "FR_006_ByteEquivalentNotFound"
+      ],
+      "rationale": "Clearing the response-shape fact and forcing two non-Permitted operations to differ in externalResponse reveals the existence/non-existence distinction that FR-006 forbids.",
+      "inject_violation": "fact MUTATE_LeakageViolation { some disj op1, op2: Operation | op1.outcome = Denied and op2.outcome = NotFoundOrDenied and op1.externalResponse != op2.externalResponse }"
+    },
+    {
+      "fact_name": "F_NoteUniqueCreatingOp",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_011_NotesAppendOnly"
+      ],
+      "rationale": "Without the unique-creator constraint, two distinct operations can share a ClinicalNote \u2014 the cleanest static stand-in for note mutation/duplication that append-only rules out.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some disj op1, op2: Operation | some op1.createdNote and op1.createdNote = op2.createdNote }"
+    }
+  ]
+}

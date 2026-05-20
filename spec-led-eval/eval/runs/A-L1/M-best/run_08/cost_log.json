@@ -1,0 +1,13 @@
+{
+  "run_id": "A-L1",
+  "model": "M-best",
+  "thinking_enabled": true,
+  "thinking_budget_tokens": null,
+  "input_tokens": 22403,
+  "output_tokens": 29693,
+  "thinking_tokens": null,
+  "cost_usd": 0.85434,
+  "cost_per_assertion_usd": 0.030512142857142856,
+  "started_at": "2026-05-18T19:19:19.515509+00:00",
+  "elapsed_seconds": 309.600152625
+}

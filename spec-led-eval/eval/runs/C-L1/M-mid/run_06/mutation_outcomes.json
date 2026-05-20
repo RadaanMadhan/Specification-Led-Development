@@ -1,0 +1,44 @@
+{
+  "F_AppendOnlyAuditEntries": {
+    "targeted_asserts": {
+      "AppendOnly": "BIT",
+      "FR_010_AuditAppendOnly": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_PermissionMatrix": {
+    "targeted_asserts": {
+      "LeastPrivilege": "BIT",
+      "PermissionCompleteness": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_CareTeamMembershipGating": {
+    "targeted_asserts": {
+      "OwnershipBasedAccess": "BIT",
+      "FR_006_CareTeamGating": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_UnauthenticatedProducesNoAuditEntry": {
+    "targeted_asserts": {
+      "AuthRequiredEverywhere": "BIT",
+      "FR_001_AuthRequired": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_ByteEquivalentRefusal": {
+    "targeted_asserts": {
+      "NoInformationLeakage": "BIT",
+      "FR_007_ByteEquivalentRefusal": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_IGEndpointHiddenFromClinicalRoles": {
+    "targeted_asserts": {
+      "NoInformationLeakage": "VACUOUS_OVERCONSTRAINT",
+      "FR_011_IGEndpointHiddenFromClinicians": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  }
+}

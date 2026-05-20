@@ -1,0 +1,46 @@
+{
+  "F_PermissionMatrix": {
+    "targeted_asserts": {
+      "LeastPrivilege": "BIT",
+      "FR_015_StaffOnlyDecision": "BIT",
+      "FR_001_CustomerSubmit": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AppendOnlyAuditEntries": {
+    "targeted_asserts": {
+      "AppendOnly": "BIT",
+      "FR_016_AuditTrailComplete": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_OnePendingPerCustomer": {
+    "targeted_asserts": {
+      "FR_005_OnePendingPerCustomer": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AtMostOneDecisionPerApp": {
+    "targeted_asserts": {
+      "ConcurrencySafety": "BIT",
+      "FR_011_DecidedAppImmutable": "BIT",
+      "FR_012_ConcurrentDecisionOnlyOneWins": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_OwnershipBasedAccess": {
+    "targeted_asserts": {
+      "OwnershipBasedAccess": "BIT",
+      "NoInformationLeakage": "BIT",
+      "FR_013_CustomerOwnershipAccess": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AttributionCorrectness": {
+    "targeted_asserts": {
+      "AttributionCorrectness": "VACUOUS_OVERCONSTRAINT",
+      "FR_016_AuditTrailComplete": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  }
+}

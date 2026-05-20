@@ -1,0 +1,48 @@
+{
+  "F_AppendOnlyNotes": {
+    "targeted_asserts": {
+      "AppendOnly": "BIT",
+      "FR_011_NotesAppendOnly": "BIT",
+      "FR_009_ValidationBeforeMutation": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AuditOneToOneWithOperation": {
+    "targeted_asserts": {
+      "AuditCompleteness": "BIT",
+      "FR_012_AlwaysOnAudit": "BIT",
+      "FR_014_AuditEntriesImmutable": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_RoleOperationPermission": {
+    "targeted_asserts": {
+      "LeastPrivilege": "BIT",
+      "FR_017_ListAuditAdminOnly": "BIT",
+      "FR_005_AdminContentBlindness": "BIT",
+      "PermissionCompleteness": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_CareTeamGatingForClinicalOps": {
+    "targeted_asserts": {
+      "OwnershipBasedAccess": "BIT",
+      "FR_004_CareTeamGating": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_ClinicalNoteAuthorMustBeClinicalRole": {
+    "targeted_asserts": {
+      "FR_010_NoteAuthorIsClinicalRole": "VACUOUS_OVERCONSTRAINT",
+      "FR_005_AdminContentBlindness": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_NoteRefAuditConstraint": {
+    "targeted_asserts": {
+      "FR_013_NoteIdInAuditOnlyForPermittedAddNote": "VACUOUS_OVERCONSTRAINT",
+      "AttributionCorrectness": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  }
+}

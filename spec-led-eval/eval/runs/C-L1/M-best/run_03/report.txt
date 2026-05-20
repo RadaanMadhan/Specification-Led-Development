@@ -1,0 +1,117 @@
+==============================================================================
+  Design Compliance Report  (Phase 3 — feature_model.als)
+  feature       : C-L1
+  spec source   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/eval/specs/C-L1
+  alloy model   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/C-L1/feature_model.als
+  patterns      : LeastPrivilege, PermissionCompleteness, PermissionGrounding, AuthRequiredEverywhere, AuditCompleteness, AppendOnly, AttributionCorrectness, OwnershipBasedAccess, NoInformationLeakage, ValidationBeforeMutation
+  fr count      : 15 declared in spec.md
+  assertions    : 24 total (24/24 PASS via Alloy)
+==============================================================================
+
+  Compliance matrix
+  ----------------------------------------------------------------------------
+  Assertion                            Verdict   Anchor
+  -------------------------------------------------------------------------
+  AuthRequiredEverywhere               PASS      PATTERN AuthRequiredEverywhere: spec.md FR-001; contracts/http-api.md auth boundary
+  LeastPrivilege                       PASS      PATTERN LeastPrivilege: contracts/http-api.md auth tables
+  PermissionCompleteness               PASS      PATTERN PermissionCompleteness: contracts/http-api.md permission tables
+  PermissionGrounding                  PASS      PATTERN PermissionGrounding: contracts/http-api.md "no silent grants"
+  AuditCompleteness                    PASS      PATTERN AuditCompleteness: spec.md FR-008, FR-009; SC-001, SC-002
+  AppendOnly                           PASS      PATTERN AppendOnly: spec.md FR-010; data-model.md "no UPDATE/DELETE on audit_entries"
+  AttributionCorrectness               PASS      PATTERN AttributionCorrectness: spec.md FR-009 snapshot semantics
+  OwnershipBasedAccess                 PASS      PATTERN OwnershipBasedAccess: spec.md FR-006 (care-team membership)
+  NoInformationLeakage                 PASS      PATTERN NoInformationLeakage: spec.md FR-007, SC-003, SC-011
+  ValidationBeforeMutation             PASS      PATTERN ValidationBeforeMutation: contracts/http-api.md validation_error path
+  FR_001_AuthRequired                  PASS      FEATURE-SPECIFIC: FR-001
+  FR_002_HostProvidedIdentity          PASS      FEATURE-SPECIFIC: FR-002
+  FR_003_AuditPerPatientQueryable      PASS      FEATURE-SPECIFIC: FR-003 (audit data model supports per-patient query)
+  FR_004_NoPatientIdInUrlPath          PASS      FEATURE-SPECIFIC: FR-004 (no patient_id in URL paths — closed endpoint set)
+  FR_005_ReadOnly                      PASS      FEATURE-SPECIFIC: FR-005 (read-only — only the two read endpoints can succeed)
+  FR_006_CareTeamMembershipRequired    PASS      FEATURE-SPECIFIC: FR-006
+  FR_007_ByteEquivalentDeniedNotFound  PASS      FEATURE-SPECIFIC: FR-007
+  FR_008_AuditOnEveryAttempt           PASS      FEATURE-SPECIFIC: FR-008
+  FR_009_AuditEntryShape               PASS      FEATURE-SPECIFIC: FR-009
+  FR_010_AuditImmutable                PASS      FEATURE-SPECIFIC: FR-010
+  FR_011_AuditOnlyByIG                 PASS      FEATURE-SPECIFIC: FR-011
+  FR_012_NoDeletionPath                PASS      FEATURE-SPECIFIC: FR-012 (no deletion path)
+  FR_013_SLAAudit                      PASS      FEATURE-SPECIFIC: FR-013 (2-second SLA; SU iff no audit written)
+  FR_014_15_SafetyBlocksAtTop          PASS      FEATURE-SPECIFIC: FR-014, FR-015 (safety block surfaced on every successful read)
+
+  FR coverage
+  ----------------------------------------------------------------------------
+  FR-001  →  FR_001_AuthRequired=PASS, AuthRequiredEverywhere=PASS
+  FR-002  →  FR_002_HostProvidedIdentity=PASS, AttributionCorrectness=PASS
+  FR-003  →  FR_003_AuditPerPatientQueryable=PASS
+  FR-004  →  FR_004_NoPatientIdInUrlPath=PASS
+  FR-005  →  FR_005_ReadOnly=PASS
+  FR-006  →  FR_006_CareTeamMembershipRequired=PASS, OwnershipBasedAccess=PASS
+  FR-007  →  FR_007_ByteEquivalentDeniedNotFound=PASS, NoInformationLeakage=PASS
+  FR-008  →  FR_008_AuditOnEveryAttempt=PASS, AuditCompleteness=PASS
+  FR-009  →  FR_009_AuditEntryShape=PASS, AttributionCorrectness=PASS
+  FR-010  →  FR_010_AuditImmutable=PASS, AppendOnly=PASS
+  FR-011  →  FR_011_AuditOnlyByIG=PASS, LeastPrivilege=PASS, PermissionGrounding=PASS
+  FR-012  →  FR_012_NoDeletionPath=PASS, AppendOnly=PASS
+  FR-013  →  FR_013_SLAAudit=PASS
+  FR-014  →  FR_014_15_SafetyBlocksAtTop=PASS
+  FR-015  →  FR_014_15_SafetyBlocksAtTop=PASS
+
+  All FRs have at least one matching assertion.
+
+==============================================================================
+  Mutation tests  (assertion-strength validation)
+==============================================================================
+
+  Strategy: replace each named fact's body with `{}` (no constraint),
+  then re-run Alloy. Each listed assertion should now FAIL on the
+  mutated model. If it still PASSes, the assertion is vacuous and
+  must be strengthened.
+
+  - MUTATE F_OneAuditPerOperation  → runs/C-L1/mutated_F_OneAuditPerOperation.als
+    rationale: Removing the uniqueness fact lets two distinct AuditEntry atoms share the same ofOp, which is exactly the duplicate/rewrite scenario AppendOnly forbids and which also breaks the 'one' multiplicity in AuditCompleteness.
+    expected to FAIL: AppendOnly, FR_010_AuditImmutable, FR_012_NoDeletionPath, AuditCompleteness, FR_008_AuditOnEveryAttempt
+      - AppendOnly: FAIL (expected)
+      - FR_010_AuditImmutable: FAIL (expected)
+      - FR_012_NoDeletionPath: FAIL (expected)
+      - AuditCompleteness: FAIL (expected)
+      - FR_008_AuditOnEveryAttempt: FAIL (expected)
+
+  - MUTATE F_AuthenticationBoundary  → runs/C-L1/mutated_F_AuthenticationBoundary.als
+    rationale: Without the boundary fact, Alloy can invent an Operation that has no caller yet does not have outcome=Unauthenticated, i.e., business logic ran without authentication.
+    expected to FAIL: AuthRequiredEverywhere, FR_001_AuthRequired
+      - AuthRequiredEverywhere: FAIL (expected)
+      - FR_001_AuthRequired: FAIL (expected)
+
+  - MUTATE F_CareTeamGate  → runs/C-L1/mutated_F_CareTeamGate.als
+    rationale: Removing the care-team gate lets a Permitted LookupPatient exist without any CareTeamMembership row tying the caller to the requested patient — exactly the FR-006 violation.
+    expected to FAIL: OwnershipBasedAccess, FR_006_CareTeamMembershipRequired
+      - OwnershipBasedAccess: FAIL (expected)
+      - FR_006_CareTeamMembershipRequired: FAIL (expected)
+
+  - MUTATE F_VisibleResponseMapping  → runs/C-L1/mutated_F_VisibleResponseMapping.als
+    rationale: Clearing the outcome-to-visible mapping permits an Operation whose outcome is Denied to surface a non-NotFound404 response, which would leak the existence of the patient to a non-care-team clinician.
+    expected to FAIL: NoInformationLeakage, FR_007_ByteEquivalentDeniedNotFound
+      - NoInformationLeakage: FAIL (expected)
+      - FR_007_ByteEquivalentDeniedNotFound: FAIL (expected)
+
+  - MUTATE F_LeastPrivilegeFact  → runs/C-L1/mutated_F_LeastPrivilegeFact.als
+    rationale: Without the least-privilege fact, Alloy can produce a Permitted operation whose (role, kind) pair is not in PermMatrix.Allowed — e.g., an audit_officer succeeding at LookupPatient, or a doctor succeeding at AuditSearch.
+    expected to FAIL: LeastPrivilege, FR_011_AuditOnlyByIG
+      - LeastPrivilege: FAIL (expected)
+      - FR_011_AuditOnlyByIG: FAIL (expected)
+
+  - MUTATE F_AuditOnLookup  → runs/C-L1/mutated_F_AuditOnLookup.als
+    rationale: Clearing the audit-on-lookup fact lets a Permitted LookupPatient operation exist with zero AuditEntry rows pointing at it — exactly the 'record observed without matching audit entry' failure SC-002 forbids.
+    expected to FAIL: AuditCompleteness, FR_008_AuditOnEveryAttempt, FR_013_SLAAudit
+      - AuditCompleteness: FAIL (expected)
+      - FR_008_AuditOnEveryAttempt: FAIL (expected)
+      - FR_013_SLAAudit: FAIL (expected)
+
+  Mutation summary
+  ----------------------------------------------------------------------------
+  - F_OneAuditPerOperation: ASSERTIONS BIT (AppendOnly, FR_010_AuditImmutable, FR_012_NoDeletionPath, AuditCompleteness, FR_008_AuditOnEveryAttempt)
+  - F_AuthenticationBoundary: ASSERTIONS BIT (AuthRequiredEverywhere, FR_001_AuthRequired)
+  - F_CareTeamGate: ASSERTIONS BIT (OwnershipBasedAccess, FR_006_CareTeamMembershipRequired)
+  - F_VisibleResponseMapping: ASSERTIONS BIT (NoInformationLeakage, FR_007_ByteEquivalentDeniedNotFound)
+  - F_LeastPrivilegeFact: ASSERTIONS BIT (LeastPrivilege, FR_011_AuditOnlyByIG)
+  - F_AuditOnLookup: ASSERTIONS BIT (AuditCompleteness, FR_008_AuditOnEveryAttempt, FR_013_SLAAudit)
+

@@ -1,0 +1,170 @@
+{
+  "feature_id": "007-team-tasks",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "PrivilegeMonotonicity",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "ValidationBeforeMutation"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_IdentityFromAuth",
+    "FR_003_TeamContextRequired",
+    "FR_004_CallerMustBeMember",
+    "FR_005_TaskHasOneTeam",
+    "FR_006_OwnerImmutable",
+    "FR_007_PerTeamRole",
+    "FR_008_MemberCRUDOwn",
+    "FR_009_NonOwnerMemberCannotEdit",
+    "FR_010_AdminFullAccess",
+    "FR_011_NoCrossTeamRegardlessOfRole",
+    "FR_012_ValidationRules",
+    "FR_013_StatusSet",
+    "FR_014_ByteEquivalentNotFound",
+    "FR_015_AuditAttribution",
+    "FR_016_AuditAppendOnly",
+    "FR_017_AuditVisibleToMembers",
+    "FR_018_AuditRetention",
+    "FR_019_ListAccessibleToMembers",
+    "FR_020_ListScopedToTeam"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_IdentityFromAuth",
+      "AttributionCorrectness"
+    ],
+    "FR-003": [
+      "FR_003_TeamContextRequired"
+    ],
+    "FR-004": [
+      "FR_004_CallerMustBeMember"
+    ],
+    "FR-005": [
+      "FR_005_TaskHasOneTeam"
+    ],
+    "FR-006": [
+      "FR_006_OwnerImmutable",
+      "OwnershipExclusivity"
+    ],
+    "FR-007": [
+      "FR_007_PerTeamRole"
+    ],
+    "FR-008": [
+      "FR_008_MemberCRUDOwn",
+      "PermissionCompleteness"
+    ],
+    "FR-009": [
+      "FR_009_NonOwnerMemberCannotEdit",
+      "OwnershipBasedAccess",
+      "LeastPrivilege"
+    ],
+    "FR-010": [
+      "FR_010_AdminFullAccess",
+      "PrivilegeMonotonicity"
+    ],
+    "FR-011": [
+      "FR_011_NoCrossTeamRegardlessOfRole"
+    ],
+    "FR-012": [
+      "FR_012_ValidationRules",
+      "ValidationBeforeMutation"
+    ],
+    "FR-013": [
+      "FR_013_StatusSet"
+    ],
+    "FR-014": [
+      "FR_014_ByteEquivalentNotFound",
+      "NoInformationLeakage"
+    ],
+    "FR-015": [
+      "FR_015_AuditAttribution",
+      "AuditCompleteness",
+      "AttributionCorrectness"
+    ],
+    "FR-016": [
+      "FR_016_AuditAppendOnly",
+      "AppendOnly"
+    ],
+    "FR-017": [
+      "FR_017_AuditVisibleToMembers"
+    ],
+    "FR-018": [
+      "FR_018_AuditRetention",
+      "AppendOnly"
+    ],
+    "FR-019": [
+      "FR_019_ListAccessibleToMembers"
+    ],
+    "FR-020": [
+      "FR_020_ListScopedToTeam"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_AuthRequired",
+      "asserts_violated": [
+        "AuthRequiredEverywhere",
+        "FR_001_AuthRequired"
+      ],
+      "rationale": "Clearing F_AuthRequired removes the only constraint that pins unauthenticated operations to AuthFailure. The injection forces an unauth op with a non-AuthFailure outcome; F_PermissionEnforcement still bars Success (it needs a caller), so Alloy will pick e.g. ValidationError, which directly violates the AuthRequiredEverywhere assertion's strict equality to AuthFailure.",
+      "inject_violation": "fact MUTATE_AuthRequiredViolation { some op: Operation | no op.opCaller and op.opOutcome != AuthFailure }"
+    },
+    {
+      "fact_name": "F_AppendOnly",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_016_AuditAppendOnly",
+        "FR_018_AuditRetention"
+      ],
+      "rationale": "Clearing F_AppendOnly removes the constraint that every AuditEntry is produced by exactly one Operation. The injection forces an orphan audit row that no Operation claims, simulating either a fabricated entry or one whose originating op was deleted \u2014 exactly what append-only is supposed to prevent.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some ae: AuditEntry | all op: Operation | op.opAudit != ae }"
+    },
+    {
+      "fact_name": "F_PermissionEnforcement",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "OwnershipBasedAccess",
+        "FR_009_NonOwnerMemberCannotEdit"
+      ],
+      "rationale": "Clearing F_PermissionEnforcement removes the role/owner check on successful operations. The injection constructs a Member-role caller who successfully deletes a task they do not own (target.team matches header so F_CrossTeamIsolation is still satisfied). That is exactly the FR-009 violation the LeastPrivilege assertion must catch.",
+      "inject_violation": "fact MUTATE_LeastPrivilegeViolation { some op: Operation, m: Membership | op.opOutcome = Success and op.opKind = DeleteTaskOp and m.mUser = op.opCaller and m.mTeam = op.opTeamHeader and m.mRole = Member and some op.opTarget and op.opTarget.taskTeam = op.opTeamHeader and op.opTarget.ownerUser != op.opCaller }"
+    },
+    {
+      "fact_name": "F_CrossTeamIsolation",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "FR_011_NoCrossTeamRegardlessOfRole",
+        "FR_014_ByteEquivalentNotFound"
+      ],
+      "rationale": "Clearing F_CrossTeamIsolation removes the constraint that a successful op's target must live in the caller's team. The injection forces a Success whose target is in another team while the caller is a legitimate member of their declared X-Team-Id team \u2014 the canonical cross-tenant leak that FR-014's byte-equivalent 404 is built to prevent.",
+      "inject_violation": "fact MUTATE_CrossTeamViolation { some op: Operation | op.opOutcome = Success and some op.opTarget and some op.opTeamHeader and op.opTarget.taskTeam != op.opTeamHeader and (some m: Membership | m.mUser = op.opCaller and m.mTeam = op.opTeamHeader) }"
+    },
+    {
+      "fact_name": "F_OwnerImmutable",
+      "asserts_violated": [
+        "FR_006_OwnerImmutable"
+      ],
+      "rationale": "Clearing F_OwnerImmutable removes the constraint that PATCH bodies attempting to set owner_id are rejected. The injection forces a successful EditTask whose request body included an owner_id change \u2014 exactly the v1 immutability violation FR-006 must catch.",
+      "inject_violation": "fact MUTATE_OwnerImmutableViolation { some op: Operation | op.opKind = EditTask and op.opTriedSetOwner = True and op.opOutcome = Success }"
+    },
+    {
+      "fact_name": "F_AuditCompleteness",
+      "asserts_violated": [
+        "AuditCompleteness"
+      ],
+      "rationale": "Clearing F_AuditCompleteness removes the constraint that every successful mutating op writes exactly one audit row. The injection forces a successful EditTask with no associated audit entry \u2014 the missing-trail half of SC-007 that AuditCompleteness must catch.",
+      "inject_violation": "fact MUTATE_AuditCompletenessViolation { some op: Operation | op.opOutcome = Success and op.opKind = EditTask and no op.opAudit }"
+    }
+  ]
+}

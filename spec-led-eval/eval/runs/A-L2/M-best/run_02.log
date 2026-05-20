@@ -1,0 +1,148 @@
+$ /Users/leonhausmann/opt/anaconda3/bin/python3 -m speceval.cli verify-design --no-cache --model M-best --java-bin /Users/leonhausmann/opt/anaconda3/lib/python3.9/site-packages/jdk4py/java-runtime/bin/java /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/eval/specs/A-L2
+
+[parse]   feature 'A-L2', 23 FRs, 4 user stories
+[lift]    calling LLM (anthropic: tier=M-best, model=claude-opus-4-7)...
+[lift]    fresh lift (sha=4278ae0d4763)
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/A-L2/feature_model.als
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/A-L2/cost_log.json
+[alloy]   running alloy.jar on feature_model.als...
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/A-L2/alloy_verdicts.json
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/A-L2/mutation_outcomes.json
+
+==============================================================================
+  Design Compliance Report  (Phase 3 — feature_model.als)
+  feature       : A-L2
+  spec source   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/eval/specs/A-L2
+  alloy model   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/A-L2/feature_model.als
+  patterns      : LeastPrivilege, PermissionCompleteness, AppendOnly, AuditCompleteness, AttributionCorrectness, OwnershipExclusivity, OwnershipBasedAccess, AuthRequiredEverywhere
+  fr count      : 23 declared in spec.md
+  assertions    : 25 total (24/25 PASS via Alloy)
+==============================================================================
+
+  Compliance matrix
+  ----------------------------------------------------------------------------
+  Assertion                        Verdict   Anchor
+  ---------------------------------------------------------------------
+  LeastPrivilege                   PASS      PATTERN LeastPrivilege: contracts/http-api.md permission matrix; spec.md FR-002, FR-003, FR-004
+  PermissionCompleteness           PASS      PATTERN PermissionCompleteness: contracts/http-api.md permission matrix
+  AppendOnly                       PASS      PATTERN AppendOnly: spec.md FR-018; data-model.md "no UPDATE/DELETE on application_events"
+  AuditCompleteness                PASS      PATTERN AuditCompleteness: spec.md FR-017/FR-019; data-model.md "one INSERT per UPDATE"
+  AttributionCorrectness           PASS      PATTERN AttributionCorrectness: spec.md FR-017; data-model.md application_events.actor_user_id
+  OwnershipExclusivity             PASS      PATTERN OwnershipExclusivity: data-model.md loan_applications.customer_id (NOT NULL, single FK)
+  OwnershipBasedAccess             PASS      PATTERN OwnershipBasedAccess: spec.md FR-020; contracts/http-api.md GET /applications customer scope
+  AuthRequiredEverywhere           PASS      PATTERN AuthRequiredEverywhere: spec.md FR-001; contracts/http-api.md "Authorization on every endpoint"
+  FR_001_AuthRequired              PASS      FEATURE-SPECIFIC: FR-001 (authenticated caller + exactly one role on every request)
+  FR_002_CustomerScope             PASS      FEATURE-SPECIFIC: FR-002 (customer scope: submit + view-own only)
+  FR_003_OfficerScope              PASS      FEATURE-SPECIFIC: FR-003 (officer cannot submit applications as a customer)
+  FR_004_ComplianceReadOnly        PASS      FEATURE-SPECIFIC: FR-004, FR-023 (compliance reviewer cannot submit/claim/decide)
+  FR_005_CustomerIdentityFromAuth  PASS      FEATURE-SPECIFIC: FR-005 (customer identity comes from auth, never the payload)
+  FR_008_OneInFlight               PASS      FEATURE-SPECIFIC: FR-008 (one in-flight application per customer)
+  FR_009_SubmissionAudited         PASS      FEATURE-SPECIFIC: FR-009 (submission writes an audit entry attributed to the customer)
+  FR_011_ClaimSetsOfficer          PASS      FEATURE-SPECIFIC: FR-011 (claim sets assigned officer; status moves Submitted→UnderReview)
+  FR_012_OneAssignedOfficer        PASS      FEATURE-SPECIFIC: FR-012 (at most one assigned officer per application)
+  FR_013_AssignedOfficerDecides    PASS      FEATURE-SPECIFIC: FR-013 (only the assigned officer can decide)
+  FR_015_DecisionAtomic            PASS      FEATURE-SPECIFIC: FR-015 (atomic decision: status, decision row, audit entry together)
+  FR_016_TerminalImmutability      FAIL      FEATURE-SPECIFIC: FR-016 (no further changes once Approved or Rejected)
+  FR_017_AuditMandatory            PASS      FEATURE-SPECIFIC: FR-017 (audit entry for every status change with attribution)
+  FR_018_AppendOnly                PASS      FEATURE-SPECIFIC: FR-018 (audit trail append-only — no duplicate entries per transition)
+  FR_019_OnePerTransition          PASS      FEATURE-SPECIFIC: FR-019 (exactly one audit entry per applied transition — no duplicates, none missing)
+  FR_020_CustomerOwnOnly           PASS      FEATURE-SPECIFIC: FR-020 (customer can only see own applications)
+  FR_023_ComplianceNoWrite         PASS      FEATURE-SPECIFIC: FR-023 (compliance reviewer cannot write — enforced at action level)
+
+  Counterexamples (Alloy SAT)
+  ----------------------------------------------------------------------------
+  FR_016_TerminalImmutability  [FEATURE-SPECIFIC: FR-016 (no further changes once Approved or Rejected)]
+    Alloy: 19. check FR_016_TerminalImmutability     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR coverage
+  ----------------------------------------------------------------------------
+  FR-001  →  FR_001_AuthRequired=PASS, AuthRequiredEverywhere=PASS
+  FR-002  →  FR_002_CustomerScope=PASS, LeastPrivilege=PASS
+  FR-003  →  FR_003_OfficerScope=PASS, LeastPrivilege=PASS
+  FR-004  →  FR_004_ComplianceReadOnly=PASS, LeastPrivilege=PASS
+  FR-005  →  FR_005_CustomerIdentityFromAuth=PASS
+  FR-006  [uncovered]
+  FR-007  [uncovered]
+  FR-008  →  FR_008_OneInFlight=PASS
+  FR-009  →  FR_009_SubmissionAudited=PASS, AuditCompleteness=PASS, AttributionCorrectness=PASS
+  FR-010  [uncovered]
+  FR-011  →  FR_011_ClaimSetsOfficer=PASS
+  FR-012  →  FR_012_OneAssignedOfficer=PASS
+  FR-013  →  FR_013_AssignedOfficerDecides=PASS
+  FR-014  [uncovered]
+  FR-015  →  FR_015_DecisionAtomic=PASS
+  FR-016  →  FR_016_TerminalImmutability=FAIL
+  FR-017  →  FR_017_AuditMandatory=PASS, AuditCompleteness=PASS, AttributionCorrectness=PASS
+  FR-018  →  FR_018_AppendOnly=PASS, AppendOnly=PASS
+  FR-019  →  FR_019_OnePerTransition=PASS, AuditCompleteness=PASS
+  FR-020  →  FR_020_CustomerOwnOnly=PASS, OwnershipBasedAccess=PASS
+  FR-021  [uncovered]
+  FR-022  [uncovered]
+  FR-023  →  FR_023_ComplianceNoWrite=PASS, LeastPrivilege=PASS
+
+  WARNING: 6 FR(s) without any matching assertion: FR-006, FR-007, FR-010, FR-014, FR-021, FR-022
+
+==============================================================================
+  Mutation tests  (assertion-strength validation)
+==============================================================================
+
+  Strategy: replace each named fact's body with `{}` (no constraint),
+  then re-run Alloy. Each listed assertion should now FAIL on the
+  mutated model. If it still PASSes, the assertion is vacuous and
+  must be strengthened.
+
+  - MUTATE F_LeastPrivilegeOperations  → runs/A-L2/mutated_F_LeastPrivilegeOperations.als
+    rationale: Clearing F_LeastPrivilegeOperations removes the structural constraint that every Operation's (role, kind) lies in the permission matrix. The injection forces an Operation whose (role, kind) is NOT in PermMatrix.Allowed — a direct counterexample to LeastPrivilege and every role-scope FR derived from the matrix.
+    expected to FAIL: LeastPrivilege, FR_001_AuthRequired, FR_002_CustomerScope, FR_003_OfficerScope, FR_004_ComplianceReadOnly, FR_023_ComplianceNoWrite, AuthRequiredEverywhere
+      - LeastPrivilege: FAIL (expected)
+      - FR_001_AuthRequired: FAIL (expected)
+      - FR_002_CustomerScope: FAIL (expected)
+      - FR_003_OfficerScope: FAIL (expected)
+      - FR_004_ComplianceReadOnly: FAIL (expected)
+      - FR_023_ComplianceNoWrite: FAIL (expected)
+      - AuthRequiredEverywhere: FAIL (expected)
+
+  - MUTATE F_AuditAppendOnlyNoDup  → runs/A-L2/mutated_F_AuditAppendOnlyNoDup.als
+    rationale: Clearing F_AuditAppendOnlyNoDup permits duplicate audit entries for the same (application, newStatus) transition. The injection forces two distinct AuditEntries to cover the same applied transition — exactly what AppendOnly forbids.
+    expected to FAIL: AppendOnly, FR_018_AppendOnly, FR_019_OnePerTransition, AuditCompleteness
+      - AppendOnly: PASS (vacuous?)
+      - FR_018_AppendOnly: PASS (vacuous?)
+      - FR_019_OnePerTransition: PASS (vacuous?)
+      - AuditCompleteness: PASS (vacuous?)
+
+  - MUTATE F_AuditCompleteness  → runs/A-L2/mutated_F_AuditCompleteness.als
+    rationale: Clearing F_AuditCompleteness allows applications to exist without their mandatory submission audit entry. The injection forces a LoanApplication with no Submitted-newStatus AuditEntry, breaking the 'every applied transition has exactly one audit entry' invariant.
+    expected to FAIL: AuditCompleteness, FR_017_AuditMandatory, FR_019_OnePerTransition, FR_009_SubmissionAudited
+      - AuditCompleteness: FAIL (expected)
+      - FR_017_AuditMandatory: FAIL (expected)
+      - FR_019_OnePerTransition: FAIL (expected)
+      - FR_009_SubmissionAudited: FAIL (expected)
+
+  - MUTATE F_OwnershipBasedAccess  → runs/A-L2/mutated_F_OwnershipBasedAccess.als
+    rationale: Clearing F_OwnershipBasedAccess removes the cross-tenant check that constrains customer-role Operations to applications they own. The injection forces a customer Operation whose target is owned by a different customer — exactly the FR-020 'no other-customer access' violation.
+    expected to FAIL: OwnershipBasedAccess, FR_020_CustomerOwnOnly
+      - OwnershipBasedAccess: FAIL (expected)
+      - FR_020_CustomerOwnOnly: FAIL (expected)
+
+  - MUTATE F_DecisionPostConditions  → runs/A-L2/mutated_F_DecisionPostConditions.als
+    rationale: Clearing F_DecisionPostConditions removes the rule that decidedBy must equal the application's assignedOfficer. The injection forces a Decision whose decider is not the assigned officer — the canonical FR-013 violation that the conditional UPDATE in service.py is built to prevent.
+    expected to FAIL: FR_013_AssignedOfficerDecides
+      - FR_013_AssignedOfficerDecides: FAIL (expected)
+
+  - MUTATE F_OneInFlightPerCustomer  → runs/A-L2/mutated_F_OneInFlightPerCustomer.als
+    rationale: Clearing F_OneInFlightPerCustomer disables the partial unique index that prevents two simultaneous in-flight applications per customer. The injection constructs two distinct applications for the same customer, both in Submitted/Under Review — exactly the FR-008 violation that triggers 409 has_in_flight_application in service.py.
+    expected to FAIL: FR_008_OneInFlight
+      - FR_008_OneInFlight: FAIL (expected)
+
+  Mutation summary
+  ----------------------------------------------------------------------------
+  - F_LeastPrivilegeOperations: ASSERTIONS BIT (LeastPrivilege, FR_001_AuthRequired, FR_002_CustomerScope, FR_003_OfficerScope, FR_004_ComplianceReadOnly, FR_023_ComplianceNoWrite, AuthRequiredEverywhere)
+  - F_AuditAppendOnlyNoDup: ASSERTION VACUOUS (AppendOnly, FR_018_AppendOnly, FR_019_OnePerTransition, AuditCompleteness)
+  - F_AuditCompleteness: ASSERTIONS BIT (AuditCompleteness, FR_017_AuditMandatory, FR_019_OnePerTransition, FR_009_SubmissionAudited)
+  - F_OwnershipBasedAccess: ASSERTIONS BIT (OwnershipBasedAccess, FR_020_CustomerOwnOnly)
+  - F_DecisionPostConditions: ASSERTIONS BIT (FR_013_AssignedOfficerDecides)
+  - F_OneInFlightPerCustomer: ASSERTIONS BIT (FR_008_OneInFlight)
+
+
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/A-L2/report.txt

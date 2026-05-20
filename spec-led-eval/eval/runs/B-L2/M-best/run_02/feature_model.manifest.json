@@ -1,0 +1,166 @@
+{
+  "feature_id": "007-team-tasks",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "PermissionGrounding",
+    "PrivilegeMonotonicity",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_IdentityFromAuth",
+    "FR_003_TeamContextRequired",
+    "FR_004_MemberRequired",
+    "FR_005_TaskTeamSingleton",
+    "FR_006_OwnerIsCreator",
+    "FR_007_PerTeamRole",
+    "FR_008_009_010_OwnerOrAdminEditDelete",
+    "FR_011_014_CrossTeamIsolation",
+    "FR_012_AssigneeSameTeam",
+    "FR_013_StatusSet",
+    "FR_015_AuditPerEvent",
+    "FR_016_AuditAppendOnly",
+    "FR_017_AuditReadableByMember",
+    "FR_018_AuditRetention",
+    "FR_019_ListScopedToTeam",
+    "FR_020_FilterTeamScoped"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_IdentityFromAuth"
+    ],
+    "FR-003": [
+      "FR_003_TeamContextRequired"
+    ],
+    "FR-004": [
+      "FR_004_MemberRequired"
+    ],
+    "FR-005": [
+      "FR_005_TaskTeamSingleton"
+    ],
+    "FR-006": [
+      "FR_006_OwnerIsCreator",
+      "OwnershipExclusivity"
+    ],
+    "FR-007": [
+      "FR_007_PerTeamRole"
+    ],
+    "FR-008": [
+      "FR_008_009_010_OwnerOrAdminEditDelete",
+      "OwnershipBasedAccess"
+    ],
+    "FR-009": [
+      "FR_008_009_010_OwnerOrAdminEditDelete",
+      "OwnershipBasedAccess",
+      "LeastPrivilege"
+    ],
+    "FR-010": [
+      "FR_008_009_010_OwnerOrAdminEditDelete",
+      "PrivilegeMonotonicity"
+    ],
+    "FR-011": [
+      "FR_011_014_CrossTeamIsolation",
+      "NoInformationLeakage"
+    ],
+    "FR-012": [
+      "FR_012_AssigneeSameTeam"
+    ],
+    "FR-013": [
+      "FR_013_StatusSet"
+    ],
+    "FR-014": [
+      "FR_011_014_CrossTeamIsolation",
+      "NoInformationLeakage"
+    ],
+    "FR-015": [
+      "FR_015_AuditPerEvent",
+      "AuditCompleteness",
+      "AttributionCorrectness"
+    ],
+    "FR-016": [
+      "FR_016_AuditAppendOnly",
+      "AppendOnly"
+    ],
+    "FR-017": [
+      "FR_017_AuditReadableByMember"
+    ],
+    "FR-018": [
+      "FR_018_AuditRetention"
+    ],
+    "FR-019": [
+      "FR_019_ListScopedToTeam"
+    ],
+    "FR-020": [
+      "FR_020_FilterTeamScoped"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_AppendOnlyAuditEntries",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_016_AuditAppendOnly"
+      ],
+      "rationale": "Removing the append-only fact lets the model invent two distinct operations producing the same AuditEntry \u2014 i.e., an audit row has been overwritten. The injection forces such a sharing to exist, which is exactly what the AppendOnly assertion is supposed to catch.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some disj op1, op2: Operation | some (op1.producesAudit & op2.producesAudit) }"
+    },
+    {
+      "fact_name": "F_OwnershipBasedEditDelete",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_008_009_010_OwnerOrAdminEditDelete",
+        "LeastPrivilege"
+      ],
+      "rationale": "Removing the ownership-conditional fact lets a member successfully PATCH a task they do not own. The injection materialises that exact escalation, which the OwnershipBasedAccess assertion must reject.",
+      "inject_violation": "fact MUTATE_NonOwnerMemberEdit { some op: Operation | op.outcome = SuccessOutcome and op.opKind = PatchTask and op.callerRole = MemberRole and some op.target and op.target.owner != op.caller }"
+    },
+    {
+      "fact_name": "F_CrossTeamIsolation",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "FR_011_014_CrossTeamIsolation"
+      ],
+      "rationale": "Removing the cross-team fact lets a caller succeed on a task that belongs to a different team than their X-Team-Id. The injection forces a successful cross-tenant access, which is exactly the SaaS-multi-tenancy leak NoInformationLeakage forbids.",
+      "inject_violation": "fact MUTATE_CrossTeamLeak { some op: Operation | some op.target and some op.callerTeam and op.target.taskTeam != op.callerTeam and op.outcome = SuccessOutcome }"
+    },
+    {
+      "fact_name": "F_AuthRequired",
+      "asserts_violated": [
+        "AuthRequiredEverywhere",
+        "FR_001_AuthRequired"
+      ],
+      "rationale": "Removing the auth-boundary fact lets an unauthenticated operation produce any outcome other than UnauthenticatedOutcome (e.g., NotFound or ValidationError). The injection forces such a non-Unauth outcome to exist with no caller, which the AuthRequiredEverywhere assertion is meant to forbid.",
+      "inject_violation": "fact MUTATE_NoAuth { some op: Operation | no op.caller and op.outcome != UnauthenticatedOutcome }"
+    },
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "PermissionCompleteness",
+        "FR_017_AuditReadableByMember",
+        "PermissionGrounding"
+      ],
+      "rationale": "Clearing the permission-matrix fact leaves PermMatrix.Allowed unconstrained. The injection deletes the MemberRole\u2192GetAudit cell, breaking FR-017 (members must be able to read audit) and PermissionCompleteness (every documented cell must be present).",
+      "inject_violation": "fact MUTATE_MatrixHole { MemberRole -> GetAudit not in PermMatrix.Allowed }"
+    },
+    {
+      "fact_name": "F_AuditOneToOne",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_015_AuditPerEvent"
+      ],
+      "rationale": "Removing the one-audit-per-save fact lets a successful PATCH leave no audit entry behind. The injection materialises that exact gap, which the AuditCompleteness assertion is meant to catch.",
+      "inject_violation": "fact MUTATE_NoAuditOnEdit { some op: Operation | op.outcome = SuccessOutcome and op.opKind = PatchTask and no op.producesAudit }"
+    }
+  ]
+}

@@ -1,0 +1,155 @@
+{
+  "feature_id": "003-loan-application",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "PermissionGrounding",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_CustomerCanSubmit",
+    "FR_002_ValidationBeforeMutation",
+    "FR_003_StatusEnumClosed",
+    "FR_004_NewAppPendingReview",
+    "FR_005_OnePendingPerCustomer",
+    "FR_008_StaffViewAny",
+    "FR_009_NonEmptyReason",
+    "FR_010_DecisionChangesStatus",
+    "FR_011_DecidedImmutable",
+    "FR_012_AtMostOneDecision",
+    "FR_013_CustomerSeesOwnOnly",
+    "FR_015_DecisionsStaffOnly",
+    "FR_016_AuditTrail",
+    "FR_017_AuditRetention"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_CustomerCanSubmit",
+      "PermissionCompleteness"
+    ],
+    "FR-002": [
+      "FR_002_ValidationBeforeMutation",
+      "FR_009_NonEmptyReason"
+    ],
+    "FR-003": [
+      "FR_003_StatusEnumClosed"
+    ],
+    "FR-004": [
+      "FR_004_NewAppPendingReview"
+    ],
+    "FR-005": [
+      "FR_005_OnePendingPerCustomer"
+    ],
+    "FR-006": [
+      "FR_004_NewAppPendingReview"
+    ],
+    "FR-007": [
+      "FR_008_StaffViewAny",
+      "PermissionCompleteness"
+    ],
+    "FR-008": [
+      "FR_008_StaffViewAny"
+    ],
+    "FR-009": [
+      "FR_009_NonEmptyReason"
+    ],
+    "FR-010": [
+      "FR_010_DecisionChangesStatus",
+      "AuditCompleteness"
+    ],
+    "FR-011": [
+      "FR_011_DecidedImmutable",
+      "AppendOnly"
+    ],
+    "FR-012": [
+      "FR_012_AtMostOneDecision"
+    ],
+    "FR-013": [
+      "FR_013_CustomerSeesOwnOnly",
+      "OwnershipBasedAccess",
+      "NoInformationLeakage"
+    ],
+    "FR-014": [
+      "AttributionCorrectness"
+    ],
+    "FR-015": [
+      "FR_015_DecisionsStaffOnly",
+      "LeastPrivilege"
+    ],
+    "FR-016": [
+      "FR_016_AuditTrail",
+      "AuditCompleteness",
+      "AttributionCorrectness"
+    ],
+    "FR-017": [
+      "FR_017_AuditRetention",
+      "AppendOnly"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "PermissionCompleteness",
+        "LeastPrivilege",
+        "FR_015_DecisionsStaffOnly"
+      ],
+      "rationale": "Removing the permission-matrix definition lets Alloy invent a matrix in which Customer -> DecideApp is allowed. The injected fact forces such a customer-decide operation to succeed, which violates the documented allow/deny grid (PermissionCompleteness), the least-privilege guard (LeastPrivilege), and the staff-only decision rule (FR_015).",
+      "inject_violation": "fact MUTATE_PermissionMatrix { some op: Operation, u: User | u.role = Customer and op.caller = u and op.kind = DecideApp and op.outcome = OpAllowed and some op.authenticated }"
+    },
+    {
+      "fact_name": "F_AuditEntriesReflectLifecycle",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_016_AuditTrail",
+        "AppendOnly",
+        "AttributionCorrectness"
+      ],
+      "rationale": "Removing the lifecycle-audit fact lets Alloy build an application with no submission audit entry, with a forged decision entry whose state is inconsistent, and with the wrong actor. The injection forces an application whose submission event is missing, immediately violating AuditCompleteness and FR_016.",
+      "inject_violation": "fact MUTATE_AuditLifecycle { some a: LoanApplication | no ae: AuditEntry | ae.application = a and ae.eventType = EvSubmitted }"
+    },
+    {
+      "fact_name": "F_DecisionApplicationCoupling",
+      "asserts_violated": [
+        "FR_012_AtMostOneDecision",
+        "FR_011_DecidedImmutable"
+      ],
+      "rationale": "Removing the one-decision-per-application coupling lets two Decision rows attach to the same application \u2014 exactly the concurrent-double-decision race that FR-012 forbids and FR-011 (immutability) rules out.",
+      "inject_violation": "fact MUTATE_DecisionCoupling { some a: LoanApplication, disj d1, d2: Decision | d1.application = a and d2.application = a }"
+    },
+    {
+      "fact_name": "F_OnePendingPerCustomer",
+      "asserts_violated": [
+        "FR_005_OnePendingPerCustomer"
+      ],
+      "rationale": "Removing the partial-unique-index analogue lets a single customer have two applications simultaneously in Pending Review, which FR-005 forbids.",
+      "inject_violation": "fact MUTATE_OnePending { some u: User | u.role = Customer and (some disj a1, a2: LoanApplication | a1.customer = u and a2.customer = u and a1.status = PendingReview and a2.status = PendingReview) }"
+    },
+    {
+      "fact_name": "F_AuthorizationSemantics",
+      "asserts_violated": [
+        "AuthRequiredEverywhere",
+        "OwnershipBasedAccess",
+        "FR_013_CustomerSeesOwnOnly"
+      ],
+      "rationale": "Removing the auth-semantics fact unties outcome from authentication, matrix, and ownership. The injection forces an unauthenticated customer to succeed at viewing a non-owned application, breaking the auth gate, ownership-based access, and FR-013 ownership scoping.",
+      "inject_violation": "fact MUTATE_AuthSemantics { some op: Operation, u: User, a: LoanApplication | u.role = Customer and op.caller = u and op.kind = ViewApp and op.target = a and a.customer != u and no op.authenticated and op.outcome = OpAllowed }"
+    },
+    {
+      "fact_name": "F_ResponseSemantics",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "FR_013_CustomerSeesOwnOnly",
+        "AuthRequiredEverywhere"
+      ],
+      "rationale": "Removing response semantics lets the externally visible status code drift. The injection forces a customer probing someone else's application to receive 403 Forbidden \u2014 which leaks existence, the exact failure FR-013 / SC-004 forbid.",
+      "inject_violation": "fact MUTATE_ResponseLeak { some op: Operation, u: User, a: LoanApplication | u.role = Customer and op.caller = u and op.kind = ViewApp and op.target = a and a.customer != u and some op.authenticated and op.response = ForbiddenResponse }"
+    }
+  ]
+}

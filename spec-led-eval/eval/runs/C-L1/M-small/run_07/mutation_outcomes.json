@@ -1,0 +1,36 @@
+{
+  "F_LeastPrivilege": {
+    "targeted_asserts": {
+      "LeastPrivilege": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_CareTeamAuthorization": {
+    "targeted_asserts": {
+      "OwnershipBasedAccess": "BIT",
+      "FR_006_CareTeamMembershipGating": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AuditCompleteness": {
+    "targeted_asserts": {
+      "AuditCompleteness": "BIT",
+      "FR_008_AlwaysOnAudit": "BIT",
+      "AttributionCorrectness": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_PermissionMatrix": {
+    "targeted_asserts": {
+      "PermissionGrounding": "BIT",
+      "LeastPrivilege": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_IGRoleRestriction": {
+    "targeted_asserts": {
+      "FR_011_IGAuditAccess": "BIT"
+    },
+    "all_bit": true
+  }
+}

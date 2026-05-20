@@ -1,0 +1,367 @@
+{
+  "run_id": "B-L2/M-mid/run_08",
+  "cell": "B-L2",
+  "model": "M-mid",
+  "rep": 8,
+  "D1": 1.0,
+  "D2": 1.0,
+  "D3": 0.8333333333333334,
+  "D4": 1.0,
+  "aqs_partial": 0.9583333333333334,
+  "scored_at": "2026-05-20T04:29:04.473491+00:00",
+  "details": {
+    "D1": {
+      "n_assertions": 26,
+      "n_verdicts": 26
+    },
+    "D2": {
+      "patterns_applied": [
+        "LeastPrivilege",
+        "PermissionCompleteness",
+        "PermissionGrounding",
+        "PrivilegeMonotonicity",
+        "AuthRequiredEverywhere",
+        "AuditCompleteness",
+        "AppendOnly",
+        "AttributionCorrectness",
+        "OwnershipExclusivity",
+        "OwnershipBasedAccess",
+        "NoInformationLeakage",
+        "ValidationBeforeMutation"
+      ],
+      "per_pattern": {
+        "LeastPrivilege": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "PermissionCompleteness": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "PermissionGrounding": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "PrivilegeMonotonicity": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "AuthRequiredEverywhere": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "AuditCompleteness": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "AppendOnly": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "AttributionCorrectness": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "OwnershipExclusivity": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "OwnershipBasedAccess": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "NoInformationLeakage": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "ValidationBeforeMutation": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        }
+      }
+    },
+    "D3": {
+      "per_target": {
+        "F_AppendOnlyAuditEntries": {
+          "targeted_asserts": {
+            "AppendOnly": "VACUOUS_OVERCONSTRAINT",
+            "FR_016_AuditImmutable": "VACUOUS_OVERCONSTRAINT",
+            "AuditCompleteness": "VACUOUS_OVERCONSTRAINT"
+          },
+          "score": 0.5
+        },
+        "F_PermissionMatrix": {
+          "targeted_asserts": {
+            "OwnershipBasedAccess": "BIT",
+            "FR_009_NonOwnerMemberCantEditDelete": "BIT",
+            "LeastPrivilege": "BIT",
+            "PermissionGrounding": "BIT"
+          },
+          "score": 1.0
+        },
+        "F_AuditCreatedEntryExists": {
+          "targeted_asserts": {
+            "AuditCompleteness": "BIT",
+            "FR_015_AuditPerEditEvent": "BIT",
+            "ValidationBeforeMutation": "BIT"
+          },
+          "score": 1.0
+        },
+        "F_AuditTeamMatchesTask": {
+          "targeted_asserts": {
+            "NoInformationLeakage": "BIT",
+            "FR_011_CrossTeamIsolation": "BIT",
+            "AttributionCorrectness": "BIT",
+            "FR_005_TaskTeamImmutable": "BIT"
+          },
+          "score": 1.0
+        },
+        "F_AssigneeIsMember": {
+          "targeted_asserts": {
+            "FR_012_AssigneeInSameTeam": "BIT"
+          },
+          "score": 1.0
+        },
+        "F_AuditDeletedEntryOnDeletedTask": {
+          "targeted_asserts": {
+            "AuditCompleteness": "BIT",
+            "FR_015_AuditPerEditEvent": "BIT",
+            "FR_016_AuditImmutable": "VACUOUS_OVERCONSTRAINT"
+          },
+          "score": 0.5
+        }
+      },
+      "skipped": []
+    },
+    "D4": {
+      "per_fr": {
+        "FR-001": {
+          "covers": [
+            "FR_001_AuthRequired",
+            "AuthRequiredEverywhere"
+          ],
+          "verdicts": {
+            "FR_001_AuthRequired": "PASS",
+            "AuthRequiredEverywhere": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-002": {
+          "covers": [
+            "FR_001_AuthRequired"
+          ],
+          "verdicts": {
+            "FR_001_AuthRequired": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-003": {
+          "covers": [
+            "FR_003_TeamContextRequired"
+          ],
+          "verdicts": {
+            "FR_003_TeamContextRequired": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-004": {
+          "covers": [
+            "FR_003_TeamContextRequired",
+            "FR_011_CrossTeamIsolation"
+          ],
+          "verdicts": {
+            "FR_003_TeamContextRequired": "PASS",
+            "FR_011_CrossTeamIsolation": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-005": {
+          "covers": [
+            "FR_005_TaskTeamImmutable",
+            "OwnershipExclusivity"
+          ],
+          "verdicts": {
+            "FR_005_TaskTeamImmutable": "PASS",
+            "OwnershipExclusivity": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-006": {
+          "covers": [
+            "FR_006_OwnerImmutable",
+            "AttributionCorrectness"
+          ],
+          "verdicts": {
+            "FR_006_OwnerImmutable": "PASS",
+            "AttributionCorrectness": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-007": {
+          "covers": [
+            "FR_007_PerTeamRole"
+          ],
+          "verdicts": {
+            "FR_007_PerTeamRole": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-008": {
+          "covers": [
+            "OwnershipBasedAccess",
+            "PermissionGrounding",
+            "LeastPrivilege"
+          ],
+          "verdicts": {
+            "OwnershipBasedAccess": "PASS",
+            "PermissionGrounding": "PASS",
+            "LeastPrivilege": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-009": {
+          "covers": [
+            "FR_009_NonOwnerMemberCantEditDelete",
+            "LeastPrivilege",
+            "OwnershipBasedAccess"
+          ],
+          "verdicts": {
+            "FR_009_NonOwnerMemberCantEditDelete": "PASS",
+            "LeastPrivilege": "PASS",
+            "OwnershipBasedAccess": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-010": {
+          "covers": [
+            "FR_010_AdminCanEditAny",
+            "PrivilegeMonotonicity",
+            "PermissionGrounding"
+          ],
+          "verdicts": {
+            "FR_010_AdminCanEditAny": "PASS",
+            "PrivilegeMonotonicity": "PASS",
+            "PermissionGrounding": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-011": {
+          "covers": [
+            "FR_011_CrossTeamIsolation",
+            "NoInformationLeakage"
+          ],
+          "verdicts": {
+            "FR_011_CrossTeamIsolation": "PASS",
+            "NoInformationLeakage": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-012": {
+          "covers": [
+            "FR_012_AssigneeInSameTeam"
+          ],
+          "verdicts": {
+            "FR_012_AssigneeInSameTeam": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-013": {
+          "covers": [
+            "FR_013_StatusSet"
+          ],
+          "verdicts": {
+            "FR_013_StatusSet": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-014": {
+          "covers": [
+            "FR_011_CrossTeamIsolation",
+            "NoInformationLeakage",
+            "FR_005_TaskTeamImmutable"
+          ],
+          "verdicts": {
+            "FR_011_CrossTeamIsolation": "PASS",
+            "NoInformationLeakage": "PASS",
+            "FR_005_TaskTeamImmutable": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-015": {
+          "covers": [
+            "FR_015_AuditPerEditEvent",
+            "AuditCompleteness",
+            "AttributionCorrectness"
+          ],
+          "verdicts": {
+            "FR_015_AuditPerEditEvent": "PASS",
+            "AuditCompleteness": "PASS",
+            "AttributionCorrectness": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-016": {
+          "covers": [
+            "FR_016_AuditImmutable",
+            "AppendOnly"
+          ],
+          "verdicts": {
+            "FR_016_AuditImmutable": "PASS",
+            "AppendOnly": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-017": {
+          "covers": [
+            "FR_017_AuditReadableByTeamMember"
+          ],
+          "verdicts": {
+            "FR_017_AuditReadableByTeamMember": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-018": {
+          "covers": [
+            "FR_016_AuditImmutable",
+            "AppendOnly"
+          ],
+          "verdicts": {
+            "FR_016_AuditImmutable": "PASS",
+            "AppendOnly": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-019": {
+          "covers": [
+            "FR_019_ListScopedToTeam"
+          ],
+          "verdicts": {
+            "FR_019_ListScopedToTeam": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-020": {
+          "covers": [
+            "FR_019_ListScopedToTeam"
+          ],
+          "verdicts": {
+            "FR_019_ListScopedToTeam": "PASS"
+          },
+          "score": 1.0
+        }
+      }
+    }
+  }
+}

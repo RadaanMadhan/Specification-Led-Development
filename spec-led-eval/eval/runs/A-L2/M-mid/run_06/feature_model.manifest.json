@@ -1,0 +1,175 @@
+{
+  "feature_id": "A-L2",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "PrivilegeMonotonicity",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_CustomerPermissions",
+    "FR_003_LoanOfficerPermissions",
+    "FR_004_ComplianceReadOnly",
+    "FR_008_OneInFlightPerCustomer",
+    "FR_009_SubmissionAuditEntry",
+    "FR_012_ExclusiveClaim",
+    "FR_013_AssignedOfficerDecides",
+    "FR_015_DecisionAuditEntry",
+    "FR_016_ImmutableDecided",
+    "FR_017_AuditEntryForEveryChange",
+    "FR_018_AuditAppendOnly",
+    "FR_019_ExactlyOneAuditPerTransition",
+    "FR_020_CustomerIsolation",
+    "FR_021_OfficerIdentityHiddenFromCustomer"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_CustomerPermissions",
+      "LeastPrivilege"
+    ],
+    "FR-003": [
+      "FR_003_LoanOfficerPermissions",
+      "LeastPrivilege"
+    ],
+    "FR-004": [
+      "FR_004_ComplianceReadOnly",
+      "LeastPrivilege"
+    ],
+    "FR-005": [
+      "OwnershipExclusivity"
+    ],
+    "FR-006": [
+      "FR_002_CustomerPermissions"
+    ],
+    "FR-007": [
+      "OwnershipExclusivity"
+    ],
+    "FR-008": [
+      "FR_008_OneInFlightPerCustomer"
+    ],
+    "FR-009": [
+      "FR_009_SubmissionAuditEntry"
+    ],
+    "FR-010": [
+      "FR_003_LoanOfficerPermissions"
+    ],
+    "FR-011": [
+      "FR_012_ExclusiveClaim"
+    ],
+    "FR-012": [
+      "FR_012_ExclusiveClaim"
+    ],
+    "FR-013": [
+      "FR_013_AssignedOfficerDecides"
+    ],
+    "FR-014": [
+      "FR_013_AssignedOfficerDecides"
+    ],
+    "FR-015": [
+      "FR_015_DecisionAuditEntry"
+    ],
+    "FR-016": [
+      "FR_016_ImmutableDecided"
+    ],
+    "FR-017": [
+      "FR_017_AuditEntryForEveryChange",
+      "AuditCompleteness",
+      "AttributionCorrectness"
+    ],
+    "FR-018": [
+      "FR_018_AuditAppendOnly",
+      "AppendOnly"
+    ],
+    "FR-019": [
+      "FR_019_ExactlyOneAuditPerTransition",
+      "AuditCompleteness"
+    ],
+    "FR-020": [
+      "FR_020_CustomerIsolation",
+      "OwnershipBasedAccess",
+      "NoInformationLeakage"
+    ],
+    "FR-021": [
+      "FR_021_OfficerIdentityHiddenFromCustomer",
+      "NoInformationLeakage"
+    ],
+    "FR-022": [
+      "AppendOnly"
+    ],
+    "FR-023": [
+      "FR_004_ComplianceReadOnly",
+      "LeastPrivilege"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "PermissionCompleteness",
+        "FR_004_ComplianceReadOnly",
+        "FR_002_CustomerPermissions",
+        "FR_003_LoanOfficerPermissions"
+      ],
+      "rationale": "Clearing the permission matrix fact removes all constraints on PermMatrix.Allowed, allowing any (Role, OperationKind) pairing. The injection forces a compliance-reviewer write cell, which directly violates LeastPrivilege and FR_004_ComplianceReadOnly. PermissionCompleteness also fails because #(PermMatrix.Allowed) is no longer 11.",
+      "inject_violation": "fact MUTATE_PermissionViolation { ComplianceReviewer -> PostClaim in PermMatrix.Allowed }"
+    },
+    {
+      "fact_name": "F_AppendOnlyAudit",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_019_ExactlyOneAuditPerTransition",
+        "AuditCompleteness"
+      ],
+      "rationale": "Clearing F_AppendOnlyAudit removes the uniqueness constraint on (application, prevStatus, newStatus) triples. The injection forces two distinct AuditEntry atoms for the same application to share the same (prevStatus, newStatus) pair, modelling an overwrite/duplicate that the AppendOnly and AuditCompleteness predicates must catch.",
+      "inject_violation": "fact MUTATE_DuplicateAuditEntry { some disj ae1, ae2: AuditEntry | ae1.application = ae2.application and ae1.prevStatus = ae2.prevStatus and ae1.newStatus = ae2.newStatus }"
+    },
+    {
+      "fact_name": "F_OneInFlightPerCustomer",
+      "asserts_violated": [
+        "FR_008_OneInFlightPerCustomer"
+      ],
+      "rationale": "Clearing F_OneInFlightPerCustomer removes the partial-unique-index invariant. The injection forces the exact scenario FR-008 prohibits: one customer has two simultaneous in-flight (Submitted or UnderReview) applications.",
+      "inject_violation": "fact MUTATE_TwoInFlight { some disj a1, a2: LoanApplication | a1.customer = a2.customer and a1.status in (Submitted + UnderReview) and a2.status in (Submitted + UnderReview) }"
+    },
+    {
+      "fact_name": "F_DecisionByAssignedOfficer",
+      "asserts_violated": [
+        "FR_013_AssignedOfficerDecides"
+      ],
+      "rationale": "Clearing F_DecisionByAssignedOfficer allows decidedBy to differ from assignedOfficer. The injection creates a Decision whose decidedBy user is distinct from the application's assignedOfficer, directly violating the assertion that only the assigned officer may decide.",
+      "inject_violation": "fact MUTATE_NonAssignedDecision { some d: Decision | some d.application.assignedOfficer and d.decidedBy != d.application.assignedOfficer }"
+    },
+    {
+      "fact_name": "F_DecidedApplicationNoFurtherTransitions",
+      "asserts_violated": [
+        "FR_016_ImmutableDecided",
+        "AppendOnly",
+        "FR_018_AuditAppendOnly"
+      ],
+      "rationale": "Clearing F_DecidedApplicationNoFurtherTransitions allows AuditEntry atoms whose prevStatus is Approved or Rejected, violating the terminal-state immutability invariant. The injection forces exactly such an entry.",
+      "inject_violation": "fact MUTATE_PostDecisionTransition { some ae: AuditEntry | ae.prevStatus = Approved }"
+    },
+    {
+      "fact_name": "F_AuditNullPrevOnlyForSubmission",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_018_AuditAppendOnly",
+        "FR_009_SubmissionAuditEntry"
+      ],
+      "rationale": "Clearing F_AuditNullPrevOnlyForSubmission removes the data-model CHECK that ties null prevStatus exclusively to the initial Submitted event. The injection creates an AuditEntry with no prevStatus but newStatus != Submitted, which represents a corrupted or fabricated audit record that AppendOnly and FR_018_AuditAppendOnly must catch.",
+      "inject_violation": "fact MUTATE_NullPrevNotSubmitted { some ae: AuditEntry | no ae.prevStatus and ae.newStatus != Submitted }"
+    }
+  ]
+}

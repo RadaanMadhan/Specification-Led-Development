@@ -1,0 +1,44 @@
+{
+  "F_LeastPrivilege_MatrixGate": {
+    "targeted_asserts": {
+      "LeastPrivilege": "BIT",
+      "FR_007_ComplianceNoClinicalRead": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_LeastPrivilege_ClinicianCT": {
+    "targeted_asserts": {
+      "OwnershipBasedAccess": "BIT",
+      "FR_004_ClinicianCareTeamGate": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AuditOnePerAuthenticatedOp": {
+    "targeted_asserts": {
+      "AuditCompleteness": "BIT",
+      "FR_013_AuditCompleteness": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_NotesViaPermittedAppendOp": {
+    "targeted_asserts": {
+      "AppendOnly": "BIT",
+      "FR_012_NotesAppendOnly": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_ByteEquivalentForbidden": {
+    "targeted_asserts": {
+      "NoInformationLeakage": "BIT",
+      "FR_008_ByteEquivalent403": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AuthRequiredOrDenied": {
+    "targeted_asserts": {
+      "AuthRequiredEverywhere": "BIT",
+      "FR_001_AuthRequired": "BIT"
+    },
+    "all_bit": true
+  }
+}

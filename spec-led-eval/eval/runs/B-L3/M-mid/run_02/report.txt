@@ -1,0 +1,127 @@
+==============================================================================
+  Design Compliance Report  (Phase 3 — feature_model.als)
+  feature       : B-L3
+  spec source   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/eval/specs/B-L3
+  alloy model   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/B-L3/feature_model.als
+  patterns      : LeastPrivilege, PermissionCompleteness, AuthRequiredEverywhere, AuditCompleteness, AppendOnly, AttributionCorrectness, OwnershipExclusivity, OwnershipBasedAccess, NoInformationLeakage, PrivilegeMonotonicity, ValidationBeforeMutation
+  fr count      : 21 declared in spec.md
+  assertions    : 27 total (27/27 PASS via Alloy)
+==============================================================================
+
+  Compliance matrix
+  ----------------------------------------------------------------------------
+  Assertion                          Verdict   Anchor
+  -----------------------------------------------------------------------
+  LeastPrivilege                     PASS      PATTERN LeastPrivilege: contracts/http-api.md §Permission matrix; FR-003, FR-004, FR-005
+  PermissionCompleteness             PASS      PATTERN PermissionCompleteness: contracts/http-api.md §Permission matrix
+  AuthRequiredEverywhere             PASS      PATTERN AuthRequiredEverywhere: spec.md FR-001; contracts/http-api.md §Authentication
+  AuditCompleteness                  PASS      PATTERN AuditCompleteness: spec.md FR-015, FR-016; data-model.md AuditEntry
+  AppendOnly                         PASS      PATTERN AppendOnly: spec.md FR-017, SC-009; data-model.md §"Append-only"
+  AttributionCorrectness             PASS      PATTERN AttributionCorrectness: spec.md FR-016; data-model.md AuditEntry.actor_role
+  OwnershipExclusivity               PASS      PATTERN OwnershipExclusivity: data-model.md tasks.owner_id; spec.md FR-009
+  OwnershipBasedAccess               PASS      PATTERN OwnershipBasedAccess: spec.md FR-003, FR-010, Q1=A; contracts/http-api.md §Permission matrix
+  NoInformationLeakage               PASS      PATTERN NoInformationLeakage: spec.md FR-014, SC-003; contracts/http-api.md §Byte-equivalent not-found
+  PrivilegeMonotonicity              PASS      PATTERN PrivilegeMonotonicity: spec.md FR-005 vs FR-003; contracts/http-api.md §Permission matrix
+  ValidationBeforeMutation           PASS      PATTERN ValidationBeforeMutation: spec.md FR-015, SC-007; data-model.md §"Append-only"
+  FR_001_AuthRequired                PASS      FEATURE-SPECIFIC: FR-001 — all endpoints require OAuth bearer token
+  FR_002_UserExactlyOneTeam          PASS      FEATURE-SPECIFIC: FR-002 — user belongs to exactly one team
+  FR_003_MemberAccessControl         PASS      FEATURE-SPECIFIC: FR-003, FR-004 — member access restricted to own/shared tasks
+  FR_005_AdminTeamAccess             PASS      FEATURE-SPECIFIC: FR-005 — team admin full access within team only
+  FR_006_CrossTeamIsolation          PASS      FEATURE-SPECIFIC: FR-006 — absolute cross-team isolation
+  FR_009_ImmutableOwnerAndTeam       PASS      FEATURE-SPECIFIC: FR-009 — owner_id and team_id are immutable
+  FR_010_OwnerOnlyShareControl       PASS      FEATURE-SPECIFIC: FR-010, Q1=A — only the task owner can change shared_with
+  FR_011_ShareeCannotDelete          PASS      FEATURE-SPECIFIC: FR-011, Q3=B — sharee may view/edit but not delete
+  FR_012_NoChrossTeamSharing         PASS      FEATURE-SPECIFIC: FR-012 — cross-team sharing forbidden
+  FR_013_ShareAuditEntries           PASS      FEATURE-SPECIFIC: FR-013 — every share change produces an audit entry
+  FR_014_ByteEquivalentIsolation     PASS      FEATURE-SPECIFIC: FR-014 — byte-equivalent response for all non-permitted callers
+  FR_015_PerEventAuditEntries        PASS      FEATURE-SPECIFIC: FR-015 — every task has exactly one Created audit entry
+  FR_016_AuditAttributionAccurate    PASS      FEATURE-SPECIFIC: FR-016 — audit entry actor_role matches actor's actual role
+  FR_017_AuditImmutableOutlivesTask  PASS      FEATURE-SPECIFIC: FR-017 — audit entries are immutable and outlive the task
+  FR_019_AuditVisibility             PASS      FEATURE-SPECIFIC: FR-019 — audit readable by owner/sharee/admin only
+  FR_002a_IdentityFromToken          PASS      FEATURE-SPECIFIC: FR-002a — team_id and role from token; never from request payload
+
+  FR coverage
+  ----------------------------------------------------------------------------
+  FR-001  →  FR_001_AuthRequired=PASS, AuthRequiredEverywhere=PASS
+  FR-002  →  FR_002_UserExactlyOneTeam=PASS
+  FR-003  →  FR_003_MemberAccessControl=PASS, OwnershipBasedAccess=PASS
+  FR-004  →  FR_003_MemberAccessControl=PASS, LeastPrivilege=PASS
+  FR-005  →  FR_005_AdminTeamAccess=PASS, PrivilegeMonotonicity=PASS
+  FR-006  →  FR_006_CrossTeamIsolation=PASS, LeastPrivilege=PASS, NoInformationLeakage=PASS
+  FR-007  →  ValidationBeforeMutation=PASS
+  FR-008  →  ValidationBeforeMutation=PASS
+  FR-009  →  FR_009_ImmutableOwnerAndTeam=PASS, OwnershipExclusivity=PASS
+  FR-010  →  FR_010_OwnerOnlyShareControl=PASS, OwnershipBasedAccess=PASS
+  FR-011  →  FR_011_ShareeCannotDelete=PASS
+  FR-012  →  FR_012_NoChrossTeamSharing=PASS, FR_006_CrossTeamIsolation=PASS
+  FR-013  →  FR_013_ShareAuditEntries=PASS
+  FR-014  →  FR_014_ByteEquivalentIsolation=PASS, NoInformationLeakage=PASS
+  FR-015  →  FR_015_PerEventAuditEntries=PASS, AuditCompleteness=PASS, ValidationBeforeMutation=PASS
+  FR-016  →  FR_016_AuditAttributionAccurate=PASS, AttributionCorrectness=PASS
+  FR-017  →  FR_017_AuditImmutableOutlivesTask=PASS, AppendOnly=PASS
+  FR-018  →  ValidationBeforeMutation=PASS, AuditCompleteness=PASS
+  FR-019  →  FR_019_AuditVisibility=PASS
+  FR-020  →  AppendOnly=PASS, FR_017_AuditImmutableOutlivesTask=PASS
+  FR-021  [uncovered]
+
+  WARNING: 1 FR(s) without any matching assertion: FR-021
+
+==============================================================================
+  Mutation tests  (assertion-strength validation)
+==============================================================================
+
+  Strategy: replace each named fact's body with `{}` (no constraint),
+  then re-run Alloy. Each listed assertion should now FAIL on the
+  mutated model. If it still PASSes, the assertion is vacuous and
+  must be strengthened.
+
+  - MUTATE F_AppendOnlyAuditEntries  → runs/B-L3/mutated_F_AppendOnlyAuditEntries.als
+    rationale: Removing this fact permits two AuditEntry atoms with identical (task, actor, role, op) — a 'replacement' pattern that violates immutability. The injection forces exactly such a pair to exist, so AppendOnly and FR_017_AuditImmutableOutlivesTask both find counterexamples.
+    expected to FAIL: AppendOnly, FR_017_AuditImmutableOutlivesTask
+      - AppendOnly: FAIL (expected)
+      - FR_017_AuditImmutableOutlivesTask: FAIL (expected)
+
+  - MUTATE F_PermissionMatrix  → runs/B-L3/mutated_F_PermissionMatrix.als
+    rationale: Clearing the permission matrix fact removes all constraints on PermMatrix.Allowed, so the solver can place RelOutsider -> GetTaskById in the allowed set, violating LeastPrivilege and NoInformationLeakage. The injection forces that exact cell to be present.
+    expected to FAIL: LeastPrivilege, NoInformationLeakage, FR_014_ByteEquivalentIsolation, PermissionCompleteness
+      - LeastPrivilege: PASS (vacuous?)
+      - NoInformationLeakage: PASS (vacuous?)
+      - FR_014_ByteEquivalentIsolation: PASS (vacuous?)
+      - PermissionCompleteness: PASS (vacuous?)
+
+  - MUTATE F_ShareeSameTeam  → runs/B-L3/mutated_F_ShareeSameTeam.als
+    rationale: Removing this fact allows a user from a different team to appear in taskSharees, violating the cross-team-sharing prohibition. The injection forces a Task whose sharedWith includes a user from a different team.
+    expected to FAIL: FR_006_CrossTeamIsolation, FR_012_NoChrossTeamSharing, OwnershipBasedAccess
+      - FR_006_CrossTeamIsolation: FAIL (expected)
+      - FR_012_NoChrossTeamSharing: FAIL (expected)
+      - OwnershipBasedAccess: PASS (vacuous?)
+
+  - MUTATE F_AuditCreatedExists  → runs/B-L3/mutated_F_AuditCreatedExists.als
+    rationale: Removing this fact allows a Task to exist without any OpCreated audit entry, breaking AuditCompleteness and ValidationBeforeMutation. The injection forces a Task with no Created entry.
+    expected to FAIL: AuditCompleteness, FR_015_PerEventAuditEntries, ValidationBeforeMutation
+      - AuditCompleteness: FAIL (expected)
+      - FR_015_PerEventAuditEntries: FAIL (expected)
+      - ValidationBeforeMutation: FAIL (expected)
+
+  - MUTATE F_AuditActorRoleSnapshot  → runs/B-L3/mutated_F_AuditActorRoleSnapshot.als
+    rationale: Removing this fact lets the stored actorRole in an AuditEntry differ from the actor's actual role, producing a misattributed audit record. The injection forces an entry where entryActorRole = RoleMember but the actor's userRole = RoleTeamAdmin.
+    expected to FAIL: AttributionCorrectness, FR_016_AuditAttributionAccurate
+      - AttributionCorrectness: FAIL (expected)
+      - FR_016_AuditAttributionAccurate: FAIL (expected)
+
+  - MUTATE F_OwnerInTaskTeam  → runs/B-L3/mutated_F_OwnerInTaskTeam.als
+    rationale: Removing this fact allows a Task whose owner is in a different team than the task's team_id, breaking the denormalization invariant that underpins cross-team isolation queries. The injection forces exactly that mismatch.
+    expected to FAIL: OwnershipExclusivity, FR_009_ImmutableOwnerAndTeam, FR_006_CrossTeamIsolation
+      - OwnershipExclusivity: FAIL (expected)
+      - FR_009_ImmutableOwnerAndTeam: FAIL (expected)
+      - FR_006_CrossTeamIsolation: FAIL (expected)
+
+  Mutation summary
+  ----------------------------------------------------------------------------
+  - F_AppendOnlyAuditEntries: ASSERTIONS BIT (AppendOnly, FR_017_AuditImmutableOutlivesTask)
+  - F_PermissionMatrix: ASSERTION VACUOUS (LeastPrivilege, NoInformationLeakage, FR_014_ByteEquivalentIsolation, PermissionCompleteness)
+  - F_ShareeSameTeam: ASSERTION VACUOUS (FR_006_CrossTeamIsolation, FR_012_NoChrossTeamSharing, OwnershipBasedAccess)
+  - F_AuditCreatedExists: ASSERTIONS BIT (AuditCompleteness, FR_015_PerEventAuditEntries, ValidationBeforeMutation)
+  - F_AuditActorRoleSnapshot: ASSERTIONS BIT (AttributionCorrectness, FR_016_AuditAttributionAccurate)
+  - F_OwnerInTaskTeam: ASSERTIONS BIT (OwnershipExclusivity, FR_009_ImmutableOwnerAndTeam, FR_006_CrossTeamIsolation)
+

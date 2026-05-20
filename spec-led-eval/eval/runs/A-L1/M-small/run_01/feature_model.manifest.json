@@ -1,0 +1,110 @@
+{
+  "feature_id": "A-L1",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "AuditCompleteness",
+    "AttributionCorrectness",
+    "AppendOnly",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "ConcurrencySafety"
+  ],
+  "feature_specific_predicates": [
+    "FR_005_OnePendingPerCustomer",
+    "FR_004_UniqueReferenceNumber",
+    "FR_003_AmountAndTermConstraints",
+    "FR_012_ConcurrentDecisionHandling",
+    "FR_011_ImmutableDecision",
+    "FR_013_OwnershipBasedAccess",
+    "FR_010_DecisionRecording",
+    "FR_002_ValidationBeforeMutation"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_002_ValidationBeforeMutation"
+    ],
+    "FR-002": [
+      "FR_002_ValidationBeforeMutation"
+    ],
+    "FR-003": [
+      "FR_003_AmountAndTermConstraints"
+    ],
+    "FR-004": [
+      "FR_004_UniqueReferenceNumber",
+      "OwnershipExclusivity"
+    ],
+    "FR-005": [
+      "FR_005_OnePendingPerCustomer"
+    ],
+    "FR-010": [
+      "FR_010_DecisionRecording"
+    ],
+    "FR-011": [
+      "FR_011_ImmutableDecision"
+    ],
+    "FR-012": [
+      "FR_012_ConcurrentDecisionHandling"
+    ],
+    "FR-013": [
+      "FR_013_OwnershipBasedAccess"
+    ],
+    "FR-015": [
+      "LeastPrivilege"
+    ],
+    "FR-016": [
+      "AuditCompleteness",
+      "AttributionCorrectness",
+      "AppendOnly"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege"
+      ],
+      "rationale": "Removing this fact allows the permission matrix to become unconstrained; bank staff could then be granted permission to submit applications (or customers granted decision-making rights), violating least privilege.",
+      "inject_violation": "fact MUTATE_PermissionMatrixViolation { BankStaffRole -> PostApplications in PermMatrix.Allowed }"
+    },
+    {
+      "fact_name": "F_OnePendingPerCustomer",
+      "asserts_violated": [
+        "FR_005_OnePendingPerCustomer"
+      ],
+      "rationale": "Removing this constraint allows multiple pending applications for the same customer, directly violating FR-005's one-in-flight rule and the business model.",
+      "inject_violation": "fact MUTATE_OnePendingViolation { some disj a1, a2: LoanApplication | a1.customer = a2.customer and a1.status = PendingReview and a2.status = PendingReview }"
+    },
+    {
+      "fact_name": "F_AuditEventsComplete",
+      "asserts_violated": [
+        "AuditCompleteness"
+      ],
+      "rationale": "Removing this constraint allows applications to exist without required audit events (e.g., submitted event missing, or decision events missing), breaking audit trail integrity required by FR-016.",
+      "inject_violation": "fact MUTATE_AuditViolation { some a: LoanApplication | no e: a.audit_events | e.event_type = Submitted }"
+    },
+    {
+      "fact_name": "F_OneDecisionPerApplication",
+      "asserts_violated": [
+        "FR_012_ConcurrentDecisionHandling"
+      ],
+      "rationale": "Removing this constraint allows the same application to have multiple decisions recorded, enabling the concurrent decision race condition to occur and violating SC-005.",
+      "inject_violation": "fact MUTATE_MultiDecisionViolation { some disj d1, d2: Decision | d1.application = d2.application }"
+    },
+    {
+      "fact_name": "F_DecisionImpliesNonPending",
+      "asserts_violated": [
+        "FR_011_ImmutableDecision"
+      ],
+      "rationale": "Removing this constraint allows an application to be both decided and still pending, contradicting FR-011 (immutability once approved/rejected).",
+      "inject_violation": "fact MUTATE_ImmutabilityViolation { some a: LoanApplication, d: a.decision | a.status = PendingReview }"
+    },
+    {
+      "fact_name": "F_AttributionCorrect",
+      "asserts_violated": [
+        "AttributionCorrectness"
+      ],
+      "rationale": "Removing this constraint allows audit events to be attributed to the wrong actor (e.g., a submitted event attributed to a staff member instead of the customer), breaking audit integrity and attribution correctness required by FR-016.",
+      "inject_violation": "fact MUTATE_MisattributionViolation { some a: LoanApplication, e: a.audit_events | e.event_type = Submitted and e.actor != a.customer }"
+    }
+  ]
+}

@@ -1,0 +1,134 @@
+{
+  "feature_id": "C-L1",
+  "patterns_applied": [
+    "AuthRequiredEverywhere",
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_OneRolePerUser",
+    "FR_003_AuditQueryablePerPatient",
+    "FR_004_NoPatientIdInPath",
+    "FR_005_ReadOnly",
+    "FR_006_CareTeamGating",
+    "FR_007_ByteEquivDenyNotFound",
+    "FR_008_AuditEveryAccess",
+    "FR_009_AuditEntryShape",
+    "FR_010_AuditAppendOnly",
+    "FR_011_IGOnlyAuditEndpoint",
+    "FR_012_RetentionNoDelete",
+    "FR_013_NoRecordWithoutAudit",
+    "FR_014_SafetyContentSurfaced",
+    "FR_015_VerificationBlockSurfaced"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_OneRolePerUser"
+    ],
+    "FR-003": [
+      "FR_003_AuditQueryablePerPatient"
+    ],
+    "FR-004": [
+      "FR_004_NoPatientIdInPath"
+    ],
+    "FR-005": [
+      "FR_005_ReadOnly"
+    ],
+    "FR-006": [
+      "FR_006_CareTeamGating",
+      "OwnershipBasedAccess"
+    ],
+    "FR-007": [
+      "FR_007_ByteEquivDenyNotFound",
+      "NoInformationLeakage"
+    ],
+    "FR-008": [
+      "FR_008_AuditEveryAccess",
+      "AuditCompleteness"
+    ],
+    "FR-009": [
+      "FR_009_AuditEntryShape",
+      "AttributionCorrectness"
+    ],
+    "FR-010": [
+      "FR_010_AuditAppendOnly",
+      "AppendOnly"
+    ],
+    "FR-011": [
+      "FR_011_IGOnlyAuditEndpoint",
+      "LeastPrivilege"
+    ],
+    "FR-012": [
+      "FR_012_RetentionNoDelete"
+    ],
+    "FR-013": [
+      "FR_013_NoRecordWithoutAudit"
+    ],
+    "FR-014": [
+      "FR_014_SafetyContentSurfaced"
+    ],
+    "FR-015": [
+      "FR_015_VerificationBlockSurfaced"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_011_IGOnlyAuditEndpoint",
+        "NoInformationLeakage"
+      ],
+      "rationale": "Clearing the permission matrix removes the (Role x OperationKind) allow set; the injected fact then forces an AuditOfficer to invoke LookupRecord, which LeastPrivilege and FR_011 must catch.",
+      "inject_violation": "fact MUTATE_LeastPrivilegeViolation { some op: Operation | op.callerRole = AuditOfficer and op.kind = LookupRecord }"
+    },
+    {
+      "fact_name": "F_AuditEntryWiring",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_008_AuditEveryAccess",
+        "FR_013_NoRecordWithoutAudit"
+      ],
+      "rationale": "Clearing the audit-entry wiring removes the link between Operations and AuditEntries; the injection forces a Permitted LookupRecord operation with no audit entry, which the audit-completeness assertions must catch.",
+      "inject_violation": "fact MUTATE_MissingAuditViolation { some op: Operation | op.kind = LookupRecord and op.outcome = Permitted and no ae: AuditEntry | ae.ofOperation = op }"
+    },
+    {
+      "fact_name": "F_CallerRoleSnapshotMatchesCaller",
+      "asserts_violated": [
+        "AttributionCorrectness",
+        "AppendOnly",
+        "FR_010_AuditAppendOnly"
+      ],
+      "rationale": "Removing the snapshot=caller.role linkage allows AuditEntries whose recorded role differs from the actual caller's role, which AttributionCorrectness and AppendOnly are designed to catch.",
+      "inject_violation": "fact MUTATE_MisattributionViolation { some ae: AuditEntry | ae.recordedRole != ae.ofOperation.caller.role }"
+    },
+    {
+      "fact_name": "F_NonEmptyUniverse",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_006_CareTeamGating"
+      ],
+      "rationale": "With universe witnesses removed, the injection still forces a concrete Permitted LookupRecord operation where the caller is NOT on the patient's care team \u2014 this is exactly the care-team gating violation that FR_006 and OwnershipBasedAccess must catch.",
+      "inject_violation": "fact MUTATE_CareTeamBypass { some op: Operation | op.kind = LookupRecord and op.outcome = Permitted and (no m: CareTeamMembership | m.member = op.caller and m.subject = op.target and m.active = True) }"
+    },
+    {
+      "fact_name": "F_AuditEntryWiring",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "FR_007_ByteEquivDenyNotFound"
+      ],
+      "rationale": "Removing wiring lets the injection construct a non-care-team Permitted lookup, which leaks patient existence to non-care-team callers and breaks byte-equivalence guarantees.",
+      "inject_violation": "fact MUTATE_LeakageViolation { some op: Operation | op.kind = LookupRecord and op.outcome = Permitted and (no m: CareTeamMembership | m.member = op.caller and m.subject = op.target and m.active = True) }"
+    }
+  ]
+}

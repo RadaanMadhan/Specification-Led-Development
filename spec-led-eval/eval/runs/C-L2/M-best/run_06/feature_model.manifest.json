@@ -1,0 +1,141 @@
+{
+  "feature_id": "012-hospital-clinical-records",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "AuthRequiredEverywhere",
+    "OwnershipBasedAccess",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "NoInformationLeakage"
+  ],
+  "feature_specific_predicates": [
+    "AdminContentBlindness",
+    "FR_001_AuthRequired",
+    "FR_002_OneRolePerUser",
+    "FR_004_CareTeamGating",
+    "FR_005_AdminNoClinicalContent",
+    "FR_006_ByteEquivalentDenial",
+    "FR_010_NoteAttribution",
+    "FR_011_NotesAppendOnly",
+    "FR_012_AuditAlwaysOn",
+    "FR_013_AuditFields",
+    "FR_014_AuditImmutable",
+    "FR_017_AdminOnlyAuditSearch",
+    "FR_018_AdminContentBlind"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "AuthRequiredEverywhere",
+      "FR_001_AuthRequired"
+    ],
+    "FR-002": [
+      "FR_002_OneRolePerUser"
+    ],
+    "FR-004": [
+      "OwnershipBasedAccess",
+      "FR_004_CareTeamGating"
+    ],
+    "FR-005": [
+      "AdminContentBlindness",
+      "FR_005_AdminNoClinicalContent"
+    ],
+    "FR-006": [
+      "NoInformationLeakage",
+      "FR_006_ByteEquivalentDenial"
+    ],
+    "FR-010": [
+      "FR_010_NoteAttribution"
+    ],
+    "FR-011": [
+      "AppendOnlyNotes",
+      "FR_011_NotesAppendOnly"
+    ],
+    "FR-012": [
+      "AuditCompleteness",
+      "FR_012_AuditAlwaysOn"
+    ],
+    "FR-013": [
+      "AttributionCorrectness",
+      "FR_013_AuditFields"
+    ],
+    "FR-014": [
+      "AppendOnlyAudit",
+      "FR_014_AuditImmutable"
+    ],
+    "FR-017": [
+      "LeastPrivilege",
+      "FR_017_AdminOnlyAuditSearch"
+    ],
+    "FR-018": [
+      "AdminContentBlindness",
+      "FR_018_AdminContentBlind"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_NotesProvenance",
+      "asserts_violated": [
+        "AppendOnlyNotes",
+        "FR_011_NotesAppendOnly"
+      ],
+      "rationale": "F_NotesProvenance is the sole fact tying every ClinicalNote back to a unique permitted add_note Operation. Clearing it lets Alloy invent an orphan note with no creating op, which is exactly the structural shape of an out-of-band note mutation that the AppendOnly invariant must rule out.",
+      "inject_violation": "fact MUTATE_NotesAppendOnly { some n: ClinicalNote | no op: Operation | op.noteCreated = n }"
+    },
+    {
+      "fact_name": "F_AuditCompleteness",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_012_AuditAlwaysOn"
+      ],
+      "rationale": "F_AuditCompleteness is the load-bearing constraint that every authenticated clinical-endpoint Operation has exactly one matching AuditEntry. Removing it makes audit-write-skipping reachable; the injection forces a permitted record-read with no audit entry, which AuditCompleteness must catch.",
+      "inject_violation": "fact MUTATE_AuditMissing { some op: Operation | op.authenticated = True and op.kind = PostRecordsLookup and op.outcome = Permitted and (no ae: AuditEntry | ae.op = op) }"
+    },
+    {
+      "fact_name": "F_RolePermissionGate",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_017_AdminOnlyAuditSearch"
+      ],
+      "rationale": "F_RolePermissionGate is the only fact tying permitted Operations to the contracts/http-api.md permission matrix. Clearing it lets a clinician slip into the administrator-only audit-search endpoint with a permitted outcome, which LeastPrivilege must catch.",
+      "inject_violation": "fact MUTATE_LeastPrivilege { some op: Operation | op.outcome = Permitted and op.callerRoleSnapshot = Doctor and op.kind = PostAuditSearch }"
+    },
+    {
+      "fact_name": "F_AuthRequired",
+      "asserts_violated": [
+        "AuthRequiredEverywhere",
+        "FR_001_AuthRequired"
+      ],
+      "rationale": "F_AuthRequired is the sole fact enforcing the FR-001 boundary (no permitted outcome and no audit entry when unauthenticated). Clearing it permits a permitted Operation with authenticated = False, which AuthRequiredEverywhere must reject.",
+      "inject_violation": "fact MUTATE_AuthBypass { some op: Operation | op.authenticated = False and op.outcome = Permitted }"
+    },
+    {
+      "fact_name": "F_CareTeamGating",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_004_CareTeamGating"
+      ],
+      "rationale": "F_CareTeamGating is the only fact requiring an active care-team-membership row for any permitted clinical-endpoint Operation. Clearing it lets a clinician permitted-read a patient they are not on the care team for, which OwnershipBasedAccess must catch.",
+      "inject_violation": "fact MUTATE_OwnershipBypass { some op: Operation | op.outcome = Permitted and op.kind = PostRecordsLookup and (no ctm: CareTeamMembership | ctm.ctmClinician = op.caller and ctm.ctmPatient = op.targetPatient and ctm.ctmActive = True) }"
+    },
+    {
+      "fact_name": "F_NotFoundEnvelope",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "FR_006_ByteEquivalentDenial"
+      ],
+      "rationale": "F_NotFoundEnvelope is the only fact pinning denial / not-found Operations to the canonical NotFoundEnvelope response. Clearing it lets a denied Operation expose a distinguishable response shape \u2014 the classic existence-leak that FR-006 forbids.",
+      "inject_violation": "fact MUTATE_LeakResponse { some op: Operation | op.authenticated = True and op.outcome = Denied and op.responseBytes != NotFoundEnvelope }"
+    },
+    {
+      "fact_name": "F_AdminContentBlindness",
+      "asserts_violated": [
+        "AdminContentBlindness",
+        "FR_005_AdminNoClinicalContent",
+        "FR_018_AdminContentBlind"
+      ],
+      "rationale": "F_AdminContentBlindness is the sole fact preventing the administrator's audit-search endpoint from serving a record-shaped or note-shaped response. F_PermittedClinicalResponses deliberately omits PostAuditSearch, so removing this fact opens the door to a hospital_administrator response carrying clinical content.",
+      "inject_violation": "fact MUTATE_AdminLeak { some op: Operation | op.kind = PostAuditSearch and op.responseBytes = RecordOk }"
+    }
+  ]
+}

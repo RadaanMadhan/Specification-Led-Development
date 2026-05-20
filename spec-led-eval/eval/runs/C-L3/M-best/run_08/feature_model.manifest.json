@@ -1,0 +1,166 @@
+{
+  "feature_id": "C-L3",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_OneRolePerUser",
+    "FR_003_PatientAssignedRecord",
+    "FR_004_ClinicianCareTeamGate",
+    "FR_005_ClinicianNoAccessLog",
+    "FR_006_PatientSelfOnly",
+    "FR_007_ComplianceNoClinicalRead",
+    "FR_008_ByteEquivalent403",
+    "FR_009_NonCTClinicianGetRecordDenied",
+    "FR_010_ValidationBeforeMutation",
+    "FR_011_NoteAttribution",
+    "FR_012_NotesAppendOnly",
+    "FR_013_AuditCompleteness",
+    "FR_014_AuditFieldShape",
+    "FR_015_AuditImmutable",
+    "FR_016_NoStateChangeWithoutAudit",
+    "FR_017_AuditRetention",
+    "FR_018_AccessLogComplianceOnly",
+    "FR_019_ComplianceContentBlind",
+    "FR_020_RecordIdOnlyInUrlPath"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_OneRolePerUser"
+    ],
+    "FR-003": [
+      "FR_003_PatientAssignedRecord"
+    ],
+    "FR-004": [
+      "FR_004_ClinicianCareTeamGate",
+      "OwnershipBasedAccess"
+    ],
+    "FR-005": [
+      "FR_005_ClinicianNoAccessLog",
+      "LeastPrivilege"
+    ],
+    "FR-006": [
+      "FR_006_PatientSelfOnly",
+      "OwnershipBasedAccess"
+    ],
+    "FR-007": [
+      "FR_007_ComplianceNoClinicalRead",
+      "LeastPrivilege"
+    ],
+    "FR-008": [
+      "FR_008_ByteEquivalent403",
+      "NoInformationLeakage"
+    ],
+    "FR-009": [
+      "FR_009_NonCTClinicianGetRecordDenied"
+    ],
+    "FR-010": [
+      "FR_010_ValidationBeforeMutation"
+    ],
+    "FR-011": [
+      "FR_011_NoteAttribution",
+      "AttributionCorrectness"
+    ],
+    "FR-012": [
+      "FR_012_NotesAppendOnly",
+      "AppendOnly"
+    ],
+    "FR-013": [
+      "FR_013_AuditCompleteness",
+      "AuditCompleteness"
+    ],
+    "FR-014": [
+      "FR_014_AuditFieldShape",
+      "AttributionCorrectness"
+    ],
+    "FR-015": [
+      "FR_015_AuditImmutable",
+      "AppendOnly"
+    ],
+    "FR-016": [
+      "FR_016_NoStateChangeWithoutAudit"
+    ],
+    "FR-017": [
+      "FR_017_AuditRetention",
+      "AppendOnly"
+    ],
+    "FR-018": [
+      "FR_018_AccessLogComplianceOnly",
+      "PermissionCompleteness"
+    ],
+    "FR-019": [
+      "FR_019_ComplianceContentBlind"
+    ],
+    "FR-020": [
+      "FR_020_RecordIdOnlyInUrlPath"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_LeastPrivilege_MatrixGate",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_007_ComplianceNoClinicalRead"
+      ],
+      "rationale": "Removing the matrix-gate fact lets Alloy construct a permitted operation whose (role,endpoint) cell is denied by the permission matrix \u2014 e.g., a compliance officer reading a clinical record. LeastPrivilege should catch this.",
+      "inject_violation": "fact MUTATE_LeastPrivilegeViolation { some op: Operation | some op.caller and op.caller.role = ComplianceOfficer and op.endpoint = EpGetRecord and op.outcome = Permitted }"
+    },
+    {
+      "fact_name": "F_LeastPrivilege_ClinicianCT",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_004_ClinicianCareTeamGate"
+      ],
+      "rationale": "Removing the clinician-care-team gate lets Alloy invent a permitted clinician access for a record on which the clinician has no active care-team membership \u2014 exactly the FR-004 violation the OwnershipBasedAccess assertion is meant to catch.",
+      "inject_violation": "fact MUTATE_OwnershipBypass { some op: Operation | some op.caller and op.caller.role = Clinician and op.endpoint = EpGetRecord and op.outcome = Permitted and (no m: CareTeamMembership | m.ctClinician = op.caller and m.ctRecord = op.targetRec) }"
+    },
+    {
+      "fact_name": "F_AuditOnePerAuthenticatedOp",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_013_AuditCompleteness"
+      ],
+      "rationale": "Removing the one-audit-per-authenticated-op fact lets the model invent an authenticated record-access operation with no matching audit entry, which violates FR-013/SC-001/SC-002.",
+      "inject_violation": "fact MUTATE_MissingAudit { some op: Operation | some op.caller and (no ae: AuditEntry | ae.auditOp = op) }"
+    },
+    {
+      "fact_name": "F_NotesViaPermittedAppendOp",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_012_NotesAppendOnly"
+      ],
+      "rationale": "Removing the note-justification fact lets a clinical note exist without a corresponding permitted append operation \u2014 modelling either a mutation that bypassed the API or a synthetic note appearing out of thin air, both forbidden by FR-012's append-only contract.",
+      "inject_violation": "fact MUTATE_OrphanNote { some n: ClinicalNote | (no op: Operation | op.opType = AppendOp and op.outcome = Permitted and op.caller = n.noteAuthor and op.targetRec = n.noteRecord) }"
+    },
+    {
+      "fact_name": "F_ByteEquivalentForbidden",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "FR_008_ByteEquivalent403"
+      ],
+      "rationale": "Removing the canonical-forbidden fact lets Alloy construct a denied operation whose response is observationally distinguishable from the byte-equivalent 403 envelope \u2014 exactly the existence-leak scenario FR-008/SC-003 forbids.",
+      "inject_violation": "fact MUTATE_LeakyForbidden { some op: Operation | op.outcome = Denied and op.response != CanonicalForbidden }"
+    },
+    {
+      "fact_name": "F_AuthRequiredOrDenied",
+      "asserts_violated": [
+        "AuthRequiredEverywhere",
+        "FR_001_AuthRequired"
+      ],
+      "rationale": "Removing the authentication-boundary fact lets the model invent an unauthenticated operation that nonetheless reaches a Permitted outcome, violating FR-001's 'unauthenticated rejected before any record dereference' guarantee.",
+      "inject_violation": "fact MUTATE_UnauthPermitted { some op: Operation | no op.caller and op.outcome = Permitted }"
+    }
+  ]
+}

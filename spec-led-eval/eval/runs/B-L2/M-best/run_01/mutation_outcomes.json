@@ -1,0 +1,45 @@
+{
+  "F_SuccessRequiresPermission": {
+    "targeted_asserts": {
+      "LeastPrivilege": "BIT",
+      "FR_009_NonOwnerMemberDenied": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AppendOnlyAuditEntries": {
+    "targeted_asserts": {
+      "AppendOnly": "BIT",
+      "FR_016_AuditAppendOnly": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_OwnershipBasedAccess": {
+    "targeted_asserts": {
+      "OwnershipBasedAccess": "BIT",
+      "FR_008_MemberEditsOwnTask": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_CrossTeamIsolation": {
+    "targeted_asserts": {
+      "NoInformationLeakage": "BIT",
+      "FR_011_AdminCannotCrossTeam": "BIT",
+      "FR_014_CrossTeamByteEquivalent": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AuditActorIsMemberWithRole": {
+    "targeted_asserts": {
+      "AttributionCorrectness": "BIT",
+      "FR_015_AuditEntryShape": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_OwnerIsTeamMember": {
+    "targeted_asserts": {
+      "OwnershipExclusivity": "BIT",
+      "FR_006_TaskHasOneOwner": "BIT"
+    },
+    "all_bit": true
+  }
+}

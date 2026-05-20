@@ -1,0 +1,161 @@
+{
+  "feature_id": "B-L2",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "ValidationBeforeMutation"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_IdentityFromAuth",
+    "FR_003_TeamContextRequired",
+    "FR_004_CallerMember",
+    "FR_005_TaskHasOneTeam",
+    "FR_006_OwnerImmutable",
+    "FR_007_PerTeamRole",
+    "FR_008_010_OwnerOrAdminEdit",
+    "FR_013_StatusSet",
+    "FR_014_CrossTeamIsolation",
+    "FR_015_AuditPerSave",
+    "FR_016_AuditAppendOnly",
+    "FR_017_AuditVisibleToTeamMembers",
+    "FR_018_AuditRetention",
+    "FR_019_ListScopedToTeam",
+    "FR_020_FiltersScopedToTeam"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_IdentityFromAuth"
+    ],
+    "FR-003": [
+      "FR_003_TeamContextRequired"
+    ],
+    "FR-004": [
+      "FR_004_CallerMember"
+    ],
+    "FR-005": [
+      "FR_005_TaskHasOneTeam"
+    ],
+    "FR-006": [
+      "FR_006_OwnerImmutable",
+      "OwnershipExclusivity"
+    ],
+    "FR-007": [
+      "FR_007_PerTeamRole"
+    ],
+    "FR-008": [
+      "FR_008_010_OwnerOrAdminEdit",
+      "OwnershipBasedAccess"
+    ],
+    "FR-009": [
+      "FR_008_010_OwnerOrAdminEdit",
+      "OwnershipBasedAccess"
+    ],
+    "FR-010": [
+      "FR_008_010_OwnerOrAdminEdit",
+      "OwnershipBasedAccess"
+    ],
+    "FR-011": [
+      "FR_014_CrossTeamIsolation",
+      "NoInformationLeakage"
+    ],
+    "FR-012": [
+      "FR_013_StatusSet"
+    ],
+    "FR-013": [
+      "FR_013_StatusSet"
+    ],
+    "FR-014": [
+      "FR_014_CrossTeamIsolation",
+      "NoInformationLeakage"
+    ],
+    "FR-015": [
+      "FR_015_AuditPerSave",
+      "AuditCompleteness",
+      "AttributionCorrectness"
+    ],
+    "FR-016": [
+      "FR_016_AuditAppendOnly",
+      "AppendOnly",
+      "ValidationBeforeMutation"
+    ],
+    "FR-017": [
+      "FR_017_AuditVisibleToTeamMembers"
+    ],
+    "FR-018": [
+      "FR_018_AuditRetention"
+    ],
+    "FR-019": [
+      "FR_019_ListScopedToTeam"
+    ],
+    "FR-020": [
+      "FR_020_FiltersScopedToTeam"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "PermissionCompleteness"
+      ],
+      "rationale": "Clearing the permission-matrix definition lets Alloy choose any subset of Role x OperationKind as Allowed. The injection then forces at least one cell to be missing, which is exactly what PermissionCompleteness forbids.",
+      "inject_violation": "fact MUTATE_PermissionGap { some r: Role, k: OperationKind | (r -> k) not in PermMatrix.Allowed }"
+    },
+    {
+      "fact_name": "F_AppendOnlyAuditEntries",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_016_AuditAppendOnly",
+        "FR_018_AuditRetention"
+      ],
+      "rationale": "Removing the 'exactly one creating op per audit entry' fact allows orphan audit entries (no op created them) or shared ones (two ops point at the same entry). The injection forces an orphan, which directly falsifies AppendOnly's 'one op | op.op_audit = a' clause.",
+      "inject_violation": "fact MUTATE_OrphanAudit { some a: AuditEntry | (no op: Operation | op.op_audit = a) }"
+    },
+    {
+      "fact_name": "F_AuditEntryPerSuccessfulSave",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_015_AuditPerSave"
+      ],
+      "rationale": "This fact is what guarantees every successful create/patch/delete writes an audit entry. The injection forces a successful CreateTaskOp that has no associated audit entry, which is exactly the missing-audit case SC-007 forbids.",
+      "inject_violation": "fact MUTATE_SaveWithoutAudit { some op: Operation | op.op_outcome = Success and op.op_kind = CreateTaskOp and no op.op_audit }"
+    },
+    {
+      "fact_name": "F_CrossTeamIsolation",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "FR_014_CrossTeamIsolation"
+      ],
+      "rationale": "Without this fact, a successful operation may target a task whose team differs from the caller's X-Team-Id. The injection forces exactly such a cross-tenant success, which violates FR-014 / SC-004 byte-equivalent 404 invariant.",
+      "inject_violation": "fact MUTATE_CrossTeamSuccess { some op: Operation | op.op_outcome = Success and op.op_kind = GetTaskOp and some op.op_target and some op.op_team_ctx and op.op_target.task_team != op.op_team_ctx }"
+    },
+    {
+      "fact_name": "F_OwnerOrAdminForMutation",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_008_010_OwnerOrAdminEdit"
+      ],
+      "rationale": "This fact gates patch/delete success on owner-or-admin. Removing it lets a non-owner non-admin member's PATCH succeed; the injection forces precisely that case (caller != owner AND no admin membership in the team), which the SC-005 invariant forbids.",
+      "inject_violation": "fact MUTATE_NonOwnerEdit { some op: Operation | op.op_outcome = Success and op.op_kind = PatchTaskOp and some op.op_target and op.op_caller != op.op_target.owner and (no m: TeamMembership | m.tm_user = op.op_caller and m.tm_team = op.op_team_ctx and m.tm_role = AdminRole) }"
+    },
+    {
+      "fact_name": "F_AuditAttribution",
+      "asserts_violated": [
+        "AttributionCorrectness"
+      ],
+      "rationale": "This fact pins each audit entry's actor and ae_task to the producing operation's caller and target. Without it, audit entries can be misattributed; the injection produces an entry whose actor is not the caller of the producing op, which AttributionCorrectness must reject.",
+      "inject_violation": "fact MUTATE_WrongActor { some op: Operation | some op.op_audit and op.op_audit.actor != op.op_caller }"
+    }
+  ]
+}

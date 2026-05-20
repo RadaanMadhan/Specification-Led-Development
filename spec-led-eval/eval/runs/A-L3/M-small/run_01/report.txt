@@ -1,0 +1,118 @@
+==============================================================================
+  Design Compliance Report  (Phase 3 — feature_model.als)
+  feature       : A-L3
+  spec source   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/eval/specs/A-L3
+  alloy model   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/A-L3/feature_model.als
+  patterns      : LeastPrivilege, PermissionCompleteness, AuthRequiredEverywhere, AuditCompleteness, AppendOnly, AttributionCorrectness, OwnershipExclusivity, OwnershipBasedAccess, NoSelfMutation
+  fr count      : 24 declared in spec.md
+  assertions    : 24 total (24/24 PASS via Alloy)
+==============================================================================
+
+  Compliance matrix
+  ----------------------------------------------------------------------------
+  Assertion                                    Verdict   Anchor
+  ---------------------------------------------------------------------------------
+  LeastPrivilege                               PASS      PATTERN LeastPrivilege: contracts/http-api.md permission matrix; FR-001-005
+  PermissionCompleteness                       PASS      PATTERN PermissionCompleteness: contracts/http-api.md permission matrix
+  AuthRequiredEverywhere                       PASS      PATTERN AuthRequiredEverywhere: FR-001
+  AuditCompleteness                            PASS      PATTERN AuditCompleteness: spec.md FR-016; data-model.md audit_entries
+  AppendOnly                                   PASS      PATTERN AppendOnly: spec.md FR-018, FR-019; contracts/http-api.md no DELETE/UPDATE
+  AttributionCorrectness                       PASS      PATTERN AttributionCorrectness: spec.md FR-016; data-model.md audit entry fields
+  OwnershipExclusivity                         PASS      PATTERN OwnershipExclusivity: data-model.md ownership; spec.md applicant
+  OwnershipBasedAccess                         PASS      PATTERN OwnershipBasedAccess: spec.md FR-003, FR-004, FR-020
+  NoSelfMutation                               PASS      PATTERN NoSelfMutation: spec.md FR-013
+  FR_002_RoleMultiplicity                      PASS      FEATURE-SPECIFIC: FR-002
+  FR_003_ApplicantCanSubmit                    PASS      FEATURE-SPECIFIC: FR-003
+  FR_004_OfficerCanViewAssigned                PASS      FEATURE-SPECIFIC: FR-004
+  FR_005_AuditorReadOnly                       PASS      FEATURE-SPECIFIC: FR-005
+  FR_007_AmountAndPurposeLimits                PASS      FEATURE-SPECIFIC: FR-007
+  FR_008_OneInFlightPerApplicant               PASS      FEATURE-SPECIFIC: FR-008
+  FR_009_AllowedStatusTransitions              PASS      FEATURE-SPECIFIC: FR-009
+  FR_010_AutoAssignmentExcludesApplicant       PASS      FEATURE-SPECIFIC: FR-010, FR-011
+  FR_012_OnlyAssignedOfficerCanPatch           PASS      FEATURE-SPECIFIC: FR-012
+  FR_013_NoSelfApproval                        PASS      FEATURE-SPECIFIC: FR-013
+  FR_016_AuditEntryStructure                   PASS      FEATURE-SPECIFIC: FR-016
+  FR_018_AuditImmutableTamperDetectable        PASS      FEATURE-SPECIFIC: FR-018
+  FR_020_ByteEquivalentResponse                PASS      FEATURE-SPECIFIC: FR-020, FR-021
+  FR_023_AuditEndpointAuditorOnly              PASS      FEATURE-SPECIFIC: FR-023
+  FR_024_ApplicantCannotModifyAfterSubmission  PASS      FEATURE-SPECIFIC: FR-024
+
+  FR coverage
+  ----------------------------------------------------------------------------
+  FR-001  →  AuthRequiredEverywhere=PASS
+  FR-002  →  FR_002_RoleMultiplicity=PASS
+  FR-003  →  FR_003_ApplicantCanSubmit=PASS
+  FR-004  →  FR_004_OfficerCanViewAssigned=PASS
+  FR-005  →  FR_005_AuditorReadOnly=PASS
+  FR-006  →  FR_003_ApplicantCanSubmit=PASS
+  FR-007  →  FR_007_AmountAndPurposeLimits=PASS
+  FR-008  →  FR_008_OneInFlightPerApplicant=PASS
+  FR-009  →  FR_009_AllowedStatusTransitions=PASS
+  FR-010  →  FR_010_AutoAssignmentExcludesApplicant=PASS
+  FR-011  →  FR_010_AutoAssignmentExcludesApplicant=PASS
+  FR-012  →  FR_012_OnlyAssignedOfficerCanPatch=PASS
+  FR-013  →  FR_013_NoSelfApproval=PASS
+  FR-014  [uncovered]
+  FR-015  [uncovered]
+  FR-016  →  AuditCompleteness=PASS, FR_016_AuditEntryStructure=PASS
+  FR-017  →  AppendOnly=PASS
+  FR-018  →  FR_018_AuditImmutableTamperDetectable=PASS
+  FR-019  [uncovered]
+  FR-020  →  FR_020_ByteEquivalentResponse=PASS
+  FR-021  →  FR_020_ByteEquivalentResponse=PASS
+  FR-022  →  FR_020_ByteEquivalentResponse=PASS
+  FR-023  →  FR_023_AuditEndpointAuditorOnly=PASS
+  FR-024  →  FR_024_ApplicantCannotModifyAfterSubmission=PASS
+
+  WARNING: 3 FR(s) without any matching assertion: FR-014, FR-015, FR-019
+
+==============================================================================
+  Mutation tests  (assertion-strength validation)
+==============================================================================
+
+  Strategy: replace each named fact's body with `{}` (no constraint),
+  then re-run Alloy. Each listed assertion should now FAIL on the
+  mutated model. If it still PASSes, the assertion is vacuous and
+  must be strengthened.
+
+  - MUTATE F_RoleMultiplicity  → runs/A-L3/mutated_F_RoleMultiplicity.als
+    rationale: Removing this fact allows a User to hold both Officer and Auditor roles simultaneously, which violates FR-002 (the roles must be mutually exclusive for bank staff). The assertion checks that no user holds both roles; without the fact, Alloy can construct a counterexample.
+    expected to FAIL: FR_002_RoleMultiplicity
+      - FR_002_RoleMultiplicity: PASS (vacuous?)
+
+  - MUTATE F_OneInFlightPerApplicant  → runs/A-L3/mutated_F_OneInFlightPerApplicant.als
+    rationale: Removing this fact allows two applications from the same applicant to both be in Pending or UnderReview status simultaneously, violating FR-008 (one in-flight per applicant). The assertion enforces the mutex.
+    expected to FAIL: FR_008_OneInFlightPerApplicant
+      - FR_008_OneInFlightPerApplicant: PASS (vacuous?)
+
+  - MUTATE F_NoSelfAssignment  → runs/A-L3/mutated_F_NoSelfAssignment.als
+    rationale: Removing this fact allows an assigned officer to be the same as the applicant, violating FR-010 and FR-011 (no self-assignment). The assertion checks assigned_officer != applicant; without the fact, Alloy can construct a counterexample.
+    expected to FAIL: FR_010_AutoAssignmentExcludesApplicant
+      - FR_010_AutoAssignmentExcludesApplicant: PASS (vacuous?)
+
+  - MUTATE F_AppendOnlyAuditLog  → runs/A-L3/mutated_F_AppendOnlyAuditLog.als
+    rationale: Removing this fact allows two audit entries for the same application to have identical timestamps, violating append-only semantics (FR-018). Without the fact, Alloy can construct two entries with the same timestamp, violating the assertion that timestamps are unique per application.
+    expected to FAIL: AppendOnly, FR_018_AuditImmutableTamperDetectable
+      - AppendOnly: PASS (vacuous?)
+      - FR_018_AuditImmutableTamperDetectable: PASS (vacuous?)
+
+  - MUTATE F_NoSelfApprovalStructural  → runs/A-L3/mutated_F_NoSelfApprovalStructural.als
+    rationale: Removing this fact allows an application where applicant == assigned_officer to have a non-Pending status, violating FR-013 (no self-approval). The assertion enforces that self-assigned apps remain at Pending; without the fact, Alloy can construct a counterexample where such an app is in UnderReview or Approved.
+    expected to FAIL: FR_013_NoSelfApproval, NoSelfMutation
+      - FR_013_NoSelfApproval: PASS (vacuous?)
+      - NoSelfMutation: PASS (vacuous?)
+
+  - MUTATE F_AllowedTransitions  → runs/A-L3/mutated_F_AllowedTransitions.als
+    rationale: Removing this fact allows audit entries with invalid status transitions (e.g., Approved → UnderReview or Pending → Approved), violating FR-009 (only pending→under_review→{approved,rejected} allowed). The assertion checks only valid transitions; without the fact, Alloy can construct illegal ones.
+    expected to FAIL: FR_009_AllowedStatusTransitions
+      - FR_009_AllowedStatusTransitions: PASS (vacuous?)
+
+  Mutation summary
+  ----------------------------------------------------------------------------
+  - F_RoleMultiplicity: ASSERTION VACUOUS (FR_002_RoleMultiplicity)
+  - F_OneInFlightPerApplicant: ASSERTION VACUOUS (FR_008_OneInFlightPerApplicant)
+  - F_NoSelfAssignment: ASSERTION VACUOUS (FR_010_AutoAssignmentExcludesApplicant)
+  - F_AppendOnlyAuditLog: ASSERTION VACUOUS (AppendOnly, FR_018_AuditImmutableTamperDetectable)
+  - F_NoSelfApprovalStructural: ASSERTION VACUOUS (FR_013_NoSelfApproval, NoSelfMutation)
+  - F_AllowedTransitions: ASSERTION VACUOUS (FR_009_AllowedStatusTransitions)
+

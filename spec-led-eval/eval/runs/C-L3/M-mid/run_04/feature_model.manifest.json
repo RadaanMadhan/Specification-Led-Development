@@ -1,0 +1,169 @@
+{
+  "feature_id": "C-L3",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_003_RoleAndRecordPairing",
+    "FR_004_CareTeamGating",
+    "FR_005_ClinicianAuditAccess",
+    "FR_006_PatientSelfAccess",
+    "FR_007_ComplianceOfficerContentBlind",
+    "FR_008_ByteEquivalentDenial",
+    "FR_011_NoteAuthorIsClinician",
+    "FR_012_NotesAppendOnly",
+    "FR_013_AlwaysOnAudit",
+    "FR_014_AuditNoteIdConstraint",
+    "FR_015_AuditImmutability",
+    "FR_017_AuditRetention",
+    "FR_018_GetAccessLogComplianceOnly",
+    "FR_019_ComplianceNoClinicialContent",
+    "FR_020_OpaqueRecordId"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_003_RoleAndRecordPairing"
+    ],
+    "FR-003": [
+      "FR_002_003_RoleAndRecordPairing",
+      "OwnershipBasedAccess"
+    ],
+    "FR-004": [
+      "FR_004_CareTeamGating",
+      "LeastPrivilege"
+    ],
+    "FR-005": [
+      "FR_005_ClinicianAuditAccess"
+    ],
+    "FR-006": [
+      "FR_006_PatientSelfAccess",
+      "OwnershipBasedAccess"
+    ],
+    "FR-007": [
+      "FR_007_ComplianceOfficerContentBlind",
+      "LeastPrivilege"
+    ],
+    "FR-008": [
+      "FR_008_ByteEquivalentDenial",
+      "NoInformationLeakage"
+    ],
+    "FR-009": [
+      "FR_004_CareTeamGating",
+      "LeastPrivilege"
+    ],
+    "FR-010": [
+      "FR_011_NoteAuthorIsClinician"
+    ],
+    "FR-011": [
+      "FR_011_NoteAuthorIsClinician",
+      "FR_012_NotesAppendOnly"
+    ],
+    "FR-012": [
+      "FR_012_NotesAppendOnly",
+      "AppendOnlyClinicalNotes"
+    ],
+    "FR-013": [
+      "FR_013_AlwaysOnAudit",
+      "AuditCompleteness"
+    ],
+    "FR-014": [
+      "FR_014_AuditNoteIdConstraint",
+      "AttributionCorrectness"
+    ],
+    "FR-015": [
+      "FR_015_AuditImmutability",
+      "AppendOnlyAuditEntries"
+    ],
+    "FR-016": [
+      "FR_013_AlwaysOnAudit"
+    ],
+    "FR-017": [
+      "FR_017_AuditRetention",
+      "AppendOnlyAuditEntries"
+    ],
+    "FR-018": [
+      "FR_018_GetAccessLogComplianceOnly"
+    ],
+    "FR-019": [
+      "FR_019_ComplianceNoClinicialContent",
+      "FR_007_ComplianceOfficerContentBlind"
+    ],
+    "FR-020": [
+      "FR_020_OpaqueRecordId"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_AccessControlEnforced",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_004_CareTeamGating",
+        "FR_006_PatientSelfAccess",
+        "FR_007_ComplianceOfficerContentBlind",
+        "FR_018_GetAccessLogComplianceOnly"
+      ],
+      "rationale": "F_AccessControlEnforced is the central fact linking the permission matrix to access outcomes. Removing it lets Alloy produce an AccessAttempt where a relationship not in PermMatrix.allowed yields Permitted, violating LeastPrivilege and all role-specific gating assertions.",
+      "inject_violation": "fact MUTATE_AccessControlViolation { some a: AccessAttempt | a.relationship = OutsiderClin and a.opKind = GetRecord and a.attemptOutcome = Permitted }"
+    },
+    {
+      "fact_name": "F_AuditEntriesAreOwned",
+      "asserts_violated": [
+        "AppendOnlyAuditEntries",
+        "FR_015_AuditImmutability",
+        "FR_017_AuditRetention"
+      ],
+      "rationale": "F_AuditEntriesAreOwned enforces that every AuditEntry is owned by exactly one AccessAttempt. Removing it allows orphan AuditEntries (representing deleted or forged entries) and also entries shared across multiple AccessAttempts (representing mutation), directly violating audit immutability and retention assertions.",
+      "inject_violation": "fact MUTATE_OrphanAuditEntry { some ae: AuditEntry | no a: AccessAttempt | a.auditRef = ae }"
+    },
+    {
+      "fact_name": "F_AppendOnlyNotes",
+      "asserts_violated": [
+        "AppendOnlyClinicalNotes",
+        "FR_012_NotesAppendOnly"
+      ],
+      "rationale": "F_AppendOnlyNotes ensures every ClinicalNote is backed by exactly one permitted PostNote audit entry. Removing it allows a ClinicalNote to exist without any corresponding permitted append attempt, which models a note that was created without audit (leakage of write operation) or one that persisted after a supposed deletion.",
+      "inject_violation": "fact MUTATE_OrphanNote { some n: ClinicalNote | no ae: AuditEntry | ae.noteRef = n and ae.auditOp = PostNote and ae.auditOutcome = Permitted }"
+    },
+    {
+      "fact_name": "F_PatientRecordPairing",
+      "asserts_violated": [
+        "FR_002_003_RoleAndRecordPairing",
+        "OwnershipBasedAccess",
+        "FR_006_PatientSelfAccess"
+      ],
+      "rationale": "F_PatientRecordPairing enforces that patients have exactly one assignedRecord and non-patients have none. Removing it lets Alloy produce a patient user with no assignedRecord (making PatientOwn undecidable) or a clinician with an assignedRecord, breaking ownership-based access and patient self-access assertions.",
+      "inject_violation": "fact MUTATE_PatientPairingViolation { some u: User | u.role = Patient and no u.assignedRecord }"
+    },
+    {
+      "fact_name": "F_AuditCompleteness",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_013_AlwaysOnAudit"
+      ],
+      "rationale": "F_AuditCompleteness enforces exactly one audit entry per authenticated non-GetAccessLog-denied attempt. Removing it allows a permitted access attempt (e.g., a care-team clinician reading a record) to exist with no audit entry, violating HIPAA audit-completeness and SC-001 / SC-002.",
+      "inject_violation": "fact MUTATE_AuditMissing { some a: AccessAttempt | a.attemptOutcome = Permitted and a.opKind = GetRecord and no a.auditRef }"
+    },
+    {
+      "fact_name": "F_ComplianceOfficerContentBlind",
+      "asserts_violated": [
+        "FR_007_ComplianceOfficerContentBlind",
+        "FR_019_ComplianceNoClinicialContent",
+        "LeastPrivilege"
+      ],
+      "rationale": "F_ComplianceOfficerContentBlind blocks compliance officers from receiving Permitted on GetRecord or PostNote. Removing it allows Alloy to produce a compliance-officer access attempt on GetRecord with outcome Permitted, directly violating the HIPAA content-blindness invariant (FR-019) and least-privilege.",
+      "inject_violation": "fact MUTATE_ComplianceContentLeak { some a: AccessAttempt | a.caller.role = ComplianceOfficer and a.opKind = GetRecord and a.attemptOutcome = Permitted }"
+    }
+  ]
+}

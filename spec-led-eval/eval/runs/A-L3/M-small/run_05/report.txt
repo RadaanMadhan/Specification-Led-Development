@@ -1,0 +1,122 @@
+==============================================================================
+  Design Compliance Report  (Phase 3 — feature_model.als)
+  feature       : A-L3
+  spec source   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/eval/specs/A-L3
+  alloy model   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/A-L3/feature_model.als
+  patterns      : LeastPrivilege, PermissionCompleteness, AuthRequiredEverywhere, AuditCompleteness, AppendOnly, AttributionCorrectness, OwnershipExclusivity, OwnershipBasedAccess, NoInformationLeakage, NoSelfMutation
+  fr count      : 24 declared in spec.md
+  assertions    : 17 total (15/17 PASS via Alloy)
+==============================================================================
+
+  Compliance matrix
+  ----------------------------------------------------------------------------
+  Assertion                           Verdict   Anchor
+  ------------------------------------------------------------------------
+  LeastPrivilege                      PASS      PATTERN LeastPrivilege: contracts/http-api.md permission matrix; spec.md FR-001 through FR-005
+  PermissionCompleteness              PASS      PATTERN PermissionCompleteness: contracts/http-api.md permission matrix
+  AuthRequiredEverywhere              PASS      PATTERN AuthRequiredEverywhere: spec.md FR-001; contracts/http-api.md Authentication section
+  AuditCompleteness                   PASS      PATTERN AuditCompleteness: spec.md FR-016; data-model.md AuditEntry
+  AppendOnly                          FAIL      PATTERN AppendOnly: spec.md FR-018; data-model.md "no UPDATE/DELETE"
+  AttributionCorrectness              FAIL      PATTERN AttributionCorrectness: spec.md FR-016; data-model.md AuditEntry fields
+  OwnershipExclusivity                PASS      PATTERN OwnershipExclusivity: data-model.md LoanApplication.applicant_id
+  OwnershipBasedAccess                PASS      PATTERN OwnershipBasedAccess: spec.md FR-003, FR-021; contracts/http-api.md permission matrix
+  NoInformationLeakage                PASS      PATTERN NoInformationLeakage: spec.md FR-020, FR-021, FR-022; contracts/http-api.md byte-equivalent not-found response
+  NoSelfMutation                      PASS      PATTERN NoSelfMutation: spec.md FR-013; contracts/http-api.md PATCH /applications/{id}/status
+  FR_008_OneInFlightPerApplicant      PASS      FEATURE-SPECIFIC: FR-008
+  FR_009_ValidStatusMachine           PASS      FEATURE-SPECIFIC: FR-009
+  FR_012_OnlyAssignedOfficerCanPatch  PASS      FEATURE-SPECIFIC: FR-012
+  FR_013_NoSelfApprovalOrDecision     PASS      FEATURE-SPECIFIC: FR-013
+  FR_001_AllOperationsRequireAuth     PASS      FEATURE-SPECIFIC: FR-001
+  FR_003_ApplicantPermissions         PASS      FEATURE-SPECIFIC: FR-003
+  FR_005_AuditorCannotWrite           PASS      FEATURE-SPECIFIC: FR-005
+
+  Counterexamples (Alloy SAT)
+  ----------------------------------------------------------------------------
+  AppendOnly  [PATTERN AppendOnly: spec.md FR-018; data-model.md "no UPDATE/DELETE"]
+    Alloy: 04. check AppendOnly               0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  AttributionCorrectness  [PATTERN AttributionCorrectness: spec.md FR-016; data-model.md AuditEntry fields]
+    Alloy: 05. check AttributionCorrectness     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR coverage
+  ----------------------------------------------------------------------------
+  FR-001  →  FR_001_AllOperationsRequireAuth=PASS, AuthRequiredEverywhere=PASS
+  FR-002  [uncovered]
+  FR-003  →  FR_003_ApplicantPermissions=PASS, LeastPrivilege=PASS
+  FR-004  [uncovered]
+  FR-005  →  FR_005_AuditorCannotWrite=PASS, LeastPrivilege=PASS
+  FR-006  [uncovered]
+  FR-007  [uncovered]
+  FR-008  →  FR_008_OneInFlightPerApplicant=PASS
+  FR-009  →  FR_009_ValidStatusMachine=PASS
+  FR-010  [uncovered]
+  FR-011  [uncovered]
+  FR-012  →  FR_012_OnlyAssignedOfficerCanPatch=PASS
+  FR-013  →  FR_013_NoSelfApprovalOrDecision=PASS, NoSelfMutation=PASS
+  FR-014  [uncovered]
+  FR-015  [uncovered]
+  FR-016  →  AuditCompleteness=PASS, AttributionCorrectness=FAIL
+  FR-017  [uncovered]
+  FR-018  →  AppendOnly=FAIL
+  FR-019  [uncovered]
+  FR-020  →  NoInformationLeakage=PASS
+  FR-021  →  OwnershipBasedAccess=PASS, NoInformationLeakage=PASS
+  FR-022  →  NoInformationLeakage=PASS
+  FR-023  [uncovered]
+  FR-024  [uncovered]
+
+  WARNING: 12 FR(s) without any matching assertion: FR-002, FR-004, FR-006, FR-007, FR-010, FR-011, FR-014, FR-015, FR-017, FR-019, FR-023, FR-024
+
+==============================================================================
+  Mutation tests  (assertion-strength validation)
+==============================================================================
+
+  Strategy: replace each named fact's body with `{}` (no constraint),
+  then re-run Alloy. Each listed assertion should now FAIL on the
+  mutated model. If it still PASSes, the assertion is vacuous and
+  must be strengthened.
+
+  - MUTATE F_AuditCompleteness  → runs/A-L3/mutated_F_AuditCompleteness.als
+    rationale: Removing this fact allows the model to have applications with statuses that lack corresponding audit entries. The AuditCompleteness assertion directly checks that every status has exactly one audit entry; without the fact, Alloy will construct a counterexample where an application has a status but no audit entry.
+    expected to FAIL: AuditCompleteness
+      - AuditCompleteness: FAIL (expected)
+
+  - MUTATE F_NoSelfApproval  → runs/A-L3/mutated_F_NoSelfApproval.als
+    rationale: Removing this fact allows officers to approve applications where they are the applicant. The FR_013 and NoSelfMutation assertions verify that this never happens; without the fact, Alloy will find a counterexample with an officer deciding their own application.
+    expected to FAIL: FR_013_NoSelfApprovalOrDecision, NoSelfMutation
+      - FR_013_NoSelfApprovalOrDecision: PASS (vacuous?)
+      - NoSelfMutation: PASS (vacuous?)
+
+  - MUTATE F_AssignedOfficerOnly  → runs/A-L3/mutated_F_AssignedOfficerOnly.als
+    rationale: Removing this fact allows any officer to patch any application, even if they are not assigned. The FR_012 assertion verifies that status changes only come from the assigned officer; without the fact, Alloy will construct a counterexample with an unassigned officer changing status.
+    expected to FAIL: FR_012_OnlyAssignedOfficerCanPatch
+      - FR_012_OnlyAssignedOfficerCanPatch: FAIL (expected)
+
+  - MUTATE F_ValidTransitions  → runs/A-L3/mutated_F_ValidTransitions.als
+    rationale: Removing this fact allows invalid status transitions such as pending → approved (skipping under_review). The FR_009 assertion verifies that only the documented transitions occur; without the fact, Alloy will find a counterexample with an invalid transition.
+    expected to FAIL: FR_009_ValidStatusMachine
+      - FR_009_ValidStatusMachine: FAIL (expected)
+
+  - MUTATE F_PermissionMatrix  → runs/A-L3/mutated_F_PermissionMatrix.als
+    rationale: Removing this fact allows the permission matrix to be undefined or incorrect. The LeastPrivilege, FR_003, and FR_005 assertions verify the correctness of role-operation permissions; without the fact, Alloy will construct a model where forbidden operations appear to be allowed.
+    expected to FAIL: LeastPrivilege, FR_003_ApplicantPermissions, FR_005_AuditorCannotWrite
+      - LeastPrivilege: FAIL (expected)
+      - FR_003_ApplicantPermissions: FAIL (expected)
+      - FR_005_AuditorCannotWrite: FAIL (expected)
+
+  - MUTATE F_OneInFlightPerApplicant  → runs/A-L3/mutated_F_OneInFlightPerApplicant.als
+    rationale: Removing this fact allows applicants to have multiple in-flight applications simultaneously. The FR_008 assertion verifies the one-in-flight constraint; without the fact, Alloy will find a counterexample with duplicate pending/under_review applications for the same applicant.
+    expected to FAIL: FR_008_OneInFlightPerApplicant
+      - FR_008_OneInFlightPerApplicant: FAIL (expected)
+
+  Mutation summary
+  ----------------------------------------------------------------------------
+  - F_AuditCompleteness: ASSERTIONS BIT (AuditCompleteness)
+  - F_NoSelfApproval: ASSERTION VACUOUS (FR_013_NoSelfApprovalOrDecision, NoSelfMutation)
+  - F_AssignedOfficerOnly: ASSERTIONS BIT (FR_012_OnlyAssignedOfficerCanPatch)
+  - F_ValidTransitions: ASSERTIONS BIT (FR_009_ValidStatusMachine)
+  - F_PermissionMatrix: ASSERTIONS BIT (LeastPrivilege, FR_003_ApplicantPermissions, FR_005_AuditorCannotWrite)
+  - F_OneInFlightPerApplicant: ASSERTIONS BIT (FR_008_OneInFlightPerApplicant)
+

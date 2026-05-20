@@ -1,0 +1,47 @@
+{
+  "F_LeastPrivilegeRule": {
+    "targeted_asserts": {
+      "LeastPrivilege": "BIT",
+      "FR_017_AdminOnlyAuditEndpoint": "BIT",
+      "FR_005_AdminAuditOnly": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_OneAuditPerOperation": {
+    "targeted_asserts": {
+      "AuditCompleteness": "BIT",
+      "FR_012_OneAuditPerOperation": "BIT",
+      "FR_014_AuditImmutable": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_NoteCreatedByOneOperation": {
+    "targeted_asserts": {
+      "AppendOnly": "BIT",
+      "FR_011_NotesAppendOnly": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_CareTeamGating": {
+    "targeted_asserts": {
+      "OwnershipBasedAccess": "BIT",
+      "FR_004_CareTeamGating": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AuditMirrorsOperation": {
+    "targeted_asserts": {
+      "AttributionCorrectness": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_NoteOnlyOnPermittedAddNote": {
+    "targeted_asserts": {
+      "FR_006_DenialNoLeakage": "BIT",
+      "FR_013_AuditNoteFieldGating": "BIT",
+      "NoInformationLeakage": "BIT",
+      "FR_018_AdminAuditCarriesOnlyOpaquePointer": "BIT"
+    },
+    "all_bit": true
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "F_ClosedTaskEditRule": {
+    "targeted_asserts": {
+      "FR_011_ClosedTaskEditRule": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AppendOnlyDeletionLog": {
+    "targeted_asserts": {
+      "AppendOnly": "BIT",
+      "FR_018_DeletionLogComplete": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_DeletedTaskNotEditable": {
+    "targeted_asserts": {
+      "FR_012_DeletedTaskUnreachable": "BIT",
+      "ValidationBeforeMutation": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_PermissionMatrix": {
+    "targeted_asserts": {
+      "LeastPrivilege": "BIT",
+      "PermissionCompleteness": "BIT",
+      "FR_003_FR_004_FlatPermissions": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_DeletionLogAttribution": {
+    "targeted_asserts": {
+      "AttributionCorrectness": "VACUOUS_OVERCONSTRAINT",
+      "FR_018_DeletionLogComplete": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_AssigneeIsMember": {
+    "targeted_asserts": {
+      "FR_008_AssigneeIsCurrentMember": "VACUOUS_OVERCONSTRAINT",
+      "OwnershipExclusivity": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  }
+}

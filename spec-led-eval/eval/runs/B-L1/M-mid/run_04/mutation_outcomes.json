@@ -1,0 +1,42 @@
+{
+  "F_AuthRequiredEverywhere": {
+    "targeted_asserts": {
+      "AuthRequiredEverywhere": "VACUOUS_OVERCONSTRAINT",
+      "FR_001_AuthRequired": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_DeletionLogCompleteness": {
+    "targeted_asserts": {
+      "AuditCompleteness": "BIT",
+      "FR_018_DeletionLogRecord": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_DeletionLogAppendOnly": {
+    "targeted_asserts": {
+      "AppendOnly": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_ClosedTaskEditRule": {
+    "targeted_asserts": {
+      "FR_011_ClosedTaskEditRule": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_FlatPermissions": {
+    "targeted_asserts": {
+      "FR_004_FlatPermissions": "BIT",
+      "FR_003_FR_004_No403PermissionDenied": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_DeletionLogAttributionCorrect": {
+    "targeted_asserts": {
+      "AttributionCorrectness": "VACUOUS_OVERCONSTRAINT",
+      "FR_018_DeletionLogRecord": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  }
+}

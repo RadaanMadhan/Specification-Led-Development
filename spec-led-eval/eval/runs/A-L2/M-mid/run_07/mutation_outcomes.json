@@ -1,0 +1,47 @@
+{
+  "F_AppendOnlyAuditEntries": {
+    "targeted_asserts": {
+      "AppendOnly": "BIT",
+      "FR_018_AuditAppendOnly": "BIT",
+      "FR_019_OneAuditPerTransition": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_DecisionByAssignedOfficer": {
+    "targeted_asserts": {
+      "FR_013_OnlyAssignedOfficerDecides": "BIT",
+      "OwnershipBasedAccess": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_PermissionMatrix": {
+    "targeted_asserts": {
+      "LeastPrivilege": "BIT",
+      "FR_002_CustomerPermissions": "BIT",
+      "FR_004_ComplianceReadOnly": "BIT",
+      "PermissionGrounding": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_OneInFlightPerCustomer": {
+    "targeted_asserts": {
+      "FR_008_OneInFlightPerCustomer": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_DecidedAppsHaveDecision": {
+    "targeted_asserts": {
+      "FR_015_DecisionExistsForDecidedApps": "VACUOUS_OVERCONSTRAINT",
+      "AuditCompleteness": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_ClaimEventExists": {
+    "targeted_asserts": {
+      "FR_011_ClaimAuditEntry": "BIT",
+      "AuditCompleteness": "BIT",
+      "FR_017_AuditPerStatusChange": "BIT"
+    },
+    "all_bit": true
+  }
+}

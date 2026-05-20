@@ -1,0 +1,152 @@
+{
+  "feature_id": "B-L1",
+  "patterns_applied": [
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "PermissionCompleteness",
+    "OwnershipExclusivity",
+    "ValidationBeforeMutation"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_IdentityFromAuth",
+    "FR_003_SingleWorkspace",
+    "FR_004_FlatPermissions",
+    "FR_005_TitleRequired",
+    "FR_006_DescriptionStored",
+    "FR_007_DueDateOptional",
+    "FR_008_AssigneeIsMember",
+    "FR_009_CreatorRecorded",
+    "FR_010_StatusInSet",
+    "FR_011_ClosedTaskEditRule",
+    "FR_012_PermanentDeletion",
+    "FR_013_ScopeFourKinds",
+    "FR_014_NoPerMemberVisibility",
+    "FR_015_FilterAnd",
+    "FR_016_ClearFilters",
+    "FR_017_Timestamps",
+    "FR_018_DeletionLog"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_IdentityFromAuth"
+    ],
+    "FR-003": [
+      "FR_003_SingleWorkspace"
+    ],
+    "FR-004": [
+      "FR_004_FlatPermissions",
+      "PermissionCompleteness"
+    ],
+    "FR-005": [
+      "FR_005_TitleRequired"
+    ],
+    "FR-006": [
+      "FR_006_DescriptionStored"
+    ],
+    "FR-007": [
+      "FR_007_DueDateOptional"
+    ],
+    "FR-008": [
+      "FR_008_AssigneeIsMember"
+    ],
+    "FR-009": [
+      "FR_009_CreatorRecorded",
+      "OwnershipExclusivity"
+    ],
+    "FR-010": [
+      "FR_010_StatusInSet"
+    ],
+    "FR-011": [
+      "FR_011_ClosedTaskEditRule"
+    ],
+    "FR-012": [
+      "FR_012_PermanentDeletion"
+    ],
+    "FR-013": [
+      "FR_013_ScopeFourKinds"
+    ],
+    "FR-014": [
+      "FR_014_NoPerMemberVisibility"
+    ],
+    "FR-015": [
+      "FR_015_FilterAnd"
+    ],
+    "FR-016": [
+      "FR_016_ClearFilters"
+    ],
+    "FR-017": [
+      "FR_017_Timestamps"
+    ],
+    "FR-018": [
+      "FR_018_DeletionLog",
+      "AuditCompleteness",
+      "AppendOnly",
+      "AttributionCorrectness",
+      "ValidationBeforeMutation"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_AuthBoundary",
+      "asserts_violated": [
+        "AuthRequiredEverywhere",
+        "FR_001_AuthRequired"
+      ],
+      "rationale": "removing this fact lets the model invent an unauthenticated Operation whose outcome is Accepted, which is exactly the auth-bypass case FR-001 and the AuthRequiredEverywhere pattern are meant to catch.",
+      "inject_violation": "fact MUTATE_UnauthAccepted { some op: Operation | op.auth = Unauthenticated and op.outcome = Accepted }"
+    },
+    {
+      "fact_name": "F_AuditCompleteness",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_012_PermanentDeletion",
+        "FR_018_DeletionLog"
+      ],
+      "rationale": "removing this fact lets an Accepted DeleteTask operation exist without a matching DeletionLog row, violating the one-log-per-deletion contract required by FR-018 and FR-012.",
+      "inject_violation": "fact MUTATE_AuditMissing { some op: Operation | op.kind = DeleteTask and op.outcome = Accepted and (no log: DeletionLog | log.forOp = op) }"
+    },
+    {
+      "fact_name": "F_AppendOnlyDeletionLog",
+      "asserts_violated": [
+        "AppendOnly"
+      ],
+      "rationale": "removing this fact lets two distinct DeletionLog rows reference the same Operation, which models a log row being rewritten or duplicated \u2014 the exact behaviour the append-only contract on task_deletions forbids.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some disj l1, l2: DeletionLog | l1.forOp = l2.forOp }"
+    },
+    {
+      "fact_name": "F_AttributionCorrectness",
+      "asserts_violated": [
+        "AttributionCorrectness"
+      ],
+      "rationale": "removing this fact lets a DeletionLog record a deleter who is not the actor of the operation it corresponds to \u2014 i.e. the log misattributes the action to the wrong member.",
+      "inject_violation": "fact MUTATE_Misattribution { some log: DeletionLog | log.deleter != log.forOp.actor }"
+    },
+    {
+      "fact_name": "F_FlatPermissions",
+      "asserts_violated": [
+        "PermissionCompleteness",
+        "FR_004_FlatPermissions",
+        "FR_014_NoPerMemberVisibility",
+        "FR_015_FilterAnd",
+        "FR_016_ClearFilters"
+      ],
+      "rationale": "removing this fact lets Alloy give two structurally identical authenticated operations different outcomes \u2014 an implicit role/permission distinction that the flat-peer spec (Q3 = A) forbids.",
+      "inject_violation": "fact MUTATE_RoleSplit { some disj op1, op2: Operation | op1.auth = Authenticated and op2.auth = Authenticated and op1.kind = op2.kind and op1.target = op2.target and op1.newStatus = op2.newStatus and op1.outcome != op2.outcome }"
+    },
+    {
+      "fact_name": "F_ClosedTaskEditRule",
+      "asserts_violated": [
+        "FR_011_ClosedTaskEditRule"
+      ],
+      "rationale": "removing this fact lets an EditTask operation on a Done task succeed without simultaneously reopening it (no newStatus set), violating the closed-task PATCH rule in FR-011.",
+      "inject_violation": "fact MUTATE_ClosedEditNoReopen { some op: Operation | op.kind = EditTask and op.outcome = Accepted and some op.target and op.target.status = Done and no op.newStatus }"
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+{
+  "F_OwnershipExclusivity": {
+    "targeted_asserts": {
+      "OwnershipExclusivity": "VACUOUS_TAUTOLOGY",
+      "FR_009_OwnerImmutable": "VACUOUS_TAUTOLOGY"
+    },
+    "all_bit": false
+  },
+  "F_AppendOnlyAuditEntries": {
+    "targeted_asserts": {
+      "AppendOnly": "BIT",
+      "FR_017_AuditImmutability": "VACUOUS_TAUTOLOGY"
+    },
+    "all_bit": false
+  },
+  "F_AuditCompleteness": {
+    "targeted_asserts": {
+      "AuditCompleteness": "BIT",
+      "FR_015_PerEventAuditSemantics": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_CrossTeamIsolation": {
+    "targeted_asserts": {
+      "NoInformationLeakage": "VACUOUS_OVERCONSTRAINT",
+      "FR_006_CrossTeamIsolation": "VACUOUS_OVERCONSTRAINT",
+      "FR_014_ByteEquivalentCrossTeamIsolation": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_OwnerControlsSharing": {
+    "targeted_asserts": {
+      "FR_010_OwnerControlledSharing": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_TaskOwnerInTeam": {
+    "targeted_asserts": {
+      "OwnershipBasedAccess": "VACUOUS_OVERCONSTRAINT",
+      "FR_002_IdentityFromToken": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  }
+}

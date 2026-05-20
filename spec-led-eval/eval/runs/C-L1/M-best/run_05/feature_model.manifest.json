@@ -1,0 +1,154 @@
+{
+  "feature_id": "C-L1",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "PermissionGrounding",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_RoleCatalogue",
+    "FR_003_PerPatientAuditQuery",
+    "FR_004_NoPIIInPath",
+    "FR_005_ReadOnly",
+    "FR_006_CareTeamGating",
+    "FR_007_ByteEquivalent",
+    "FR_008_AlwaysAudit",
+    "FR_009_AuditFields",
+    "FR_010_AppendOnly",
+    "FR_011_IGOnlyAuditSearch",
+    "FR_012_RetentionNoDelete",
+    "FR_013_NoAccessWithoutAudit",
+    "FR_014_PermittedShape",
+    "FR_015_VerificationBlock"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_RoleCatalogue"
+    ],
+    "FR-003": [
+      "FR_003_PerPatientAuditQuery"
+    ],
+    "FR-004": [
+      "FR_004_NoPIIInPath"
+    ],
+    "FR-005": [
+      "FR_005_ReadOnly"
+    ],
+    "FR-006": [
+      "FR_006_CareTeamGating",
+      "OwnershipBasedAccess",
+      "LeastPrivilege"
+    ],
+    "FR-007": [
+      "FR_007_ByteEquivalent",
+      "NoInformationLeakage"
+    ],
+    "FR-008": [
+      "FR_008_AlwaysAudit",
+      "AuditCompleteness"
+    ],
+    "FR-009": [
+      "FR_009_AuditFields",
+      "AttributionCorrectness"
+    ],
+    "FR-010": [
+      "FR_010_AppendOnly",
+      "AppendOnly"
+    ],
+    "FR-011": [
+      "FR_011_IGOnlyAuditSearch",
+      "LeastPrivilege",
+      "PermissionGrounding"
+    ],
+    "FR-012": [
+      "FR_012_RetentionNoDelete"
+    ],
+    "FR-013": [
+      "FR_013_NoAccessWithoutAudit"
+    ],
+    "FR-014": [
+      "FR_014_PermittedShape"
+    ],
+    "FR-015": [
+      "FR_015_VerificationBlock"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_LeastPrivilege",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "PermissionGrounding",
+        "FR_011_IGOnlyAuditSearch"
+      ],
+      "rationale": "Removing the matrix-conformance fact lets Alloy invent an Operation whose (role, kind) pair is not in the permission matrix \u2014 directly violating least privilege. The injected fact forces an AuditOfficer attempting LookupPatient, which the matrix forbids.",
+      "inject_violation": "fact MUTATE_LeastPrivilegeViolation { some op: Operation | op.callerRoleSnapshot = AuditOfficer and op.kind = LookupPatient }"
+    },
+    {
+      "fact_name": "F_CareTeamGating",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_006_CareTeamGating"
+      ],
+      "rationale": "Without the gating fact, a Permitted lookup can exist with no matching CareTeamMembership row. The injection forces exactly that counterexample.",
+      "inject_violation": "fact MUTATE_CareTeamViolation { some op: Operation | op.kind = LookupPatient and op.outcome = Permitted and (no m: CareTeamMembership | m.clinician = op.caller and m.patient = op.targetPatient) }"
+    },
+    {
+      "fact_name": "F_AuditEveryLookup",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_008_AlwaysAudit",
+        "FR_013_NoAccessWithoutAudit"
+      ],
+      "rationale": "Clearing the per-lookup audit fact lets a LookupPatient operation exist without any AuditEntry referencing it \u2014 the classic 'access without audit' failure mode the spec forbids.",
+      "inject_violation": "fact MUTATE_AuditMissing { some op: Operation | op.kind = LookupPatient and (no ae: AuditEntry | ae.op = op) }"
+    },
+    {
+      "fact_name": "F_AppendOnlyAudit",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_010_AppendOnly"
+      ],
+      "rationale": "Removing the at-most-one-per-op constraint lets two distinct AuditEntries reference the same Operation, which is the structural signature of a mutation/duplicate write against the append-only log.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some disj ae1, ae2: AuditEntry | ae1.op = ae2.op }"
+    },
+    {
+      "fact_name": "F_AttributionCorrectness",
+      "asserts_violated": [
+        "AttributionCorrectness",
+        "FR_009_AuditFields"
+      ],
+      "rationale": "Removing the snapshot-equality fact lets an AuditEntry's recorded clinician differ from the operation's actual caller \u2014 i.e. misattribution.",
+      "inject_violation": "fact MUTATE_AttributionViolation { some ae: AuditEntry | ae.clinicianSnapshot != ae.op.caller }"
+    },
+    {
+      "fact_name": "F_ByteEquivalentResponse",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "FR_007_ByteEquivalent"
+      ],
+      "rationale": "Without the byte-equivalence fact, a Denied operation can return PermittedShape while NotFoundOrDenied returns NotFoundShape \u2014 observable leakage of patient existence to non-care-team clinicians.",
+      "inject_violation": "fact MUTATE_ResponseLeak { some op: Operation | op.outcome = Denied and op.response = PermittedShape }"
+    },
+    {
+      "fact_name": "F_AuthRequired",
+      "asserts_violated": [
+        "AuthRequiredEverywhere",
+        "FR_001_AuthRequired"
+      ],
+      "rationale": "Removing the authentication-required fact lets an unauthenticated Operation slip through the system \u2014 the exact bypass FR-001 forbids.",
+      "inject_violation": "fact MUTATE_UnauthOp { some op: Operation | op.authenticated = False }"
+    }
+  ]
+}

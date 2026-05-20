@@ -1,0 +1,23 @@
+{
+  "LeastPrivilege": "PASS",
+  "PermissionCompleteness": "PASS",
+  "AuthRequiredEverywhere": "PASS",
+  "AuditCompleteness": "PASS",
+  "AppendOnly": "PASS",
+  "AttributionCorrectness": "PASS",
+  "OwnershipBasedAccess": "PASS",
+  "NoInformationLeakage": "FAIL",
+  "PrivilegeMonotonicity": "PASS",
+  "ValidationBeforeMutation": "PASS",
+  "FR_001_AuthRequired": "PASS",
+  "FR_002_RoleResolution": "PASS",
+  "FR_005_ReadOnly": "PASS",
+  "FR_006_CareTeamGating": "FAIL",
+  "FR_007_ByteEquivalentDenied": "FAIL",
+  "FR_008_AlwaysOnAudit": "PASS",
+  "FR_009_AuditFields": "PASS",
+  "FR_010_AuditImmutable": "PASS",
+  "FR_011_IGRoleOnlyAuditSearch": "FAIL",
+  "FR_013_AuditSLAEnforced": "FAIL",
+  "FR_014_FR_015_SafetyDataInSuccessResponse": "FAIL"
+}

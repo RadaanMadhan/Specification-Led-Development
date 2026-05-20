@@ -1,0 +1,147 @@
+$ /Users/leonhausmann/opt/anaconda3/bin/python3 -m speceval.cli verify-design --no-cache --model M-best --java-bin /Users/leonhausmann/opt/anaconda3/lib/python3.9/site-packages/jdk4py/java-runtime/bin/java /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/eval/specs/B-L2
+
+[parse]   feature 'B-L2', 20 FRs, 7 user stories
+[lift]    calling LLM (anthropic: tier=M-best, model=claude-opus-4-7)...
+[lift]    fresh lift (sha=73995b8f27a9)
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/B-L2/feature_model.als
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/B-L2/cost_log.json
+[alloy]   running alloy.jar on feature_model.als...
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/B-L2/alloy_verdicts.json
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/B-L2/mutation_outcomes.json
+
+==============================================================================
+  Design Compliance Report  (Phase 3 — feature_model.als)
+  feature       : B-L2
+  spec source   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/eval/specs/B-L2
+  alloy model   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/B-L2/feature_model.als
+  patterns      : LeastPrivilege, PermissionCompleteness, AuthRequiredEverywhere, AuditCompleteness, AppendOnly, AttributionCorrectness, OwnershipExclusivity, OwnershipBasedAccess, NoInformationLeakage
+  fr count      : 20 declared in spec.md
+  assertions    : 29 total (27/29 PASS via Alloy)
+==============================================================================
+
+  Compliance matrix
+  ----------------------------------------------------------------------------
+  Assertion                          Verdict   Anchor
+  -----------------------------------------------------------------------
+  LeastPrivilege                     PASS      PATTERN LeastPrivilege: contracts/http-api.md permission matrix; spec.md FR-008/9/10/11
+  PermissionCompleteness             PASS      PATTERN PermissionCompleteness: contracts/http-api.md permission matrix
+  AuthRequiredEverywhere             PASS      PATTERN AuthRequiredEverywhere: spec.md FR-001
+  AuditCompleteness                  PASS      PATTERN AuditCompleteness: spec.md FR-015; data-model.md audit_entries
+  AppendOnly                         PASS      PATTERN AppendOnly: spec.md FR-016; data-model.md "no UPDATE/DELETE path on audit_entries"
+  AttributionCorrectness             PASS      PATTERN AttributionCorrectness: spec.md FR-015 (actor/role snapshot)
+  OwnershipExclusivity               PASS      PATTERN OwnershipExclusivity: data-model.md tasks.owner_id NOT NULL; FR-006
+  OwnershipBasedAccess               PASS      PATTERN OwnershipBasedAccess: spec.md FR-008/FR-009/FR-010
+  NoInformationLeakage               FAIL      PATTERN NoInformationLeakage: spec.md FR-014 (byte-equivalent 404)
+  FR_001_AuthRequired                PASS      FEATURE-SPECIFIC: FR-001 Authentication required
+  FR_002_IdentityFromAuthContext     PASS      FEATURE-SPECIFIC: FR-002 Identity resolved from auth context, not payload
+  FR_003_TeamContextRequired         PASS      FEATURE-SPECIFIC: FR-003 X-Team-Id required
+  FR_004_CallerIsMember              PASS      FEATURE-SPECIFIC: FR-004 Caller must be a member of the resolved team
+  FR_005_TaskTeamImmutable           PASS      FEATURE-SPECIFIC: FR-005 Task team is immutable
+  FR_006_OwnerImmutable              PASS      FEATURE-SPECIFIC: FR-006 Owner immutable
+  FR_007_PerTeamRole                 PASS      FEATURE-SPECIFIC: FR-007 At most one role per (user, team)
+  FR_008_OwnerCanMutate              PASS      FEATURE-SPECIFIC: FR-008 Member can edit own task
+  FR_009_NonOwnerMemberDenied        PASS      FEATURE-SPECIFIC: FR-009 Non-owner non-admin members cannot edit/delete
+  FR_010_AdminCanMutateAnyInTeam     PASS      FEATURE-SPECIFIC: FR-010 Admin can edit/delete any task in same team
+  FR_011_CrossTeamIsolation          PASS      FEATURE-SPECIFIC: FR-011 Cross-team isolation
+  FR_012_AssigneeSameTeam            PASS      FEATURE-SPECIFIC: FR-012 Assignee must be in same team
+  FR_013_StatusInSet                 PASS      FEATURE-SPECIFIC: FR-013 Status from fixed set
+  FR_014_ByteEquivalentNotFound      FAIL      FEATURE-SPECIFIC: FR-014 Byte-equivalent NotFound on cross-team or non-existent
+  FR_015_AuditPerEdit                PASS      FEATURE-SPECIFIC: FR-015 Per-edit-event audit entry with snapshot
+  FR_016_AuditAppendOnly             PASS      FEATURE-SPECIFIC: FR-016 Audit append-only
+  FR_017_AuditTeamScoped             PASS      FEATURE-SPECIFIC: FR-017 Audit readable only by current team members
+  FR_018_RetentionByCodePathAbsence  PASS      FEATURE-SPECIFIC: FR-018 Retention by code-path absence
+  FR_019_ListScopedToTeam            PASS      FEATURE-SPECIFIC: FR-019 List scoped to current team
+  FR_020_FilteredListScopedToTeam    PASS      FEATURE-SPECIFIC: FR-020 Filtered list scoped to current team
+
+  Counterexamples (Alloy SAT)
+  ----------------------------------------------------------------------------
+  NoInformationLeakage  [PATTERN NoInformationLeakage: spec.md FR-014 (byte-equivalent 404)]
+    Alloy: 08. check NoInformationLeakage     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR_014_ByteEquivalentNotFound  [FEATURE-SPECIFIC: FR-014 Byte-equivalent NotFound on cross-team or non-existent]
+    Alloy: 22. check FR_014_ByteEquivalentNotFound     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR coverage
+  ----------------------------------------------------------------------------
+  FR-001  →  FR_001_AuthRequired=PASS, AuthRequiredEverywhere=PASS
+  FR-002  →  FR_002_IdentityFromAuthContext=PASS
+  FR-003  →  FR_003_TeamContextRequired=PASS
+  FR-004  →  FR_004_CallerIsMember=PASS
+  FR-005  →  FR_005_TaskTeamImmutable=PASS
+  FR-006  →  FR_006_OwnerImmutable=PASS, OwnershipExclusivity=PASS
+  FR-007  →  FR_007_PerTeamRole=PASS
+  FR-008  →  FR_008_OwnerCanMutate=PASS, OwnershipBasedAccess=PASS
+  FR-009  →  FR_009_NonOwnerMemberDenied=PASS, OwnershipBasedAccess=PASS
+  FR-010  →  FR_010_AdminCanMutateAnyInTeam=PASS, OwnershipBasedAccess=PASS
+  FR-011  →  FR_011_CrossTeamIsolation=PASS, NoInformationLeakage=FAIL
+  FR-012  →  FR_012_AssigneeSameTeam=PASS
+  FR-013  →  FR_013_StatusInSet=PASS
+  FR-014  →  FR_014_ByteEquivalentNotFound=FAIL, NoInformationLeakage=FAIL
+  FR-015  →  FR_015_AuditPerEdit=PASS, AuditCompleteness=PASS, AttributionCorrectness=PASS
+  FR-016  →  FR_016_AuditAppendOnly=PASS, AppendOnly=PASS
+  FR-017  →  FR_017_AuditTeamScoped=PASS
+  FR-018  →  FR_018_RetentionByCodePathAbsence=PASS
+  FR-019  →  FR_019_ListScopedToTeam=PASS
+  FR-020  →  FR_020_FilteredListScopedToTeam=PASS
+
+  All FRs have at least one matching assertion.
+
+==============================================================================
+  Mutation tests  (assertion-strength validation)
+==============================================================================
+
+  Strategy: replace each named fact's body with `{}` (no constraint),
+  then re-run Alloy. Each listed assertion should now FAIL on the
+  mutated model. If it still PASSes, the assertion is vacuous and
+  must be strengthened.
+
+  - MUTATE F_OwnerOrAdminForMutation  → runs/B-L2/mutated_F_OwnerOrAdminForMutation.als
+    rationale: Clearing this fact lets a Member who is not the task's owner succeed at PATCH/DELETE; the injected fact constructs exactly such a Success op (non-owner, role=Member), which the OwnershipBasedAccess predicate is supposed to forbid.
+    expected to FAIL: OwnershipBasedAccess, FR_008_OwnerCanMutate, FR_009_NonOwnerMemberDenied
+      - OwnershipBasedAccess: FAIL (expected)
+      - FR_008_OwnerCanMutate: FAIL (expected)
+      - FR_009_NonOwnerMemberDenied: FAIL (expected)
+
+  - MUTATE F_CrossTeamIsolation  → runs/B-L2/mutated_F_CrossTeamIsolation.als
+    rationale: Removing this fact allows a Success operation to act on a task whose team differs from the caller's X-Team-Id. The injection forces such an instance — a clear cross-team leak that NoInformationLeakage must catch.
+    expected to FAIL: NoInformationLeakage, FR_011_CrossTeamIsolation, FR_014_ByteEquivalentNotFound
+      - NoInformationLeakage: FAIL (expected)
+      - FR_011_CrossTeamIsolation: FAIL (expected)
+      - FR_014_ByteEquivalentNotFound: FAIL (expected)
+
+  - MUTATE F_PermissionMatrix  → runs/B-L2/mutated_F_PermissionMatrix.als
+    rationale: Clearing the matrix definition lets PermMatrix.Allowed be anything. The injection collapses it to empty, so PermissionCompleteness (every Role x OperationKind cell present) fails.
+    expected to FAIL: PermissionCompleteness
+      - PermissionCompleteness: PASS (vacuous?)
+
+  - MUTATE F_AuditEntryForStateChange  → runs/B-L2/mutated_F_AuditEntryForStateChange.als
+    rationale: Without this fact, a successful PATCH need not produce an audit entry. The injection forces a PATCH-Success op with writesAudit empty, which AuditCompleteness must reject.
+    expected to FAIL: AuditCompleteness, FR_015_AuditPerEdit
+      - AuditCompleteness: FAIL (expected)
+      - FR_015_AuditPerEdit: FAIL (expected)
+
+  - MUTATE F_AuditAppendOnlyKind  → runs/B-L2/mutated_F_AuditAppendOnlyKind.als
+    rationale: Removing this fact lets an audit entry's kind diverge from its producing operation's kind — e.g., a PostTasks op producing a DeletedKind entry, which is impossible under an append-only invariant where the kind is fixed at insert time.
+    expected to FAIL: AppendOnly, FR_016_AuditAppendOnly
+      - AppendOnly: FAIL (expected)
+      - FR_016_AuditAppendOnly: FAIL (expected)
+
+  - MUTATE F_AuditAttribution  → runs/B-L2/mutated_F_AuditAttribution.als
+    rationale: Clearing this fact lets an audit entry's actor differ from the caller of the producing operation — misattribution. The injection forces such a mismatch, which AttributionCorrectness must detect.
+    expected to FAIL: AttributionCorrectness, FR_015_AuditPerEdit
+      - AttributionCorrectness: FAIL (expected)
+      - FR_015_AuditPerEdit: FAIL (expected)
+
+  Mutation summary
+  ----------------------------------------------------------------------------
+  - F_OwnerOrAdminForMutation: ASSERTIONS BIT (OwnershipBasedAccess, FR_008_OwnerCanMutate, FR_009_NonOwnerMemberDenied)
+  - F_CrossTeamIsolation: ASSERTIONS BIT (NoInformationLeakage, FR_011_CrossTeamIsolation, FR_014_ByteEquivalentNotFound)
+  - F_PermissionMatrix: ASSERTION VACUOUS (PermissionCompleteness)
+  - F_AuditEntryForStateChange: ASSERTIONS BIT (AuditCompleteness, FR_015_AuditPerEdit)
+  - F_AuditAppendOnlyKind: ASSERTIONS BIT (AppendOnly, FR_016_AuditAppendOnly)
+  - F_AuditAttribution: ASSERTIONS BIT (AttributionCorrectness, FR_015_AuditPerEdit)
+
+
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/B-L2/report.txt

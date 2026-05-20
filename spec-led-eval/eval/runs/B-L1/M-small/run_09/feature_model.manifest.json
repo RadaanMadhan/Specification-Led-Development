@@ -1,0 +1,103 @@
+{
+  "feature_id": "B-L1",
+  "patterns_applied": [
+    "AuthRequiredEverywhere",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "ValidationBeforeMutation"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_003_SingleWorkspace",
+    "FR_004_FlatPermissions",
+    "FR_008_AssigneeIsValidMember",
+    "FR_009_CreatorAndCreatedAtImmutable",
+    "FR_010_StatusIsValid",
+    "FR_012_DeletedTaskRemovedFromList",
+    "FR_017_TimestampsExist",
+    "FR_018_DeletionLogged"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-003": [
+      "FR_003_SingleWorkspace"
+    ],
+    "FR-004": [
+      "FR_004_FlatPermissions"
+    ],
+    "FR-008": [
+      "FR_008_AssigneeIsValidMember"
+    ],
+    "FR-009": [
+      "FR_009_CreatorAndCreatedAtImmutable"
+    ],
+    "FR-010": [
+      "FR_010_StatusIsValid"
+    ],
+    "FR-012": [
+      "FR_012_DeletedTaskRemovedFromList"
+    ],
+    "FR-017": [
+      "FR_017_TimestampsExist"
+    ],
+    "FR-018": [
+      "FR_018_DeletionLogged",
+      "AppendOnly"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_AuthRequiredEverywhere",
+      "asserts_violated": [
+        "AuthRequiredEverywhere",
+        "FR_001_AuthRequired"
+      ],
+      "rationale": "Removing this fact allows Alloy to create tasks whose creators have no valid tokens, violating the authentication requirement. The assertion checks that all task creators must be in the tokens set.",
+      "inject_violation": "fact MUTATE_AuthRequiredViolation { some t: System.tasks | t.created_by not in System.tokens.user_id }"
+    },
+    {
+      "fact_name": "F_AssigneeIsValidMember",
+      "asserts_violated": [
+        "FR_008_AssigneeIsValidMember"
+      ],
+      "rationale": "Removing this fact permits tasks with assignees outside the member set. The assertion enforces that any assignee must exist in System.members.",
+      "inject_violation": "fact MUTATE_AssigneeInvalidViolation { some t: System.tasks | (some t.assignee_id and t.assignee_id not in System.members) }"
+    },
+    {
+      "fact_name": "F_AppendOnlyDeletionLog",
+      "asserts_violated": [
+        "AppendOnly"
+      ],
+      "rationale": "Removing this fact allows deletion log entries to have invalid state (empty fields, invalid deleter). The AppendOnly predicate requires all deletion entries to be well-formed.",
+      "inject_violation": "fact MUTATE_DeletionLogCorruptViolation { some td: System.deletions | td.task_id = \"\" or td.deleted_by_user_id not in System.members }"
+    },
+    {
+      "fact_name": "F_DeletedTaskRemovedFromList",
+      "asserts_violated": [
+        "FR_012_DeletedTaskRemovedFromList"
+      ],
+      "rationale": "Removing this fact permits a task to appear in both the deletions log and active tasks list. The assertion enforces that deleted tasks are removed from System.tasks.",
+      "inject_violation": "fact MUTATE_DeletedTaskStillInListViolation { some t: System.tasks | some td: System.deletions | t.id = td.task_id }"
+    },
+    {
+      "fact_name": "F_TaskStatusIsValid",
+      "asserts_violated": [
+        "FR_010_StatusIsValid"
+      ],
+      "rationale": "Removing this fact would permit tasks with status values outside {todo, in_progress, done}. The assertion requires all tasks to have one of the three valid statuses.",
+      "inject_violation": "fact MUTATE_InvalidStatusViolation { some t: System.tasks | (t.status != TODO and t.status != IN_PROGRESS and t.status != DONE) }"
+    },
+    {
+      "fact_name": "F_CreatorAndCreatedAtImmutable",
+      "asserts_violated": [
+        "FR_009_CreatorAndCreatedAtImmutable",
+        "AttributionCorrectness"
+      ],
+      "rationale": "Removing this fact permits tasks with missing creators or creation timestamps. The assertion enforces that every task has a valid creator in the member set and a non-empty created_at timestamp.",
+      "inject_violation": "fact MUTATE_CreatorMissingViolation { some t: System.tasks | t.created_at = \"\" or t.created_by not in System.members }"
+    }
+  ]
+}

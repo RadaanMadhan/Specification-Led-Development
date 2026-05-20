@@ -1,0 +1,30 @@
+{
+  "F_PermissionRule": {
+    "targeted_asserts": {
+      "OwnershipBasedAccess": "BIT",
+      "FR_004_ClinicianCareTeamGating": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_OneAuditPerOperation": {
+    "targeted_asserts": {
+      "AuditCompleteness": "BIT",
+      "FR_013_OneAuditPerOperation": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AuditAttribution": {
+    "targeted_asserts": {
+      "AttributionCorrectness": "BIT",
+      "FR_014_AuditFieldsCorrect": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_NoteOpLink": {
+    "targeted_asserts": {
+      "NoInformationLeakage": "BIT",
+      "FR_008_ByteEquivalentDenied": "BIT"
+    },
+    "all_bit": true
+  }
+}

@@ -1,0 +1,156 @@
+{
+  "feature_id": "013-hipaa-clinical-records",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_OneRolePerUser",
+    "FR_003_PatientAssignedRecord",
+    "FR_004_CareTeamGating",
+    "FR_005_ClinicianAuditAccess",
+    "FR_006_PatientSelfAccess",
+    "FR_007_ComplianceContentBlind",
+    "FR_008_ByteEquivalent403",
+    "FR_009_NonCareTeamDenied",
+    "FR_010_NoteValidation",
+    "FR_011_NotePersistence",
+    "FR_012_NotesAppendOnly",
+    "FR_013_AlwaysOnAudit",
+    "FR_014_AuditEntryShape",
+    "FR_015_AuditImmutable",
+    "FR_016_AuditWriteSLA",
+    "FR_017_AuditRetention",
+    "FR_018_ComplianceAccessLog",
+    "FR_019_ContentBlindResponses",
+    "FR_020_RecordIdOnly"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired"
+    ],
+    "FR-002": [
+      "FR_002_OneRolePerUser"
+    ],
+    "FR-003": [
+      "FR_003_PatientAssignedRecord",
+      "OwnershipExclusivity"
+    ],
+    "FR-004": [
+      "FR_004_CareTeamGating"
+    ],
+    "FR-005": [
+      "FR_005_ClinicianAuditAccess"
+    ],
+    "FR-006": [
+      "FR_006_PatientSelfAccess",
+      "OwnershipBasedAccess"
+    ],
+    "FR-007": [
+      "FR_007_ComplianceContentBlind"
+    ],
+    "FR-008": [
+      "FR_008_ByteEquivalent403",
+      "NoInformationLeakage"
+    ],
+    "FR-009": [
+      "FR_009_NonCareTeamDenied"
+    ],
+    "FR-010": [
+      "FR_010_NoteValidation"
+    ],
+    "FR-011": [
+      "FR_011_NotePersistence"
+    ],
+    "FR-012": [
+      "FR_012_NotesAppendOnly",
+      "AppendOnly"
+    ],
+    "FR-013": [
+      "FR_013_AlwaysOnAudit",
+      "AuditCompleteness"
+    ],
+    "FR-014": [
+      "FR_014_AuditEntryShape",
+      "AttributionCorrectness"
+    ],
+    "FR-015": [
+      "FR_015_AuditImmutable",
+      "AppendOnly"
+    ],
+    "FR-016": [
+      "FR_016_AuditWriteSLA"
+    ],
+    "FR-017": [
+      "FR_017_AuditRetention"
+    ],
+    "FR-018": [
+      "FR_018_ComplianceAccessLog"
+    ],
+    "FR-019": [
+      "FR_019_ContentBlindResponses"
+    ],
+    "FR-020": [
+      "FR_020_RecordIdOnly"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_StaticMatrixGate",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "NoInformationLeakage",
+        "FR_007_ComplianceContentBlind",
+        "FR_008_ByteEquivalent403",
+        "FR_019_ContentBlindResponses"
+      ],
+      "rationale": "Removing the static permission-matrix gate lets the model invent a Permitted Operation whose (role, kind) cell is statically denied by the contract \u2014 e.g. a compliance officer permitted to GetRecord, which is exactly what LeastPrivilege and the compliance content-blindness predicates are supposed to catch.",
+      "inject_violation": "fact MUTATE_StaticMatrixViolation { some op: Operation | op.outcome = Permitted and op.caller.role = ComplianceOfficer and op.kind = GetRecord }"
+    },
+    {
+      "fact_name": "F_ConditionalAccess",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_004_CareTeamGating",
+        "FR_006_PatientSelfAccess",
+        "FR_009_NonCareTeamDenied"
+      ],
+      "rationale": "Clearing the conditional rules lets a clinician be permitted to read a record without any active care-team-membership row, which violates the care-team-gating and non-care-team-denial assertions.",
+      "inject_violation": "fact MUTATE_BypassConditional { some op: Operation | op.caller.role = Clinician and op.kind = GetRecord and op.outcome = Permitted and (no m: CareTeamMembership | m.clinician = op.caller and m.rec = op.target and m.status = Active) }"
+    },
+    {
+      "fact_name": "F_OneAuditPerOperation",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_013_AlwaysOnAudit",
+        "FR_016_AuditWriteSLA"
+      ],
+      "rationale": "Removing the one-audit-per-operation constraint lets the model invent an Operation with no matching AuditEntry, breaking the always-on audit invariant.",
+      "inject_violation": "fact MUTATE_AuditMissing { some op: Operation | (no ae: AuditEntry | ae.op = op) }"
+    },
+    {
+      "fact_name": "F_AuditAttribution",
+      "asserts_violated": [
+        "AttributionCorrectness",
+        "FR_014_AuditEntryShape"
+      ],
+      "rationale": "Clearing the attribution fact lets the audit entry's recorded accessor / role / kind drift from the operation it claims to record, which is exactly the misattribution AttributionCorrectness forbids.",
+      "inject_violation": "fact MUTATE_BadAttribution { some ae: AuditEntry | ae.accessor != ae.op.caller or ae.accessorRole != ae.op.caller.role or ae.opKind != ae.op.kind }"
+    },
+    {
+      "fact_name": "F_NoteFromOneOp",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_012_NotesAppendOnly"
+      ],
+      "rationale": "Clearing the note-to-op uniqueness lets two distinct Operations claim creation of the same ClinicalNote \u2014 the structural signature of a re-emission / mutation, which the AppendOnly assertion is intended to detect.",
+      "inject_violation": "fact MUTATE_NoteAppendViolation { some disj op1, op2: Operation | some n: ClinicalNote | (op1.createdNote = n and op2.createdNote = n) }"
+    }
+  ]
+}

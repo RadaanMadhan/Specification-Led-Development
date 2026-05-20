@@ -1,0 +1,17 @@
+{
+  "LeastPrivilege": "FAIL",
+  "AuthRequiredEverywhere": "PASS",
+  "AuditCompleteness": "FAIL",
+  "AppendOnly": "PASS",
+  "AttributionCorrectness": "FAIL",
+  "NoInformationLeakage": "PASS",
+  "FR_001_AuthenticationRequired": "PASS",
+  "FR_002_ClinicianIdentityResolution": "PASS",
+  "FR_005_ReadOnlyAccess": "FAIL",
+  "FR_006_CareTeamMembershipGating": "FAIL",
+  "FR_007_ByteEquivalentDeniedNotFound": "PASS",
+  "FR_008_AlwaysOnAudit": "FAIL",
+  "FR_009_AuditEntryShape": "PASS",
+  "FR_010_AuditImmutability": "PASS",
+  "FR_011_AuditReadableByIGOnly": "FAIL"
+}

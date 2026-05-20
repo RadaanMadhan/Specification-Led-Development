@@ -1,0 +1,146 @@
+==============================================================================
+  Design Compliance Report  (Phase 3 — feature_model.als)
+  feature       : C-L2
+  spec source   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/eval/specs/C-L2
+  alloy model   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/C-L2/feature_model.als
+  patterns      : LeastPrivilege, PermissionCompleteness, PrivilegeMonotonicity, AuthRequiredEverywhere, AuditCompleteness, AppendOnly, AttributionCorrectness, OwnershipBasedAccess, NoInformationLeakage
+  fr count      : 20 declared in spec.md
+  assertions    : 20 total (14/20 PASS via Alloy)
+==============================================================================
+
+  Compliance matrix
+  ----------------------------------------------------------------------------
+  Assertion                          Verdict   Anchor
+  -----------------------------------------------------------------------
+  LeastPrivilege                     PASS      PATTERN LeastPrivilege: contracts/http-api.md authorisation tables; spec.md FR-004, FR-005, FR-017
+  PermissionCompleteness             PASS      PATTERN PermissionCompleteness: contracts/http-api.md authorisation tables
+  PrivilegeMonotonicity              FAIL      PATTERN PrivilegeMonotonicity: spec.md FR-004, FR-005; contracts/http-api.md auth tables
+  AuthRequiredEverywhere             PASS      PATTERN AuthRequiredEverywhere: spec.md FR-001; contracts/http-api.md Authentication section
+  AuditCompleteness                  PASS      PATTERN AuditCompleteness: spec.md FR-012, SC-001, SC-002; data-model.md audit_entries
+  AppendOnly                         PASS      PATTERN AppendOnly: spec.md FR-011, FR-014, SC-007, SC-008; data-model.md "no UPDATE/DELETE"
+  AttributionCorrectness             PASS      PATTERN AttributionCorrectness: spec.md FR-013; data-model.md AuditEntry fields
+  OwnershipBasedAccess               FAIL      PATTERN OwnershipBasedAccess: spec.md FR-004; data-model.md CareTeamMembership
+  NoInformationLeakage               PASS      PATTERN NoInformationLeakage: spec.md FR-006, SC-003; contracts/http-api.md byte-equivalent not-found
+  FR_001_AuthRequired                PASS      FEATURE-SPECIFIC: FR-001
+  FR_002_OneRolePerUser              PASS      FEATURE-SPECIFIC: FR-002
+  FR_004_CareTeamGating              FAIL      FEATURE-SPECIFIC: FR-004
+  FR_005_AdminContentBlindness       FAIL      FEATURE-SPECIFIC: FR-005
+  FR_006_ByteEquivalentUnauthorised  PASS      FEATURE-SPECIFIC: FR-006
+  FR_011_NotesAppendOnly             PASS      FEATURE-SPECIFIC: FR-011, SC-007
+  FR_012_AlwaysOnAudit               PASS      FEATURE-SPECIFIC: FR-012, SC-001, SC-002
+  FR_013_NoteIdConsistency           PASS      FEATURE-SPECIFIC: FR-013 (note_id structural CHECK)
+  FR_014_AuditImmutability           PASS      FEATURE-SPECIFIC: FR-014, SC-008
+  FR_017_AuditSearchAdminOnly        FAIL      FEATURE-SPECIFIC: FR-017; contracts/http-api.md POST /audit/search
+  FR_018_AdminResponseContentBlind   FAIL      FEATURE-SPECIFIC: FR-018; contracts/http-api.md administrator content-blindness
+
+  Counterexamples (Alloy SAT)
+  ----------------------------------------------------------------------------
+  PrivilegeMonotonicity  [PATTERN PrivilegeMonotonicity: spec.md FR-004, FR-005; contracts/http-api.md auth tables]
+    Alloy: 02. check PrivilegeMonotonicity     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  OwnershipBasedAccess  [PATTERN OwnershipBasedAccess: spec.md FR-004; data-model.md CareTeamMembership]
+    Alloy: 07. check OwnershipBasedAccess     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR_004_CareTeamGating  [FEATURE-SPECIFIC: FR-004]
+    Alloy: 11. check FR_004_CareTeamGating     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR_005_AdminContentBlindness  [FEATURE-SPECIFIC: FR-005]
+    Alloy: 12. check FR_005_AdminContentBlindness     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR_017_AuditSearchAdminOnly  [FEATURE-SPECIFIC: FR-017; contracts/http-api.md POST /audit/search]
+    Alloy: 18. check FR_017_AuditSearchAdminOnly     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR_018_AdminResponseContentBlind  [FEATURE-SPECIFIC: FR-018; contracts/http-api.md administrator content-blindness]
+    Alloy: 19. check FR_018_AdminResponseContentBlind     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR coverage
+  ----------------------------------------------------------------------------
+  FR-001  →  FR_001_AuthRequired=PASS, AuthRequiredEverywhere=PASS
+  FR-002  →  FR_002_OneRolePerUser=PASS
+  FR-003  [uncovered]
+  FR-004  →  FR_004_CareTeamGating=FAIL, OwnershipBasedAccess=FAIL
+  FR-005  →  FR_005_AdminContentBlindness=FAIL, LeastPrivilege=PASS
+  FR-006  →  FR_006_ByteEquivalentUnauthorised=PASS, NoInformationLeakage=PASS
+  FR-007  [uncovered]
+  FR-008  [uncovered]
+  FR-009  [uncovered]
+  FR-010  [uncovered]
+  FR-011  →  FR_011_NotesAppendOnly=PASS, AppendOnly=PASS
+  FR-012  →  FR_012_AlwaysOnAudit=PASS, AuditCompleteness=PASS
+  FR-013  →  FR_013_NoteIdConsistency=PASS, AttributionCorrectness=PASS
+  FR-014  →  FR_014_AuditImmutability=PASS, AppendOnly=PASS
+  FR-015  [uncovered]
+  FR-016  [uncovered]
+  FR-017  →  FR_017_AuditSearchAdminOnly=FAIL, LeastPrivilege=PASS
+  FR-018  →  FR_018_AdminResponseContentBlind=FAIL, LeastPrivilege=PASS
+  FR-019  [uncovered]
+  FR-020  [uncovered]
+
+  WARNING: 9 FR(s) without any matching assertion: FR-003, FR-007, FR-008, FR-009, FR-010, FR-015, FR-016, FR-019, FR-020
+
+==============================================================================
+  Mutation tests  (assertion-strength validation)
+==============================================================================
+
+  Strategy: replace each named fact's body with `{}` (no constraint),
+  then re-run Alloy. Each listed assertion should now FAIL on the
+  mutated model. If it still PASSes, the assertion is vacuous and
+  must be strengthened.
+
+  - MUTATE F_PermissionMatrix  → runs/C-L2/mutated_F_PermissionMatrix.als
+    rationale: Clearing the permission matrix fact allows Alloy to assign any Role->OperationKind combination as Allowed, immediately violating LeastPrivilege (e.g. HospitalAdministrator -> RecordLookup becomes permitted). The injection forces exactly the violating cell to exist.
+    expected to FAIL: LeastPrivilege, PermissionCompleteness, PrivilegeMonotonicity, FR_017_AuditSearchAdminOnly, FR_018_AdminResponseContentBlind
+      - LeastPrivilege: PASS (vacuous?)
+      - PermissionCompleteness: FAIL (expected)
+      - PrivilegeMonotonicity: FAIL (expected)
+      - FR_017_AuditSearchAdminOnly: FAIL (expected)
+      - FR_018_AdminResponseContentBlind: FAIL (expected)
+
+  - MUTATE F_CareTeamGating  → runs/C-L2/mutated_F_CareTeamGating.als
+    rationale: Removing care-team gating allows a Permitted RecordLookup operation to exist for a clinician with no active CareTeamMembership, violating the core ownership-based access invariant. The injection forces such an operation into the model.
+    expected to FAIL: OwnershipBasedAccess, FR_004_CareTeamGating
+      - OwnershipBasedAccess: FAIL (expected)
+      - FR_004_CareTeamGating: FAIL (expected)
+
+  - MUTATE F_AppendOnlyNotes  → runs/C-L2/mutated_F_AppendOnlyNotes.als
+    rationale: Removing the append-only note fact allows a ClinicalNote to exist that is not produced by any permitted AddNote operation, or allows two permitted AddNote operations to produce the same note object, violating the one-note-per-operation invariant.
+    expected to FAIL: AppendOnly, FR_011_NotesAppendOnly
+      - AppendOnly: FAIL (expected)
+      - FR_011_NotesAppendOnly: FAIL (expected)
+
+  - MUTATE F_AppendOnlyAuditEntries  → runs/C-L2/mutated_F_AppendOnlyAuditEntries.als
+    rationale: Removing the audit-immutability fact allows an AuditEntry to exist that is not owned by any Operation, representing a spurious or orphaned audit record, which violates the bijection between Operations and AuditEntries that the AuditCompleteness assertion checks.
+    expected to FAIL: AppendOnly, FR_014_AuditImmutability, AuditCompleteness
+      - AppendOnly: PASS (vacuous?)
+      - FR_014_AuditImmutability: PASS (vacuous?)
+      - AuditCompleteness: PASS (vacuous?)
+
+  - MUTATE F_AuditCompleteness  → runs/C-L2/mutated_F_AuditCompleteness.als
+    rationale: Clearing the audit-completeness fact allows two distinct Operations to share one AuditEntry, or an Operation to have no AuditEntry, directly contradicting the always-on one-to-one audit requirement from FR-012.
+    expected to FAIL: AuditCompleteness, FR_012_AlwaysOnAudit
+      - AuditCompleteness: PASS (vacuous?)
+      - FR_012_AlwaysOnAudit: PASS (vacuous?)
+
+  - MUTATE F_AdminNotClinical  → runs/C-L2/mutated_F_AdminNotClinical.als
+    rationale: Removing the administrator-cannot-access-clinical-content fact allows a HospitalAdministrator to have a Permitted RecordLookup operation, meaning the administrator could observe clinical content, violating the content-blindness invariants.
+    expected to FAIL: NoInformationLeakage, FR_005_AdminContentBlindness, FR_018_AdminResponseContentBlind, LeastPrivilege
+      - NoInformationLeakage: PASS (vacuous?)
+      - FR_005_AdminContentBlindness: PASS (vacuous?)
+      - FR_018_AdminResponseContentBlind: PASS (vacuous?)
+      - LeastPrivilege: PASS (vacuous?)
+
+  Mutation summary
+  ----------------------------------------------------------------------------
+  - F_PermissionMatrix: ASSERTION VACUOUS (LeastPrivilege, PermissionCompleteness, PrivilegeMonotonicity, FR_017_AuditSearchAdminOnly, FR_018_AdminResponseContentBlind)
+  - F_CareTeamGating: ASSERTIONS BIT (OwnershipBasedAccess, FR_004_CareTeamGating)
+  - F_AppendOnlyNotes: ASSERTIONS BIT (AppendOnly, FR_011_NotesAppendOnly)
+  - F_AppendOnlyAuditEntries: ASSERTION VACUOUS (AppendOnly, FR_014_AuditImmutability, AuditCompleteness)
+  - F_AuditCompleteness: ASSERTION VACUOUS (AuditCompleteness, FR_012_AlwaysOnAudit)
+  - F_AdminNotClinical: ASSERTION VACUOUS (NoInformationLeakage, FR_005_AdminContentBlindness, FR_018_AdminResponseContentBlind, LeastPrivilege)
+

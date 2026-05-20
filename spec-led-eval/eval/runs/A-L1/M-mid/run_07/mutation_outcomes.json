@@ -1,0 +1,49 @@
+{
+  "F_OnePendingPerCustomer": {
+    "targeted_asserts": {
+      "FR_005_OnePendingPerCustomer": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_PermissionMatrix": {
+    "targeted_asserts": {
+      "LeastPrivilege": "BIT",
+      "PermissionCompleteness": "BIT",
+      "PermissionGrounding": "BIT",
+      "FR_015_StaffOnlyDecisionActions": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AuditCompletenessDecision": {
+    "targeted_asserts": {
+      "AuditCompleteness": "BIT",
+      "FR_016_AuditTrailComplete": "BIT",
+      "AttributionCorrectness": "BIT",
+      "FR_014_NotificationOnDecision": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AppendOnly": {
+    "targeted_asserts": {
+      "AppendOnly": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_OwnershipBasedAccess": {
+    "targeted_asserts": {
+      "OwnershipBasedAccess": "BIT",
+      "NoInformationLeakage": "BIT",
+      "FR_013_CustomerIsolation": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_DecisionStatusConsistency": {
+    "targeted_asserts": {
+      "FR_011_DecidedApplicationsImmutable": "VACUOUS_OVERCONSTRAINT",
+      "FR_012_NoConcurrentDecisions": "VACUOUS_OVERCONSTRAINT",
+      "ConcurrencySafety": "VACUOUS_OVERCONSTRAINT",
+      "FR_010_DecisionPersisted": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  }
+}

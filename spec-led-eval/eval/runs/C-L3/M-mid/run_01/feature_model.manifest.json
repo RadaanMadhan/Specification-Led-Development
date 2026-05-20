@@ -1,0 +1,172 @@
+{
+  "feature_id": "C-L3",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "PrivilegeMonotonicity",
+    "ValidationBeforeMutation"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_SingleRolePerUser",
+    "FR_003_PatientAssignedRecord",
+    "FR_004_CareTeamGating",
+    "FR_005_ClinicianAuditAccess",
+    "FR_006_PatientSelfAccess",
+    "FR_007_ComplianceContentBlind",
+    "FR_008_ByteEquivalentForbidden",
+    "FR_010_NoteCreationRequiresPermittedAppend",
+    "FR_012_NotesAppendOnly",
+    "FR_013_AuditEveryAccess",
+    "FR_014_AuditEntryShape",
+    "FR_015_AuditImmutability",
+    "FR_016_NoAccessWithoutAudit",
+    "FR_018_ComplianceOnlyAccessLog",
+    "FR_019_ComplianceContentBlindStructural",
+    "FR_020_OpaqueRecordIdOnly"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_SingleRolePerUser"
+    ],
+    "FR-003": [
+      "FR_003_PatientAssignedRecord",
+      "OwnershipExclusivity"
+    ],
+    "FR-004": [
+      "FR_004_CareTeamGating",
+      "LeastPrivilege"
+    ],
+    "FR-005": [
+      "FR_005_ClinicianAuditAccess"
+    ],
+    "FR-006": [
+      "FR_006_PatientSelfAccess",
+      "OwnershipBasedAccess"
+    ],
+    "FR-007": [
+      "FR_007_ComplianceContentBlind",
+      "FR_019_ComplianceContentBlindStructural"
+    ],
+    "FR-008": [
+      "FR_008_ByteEquivalentForbidden",
+      "NoInformationLeakage"
+    ],
+    "FR-009": [
+      "FR_004_CareTeamGating"
+    ],
+    "FR-010": [
+      "FR_010_NoteCreationRequiresPermittedAppend",
+      "ValidationBeforeMutation"
+    ],
+    "FR-011": [
+      "FR_010_NoteCreationRequiresPermittedAppend",
+      "FR_014_AuditEntryShape"
+    ],
+    "FR-012": [
+      "FR_012_NotesAppendOnly",
+      "AppendOnly"
+    ],
+    "FR-013": [
+      "FR_013_AuditEveryAccess",
+      "AuditCompleteness"
+    ],
+    "FR-014": [
+      "FR_014_AuditEntryShape",
+      "AttributionCorrectness"
+    ],
+    "FR-015": [
+      "FR_015_AuditImmutability",
+      "AppendOnly"
+    ],
+    "FR-016": [
+      "FR_016_NoAccessWithoutAudit",
+      "AuditCompleteness"
+    ],
+    "FR-017": [
+      "FR_015_AuditImmutability"
+    ],
+    "FR-018": [
+      "FR_018_ComplianceOnlyAccessLog",
+      "LeastPrivilege"
+    ],
+    "FR-019": [
+      "FR_019_ComplianceContentBlindStructural",
+      "FR_007_ComplianceContentBlind"
+    ],
+    "FR-020": [
+      "FR_020_OpaqueRecordIdOnly"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_CareTeamMembershipGating",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_004_CareTeamGating"
+      ],
+      "rationale": "Removing this fact allows a clinician without care-team membership to have outcome=Permitted on GetRecord or PostNote. Both LeastPrivilege and FR_004_CareTeamGating require the care-team gate; without the fact the gate is absent and the injection forces a violation.",
+      "inject_violation": "fact MUTATE_CareTeamGatingViolation { some op: Operation | op.opCaller.role = Clinician and op.opKind = GetRecord and op.opOutcome = Permitted and (no m: CareTeamMembership | m.ctClinician = op.opCaller and m.ctRecord = op.opRecord) }"
+    },
+    {
+      "fact_name": "F_AuditEntriesBelongToOperations",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_013_AuditEveryAccess",
+        "FR_015_AuditImmutability"
+      ],
+      "rationale": "Removing this fact allows an AuditEntry to exist that is not linked to any Operation (orphan entry) or allows an Operation to share its AuditEntry with another (duplicate). The injection forces an orphan AuditEntry that violates the one-to-one mapping asserted by AuditCompleteness and FR_013_AuditEveryAccess.",
+      "inject_violation": "fact MUTATE_AuditCompletenessViolation { some ae: AuditEntry | no op: Operation | op.opAudit = ae }"
+    },
+    {
+      "fact_name": "F_PatientSelfAccessOnly",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_006_PatientSelfAccess"
+      ],
+      "rationale": "Removing this fact allows a patient to obtain outcome=Permitted on a record other than their assignedRecord. The injection forces exactly this: a patient with a Permitted GetRecord on a record that is not their assigned record.",
+      "inject_violation": "fact MUTATE_PatientSelfAccessViolation { some op: Operation | op.opCaller.role = PatientRole and op.opKind = GetRecord and op.opOutcome = Permitted and op.opRecord != op.opCaller.assignedRecord }"
+    },
+    {
+      "fact_name": "F_ComplianceOfficerAccess",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_007_ComplianceContentBlind",
+        "FR_019_ComplianceContentBlindStructural"
+      ],
+      "rationale": "Removing this fact allows a compliance officer to have outcome=Permitted on GetRecord (clinical content). The injection forces a compliance officer Permitted GetRecord, violating the content-blindness invariants.",
+      "inject_violation": "fact MUTATE_ComplianceContentLeakViolation { some op: Operation | op.opCaller.role = ComplianceOfficer and op.opKind = GetRecord and op.opOutcome = Permitted }"
+    },
+    {
+      "fact_name": "F_NoteAuthorInCareTeam",
+      "asserts_violated": [
+        "FR_012_NotesAppendOnly",
+        "FR_010_NoteCreationRequiresPermittedAppend",
+        "AppendOnly"
+      ],
+      "rationale": "Removing this fact allows a ClinicalNote to exist authored by a clinician who was never in the care team for that record, i.e. a note created without a legitimate Permitted PostNote operation. The injection forces exactly such a note.",
+      "inject_violation": "fact MUTATE_NoteOutsideCareTeamViolation { some n: ClinicalNote | n.noteAuthor.role = Clinician and (no m: CareTeamMembership | m.ctClinician = n.noteAuthor and m.ctRecord = n.noteRecord) }"
+    },
+    {
+      "fact_name": "F_BasePermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "PermissionCompleteness",
+        "PrivilegeMonotonicity"
+      ],
+      "rationale": "Removing this fact leaves PermMatrix.Allowed unconstrained, allowing any (Role, OperationKind) cell to be in or out of the matrix arbitrarily. The injection forces a cell that must never be allowed (ComplianceOfficer -> GetRecord) into the matrix, violating LeastPrivilege and the closed-world completeness assertion.",
+      "inject_violation": "fact MUTATE_PermMatrixViolation { ComplianceOfficer -> GetRecord in PermMatrix.Allowed }"
+    }
+  ]
+}

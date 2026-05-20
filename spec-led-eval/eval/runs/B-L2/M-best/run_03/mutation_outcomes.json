@@ -1,0 +1,50 @@
+{
+  "F_PermissionGate": {
+    "targeted_asserts": {
+      "LeastPrivilege": "BIT",
+      "OwnershipBasedAccess": "BIT",
+      "FR_008_OwnerOrAdminMayMutate": "BIT",
+      "FR_009_MemberCannotMutateOthers": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_CrossTeamIsolation": {
+    "targeted_asserts": {
+      "NoInformationLeakage": "BIT",
+      "FR_011_NoCrossTeamAccess": "BIT",
+      "FR_014_CrossTeamIsolation": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_StateChangingOpsProduceAudit": {
+    "targeted_asserts": {
+      "AuditCompleteness": "BIT",
+      "FR_015_AuditPerSave": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AppendOnlyAuditEntries": {
+    "targeted_asserts": {
+      "AppendOnly": "BIT",
+      "FR_016_AuditAppendOnly": "BIT",
+      "FR_018_AuditRetainedViaAppendOnly": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AuditAttribution": {
+    "targeted_asserts": {
+      "AttributionCorrectness": "BIT",
+      "FR_002_ActorFromAuthContext": "BIT",
+      "FR_015_AuditPerSave": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_TaskOwnerIsTeamMember": {
+    "targeted_asserts": {
+      "OwnershipExclusivity": "BIT",
+      "FR_006_OwnerImmutableAndExclusive": "BIT",
+      "FR_012_TaskFieldsValid": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  }
+}

@@ -1,0 +1,165 @@
+$ /Users/leonhausmann/opt/anaconda3/bin/python3 -m speceval.cli verify-design --no-cache --model M-mid --java-bin /Users/leonhausmann/opt/anaconda3/lib/python3.9/site-packages/jdk4py/java-runtime/bin/java /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/eval/specs/B-L2
+
+[parse]   feature 'B-L2', 20 FRs, 7 user stories
+[lift]    calling LLM (anthropic: tier=M-mid, model=claude-sonnet-4-6)...
+[lift]    fresh lift (sha=b472cdb31251)
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/B-L2/feature_model.als
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/B-L2/cost_log.json
+[alloy]   running alloy.jar on feature_model.als...
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/B-L2/alloy_verdicts.json
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/B-L2/mutation_outcomes.json
+
+==============================================================================
+  Design Compliance Report  (Phase 3 — feature_model.als)
+  feature       : B-L2
+  spec source   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/eval/specs/B-L2
+  alloy model   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/B-L2/feature_model.als
+  patterns      : LeastPrivilege, PermissionCompleteness, PrivilegeMonotonicity, AuthRequiredEverywhere, AuditCompleteness, AppendOnly, AttributionCorrectness, OwnershipExclusivity, OwnershipBasedAccess, NoInformationLeakage, NoSelfMutation, ValidationBeforeMutation
+  fr count      : 20 declared in spec.md
+  assertions    : 26 total (19/26 PASS via Alloy)
+==============================================================================
+
+  Compliance matrix
+  ----------------------------------------------------------------------------
+  Assertion                            Verdict   Anchor
+  -------------------------------------------------------------------------
+  LeastPrivilege                       PASS      PATTERN LeastPrivilege: contracts/http-api.md permission matrix; FR-008,FR-009,FR-010
+  PermissionCompleteness               PASS      PATTERN PermissionCompleteness: contracts/http-api.md permission matrix
+  PrivilegeMonotonicity                PASS      PATTERN PrivilegeMonotonicity: spec.md FR-010; contracts/http-api.md (admin ⊇ member)
+  AuthRequiredEverywhere               PASS      PATTERN AuthRequiredEverywhere: spec.md FR-001; contracts/http-api.md auth section
+  AuditCompleteness                    PASS      PATTERN AuditCompleteness: spec.md FR-015; data-model.md AuditEntry
+  AppendOnly                           PASS      PATTERN AppendOnly: spec.md FR-016; data-model.md "no UPDATE/DELETE"; contracts/ "no PATCH/PUT/DELETE on audit"
+  AttributionCorrectness               FAIL      PATTERN AttributionCorrectness: spec.md FR-015; data-model.md actor_user_id/actor_role snapshot
+  OwnershipExclusivity                 PASS      PATTERN OwnershipExclusivity: spec.md FR-005,FR-006; data-model.md owner_id NOT NULL immutable
+  OwnershipBasedAccess                 PASS      PATTERN OwnershipBasedAccess: spec.md FR-008,FR-009,FR-010; data-model.md owner_id predicate
+  NoInformationLeakage                 PASS      PATTERN NoInformationLeakage: spec.md FR-014; contracts/ "byte-equivalent not-found"
+  NoSelfMutation                       FAIL      PATTERN NoSelfMutation: spec.md FR-006 (owner immutability); data-model.md CHECK
+  ValidationBeforeMutation             PASS      PATTERN ValidationBeforeMutation: spec.md FR-012; contracts/ 400 validation_error
+  FR_001_AuthRequired                  PASS      FEATURE-SPECIFIC: FR-001 — authentication required before business logic
+  FR_003_TeamContextRequired           PASS      FEATURE-SPECIFIC: FR-003 — team context mandatory; non-membership → 404
+  FR_005_TaskTeamImmutable             FAIL      FEATURE-SPECIFIC: FR-005 — task's team is immutable after creation
+  FR_006_OwnerImmutable                PASS      FEATURE-SPECIFIC: FR-006 — owner_id immutable; any PATCH attempt rejected
+  FR_007_UniquePerTeamRole             PASS      FEATURE-SPECIFIC: FR-007 — per-team role; unique membership per (user, team) pair
+  FR_008_MemberCanCreateAndReadAny     FAIL      FEATURE-SPECIFIC: FR-008 — member may create, view, edit-own, delete-own
+  FR_009_NonOwnerMemberDenied          PASS      FEATURE-SPECIFIC: FR-009 — member cannot edit/delete tasks they don't own
+  FR_010_AdminCanMutateAnyTeamTask     FAIL      FEATURE-SPECIFIC: FR-010 — admin can edit/delete any task in their team
+  FR_011_CrossTeamIsolationForAdmin    PASS      FEATURE-SPECIFIC: FR-011,FR-014 — admin privilege in team T does NOT grant access to team U tasks
+  FR_015_OneCreatedAuditEntryPerTask   PASS      FEATURE-SPECIFIC: FR-015 — every task has exactly one "created" audit entry
+  FR_015_ActorRoleSnapshot             PASS      FEATURE-SPECIFIC: FR-015 — actor role on audit entry = role at time of change (snapshot)
+  FR_016_AuditOutlivesTask             FAIL      FEATURE-SPECIFIC: FR-016 — audit entries outlive their task (DeletedTask still has entries)
+  FR_017_AuditReadableByAnyTeamMember  FAIL      FEATURE-SPECIFIC: FR-017 — audit trail readable by any team member (including non-admin)
+  FR_017_AuditCrossTeamIsolation       PASS      FEATURE-SPECIFIC: FR-017 — cross-team audit access returns byte-equivalent 404
+
+  Counterexamples (Alloy SAT)
+  ----------------------------------------------------------------------------
+  AttributionCorrectness  [PATTERN AttributionCorrectness: spec.md FR-015; data-model.md actor_user_id/actor_role snapshot]
+    Alloy: 06. check AttributionCorrectness     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  NoSelfMutation  [PATTERN NoSelfMutation: spec.md FR-006 (owner immutability); data-model.md CHECK]
+    Alloy: 10. check NoSelfMutation           0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR_005_TaskTeamImmutable  [FEATURE-SPECIFIC: FR-005 — task's team is immutable after creation]
+    Alloy: 14. check FR_005_TaskTeamImmutable     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR_008_MemberCanCreateAndReadAny  [FEATURE-SPECIFIC: FR-008 — member may create, view, edit-own, delete-own]
+    Alloy: 17. check FR_008_MemberCanCreateAndReadAny     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR_010_AdminCanMutateAnyTeamTask  [FEATURE-SPECIFIC: FR-010 — admin can edit/delete any task in their team]
+    Alloy: 19. check FR_010_AdminCanMutateAnyTeamTask     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR_016_AuditOutlivesTask  [FEATURE-SPECIFIC: FR-016 — audit entries outlive their task (DeletedTask still has entries)]
+    Alloy: 23. check FR_016_AuditOutlivesTask     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR_017_AuditReadableByAnyTeamMember  [FEATURE-SPECIFIC: FR-017 — audit trail readable by any team member (including non-admin)]
+    Alloy: 24. check FR_017_AuditReadableByAnyTeamMember     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR coverage
+  ----------------------------------------------------------------------------
+  FR-001  →  FR_001_AuthRequired=PASS, AuthRequiredEverywhere=PASS
+  FR-002  →  FR_001_AuthRequired=PASS
+  FR-003  →  FR_003_TeamContextRequired=PASS
+  FR-004  →  FR_003_TeamContextRequired=PASS, NoInformationLeakage=PASS
+  FR-005  →  FR_005_TaskTeamImmutable=FAIL, OwnershipExclusivity=PASS
+  FR-006  →  FR_006_OwnerImmutable=PASS, NoSelfMutation=FAIL
+  FR-007  →  FR_007_UniquePerTeamRole=PASS
+  FR-008  →  FR_008_MemberCanCreateAndReadAny=FAIL, OwnershipBasedAccess=PASS, LeastPrivilege=PASS
+  FR-009  →  FR_009_NonOwnerMemberDenied=PASS, LeastPrivilege=PASS
+  FR-010  →  FR_010_AdminCanMutateAnyTeamTask=FAIL, PrivilegeMonotonicity=PASS
+  FR-011  →  FR_011_CrossTeamIsolationForAdmin=PASS, NoInformationLeakage=PASS
+  FR-012  →  ValidationBeforeMutation=PASS
+  FR-013  →  OwnershipExclusivity=PASS
+  FR-014  →  NoInformationLeakage=PASS, FR_011_CrossTeamIsolationForAdmin=PASS, FR_017_AuditCrossTeamIsolation=PASS
+  FR-015  →  FR_015_OneCreatedAuditEntryPerTask=PASS, FR_015_ActorRoleSnapshot=PASS, AuditCompleteness=PASS, AttributionCorrectness=FAIL
+  FR-016  →  AppendOnly=PASS, FR_016_AuditOutlivesTask=FAIL
+  FR-017  →  FR_017_AuditReadableByAnyTeamMember=FAIL, FR_017_AuditCrossTeamIsolation=PASS
+  FR-018  →  AppendOnly=PASS
+  FR-019  →  FR_008_MemberCanCreateAndReadAny=FAIL
+  FR-020  →  FR_008_MemberCanCreateAndReadAny=FAIL
+
+  All FRs have at least one matching assertion.
+
+==============================================================================
+  Mutation tests  (assertion-strength validation)
+==============================================================================
+
+  Strategy: replace each named fact's body with `{}` (no constraint),
+  then re-run Alloy. Each listed assertion should now FAIL on the
+  mutated model. If it still PASSes, the assertion is vacuous and
+  must be strengthened.
+
+  - MUTATE F_OwnerOrAdminForMutation  → runs/B-L2/mutated_F_OwnerOrAdminForMutation.als
+    rationale: Removing this fact allows a non-owner member to perform a successful PatchTask or DeleteTask, directly violating the owner-or-admin gate that FR-009 requires. The injection forces a concrete counterexample: a MemberRole operation on a task they do not own that succeeds.
+    expected to FAIL: LeastPrivilege, OwnershipBasedAccess, FR_009_NonOwnerMemberDenied
+      - LeastPrivilege: PASS (vacuous?)
+      - OwnershipBasedAccess: PASS (vacuous?)
+      - FR_009_NonOwnerMemberDenied: PASS (vacuous?)
+
+  - MUTATE F_CrossTeamOperationsReturnNotFound  → runs/B-L2/mutated_F_CrossTeamOperationsReturnNotFound.als
+    rationale: Removing this fact permits a cross-team task access to succeed (outcome != NotFound404), which violates the byte-equivalent 404 isolation invariant from FR-014. The injection forces a cross-team operation to succeed, leaking the existence of a task in another team.
+    expected to FAIL: NoInformationLeakage, FR_011_CrossTeamIsolationForAdmin, FR_017_AuditCrossTeamIsolation
+      - NoInformationLeakage: FAIL (expected)
+      - FR_011_CrossTeamIsolationForAdmin: FAIL (expected)
+      - FR_017_AuditCrossTeamIsolation: FAIL (expected)
+
+  - MUTATE F_ExactlyOneCreatedEntry  → runs/B-L2/mutated_F_ExactlyOneCreatedEntry.als
+    rationale: Removing this fact allows a task to exist with zero or two CreatedChange audit entries, breaking the per-edit-event completeness invariant from FR-015. The injection creates a task for which no CreatedChange entry exists.
+    expected to FAIL: AuditCompleteness, FR_015_OneCreatedAuditEntryPerTask
+      - AuditCompleteness: FAIL (expected)
+      - FR_015_OneCreatedAuditEntryPerTask: FAIL (expected)
+
+  - MUTATE F_DeletedChangeForDeletedTask  → runs/B-L2/mutated_F_DeletedChangeForDeletedTask.als
+    rationale: Removing this fact disconnects the DeletedChange requirement from DeletedTask, allowing a deleted task to lack its final audit entry, which undermines the audit-outlives-task invariant from FR-016.
+    expected to FAIL: AppendOnly, FR_016_AuditOutlivesTask
+      - AppendOnly: PASS (vacuous?)
+      - FR_016_AuditOutlivesTask: PASS (vacuous?)
+
+  - MUTATE F_ModifiedChangeLinkedToSuccessfulPatch  → runs/B-L2/mutated_F_ModifiedChangeLinkedToSuccessfulPatch.als
+    rationale: Removing this fact allows a ModifiedChange audit entry to exist without a corresponding successful PatchTask operation, breaking attribution correctness (FR-015). The injection creates an unanchored ModifiedChange entry whose actor has no matching successful operation.
+    expected to FAIL: AttributionCorrectness, ValidationBeforeMutation
+      - AttributionCorrectness: FAIL (expected)
+      - ValidationBeforeMutation: PASS (vacuous?)
+
+  - MUTATE F_NonOwnerNonAdminDenied  → runs/B-L2/mutated_F_NonOwnerNonAdminDenied.als
+    rationale: Removing this fact allows a MemberRole non-owner caller to receive an outcome other than Denied403 on PatchTask/DeleteTask for a task they don't own, which contradicts the 403 permission_denied requirement in FR-009 and the permission matrix. The injection forces a non-owner member to get Success.
+    expected to FAIL: FR_009_NonOwnerMemberDenied, LeastPrivilege
+      - FR_009_NonOwnerMemberDenied: PASS (vacuous?)
+      - LeastPrivilege: PASS (vacuous?)
+
+  Mutation summary
+  ----------------------------------------------------------------------------
+  - F_OwnerOrAdminForMutation: ASSERTION VACUOUS (LeastPrivilege, OwnershipBasedAccess, FR_009_NonOwnerMemberDenied)
+  - F_CrossTeamOperationsReturnNotFound: ASSERTIONS BIT (NoInformationLeakage, FR_011_CrossTeamIsolationForAdmin, FR_017_AuditCrossTeamIsolation)
+  - F_ExactlyOneCreatedEntry: ASSERTIONS BIT (AuditCompleteness, FR_015_OneCreatedAuditEntryPerTask)
+  - F_DeletedChangeForDeletedTask: ASSERTION VACUOUS (AppendOnly, FR_016_AuditOutlivesTask)
+  - F_ModifiedChangeLinkedToSuccessfulPatch: ASSERTION VACUOUS (AttributionCorrectness, ValidationBeforeMutation)
+  - F_NonOwnerNonAdminDenied: ASSERTION VACUOUS (FR_009_NonOwnerMemberDenied, LeastPrivilege)
+
+
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/B-L2/report.txt

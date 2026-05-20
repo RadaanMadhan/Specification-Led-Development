@@ -1,0 +1,151 @@
+{
+  "feature_id": "A-L1",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "ValidationBeforeMutation",
+    "ConcurrencySafety"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_CustomerCanSubmit",
+    "FR_004_UniqueReferenceAndStatus",
+    "FR_005_OnePendingPerCustomer",
+    "FR_009_DecisionRequiresReason",
+    "FR_010_DecisionPersisted",
+    "FR_011_NoReDecision",
+    "FR_012_ConcurrentDecisionSafety",
+    "FR_013_CustomerSeesOwnOnly",
+    "FR_014_NotificationOnDecision",
+    "FR_015_StaffOnlyDecisions",
+    "FR_016_AuditTrail",
+    "FR_017_RetentionAfterDecision"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_CustomerCanSubmit",
+      "LeastPrivilege"
+    ],
+    "FR-002": [
+      "ValidationBeforeMutation"
+    ],
+    "FR-003": [
+      "ValidationBeforeMutation"
+    ],
+    "FR-004": [
+      "FR_004_UniqueReferenceAndStatus"
+    ],
+    "FR-005": [
+      "FR_005_OnePendingPerCustomer"
+    ],
+    "FR-006": [
+      "FR_004_UniqueReferenceAndStatus"
+    ],
+    "FR-007": [
+      "LeastPrivilege",
+      "PermissionCompleteness"
+    ],
+    "FR-008": [
+      "LeastPrivilege",
+      "PermissionCompleteness"
+    ],
+    "FR-009": [
+      "FR_009_DecisionRequiresReason",
+      "ValidationBeforeMutation"
+    ],
+    "FR-010": [
+      "FR_010_DecisionPersisted",
+      "AttributionCorrectness"
+    ],
+    "FR-011": [
+      "FR_011_NoReDecision"
+    ],
+    "FR-012": [
+      "FR_012_ConcurrentDecisionSafety",
+      "ConcurrencySafety"
+    ],
+    "FR-013": [
+      "FR_013_CustomerSeesOwnOnly",
+      "OwnershipBasedAccess",
+      "NoInformationLeakage"
+    ],
+    "FR-014": [
+      "FR_014_NotificationOnDecision"
+    ],
+    "FR-015": [
+      "FR_015_StaffOnlyDecisions",
+      "LeastPrivilege"
+    ],
+    "FR-016": [
+      "FR_016_AuditTrail",
+      "AuditCompleteness",
+      "AppendOnly",
+      "AttributionCorrectness"
+    ],
+    "FR-017": [
+      "FR_017_RetentionAfterDecision"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_001_CustomerCanSubmit",
+        "FR_015_StaffOnlyDecisions"
+      ],
+      "rationale": "Clearing F_PermissionMatrix removes the closed-world definition of the allowed set; injecting a violation that adds Customer->PostDecision to the allowed set directly contradicts the LeastPrivilege and FR_015_StaffOnlyDecisions assertions, which check that customers cannot record decisions.",
+      "inject_violation": "fact MUTATE_PermMatrixViolation { Customer -> PostDecision in PermMatrix.Allowed }"
+    },
+    {
+      "fact_name": "F_OnePendingPerCustomer",
+      "asserts_violated": [
+        "FR_005_OnePendingPerCustomer"
+      ],
+      "rationale": "Clearing F_OnePendingPerCustomer removes the constraint that prevents two PendingReview applications from sharing the same owner. Injecting two distinct applications in PendingReview with the same owner forces the FR_005 assertion to find a counterexample.",
+      "inject_violation": "fact MUTATE_OnePendingViolation { some disj a1, a2: LoanApplication | a1.owner = a2.owner and a1.status = PendingReview and a2.status = PendingReview }"
+    },
+    {
+      "fact_name": "F_AuditSubmitEvent",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "AppendOnly",
+        "FR_016_AuditTrail"
+      ],
+      "rationale": "Clearing F_AuditSubmitEvent allows a LoanApplication to exist with no EvSubmitted audit event. Injecting an application that has no corresponding submission event forces the AuditCompleteness and FR_016_AuditTrail assertions to fail.",
+      "inject_violation": "fact MUTATE_MissingSubmitEvent { some a: LoanApplication | no e: ApplicationEvent | e.forApplication = a and e.eventType = EvSubmitted }"
+    },
+    {
+      "fact_name": "F_DecisionByStaff",
+      "asserts_violated": [
+        "FR_015_StaffOnlyDecisions",
+        "AttributionCorrectness"
+      ],
+      "rationale": "Clearing F_DecisionByStaff allows a Customer-role User to appear as decidedBy on a Decision. Injecting such a Decision forces FR_015_StaffOnlyDecisions and AttributionCorrectness to fail because they assert all decisions are made by BankStaff.",
+      "inject_violation": "fact MUTATE_CustomerDecisionViolation { some d: Decision | d.decidedBy.role = Customer }"
+    },
+    {
+      "fact_name": "F_DecisionInjectivity",
+      "asserts_violated": [
+        "ConcurrencySafety",
+        "FR_012_ConcurrentDecisionSafety"
+      ],
+      "rationale": "Clearing F_DecisionInjectivity removes the constraint that a Decision object can belong to at most one LoanApplication. Injecting two distinct applications that share the same Decision atom simulates the dual-decision scenario that FR-012 forbids.",
+      "inject_violation": "fact MUTATE_SharedDecisionViolation { some disj a1, a2: LoanApplication | some d: Decision | a1.decision = d and a2.decision = d }"
+    },
+    {
+      "fact_name": "F_AuditSubmitActorIsOwner",
+      "asserts_violated": [
+        "AttributionCorrectness",
+        "FR_013_CustomerSeesOwnOnly"
+      ],
+      "rationale": "Clearing F_AuditSubmitActorIsOwner allows a EvSubmitted event to be attributed to a User who is not the application's owner. Injecting such a misattribution directly violates AttributionCorrectness and FR_013_CustomerSeesOwnOnly, which assert the submit-event actor is always the owning customer.",
+      "inject_violation": "fact MUTATE_MisattributedSubmit { some e: ApplicationEvent | e.eventType = EvSubmitted and e.actor != e.forApplication.owner }"
+    }
+  ]
+}

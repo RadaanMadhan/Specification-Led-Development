@@ -1,0 +1,43 @@
+{
+  "F_AppendOnlyUniqueEvents": {
+    "targeted_asserts": {
+      "AppendOnly": "BIT",
+      "FR_017_AuditAppendOnly": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_PermissionEnforced": {
+    "targeted_asserts": {
+      "LeastPrivilege": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_ByteEquivalent404": {
+    "targeted_asserts": {
+      "NoInformationLeakage": "BIT",
+      "FR_014_ByteEquivalent404": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AuditPerSuccessfulMutation": {
+    "targeted_asserts": {
+      "AuditCompleteness": "BIT",
+      "FR_015_AuditPerMutation": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AuthRequiredEverywhere": {
+    "targeted_asserts": {
+      "AuthRequiredEverywhere": "BIT",
+      "FR_001_AuthRequired": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AuditAttribution": {
+    "targeted_asserts": {
+      "AttributionCorrectness": "BIT",
+      "FR_016_AuditFieldsConsistent": "BIT"
+    },
+    "all_bit": true
+  }
+}

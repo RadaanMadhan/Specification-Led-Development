@@ -1,0 +1,135 @@
+{
+  "feature_id": "B-L2",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "AppendOnly",
+    "AuditCompleteness",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "AuthRequiredEverywhere"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AllOperationsAuthenticated",
+    "FR_002_UserIdentityFromAuth",
+    "FR_003_TeamContextOnAllOps",
+    "FR_004_ActorTeamMembership",
+    "FR_005_TaskTeamImmutable",
+    "FR_006_OwnerImmutable",
+    "FR_007_PerTeamRole",
+    "FR_008_MemberBasicPermissions",
+    "FR_009_MemberEditRestriction",
+    "FR_010_AdminFullPermissions",
+    "FR_012_AssigneeValidation",
+    "FR_013_StatusValues",
+    "FR_014_CrossTeamIsolationEnforced",
+    "FR_015_AuditStructure",
+    "FR_016_AuditImmutableAndPersists",
+    "FR_017_AuditVisibleToTeamMembers"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AllOperationsAuthenticated"
+    ],
+    "FR-002": [
+      "FR_002_UserIdentityFromAuth"
+    ],
+    "FR-003": [
+      "FR_003_TeamContextOnAllOps"
+    ],
+    "FR-004": [
+      "FR_004_ActorTeamMembership"
+    ],
+    "FR-005": [
+      "FR_005_TaskTeamImmutable"
+    ],
+    "FR-006": [
+      "FR_006_OwnerImmutable"
+    ],
+    "FR-007": [
+      "FR_007_PerTeamRole"
+    ],
+    "FR-008": [
+      "FR_008_MemberBasicPermissions"
+    ],
+    "FR-009": [
+      "FR_009_MemberEditRestriction"
+    ],
+    "FR-010": [
+      "FR_010_AdminFullPermissions"
+    ],
+    "FR-012": [
+      "FR_012_AssigneeValidation"
+    ],
+    "FR-013": [
+      "FR_013_StatusValues"
+    ],
+    "FR-014": [
+      "FR_014_CrossTeamIsolationEnforced"
+    ],
+    "FR-015": [
+      "FR_015_AuditStructure"
+    ],
+    "FR-016": [
+      "FR_016_AuditImmutableAndPersists"
+    ],
+    "FR-017": [
+      "FR_017_AuditVisibleToTeamMembers"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_NonEmptyUniverse",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "AuthRequiredEverywhere",
+        "FR_015_AuditStructure"
+      ],
+      "rationale": "Removing the non-empty universe constraint allows Alloy to consider empty instances, making assertions about audit entries vacuously true. Re-populating forces at least one instance of each sig, causing assertions to fail if the model does not properly enforce audit properties.",
+      "inject_violation": "fact F_NonEmptyUniverse { some User; some Team; some TeamMembership; some Task; some AuditEntry }"
+    },
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_008_MemberBasicPermissions",
+        "FR_009_MemberEditRestriction"
+      ],
+      "rationale": "Removing the permission matrix definition allows Alloy to assign any arbitrary permissions, violating the least-privilege constraint. The injection adds an illegal Member->DeleteTask permission, demonstrating that the closed-world assumption of the matrix is load-bearing.",
+      "inject_violation": "fact MUTATE_ExtraPermission { Member -> DeleteTask in PermMatrix.Allowed }"
+    },
+    {
+      "fact_name": "F_AppendOnlyAuditEntries",
+      "asserts_violated": [
+        "AppendOnly"
+      ],
+      "rationale": "Removing the distinctness constraint on audit entries allows Alloy to create duplicate entries with identical task, actor, and description. The injection forces two distinct audit entries to have the same content, violating the append-only guarantee.",
+      "inject_violation": "fact MUTATE_DuplicateAuditEntry { some disj ae1, ae2: AuditEntry | ae1.task = ae2.task and ae1.actor = ae2.actor and ae1.change_description = ae2.change_description }"
+    },
+    {
+      "fact_name": "F_ActorMustBeMember",
+      "asserts_violated": [
+        "FR_004_ActorTeamMembership"
+      ],
+      "rationale": "Removing the constraint that all audit actors must be members of the task's team allows cross-team operations to be recorded. The injection creates an audit entry for a user who is not a member of the task's team, violating the team-context invariant.",
+      "inject_violation": "fact MUTATE_NonMemberActor { some ae: AuditEntry, tm: TeamMembership | ae.task.team != tm.team and tm.user = ae.actor }"
+    },
+    {
+      "fact_name": "F_OwnershipBasedAccessControl",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_009_MemberEditRestriction"
+      ],
+      "rationale": "Removing the ownership-based access control allows non-owner members to edit tasks. The injection forces a non-owner member to be able to edit a task, demonstrating that this fact is necessary to prevent unauthorized edits.",
+      "inject_violation": "fact MUTATE_NonOwnerEdit { some t: Task, u: User, tm: TeamMembership | tm.user = u and tm.team = t.team and tm.role = Member and u != t.owner and (can_edit[u, t]) }"
+    },
+    {
+      "fact_name": "F_AssigneeTeamMembership",
+      "asserts_violated": [
+        "FR_012_AssigneeValidation"
+      ],
+      "rationale": "Removing the constraint that assignees must be team members allows invalid assignments to non-members or members of other teams. The injection assigns a task to a user who is not a member of the task's team, violating the validation constraint.",
+      "inject_violation": "fact MUTATE_CrossTeamAssignee { some t: Task, u: User | t.assignee = u and (no tm: TeamMembership | tm.user = u and tm.team = t.team) }"
+    }
+  ]
+}

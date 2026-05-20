@@ -1,0 +1,390 @@
+{
+  "generated_at": "2026-05-19T04:22:51+00:00",
+  "alpha": 0.05,
+  "n_total_runs": 90,
+  "n_per_richness": {
+    "L1": 30,
+    "L2": 30,
+    "L3": 30
+  },
+  "n_per_domain": {
+    "A": 30,
+    "B": 30,
+    "C": 30
+  },
+  "tests": {
+    "overall_richness": {
+      "test": "kruskal_wallis",
+      "groups": {
+        "L1": {
+          "n": 30,
+          "mean": 0.8643199501966665,
+          "median": 0.96834150325,
+          "stdev": 0.22848987282471186,
+          "min": 0.3416666667,
+          "max": 1.0
+        },
+        "L2": {
+          "n": 30,
+          "mean": 0.9198724695233336,
+          "median": 0.97708333335,
+          "stdev": 0.17054489974861203,
+          "min": 0.3055555556,
+          "max": 1.0
+        },
+        "L3": {
+          "n": 30,
+          "mean": 0.91714781746,
+          "median": 0.9806547619,
+          "stdev": 0.17504401982331988,
+          "min": 0.375,
+          "max": 1.0
+        }
+      },
+      "h": 2.366890905471277,
+      "p": 0.3062218460128876,
+      "significant": false,
+      "skipped": false,
+      "skip_reason": null,
+      "metric": "aqs_partial",
+      "hypothesis": "H1"
+    },
+    "per_domain_richness": {
+      "A": {
+        "test": "kruskal_wallis",
+        "groups": {
+          "L1": {
+            "n": 10,
+            "mean": 0.96917016805,
+            "median": 0.98371848735,
+            "stdev": 0.03293534676406054,
+            "min": 0.9117647059,
+            "max": 1.0
+          },
+          "L2": {
+            "n": 10,
+            "mean": 0.9512939958600001,
+            "median": 0.97373188405,
+            "stdev": 0.048549173404642224,
+            "min": 0.8523550725,
+            "max": 0.9945652174
+          },
+          "L3": {
+            "n": 10,
+            "mean": 0.85186011905,
+            "median": 0.97544642855,
+            "stdev": 0.22799079520173507,
+            "min": 0.375,
+            "max": 1.0
+          }
+        },
+        "h": 0.8578466339723615,
+        "p": 0.6512098640014323,
+        "significant": false,
+        "skipped": false,
+        "skip_reason": null,
+        "metric": "aqs_partial",
+        "domain": "A",
+        "domain_name": "Banking"
+      },
+      "B": {
+        "test": "kruskal_wallis",
+        "groups": {
+          "L1": {
+            "n": 10,
+            "mean": 0.9548611111099999,
+            "median": 0.9791666667,
+            "stdev": 0.04956623405688557,
+            "min": 0.8819444444,
+            "max": 1.0
+          },
+          "L2": {
+            "n": 10,
+            "mean": 0.97791666668,
+            "median": 0.9791666667,
+            "stdev": 0.0235947655837837,
+            "min": 0.9375,
+            "max": 1.0
+          },
+          "L3": {
+            "n": 10,
+            "mean": 0.9695833333200001,
+            "median": 0.9744047619,
+            "stdev": 0.025601312798099688,
+            "min": 0.931547619,
+            "max": 1.0
+          }
+        },
+        "h": 0.763712792547165,
+        "p": 0.6825930690758457,
+        "significant": false,
+        "skipped": false,
+        "skip_reason": null,
+        "metric": "aqs_partial",
+        "domain": "B",
+        "domain_name": "SaaS"
+      },
+      "C": {
+        "test": "kruskal_wallis",
+        "groups": {
+          "L1": {
+            "n": 10,
+            "mean": 0.6689285714300001,
+            "median": 0.65,
+            "stdev": 0.31770994649156065,
+            "min": 0.3416666667,
+            "max": 1.0
+          },
+          "L2": {
+            "n": 10,
+            "mean": 0.8304067460300001,
+            "median": 0.97083333335,
+            "stdev": 0.27761927107619017,
+            "min": 0.3055555556,
+            "max": 0.9821428571
+          },
+          "L3": {
+            "n": 10,
+            "mean": 0.9300000000099999,
+            "median": 0.99375,
+            "stdev": 0.19524438627387722,
+            "min": 0.375,
+            "max": 1.0
+          }
+        },
+        "h": 7.970729497054812,
+        "p": 0.018585663992683077,
+        "significant": true,
+        "skipped": false,
+        "skip_reason": null,
+        "metric": "aqs_partial",
+        "domain": "C",
+        "domain_name": "Healthcare"
+      }
+    },
+    "pairwise_richness_aqs": {
+      "L1-L2": {
+        "test": "mann_whitney_u",
+        "groups": {
+          "L1": {
+            "n": 30,
+            "mean": 0.8643199501966665,
+            "median": 0.96834150325,
+            "stdev": 0.22848987282471186,
+            "min": 0.3416666667,
+            "max": 1.0
+          },
+          "L2": {
+            "n": 30,
+            "mean": 0.9198724695233336,
+            "median": 0.97708333335,
+            "stdev": 0.17054489974861203,
+            "min": 0.3055555556,
+            "max": 1.0
+          }
+        },
+        "u": 424.0,
+        "p_raw": 0.7054957940253241,
+        "p_corrected": 1.0,
+        "cohen_d": -0.27554446266044413,
+        "cohen_d_label": "small",
+        "significant": false,
+        "skipped": false,
+        "skip_reason": null
+      },
+      "L1-L3": {
+        "test": "mann_whitney_u",
+        "groups": {
+          "L1": {
+            "n": 30,
+            "mean": 0.8643199501966665,
+            "median": 0.96834150325,
+            "stdev": 0.22848987282471186,
+            "min": 0.3416666667,
+            "max": 1.0
+          },
+          "L3": {
+            "n": 30,
+            "mean": 0.91714781746,
+            "median": 0.9806547619,
+            "stdev": 0.17504401982331988,
+            "min": 0.375,
+            "max": 1.0
+          }
+        },
+        "u": 357.5,
+        "p_raw": 0.17110116747567705,
+        "p_corrected": 0.5133035024270312,
+        "cohen_d": -0.2595595308591048,
+        "cohen_d_label": "small",
+        "significant": false,
+        "skipped": false,
+        "skip_reason": null
+      },
+      "L2-L3": {
+        "test": "mann_whitney_u",
+        "groups": {
+          "L2": {
+            "n": 30,
+            "mean": 0.9198724695233336,
+            "median": 0.97708333335,
+            "stdev": 0.17054489974861203,
+            "min": 0.3055555556,
+            "max": 1.0
+          },
+          "L3": {
+            "n": 30,
+            "mean": 0.91714781746,
+            "median": 0.9806547619,
+            "stdev": 0.17504401982331988,
+            "min": 0.375,
+            "max": 1.0
+          }
+        },
+        "u": 367.0,
+        "p_raw": 0.22061316352311722,
+        "p_corrected": 0.6618394905693517,
+        "cohen_d": 0.01576683187615396,
+        "cohen_d_label": "negligible",
+        "significant": false,
+        "skipped": false,
+        "skip_reason": null
+      },
+      "metric": "aqs_partial",
+      "_meta": {
+        "bonferroni_k": 3,
+        "hypothesis": "H1"
+      }
+    },
+    "d5_stability_richness": {
+      "test": "kruskal_wallis",
+      "groups": {
+        "L1": {
+          "n": 74,
+          "mean": 0.9220667095667087,
+          "median": 1.0,
+          "stdev": 0.09867915624534773,
+          "min": 0.6,
+          "max": 1.0
+        },
+        "L2": {
+          "n": 86,
+          "mean": 0.9778654485049832,
+          "median": 1.0,
+          "stdev": 0.06657866788874417,
+          "min": 0.6,
+          "max": 1.0
+        },
+        "L3": {
+          "n": 92,
+          "mean": 0.983592132505176,
+          "median": 1.0,
+          "stdev": 0.05527014332525787,
+          "min": 0.6666666666666666,
+          "max": 1.0
+        }
+      },
+      "h": 33.86460732977215,
+      "p": 4.429900304012796e-08,
+      "significant": true,
+      "skipped": false,
+      "skip_reason": null,
+      "metric": "d5_per_key_stability",
+      "hypothesis": "H3"
+    },
+    "pairwise_d5_richness": {
+      "L1-L2": {
+        "test": "mann_whitney_u",
+        "groups": {
+          "L1": {
+            "n": 74,
+            "mean": 0.9220667095667087,
+            "median": 1.0,
+            "stdev": 0.09867915624534773,
+            "min": 0.6,
+            "max": 1.0
+          },
+          "L2": {
+            "n": 86,
+            "mean": 0.9778654485049832,
+            "median": 1.0,
+            "stdev": 0.06657866788874417,
+            "min": 0.6,
+            "max": 1.0
+          }
+        },
+        "u": 2177.0,
+        "p_raw": 1.0292518189697748e-05,
+        "p_corrected": 3.087755456909324e-05,
+        "cohen_d": -0.6725328542763432,
+        "cohen_d_label": "medium",
+        "significant": true,
+        "skipped": false,
+        "skip_reason": null
+      },
+      "L1-L3": {
+        "test": "mann_whitney_u",
+        "groups": {
+          "L1": {
+            "n": 74,
+            "mean": 0.9220667095667087,
+            "median": 1.0,
+            "stdev": 0.09867915624534773,
+            "min": 0.6,
+            "max": 1.0
+          },
+          "L3": {
+            "n": 92,
+            "mean": 0.983592132505176,
+            "median": 1.0,
+            "stdev": 0.05527014332525787,
+            "min": 0.6666666666666666,
+            "max": 1.0
+          }
+        },
+        "u": 2248.0,
+        "p_raw": 6.922965806981219e-07,
+        "p_corrected": 2.0768897420943656e-06,
+        "cohen_d": -0.7923480166361688,
+        "cohen_d_label": "medium",
+        "significant": true,
+        "skipped": false,
+        "skip_reason": null
+      },
+      "L2-L3": {
+        "test": "mann_whitney_u",
+        "groups": {
+          "L2": {
+            "n": 86,
+            "mean": 0.9778654485049832,
+            "median": 1.0,
+            "stdev": 0.06657866788874417,
+            "min": 0.6,
+            "max": 1.0
+          },
+          "L3": {
+            "n": 92,
+            "mean": 0.983592132505176,
+            "median": 1.0,
+            "stdev": 0.05527014332525787,
+            "min": 0.6666666666666666,
+            "max": 1.0
+          }
+        },
+        "u": 3838.0,
+        "p_raw": 0.532740560193298,
+        "p_corrected": 1.0,
+        "cohen_d": -0.09388932082212562,
+        "cohen_d_label": "negligible",
+        "significant": false,
+        "skipped": false,
+        "skip_reason": null
+      },
+      "metric": "d5_per_key_stability",
+      "_meta": {
+        "bonferroni_k": 3,
+        "hypothesis": "H3"
+      }
+    }
+  }
+}

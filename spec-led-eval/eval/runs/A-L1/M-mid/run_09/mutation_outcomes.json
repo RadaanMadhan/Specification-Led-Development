@@ -1,0 +1,45 @@
+{
+  "F_OnePendingPerCustomer": {
+    "targeted_asserts": {
+      "FR_005_OnePendingPerCustomer": "BIT",
+      "ConcurrencySafety": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_AtMostOneDecisionPerApp": {
+    "targeted_asserts": {
+      "ConcurrencySafety": "VACUOUS_OVERCONSTRAINT",
+      "FR_011_NoReDecisionOnDecidedApp": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_AppendOnlyAuditEntries": {
+    "targeted_asserts": {
+      "AppendOnly": "VACUOUS_OVERCONSTRAINT",
+      "FR_016_AuditTrailCompleteness": "VACUOUS_OVERCONSTRAINT",
+      "AuditCompleteness": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_NoInfoLeakage": {
+    "targeted_asserts": {
+      "NoInformationLeakage": "BIT",
+      "FR_013_CustomerSeesOnlyOwnApps": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_DeciderHasBankStaffRole": {
+    "targeted_asserts": {
+      "FR_015_OnlyStaffCanDecide": "BIT",
+      "LeastPrivilege": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_AttributionDecision": {
+    "targeted_asserts": {
+      "AttributionCorrectness": "BIT",
+      "FR_016_AuditTrailCompleteness": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "F_PermittedRequiresAuthorization": {
+    "targeted_asserts": {
+      "LeastPrivilege": "BIT",
+      "OwnershipBasedAccess": "BIT",
+      "NoInformationLeakage": "BIT",
+      "FR_004_ClinicianCareTeamRequired": "BIT",
+      "FR_006_PatientOwnRecordOnly": "BIT",
+      "FR_007_ComplianceNoRecordRead": "BIT",
+      "FR_008_ByteEquivalentForbidden": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AuditPerOperation": {
+    "targeted_asserts": {
+      "AuditCompleteness": "BIT",
+      "AppendOnly": "BIT",
+      "FR_013_AuditPerOp": "BIT",
+      "FR_015_AuditImmutable": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AuditAttributionCorrect": {
+    "targeted_asserts": {
+      "AttributionCorrectness": "BIT",
+      "FR_014_AuditFieldsComplete": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_NotesUniquelyCreated": {
+    "targeted_asserts": {
+      "AppendOnly": "BIT",
+      "FR_012_NotesAppendOnly": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_OperationTargetRules": {
+    "targeted_asserts": {
+      "ValidationBeforeMutation": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_PatientHasAssignedRecord": {
+    "targeted_asserts": {
+      "OwnershipExclusivity": "BIT",
+      "FR_003_PatientAssignedRecord": "BIT"
+    },
+    "all_bit": true
+  }
+}

@@ -1,0 +1,245 @@
+{
+  "run_id": "B-L2/M-small/run_10",
+  "cell": "B-L2",
+  "model": "M-small",
+  "rep": 10,
+  "D1": 0.0,
+  "D2": 0.75,
+  "D3": 0.0,
+  "D4": 0.3,
+  "aqs_partial": 0.2625,
+  "scored_at": "2026-05-20T04:29:04.530782+00:00",
+  "details": {
+    "D1": {
+      "n_assertions": 14,
+      "n_verdicts": 0
+    },
+    "D2": {
+      "patterns_applied": [
+        "LeastPrivilege",
+        "PermissionCompleteness",
+        "PrivilegeMonotonicity",
+        "AuthRequiredEverywhere",
+        "AuditCompleteness",
+        "AppendOnly",
+        "AttributionCorrectness",
+        "OwnershipExclusivity",
+        "OwnershipBasedAccess",
+        "NoInformationLeakage"
+      ],
+      "per_pattern": {
+        "LeastPrivilege": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "PermissionCompleteness": {
+          "in_catalog": true,
+          "has_pred": false,
+          "score": 0.5
+        },
+        "PrivilegeMonotonicity": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "AuthRequiredEverywhere": {
+          "in_catalog": true,
+          "has_pred": false,
+          "score": 0.5
+        },
+        "AuditCompleteness": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "AppendOnly": {
+          "in_catalog": true,
+          "has_pred": false,
+          "score": 0.5
+        },
+        "AttributionCorrectness": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "OwnershipExclusivity": {
+          "in_catalog": true,
+          "has_pred": false,
+          "score": 0.5
+        },
+        "OwnershipBasedAccess": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "NoInformationLeakage": {
+          "in_catalog": true,
+          "has_pred": false,
+          "score": 0.5
+        }
+      }
+    },
+    "D3": {
+      "per_target": {},
+      "skipped": [],
+      "note": "no scoreable mutation targets"
+    },
+    "D4": {
+      "per_fr": {
+        "FR-001": {
+          "covers": [
+            "FR_001_AuthRequired"
+          ],
+          "verdicts": {
+            "FR_001_AuthRequired": "MISSING"
+          },
+          "score": 0.5
+        },
+        "FR-002": {
+          "covers": [],
+          "verdicts": {},
+          "score": 0.0
+        },
+        "FR-003": {
+          "covers": [
+            "FR_003_TeamContextRequired"
+          ],
+          "verdicts": {
+            "FR_003_TeamContextRequired": "MISSING"
+          },
+          "score": 0.5
+        },
+        "FR-004": {
+          "covers": [
+            "FR_003_TeamContextRequired"
+          ],
+          "verdicts": {
+            "FR_003_TeamContextRequired": "MISSING"
+          },
+          "score": 0.5
+        },
+        "FR-005": {
+          "covers": [],
+          "verdicts": {},
+          "score": 0.0
+        },
+        "FR-006": {
+          "covers": [],
+          "verdicts": {},
+          "score": 0.0
+        },
+        "FR-007": {
+          "covers": [],
+          "verdicts": {},
+          "score": 0.0
+        },
+        "FR-008": {
+          "covers": [
+            "FR_008_MemberCanCreateViewEditOwnDeleteOwn"
+          ],
+          "verdicts": {
+            "FR_008_MemberCanCreateViewEditOwnDeleteOwn": "MISSING"
+          },
+          "score": 0.5
+        },
+        "FR-009": {
+          "covers": [
+            "FR_009_OnlyOwnerOrAdminCanEditDelete"
+          ],
+          "verdicts": {
+            "FR_009_OnlyOwnerOrAdminCanEditDelete": "MISSING"
+          },
+          "score": 0.5
+        },
+        "FR-010": {
+          "covers": [
+            "FR_010_AdminCanDoEverything",
+            "PrivilegeMonotonicity"
+          ],
+          "verdicts": {
+            "FR_010_AdminCanDoEverything": "MISSING",
+            "PrivilegeMonotonicity": "MISSING"
+          },
+          "score": 0.5
+        },
+        "FR-011": {
+          "covers": [],
+          "verdicts": {},
+          "score": 0.0
+        },
+        "FR-012": {
+          "covers": [
+            "FR_012_TaskContentConstraints"
+          ],
+          "verdicts": {
+            "FR_012_TaskContentConstraints": "MISSING"
+          },
+          "score": 0.5
+        },
+        "FR-013": {
+          "covers": [
+            "FR_012_TaskContentConstraints"
+          ],
+          "verdicts": {
+            "FR_012_TaskContentConstraints": "MISSING"
+          },
+          "score": 0.5
+        },
+        "FR-014": {
+          "covers": [
+            "FR_014_CrossTeamIsolation"
+          ],
+          "verdicts": {
+            "FR_014_CrossTeamIsolation": "MISSING"
+          },
+          "score": 0.5
+        },
+        "FR-015": {
+          "covers": [
+            "AuditCompleteness",
+            "AttributionCorrectness"
+          ],
+          "verdicts": {
+            "AuditCompleteness": "MISSING",
+            "AttributionCorrectness": "MISSING"
+          },
+          "score": 0.5
+        },
+        "FR-016": {
+          "covers": [
+            "FR_016_AuditAppendOnly"
+          ],
+          "verdicts": {
+            "FR_016_AuditAppendOnly": "MISSING"
+          },
+          "score": 0.5
+        },
+        "FR-017": {
+          "covers": [
+            "FR_017_AuditVisibleToTeamMembers"
+          ],
+          "verdicts": {
+            "FR_017_AuditVisibleToTeamMembers": "MISSING"
+          },
+          "score": 0.5
+        },
+        "FR-018": {
+          "covers": [],
+          "verdicts": {},
+          "score": 0.0
+        },
+        "FR-019": {
+          "covers": [],
+          "verdicts": {},
+          "score": 0.0
+        },
+        "FR-020": {
+          "covers": [],
+          "verdicts": {},
+          "score": 0.0
+        }
+      }
+    }
+  }
+}

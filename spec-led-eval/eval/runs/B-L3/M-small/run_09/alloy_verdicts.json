@@ -1,0 +1,18 @@
+{
+  "AuthRequiredEverywhere": "PASS",
+  "OwnershipExclusivity": "PASS",
+  "OwnershipBasedAccess": "PASS",
+  "NoInformationLeakage": "PASS",
+  "AuditCompleteness": "PASS",
+  "AppendOnly": "FAIL",
+  "AttributionCorrectness": "PASS",
+  "FR_009_OwnerImmutable": "PASS",
+  "FR_010_OwnerControlledSharing": "PASS",
+  "FR_012_SameTeamSharingOnly": "PASS",
+  "FR_002_IdentityFromToken": "PASS",
+  "FR_006_CrossTeamIsolation": "PASS",
+  "FR_014_ByteEquivalentCrossTeamIsolation": "FAIL",
+  "FR_015_PerEventAuditSemantics": "FAIL",
+  "FR_017_AuditImmutability": "PASS",
+  "FR_001_AuthRequired": "PASS"
+}

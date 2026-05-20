@@ -1,0 +1,42 @@
+{
+  "F_PermissionMatrixDefined": {
+    "targeted_asserts": {
+      "FR_002_CustomerPermissions": "BIT",
+      "FR_003_LoanOfficerPermissions": "BIT",
+      "FR_004_ComplianceReviewerPermissions": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AuditTrailComplete": {
+    "targeted_asserts": {
+      "FR_017_AuditCompleteness": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AppendOnlyAuditTrail": {
+    "targeted_asserts": {
+      "AppendOnly": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_NonEmptyUniverse": {
+    "targeted_asserts": {
+      "FR_008_OneInFlightPerCustomer": "BIT",
+      "FR_011_ClaimTransition": "BIT",
+      "FR_013_OnlyAssignedOfficerDecides": "BIT"
+    },
+    "all_bit": true
+  },
+  "FR_013_OnlyAssignedOfficerDecides": {
+    "targeted_asserts": {},
+    "all_bit": false,
+    "skipped": true,
+    "skip_reason": "mutation target fact `FR_013_OnlyAssignedOfficerDecides` not found in feature_model.als"
+  },
+  "FR_008_OneInFlightPerCustomer": {
+    "targeted_asserts": {},
+    "all_bit": false,
+    "skipped": true,
+    "skip_reason": "mutation target fact `FR_008_OneInFlightPerCustomer` not found in feature_model.als"
+  }
+}

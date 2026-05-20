@@ -1,0 +1,166 @@
+{
+  "feature_id": "B-L2",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PrivilegeMonotonicity",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_ActorFromAuthContext",
+    "FR_003_TeamContextResolved",
+    "FR_004_CallerIsTeamMember",
+    "FR_005_TaskHasOneTeam",
+    "FR_006_TaskHasOneOwner",
+    "FR_007_PerTeamRole",
+    "FR_008_MemberEditsOwnTask",
+    "FR_009_NonOwnerMemberDenied",
+    "FR_010_AdminEditAnyInTeam",
+    "FR_011_AdminCannotCrossTeam",
+    "FR_012_AssigneeIsTeamMember",
+    "FR_013_StatusIsLegal",
+    "FR_014_CrossTeamByteEquivalent",
+    "FR_015_AuditEntryShape",
+    "FR_016_AuditAppendOnly",
+    "FR_017_AuditReadableByMember",
+    "FR_018_AuditRetained",
+    "FR_019_ListAllowedForTeamMembers",
+    "FR_020_ListScopedToTeam"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_ActorFromAuthContext"
+    ],
+    "FR-003": [
+      "FR_003_TeamContextResolved",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-004": [
+      "FR_004_CallerIsTeamMember"
+    ],
+    "FR-005": [
+      "FR_005_TaskHasOneTeam"
+    ],
+    "FR-006": [
+      "FR_006_TaskHasOneOwner",
+      "OwnershipExclusivity"
+    ],
+    "FR-007": [
+      "FR_007_PerTeamRole"
+    ],
+    "FR-008": [
+      "FR_008_MemberEditsOwnTask",
+      "OwnershipBasedAccess"
+    ],
+    "FR-009": [
+      "FR_009_NonOwnerMemberDenied",
+      "LeastPrivilege"
+    ],
+    "FR-010": [
+      "FR_010_AdminEditAnyInTeam",
+      "PrivilegeMonotonicity"
+    ],
+    "FR-011": [
+      "FR_011_AdminCannotCrossTeam",
+      "NoInformationLeakage"
+    ],
+    "FR-012": [
+      "FR_012_AssigneeIsTeamMember"
+    ],
+    "FR-013": [
+      "FR_013_StatusIsLegal"
+    ],
+    "FR-014": [
+      "FR_014_CrossTeamByteEquivalent",
+      "NoInformationLeakage"
+    ],
+    "FR-015": [
+      "FR_015_AuditEntryShape",
+      "AttributionCorrectness",
+      "AuditCompleteness"
+    ],
+    "FR-016": [
+      "FR_016_AuditAppendOnly",
+      "AppendOnly"
+    ],
+    "FR-017": [
+      "FR_017_AuditReadableByMember"
+    ],
+    "FR-018": [
+      "FR_018_AuditRetained"
+    ],
+    "FR-019": [
+      "FR_019_ListAllowedForTeamMembers"
+    ],
+    "FR-020": [
+      "FR_020_ListScopedToTeam"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_SuccessRequiresPermission",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_009_NonOwnerMemberDenied"
+      ],
+      "rationale": "Removing this fact lets Alloy invent a successful Operation whose (callerRole, opKind) pair is NOT in the permission matrix \u2014 for example, a Member successfully invoking PatchAnyTask. LeastPrivilege explicitly requires (callerRole -> opKind) in PermMatrix.Allowed for every successful op, so it must surface the violation.",
+      "inject_violation": "fact MUTATE_LeastPrivilegeViolation { some op: Operation | op.outcome = Success and op.callerRole = Member and op.opKind = PatchAnyTask }"
+    },
+    {
+      "fact_name": "F_AppendOnlyAuditEntries",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_016_AuditAppendOnly"
+      ],
+      "rationale": "Removing this fact lets Alloy create two distinct `Created` audit entries for the same task, which is exactly the situation AppendOnly (lone Created per task) is built to forbid.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some disj ae1, ae2: AuditEntry | ae1.ofTask = ae2.ofTask and ae1.kind = Created and ae2.kind = Created }"
+    },
+    {
+      "fact_name": "F_OwnershipBasedAccess",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_008_MemberEditsOwnTask"
+      ],
+      "rationale": "Removing this fact lets Alloy invent a successful PatchOwnTask/DeleteOwnTask whose target is NOT owned by the caller, which is the bug OwnershipBasedAccess is supposed to catch.",
+      "inject_violation": "fact MUTATE_OwnershipBasedAccessViolation { some op: Operation | op.outcome = Success and op.opKind = PatchOwnTask and op.target.owner != op.caller }"
+    },
+    {
+      "fact_name": "F_CrossTeamIsolation",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "FR_011_AdminCannotCrossTeam",
+        "FR_014_CrossTeamByteEquivalent"
+      ],
+      "rationale": "Removing this fact lets Alloy invent a successful Operation whose target Task lives in a different team than the caller's contextTeam \u2014 the canonical multi-tenant leak NoInformationLeakage is built to forbid.",
+      "inject_violation": "fact MUTATE_CrossTeamLeakViolation { some op: Operation | op.outcome = Success and op.opKind = GetTaskById and some op.target and op.target.team != op.contextTeam }"
+    },
+    {
+      "fact_name": "F_AuditActorIsMemberWithRole",
+      "asserts_violated": [
+        "AttributionCorrectness",
+        "FR_015_AuditEntryShape"
+      ],
+      "rationale": "Removing this fact lets Alloy create an AuditEntry whose recorded (actor, actorRole, inTeam) triple is NOT backed by any Membership row \u2014 i.e., misattribution. AttributionCorrectness requires a witnessing membership for every entry.",
+      "inject_violation": "fact MUTATE_AttributionViolation { some ae: AuditEntry | no m: Membership | m.user = ae.actor and m.team = ae.inTeam and m.mRole = ae.actorRole }"
+    },
+    {
+      "fact_name": "F_OwnerIsTeamMember",
+      "asserts_violated": [
+        "OwnershipExclusivity",
+        "FR_006_TaskHasOneOwner"
+      ],
+      "rationale": "Removing this fact lets Alloy invent a Task whose owner is NOT a member of the task's team, breaking the data-model.md guarantee that ownership is anchored in team_memberships.",
+      "inject_violation": "fact MUTATE_OwnershipExclusivityViolation { some t: Task | no m: Membership | m.user = t.owner and m.team = t.team }"
+    }
+  ]
+}

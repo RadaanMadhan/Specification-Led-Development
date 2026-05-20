@@ -1,0 +1,137 @@
+{
+  "feature_id": "B-L2",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthenticationRequired",
+    "FR_003_TeamContextRequired",
+    "FR_005_TaskTeamImmutable",
+    "FR_006_OwnerIdImmutable",
+    "FR_007_PerTeamRole",
+    "FR_012_TaskValidation",
+    "FR_013_StatusSetAndTransitions",
+    "FR_014_CrossTeamIsolationInvariant",
+    "FR_015_AuditTrailPerEditEvent",
+    "FR_016_AuditAppendOnly",
+    "FR_017_AuditVisibleToTeamMembers"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "AuthRequiredEverywhere",
+      "FR_001_AuthenticationRequired"
+    ],
+    "FR-002": [
+      "FR_001_AuthenticationRequired"
+    ],
+    "FR-003": [
+      "FR_003_TeamContextRequired"
+    ],
+    "FR-004": [
+      "FR_003_TeamContextRequired"
+    ],
+    "FR-005": [
+      "FR_005_TaskTeamImmutable"
+    ],
+    "FR-006": [
+      "FR_006_OwnerIdImmutable"
+    ],
+    "FR-007": [
+      "FR_007_PerTeamRole"
+    ],
+    "FR-008": [
+      "OwnershipBasedAccess"
+    ],
+    "FR-009": [
+      "OwnershipBasedAccess"
+    ],
+    "FR-010": [
+      "OwnershipBasedAccess"
+    ],
+    "FR-012": [
+      "FR_012_TaskValidation"
+    ],
+    "FR-013": [
+      "FR_013_StatusSetAndTransitions"
+    ],
+    "FR-014": [
+      "NoInformationLeakage",
+      "FR_014_CrossTeamIsolationInvariant"
+    ],
+    "FR-015": [
+      "AuditCompleteness",
+      "AttributionCorrectness",
+      "FR_015_AuditTrailPerEditEvent"
+    ],
+    "FR-016": [
+      "AppendOnly",
+      "FR_016_AuditAppendOnly"
+    ],
+    "FR-017": [
+      "FR_017_AuditVisibleToTeamMembers"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege"
+      ],
+      "rationale": "Removing the permission matrix fact allows the model to invent arbitrary permission assignments, violating the least-privilege principle that admin operations must be a superset of member operations.",
+      "inject_violation": "fact MUTATE_PermissionViolation { Member -> OpEditTask in PermMatrix.allowed and Admin -> OpDeleteTask not in PermMatrix.allowed }"
+    },
+    {
+      "fact_name": "F_AuditAppendOnlyImmutable",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_016_AuditAppendOnly"
+      ],
+      "rationale": "Removing the audit-immutability constraint allows the model to create audit entries with inconsistent field counts, violating the append-only and completeness invariants.",
+      "inject_violation": "fact MUTATE_AuditMutation { some disj ae1, ae2: AuditEntry | ae1.id = ae2.id and ae1.actor != ae2.actor }"
+    },
+    {
+      "fact_name": "F_AssigneeTeamValidation",
+      "asserts_violated": [
+        "FR_012_TaskValidation",
+        "OwnershipBasedAccess"
+      ],
+      "rationale": "Removing assignee validation allows the model to assign a task to a user from a different team, violating the requirement that assignees must be members of the task's team.",
+      "inject_violation": "fact MUTATE_AssigneeTeamViolation { some t: Task, u: User | t.assignee = u and (no m: TeamMembership | m.user = u and m.team = t.team) }"
+    },
+    {
+      "fact_name": "F_PerTeamRole",
+      "asserts_violated": [
+        "FR_007_PerTeamRole",
+        "LeastPrivilege"
+      ],
+      "rationale": "Removing the unique-role-per-user-team constraint allows a user to have multiple roles in the same team, violating the per-team-role invariant.",
+      "inject_violation": "fact MUTATE_MultipleRoles { some u: User, t: Team, disj r1, r2: Role | some m1, m2: TeamMembership | m1.user = u and m1.team = t and m1.role = r1 and m2.user = u and m2.team = t and m2.role = r2 }"
+    },
+    {
+      "fact_name": "F_CrossTeamIsolationStructure",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "FR_014_CrossTeamIsolationInvariant"
+      ],
+      "rationale": "Removing the structural isolation constraint allows a single task to belong to multiple teams, violating the requirement that tasks are isolated by team.",
+      "inject_violation": "fact MUTATE_TaskMultiTeam { some t: Task, disj team1, team2: Team | t.team = team1 and t.team = team2 }"
+    },
+    {
+      "fact_name": "F_OwnerImmutable",
+      "asserts_violated": [
+        "FR_006_OwnerIdImmutable",
+        "OwnershipExclusivity"
+      ],
+      "rationale": "Removing owner-immutability allows a task's owner to change, violating the immutability requirement.",
+      "inject_violation": "fact MUTATE_OwnerChange { some t: Task, disj u1, u2: User | t.owner = u1 and t.owner = u2 }"
+    }
+  ]
+}

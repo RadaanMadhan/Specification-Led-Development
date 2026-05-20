@@ -1,0 +1,48 @@
+{
+  "F_OwnershipAccessControl": {
+    "targeted_asserts": {
+      "OwnershipBasedAccess": "VACUOUS_OVERCONSTRAINT",
+      "FR_008_009_MemberOwnerOnly": "VACUOUS_OVERCONSTRAINT",
+      "LeastPrivilege": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_AppendOnlyAuditEntries": {
+    "targeted_asserts": {
+      "AppendOnly": "BIT",
+      "FR_016_AuditImmutable": "BIT",
+      "AuditCompleteness": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_CrossTeamIsolation": {
+    "targeted_asserts": {
+      "NoInformationLeakage": "BIT",
+      "FR_011_014_CrossTeamIsolation": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AuditCompleteness": {
+    "targeted_asserts": {
+      "AuditCompleteness": "BIT",
+      "FR_015_AuditPerEditEvent": "BIT",
+      "AppendOnly": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_TeamMembershipUnique": {
+    "targeted_asserts": {
+      "FR_007_PerTeamRole": "BIT",
+      "AttributionCorrectness": "BIT",
+      "AuthRequiredEverywhere": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_AssigneeIsMember": {
+    "targeted_asserts": {
+      "FR_012_AssigneeTeamMember": "VACUOUS_TAUTOLOGY",
+      "ValidationBeforeMutation": "VACUOUS_TAUTOLOGY"
+    },
+    "all_bit": false
+  }
+}

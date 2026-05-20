@@ -1,0 +1,151 @@
+{
+  "feature_id": "A-L2",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "ConcurrencySafety",
+    "AttributionCorrectness"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthenticationRequired",
+    "FR_002_CustomerPermissions",
+    "FR_003_LoanOfficerPermissions",
+    "FR_004_ComplianceReviewerPermissions",
+    "FR_008_OneInFlightPerCustomer",
+    "FR_009_SubmissionCreatesAuditEntry",
+    "FR_011_ClaimTransitionAndAudit",
+    "FR_012_UniqueClaim",
+    "FR_013_OnlyAssignedOfficerDecides",
+    "FR_015_DecisionCreatesAuditEntry",
+    "FR_016_ImmutableAfterDecision",
+    "FR_019_UniqueAuditPerTransition",
+    "FR_020_CustomerPrivacy",
+    "FR_021_OfficerIdentityHidden"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthenticationRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_CustomerPermissions"
+    ],
+    "FR-003": [
+      "FR_003_LoanOfficerPermissions"
+    ],
+    "FR-004": [
+      "FR_004_ComplianceReviewerPermissions"
+    ],
+    "FR-008": [
+      "FR_008_OneInFlightPerCustomer"
+    ],
+    "FR-009": [
+      "FR_009_SubmissionCreatesAuditEntry"
+    ],
+    "FR-011": [
+      "FR_011_ClaimTransitionAndAudit"
+    ],
+    "FR-012": [
+      "FR_012_UniqueClaim",
+      "ConcurrencySafety"
+    ],
+    "FR-013": [
+      "FR_013_OnlyAssignedOfficerDecides"
+    ],
+    "FR-015": [
+      "FR_015_DecisionCreatesAuditEntry"
+    ],
+    "FR-016": [
+      "FR_016_ImmutableAfterDecision"
+    ],
+    "FR-017": [
+      "AuditCompleteness",
+      "AttributionCorrectness"
+    ],
+    "FR-018": [
+      "AppendOnly"
+    ],
+    "FR-019": [
+      "FR_019_UniqueAuditPerTransition"
+    ],
+    "FR-020": [
+      "FR_020_CustomerPrivacy",
+      "OwnershipBasedAccess",
+      "NoInformationLeakage"
+    ],
+    "FR-021": [
+      "FR_021_OfficerIdentityHidden"
+    ],
+    "FR-023": [
+      "LeastPrivilege"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_002_CustomerPermissions",
+        "FR_003_LoanOfficerPermissions",
+        "FR_004_ComplianceReviewerPermissions"
+      ],
+      "rationale": "The permission matrix is the load-bearing constraint that encodes role-based access control. Removing it allows any role to perform any action, which violates the core least-privilege principle and all role-specific permission assertions.",
+      "inject_violation": "fact MUTATE_PermissionMatrixViolation { Customer -> ClaimApplication in PermMatrix.Allowed }"
+    },
+    {
+      "fact_name": "F_AuditActorCorrectness",
+      "asserts_violated": [
+        "AttributionCorrectness",
+        "FR_009_SubmissionCreatesAuditEntry",
+        "FR_011_ClaimTransitionAndAudit",
+        "FR_015_DecisionCreatesAuditEntry"
+      ],
+      "rationale": "This fact ensures audit entries record the correct actor type for each transition. Removing it allows audit entries to have incorrect actors (e.g., a loan officer claiming an application records a customer as the actor), violating the attribution correctness principle.",
+      "inject_violation": "fact MUTATE_AuditActorViolation { some ae: ApplicationEvent | ae.previous_status = Submitted and ae.new_status = UnderReview and ae.actor.role = Customer }"
+    },
+    {
+      "fact_name": "F_AssignmentStatusCoupling",
+      "asserts_violated": [
+        "FR_011_ClaimTransitionAndAudit",
+        "FR_013_OnlyAssignedOfficerDecides",
+        "FR_016_ImmutableAfterDecision"
+      ],
+      "rationale": "This fact enforces that assigned_officer is set only when status is not Submitted. Removing it allows inconsistent states where an application is Submitted but already has an assigned officer, or is UnderReview/Approved/Rejected but has no assignment, breaking the state machine invariant.",
+      "inject_violation": "fact MUTATE_AssignmentStatusViolation { some app: LoanApplication | app.status = Submitted and app.assigned_officer != none }"
+    },
+    {
+      "fact_name": "F_DecisionWhenDecided",
+      "asserts_violated": [
+        "FR_013_OnlyAssignedOfficerDecides",
+        "FR_015_DecisionCreatesAuditEntry"
+      ],
+      "rationale": "This fact ensures that a Decision row exists if and only if the application is Approved or Rejected. Removing it allows applications to be Approved/Rejected without a corresponding Decision record, or to have a Decision when not yet decided.",
+      "inject_violation": "fact MUTATE_DecisionMissingViolation { some app: LoanApplication | (app.status = Approved or app.status = Rejected) and no d: Decision | d.application = app }"
+    },
+    {
+      "fact_name": "F_AssignedOfficerIsLoanOfficer",
+      "asserts_violated": [
+        "FR_011_ClaimTransitionAndAudit",
+        "FR_013_OnlyAssignedOfficerDecides"
+      ],
+      "rationale": "This fact ensures the assigned officer always has the LoanOfficer role. Removing it allows applications to be assigned to users with other roles (Customer, ComplianceReviewer), violating the workflow invariant that only loan officers can claim and decide applications.",
+      "inject_violation": "fact MUTATE_BadAssignmentViolation { some app: LoanApplication, u: User | app.assigned_officer = u and u.role = Customer }"
+    },
+    {
+      "fact_name": "F_ApplicationOwnership",
+      "asserts_violated": [
+        "OwnershipExclusivity",
+        "FR_020_CustomerPrivacy",
+        "OwnershipBasedAccess"
+      ],
+      "rationale": "This fact enforces that every application is owned by exactly one customer. Removing it allows applications with no owner or multiple owners, breaking the ownership model and enabling customers to see applications they don't own.",
+      "inject_violation": "fact MUTATE_OwnershipViolation { some app: LoanApplication | no app.customer }"
+    }
+  ]
+}

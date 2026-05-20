@@ -1,0 +1,161 @@
+{
+  "feature_id": "A-L1",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "PermissionGrounding",
+    "PrivilegeMonotonicity",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "ValidationBeforeMutation",
+    "ConcurrencySafety"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_ValidationAtSubmission",
+    "FR_004_UniqueReferencePerApplication",
+    "FR_005_OnePendingPerCustomer",
+    "FR_006_ConfirmationOnSubmit",
+    "FR_007_StaffQueueAccess",
+    "FR_008_StaffCanViewDetails",
+    "FR_009_DecisionReasonRequired",
+    "FR_010_DecisionPersisted",
+    "FR_011_DecidedApplicationsImmutable",
+    "FR_012_NoConcurrentDecisions",
+    "FR_013_CustomerIsolation",
+    "FR_014_NotificationOnDecision",
+    "FR_015_StaffOnlyDecisionActions",
+    "FR_016_AuditTrailComplete",
+    "FR_017_RetentionNoDelete"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_ValidationAtSubmission",
+      "ValidationBeforeMutation"
+    ],
+    "FR-003": [
+      "FR_002_ValidationAtSubmission"
+    ],
+    "FR-004": [
+      "FR_004_UniqueReferencePerApplication"
+    ],
+    "FR-005": [
+      "FR_005_OnePendingPerCustomer"
+    ],
+    "FR-006": [
+      "FR_006_ConfirmationOnSubmit"
+    ],
+    "FR-007": [
+      "FR_007_StaffQueueAccess",
+      "LeastPrivilege"
+    ],
+    "FR-008": [
+      "FR_008_StaffCanViewDetails"
+    ],
+    "FR-009": [
+      "FR_009_DecisionReasonRequired"
+    ],
+    "FR-010": [
+      "FR_010_DecisionPersisted"
+    ],
+    "FR-011": [
+      "FR_011_DecidedApplicationsImmutable",
+      "ConcurrencySafety"
+    ],
+    "FR-012": [
+      "FR_012_NoConcurrentDecisions",
+      "ConcurrencySafety"
+    ],
+    "FR-013": [
+      "FR_013_CustomerIsolation",
+      "OwnershipBasedAccess",
+      "NoInformationLeakage"
+    ],
+    "FR-014": [
+      "FR_014_NotificationOnDecision"
+    ],
+    "FR-015": [
+      "FR_015_StaffOnlyDecisionActions",
+      "LeastPrivilege"
+    ],
+    "FR-016": [
+      "FR_016_AuditTrailComplete",
+      "AuditCompleteness",
+      "AppendOnly",
+      "AttributionCorrectness"
+    ],
+    "FR-017": [
+      "FR_017_RetentionNoDelete"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_OnePendingPerCustomer",
+      "asserts_violated": [
+        "FR_005_OnePendingPerCustomer"
+      ],
+      "rationale": "Removing this fact allows the model to place two PendingReview applications under the same customer. The injection forces exactly that configuration, making FR_005_OnePendingPerCustomer find a counterexample.",
+      "inject_violation": "fact MUTATE_OnePendingViolation { some disj a1, a2: LoanApplication | a1.customer = a2.customer and a1.status = PendingReview and a2.status = PendingReview }"
+    },
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "PermissionCompleteness",
+        "PermissionGrounding",
+        "FR_015_StaffOnlyDecisionActions"
+      ],
+      "rationale": "Clearing this fact unpins the permission relation, allowing Alloy to invent a matrix where Customer -> PostDecision is present or BankStaff -> PostApplications is present. The injection adds those forbidden cells, which LeastPrivilege and FR_015 are specifically designed to catch.",
+      "inject_violation": "fact MUTATE_PermissionViolation { Customer -> PostDecision in PermMatrix.Allowed and Customer -> GetAudit in PermMatrix.Allowed }"
+    },
+    {
+      "fact_name": "F_AuditCompletenessDecision",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_016_AuditTrailComplete",
+        "AttributionCorrectness",
+        "FR_014_NotificationOnDecision"
+      ],
+      "rationale": "Removing this fact allows a decided (Approved/Rejected) application to exist with no corresponding decision-type audit entry. The injection creates an approved application whose audit trail contains only a Submitted entry, violating AuditCompleteness and FR_016.",
+      "inject_violation": "fact MUTATE_MissingDecisionAudit { some a: LoanApplication | a.status = AppStatus_Approved and no ae: AuditEntry | ae.auditApp = a and ae.eventType = EvApproved }"
+    },
+    {
+      "fact_name": "F_AppendOnly",
+      "asserts_violated": [
+        "AppendOnly"
+      ],
+      "rationale": "Removing this fact allows two AuditEntry atoms with the same application and the same eventType to coexist, which is what AppendOnly forbids. The injection forces two Submitted entries for the same application.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some disj ae1, ae2: AuditEntry | ae1.auditApp = ae2.auditApp and ae1.eventType = EvSubmitted and ae2.eventType = EvSubmitted }"
+    },
+    {
+      "fact_name": "F_OwnershipBasedAccess",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "NoInformationLeakage",
+        "FR_013_CustomerIsolation"
+      ],
+      "rationale": "Clearing this fact lets the model construct an Operation where a Customer fetches an application owned by a different Customer, which is exactly the information-leakage scenario SC-004 prohibits. The injection forces such an operation to exist.",
+      "inject_violation": "fact MUTATE_OwnershipViolation { some op: Operation, a: LoanApplication | op.caller.role = Customer and op.opKind = GetApplicationByRef and op.targetApp = a and a.customer != op.caller }"
+    },
+    {
+      "fact_name": "F_DecisionStatusConsistency",
+      "asserts_violated": [
+        "FR_011_DecidedApplicationsImmutable",
+        "FR_012_NoConcurrentDecisions",
+        "ConcurrencySafety",
+        "FR_010_DecisionPersisted"
+      ],
+      "rationale": "Removing this fact breaks the invariant that a decided application has exactly one decision with matching type. The injection installs an Approved application with no decision at all, causing FR_010 and FR_011 to find counterexamples.",
+      "inject_violation": "fact MUTATE_DecisionStatusViolation { some a: LoanApplication | a.status = AppStatus_Approved and no a.decision }"
+    }
+  ]
+}

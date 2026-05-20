@@ -1,0 +1,133 @@
+{
+  "feature_id": "A-L3",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "NoSelfMutation"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_RoleMultiplicity",
+    "FR_007_AmountAndPurpose",
+    "FR_008_OneInFlightPerApplicant",
+    "FR_009_StatusTransitionsLegal",
+    "FR_010_AssignmentExcludesApplicant",
+    "FR_012_OnlyAssignedOfficerCanPatch",
+    "FR_013_NoSelfApproval",
+    "FR_016_AuditEntryFields",
+    "FR_023_AuditEndpointAuditorOnly",
+    "FR_024_ApplicantCannotModifyPostSubmission"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "AuthRequiredEverywhere",
+      "FR_001_AuthRequired"
+    ],
+    "FR-002": [
+      "FR_002_RoleMultiplicity"
+    ],
+    "FR-007": [
+      "FR_007_AmountAndPurpose"
+    ],
+    "FR-008": [
+      "FR_008_OneInFlightPerApplicant"
+    ],
+    "FR-009": [
+      "FR_009_StatusTransitionsLegal"
+    ],
+    "FR-010": [
+      "FR_010_AssignmentExcludesApplicant"
+    ],
+    "FR-011": [
+      "FR_010_AssignmentExcludesApplicant"
+    ],
+    "FR-012": [
+      "FR_012_OnlyAssignedOfficerCanPatch"
+    ],
+    "FR-013": [
+      "NoSelfMutation",
+      "FR_013_NoSelfApproval"
+    ],
+    "FR-016": [
+      "AuditCompleteness",
+      "FR_016_AuditEntryFields"
+    ],
+    "FR-018": [
+      "AppendOnly"
+    ],
+    "FR-020": [
+      "NoInformationLeakage"
+    ],
+    "FR-021": [
+      "NoInformationLeakage"
+    ],
+    "FR-022": [
+      "NoInformationLeakage"
+    ],
+    "FR-023": [
+      "FR_023_AuditEndpointAuditorOnly"
+    ],
+    "FR-024": [
+      "FR_024_ApplicantCannotModifyPostSubmission"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "PermissionCompleteness",
+        "LeastPrivilege"
+      ],
+      "rationale": "Removing this fact allows the Alloy solver to invent permission matrices where non-auditors can access the audit endpoint or non-officers can patch status, which the permission completeness and least-privilege assertions catch.",
+      "inject_violation": "fact MUTATE_PermissionMatrixViolation { Applicant -> GetAudit in PermMatrix.Allowed }"
+    },
+    {
+      "fact_name": "F_AppendOnly",
+      "asserts_violated": [
+        "AppendOnly"
+      ],
+      "rationale": "Removing this fact allows two audit entries for the same application to have identical timestamps, violating the immutability and uniqueness property that the AppendOnly assertion enforces.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some disj ae1, ae2: AuditEntry | ae1.application = ae2.application and ae1.occurred_at = ae2.occurred_at }"
+    },
+    {
+      "fact_name": "F_AuditEntryFields",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "AuditEntryFields"
+      ],
+      "rationale": "Removing this fact allows audit entries to be created without required fields (actor, timestamp, new_status, reason) or with previous_status/new_status mismatches, which the audit-completeness assertion is designed to catch.",
+      "inject_violation": "fact MUTATE_AuditFieldsViolation { some ae: AuditEntry | ae.actor = none or ae.occurred_at = none or ae.new_status = none or ae.reason = none }"
+    },
+    {
+      "fact_name": "F_OneInFlightPerApplicant",
+      "asserts_violated": [
+        "FR_008_OneInFlightPerApplicant"
+      ],
+      "rationale": "Removing this fact allows an applicant to have multiple in-flight applications simultaneously, violating the one-in-flight-per-applicant constraint from FR-008.",
+      "inject_violation": "fact MUTATE_InFlightViolation { some u: User | #{la: LoanApplication | la.applicant = u and (la.status = Pending or la.status = UnderReview)} > 1 }"
+    },
+    {
+      "fact_name": "F_NoSelfApproval",
+      "asserts_violated": [
+        "NoSelfMutation",
+        "FR_013_NoSelfApproval"
+      ],
+      "rationale": "Removing this fact allows an officer to be assigned to an application where they are also the applicant, violating the self-approval defense-in-depth check.",
+      "inject_violation": "fact MUTATE_SelfApprovalViolation { some la: LoanApplication | la.assigned_officer = la.applicant and la.assigned_officer != none }"
+    },
+    {
+      "fact_name": "F_StatusTransitionsLegal",
+      "asserts_violated": [
+        "FR_009_StatusTransitionsLegal"
+      ],
+      "rationale": "Removing this fact allows illegal status transitions (e.g., Pending \u2192 Approved, or transitions out of terminal states), which the status-transition assertion is designed to prevent.",
+      "inject_violation": "fact MUTATE_StatusTransitionViolation { some ae: AuditEntry | (ae.previous_status = Pending and ae.new_status = Approved) or (ae.previous_status = Approved and ae.new_status != Approved) }"
+    }
+  ]
+}

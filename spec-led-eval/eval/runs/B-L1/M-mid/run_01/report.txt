@@ -1,0 +1,116 @@
+==============================================================================
+  Design Compliance Report  (Phase 3 — feature_model.als)
+  feature       : B-L1
+  spec source   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/eval/specs/B-L1
+  alloy model   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/B-L1/feature_model.als
+  patterns      : AuthRequiredEverywhere, AppendOnly, AuditCompleteness, AttributionCorrectness, OwnershipExclusivity, ValidationBeforeMutation
+  fr count      : 18 declared in spec.md
+  assertions    : 17 total (16/17 PASS via Alloy)
+==============================================================================
+
+  Compliance matrix
+  ----------------------------------------------------------------------------
+  Assertion                            Verdict   Anchor
+  -------------------------------------------------------------------------
+  AuthRequiredEverywhere               PASS      PATTERN AuthRequiredEverywhere: spec.md FR-001; contracts/http-api.md auth section
+  AppendOnly                           PASS      PATTERN AppendOnly: spec.md FR-018; data-model.md "No UPDATE/DELETE ... task_deletions"
+  AuditCompleteness                    PASS      PATTERN AuditCompleteness: spec.md FR-018; data-model.md task_deletions INSERT
+  AttributionCorrectness               PASS      PATTERN AttributionCorrectness: spec.md FR-002, FR-009; data-model.md created_by
+  OwnershipExclusivity                 PASS      PATTERN OwnershipExclusivity: spec.md FR-008; data-model.md assignee_id lone FK
+  ValidationBeforeMutation             PASS      PATTERN ValidationBeforeMutation: spec.md FR-005, FR-008; data-model.md validation.py
+  FR_001_AuthRequired                  PASS      FEATURE-SPECIFIC: FR-001
+  FR_002_IdentityFromAuthContext       PASS      FEATURE-SPECIFIC: FR-002
+  FR_003_SingleWorkspaceScope          FAIL      FEATURE-SPECIFIC: FR-003
+  FR_004_FlatPermissions               PASS      FEATURE-SPECIFIC: FR-004
+  FR_008_AssigneeIsMember              PASS      FEATURE-SPECIFIC: FR-008
+  FR_009_CreatorImmutable              PASS      FEATURE-SPECIFIC: FR-009
+  FR_010_ValidStatusValues             PASS      FEATURE-SPECIFIC: FR-010
+  FR_011_ClosedTaskEditRule            PASS      FEATURE-SPECIFIC: FR-011
+  FR_012_PermanentDeletion             PASS      FEATURE-SPECIFIC: FR-012
+  FR_017_UpdatedAtOnAuthenticatedEdit  PASS      FEATURE-SPECIFIC: FR-017
+  FR_018_DeletionLogAttribution        PASS      FEATURE-SPECIFIC: FR-018
+
+  Counterexamples (Alloy SAT)
+  ----------------------------------------------------------------------------
+  FR_003_SingleWorkspaceScope  [FEATURE-SPECIFIC: FR-003]
+    Alloy: 08. check FR_003_SingleWorkspaceScope     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR coverage
+  ----------------------------------------------------------------------------
+  FR-001  →  FR_001_AuthRequired=PASS, AuthRequiredEverywhere=PASS
+  FR-002  →  FR_002_IdentityFromAuthContext=PASS, AttributionCorrectness=PASS
+  FR-003  →  FR_003_SingleWorkspaceScope=FAIL
+  FR-004  →  FR_004_FlatPermissions=PASS
+  FR-005  →  ValidationBeforeMutation=PASS
+  FR-006  →  ValidationBeforeMutation=PASS
+  FR-007  →  ValidationBeforeMutation=PASS
+  FR-008  →  FR_008_AssigneeIsMember=PASS, OwnershipExclusivity=PASS, ValidationBeforeMutation=PASS
+  FR-009  →  FR_009_CreatorImmutable=PASS, AttributionCorrectness=PASS
+  FR-010  →  FR_010_ValidStatusValues=PASS
+  FR-011  →  FR_011_ClosedTaskEditRule=PASS
+  FR-012  →  FR_012_PermanentDeletion=PASS
+  FR-013  →  FR_010_ValidStatusValues=PASS, FR_008_AssigneeIsMember=PASS
+  FR-014  →  FR_003_SingleWorkspaceScope=FAIL
+  FR-015  →  FR_003_SingleWorkspaceScope=FAIL
+  FR-016  →  FR_003_SingleWorkspaceScope=FAIL
+  FR-017  →  FR_017_UpdatedAtOnAuthenticatedEdit=PASS, FR_009_CreatorImmutable=PASS
+  FR-018  →  FR_018_DeletionLogAttribution=PASS, AppendOnly=PASS, AuditCompleteness=PASS, FR_012_PermanentDeletion=PASS
+
+  All FRs have at least one matching assertion.
+
+==============================================================================
+  Mutation tests  (assertion-strength validation)
+==============================================================================
+
+  Strategy: replace each named fact's body with `{}` (no constraint),
+  then re-run Alloy. Each listed assertion should now FAIL on the
+  mutated model. If it still PASSes, the assertion is vacuous and
+  must be strengthened.
+
+  - MUTATE F_ClosedTaskEditRule  → runs/B-L1/mutated_F_ClosedTaskEditRule.als
+    rationale: Removing this fact allows a PatchRequest to mutate fields on a Done task without a status change, directly violating FR-011. The injection forces exactly such a violating PatchRequest to exist.
+    expected to FAIL: FR_011_ClosedTaskEditRule
+      - FR_011_ClosedTaskEditRule: FAIL (expected)
+
+  - MUTATE F_AppendOnlyDeletionLog  → runs/B-L1/mutated_F_AppendOnlyDeletionLog.als
+    rationale: Removing this fact allows two DeletionLogEntry atoms to share the same DeletedTaskId, simulating an overwrite/mutation of an append-only log entry. The injection forces such a collision to exist.
+    expected to FAIL: AppendOnly
+      - AppendOnly: PASS (vacuous?)
+
+  - MUTATE F_DeletionLogCompleteness  → runs/B-L1/mutated_F_DeletionLogCompleteness.als
+    rationale: Removing this fact allows a DeletedTaskId to exist with no corresponding DeletionLogEntry, meaning a deletion was not logged — violating FR-018 completeness. The injection forces an unlogged DeletedTaskId to exist.
+    expected to FAIL: AuditCompleteness, FR_012_PermanentDeletion, FR_018_DeletionLogAttribution
+      - AuditCompleteness: FAIL (expected)
+      - FR_012_PermanentDeletion: FAIL (expected)
+      - FR_018_DeletionLogAttribution: PASS (vacuous?)
+
+  - MUTATE F_PatchCallerAuthenticated  → runs/B-L1/mutated_F_PatchCallerAuthenticated.als
+    rationale: Removing this fact allows a PatchRequest whose caller has no Token, simulating an unauthenticated edit reaching the handler — the core violation of FR-001. The injection forces such a request to exist.
+    expected to FAIL: AuthRequiredEverywhere, FR_001_AuthRequired
+      - AuthRequiredEverywhere: PASS (vacuous?)
+      - FR_001_AuthRequired: PASS (vacuous?)
+
+  - MUTATE F_CreatorHasToken  → runs/B-L1/mutated_F_CreatorHasToken.als
+    rationale: Removing this fact allows a Task whose creator does not correspond to any token-owning member, meaning the creator identity was not taken from the authentication context — violating FR-002 and FR-009. The injection forces such a task to exist.
+    expected to FAIL: AttributionCorrectness, FR_002_IdentityFromAuthContext, FR_009_CreatorImmutable
+      - AttributionCorrectness: PASS (vacuous?)
+      - FR_002_IdentityFromAuthContext: PASS (vacuous?)
+      - FR_009_CreatorImmutable: PASS (vacuous?)
+
+  - MUTATE F_AssigneeIsMember  → runs/B-L1/mutated_F_AssigneeIsMember.als
+    rationale: Removing this fact allows a Task with an assignee that is not in the Member sig (a non-member being assigned), violating FR-008's requirement that assignees are current workspace members. The injection forces a task with an out-of-member-set assignee; since Task.task_assignee is typed as lone Member this is modelled by forcing a task with a non-empty assignee while Member is empty — approximated here by requiring the assignee set to be non-empty while no Member has a token.
+    expected to FAIL: FR_008_AssigneeIsMember, ValidationBeforeMutation, OwnershipExclusivity
+      - FR_008_AssigneeIsMember: PASS (vacuous?)
+      - ValidationBeforeMutation: PASS (vacuous?)
+      - OwnershipExclusivity: PASS (vacuous?)
+
+  Mutation summary
+  ----------------------------------------------------------------------------
+  - F_ClosedTaskEditRule: ASSERTIONS BIT (FR_011_ClosedTaskEditRule)
+  - F_AppendOnlyDeletionLog: ASSERTION VACUOUS (AppendOnly)
+  - F_DeletionLogCompleteness: ASSERTION VACUOUS (AuditCompleteness, FR_012_PermanentDeletion, FR_018_DeletionLogAttribution)
+  - F_PatchCallerAuthenticated: ASSERTION VACUOUS (AuthRequiredEverywhere, FR_001_AuthRequired)
+  - F_CreatorHasToken: ASSERTION VACUOUS (AttributionCorrectness, FR_002_IdentityFromAuthContext, FR_009_CreatorImmutable)
+  - F_AssigneeIsMember: ASSERTION VACUOUS (FR_008_AssigneeIsMember, ValidationBeforeMutation, OwnershipExclusivity)
+

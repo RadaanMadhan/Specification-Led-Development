@@ -1,0 +1,181 @@
+{
+  "feature_id": "008-task-sharing",
+  "patterns_applied": [
+    "PermissionCompleteness",
+    "AuthRequiredEverywhere",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "LeastPrivilege",
+    "AppendOnly",
+    "AuditCompleteness",
+    "AttributionCorrectness",
+    "NoInformationLeakage"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_OneTeamOneRole",
+    "FR_003_OwnerInOwnTeam",
+    "FR_004_InTeamNoRelBlocked",
+    "FR_005_AdminTeamScope",
+    "FR_006_CrossTeamBlocked",
+    "FR_007_TaskWellFormed",
+    "FR_008_StatusEnum",
+    "FR_009_ImmutableOwnerTeam",
+    "FR_010_OwnerOnlyShareControl",
+    "FR_011_ShareeNoDelete",
+    "FR_012_NoCrossTeamSharing",
+    "FR_013_ShareAudit",
+    "FR_014_CrossTeamByteEquiv",
+    "FR_015_NoOrphanAudit",
+    "FR_016_AuditFieldsConsistent",
+    "FR_017_AuditImmutable",
+    "FR_018_AuditAtomicity",
+    "FR_019_AuditAccess",
+    "FR_020_AuditRetained",
+    "FR_021_OperationWellFormed"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_OneTeamOneRole"
+    ],
+    "FR-002a": [
+      "FR_002_OneTeamOneRole",
+      "FR_001_AuthRequired"
+    ],
+    "FR-003": [
+      "FR_003_OwnerInOwnTeam",
+      "OwnershipBasedAccess"
+    ],
+    "FR-004": [
+      "FR_004_InTeamNoRelBlocked",
+      "OwnershipBasedAccess"
+    ],
+    "FR-005": [
+      "FR_005_AdminTeamScope"
+    ],
+    "FR-006": [
+      "FR_006_CrossTeamBlocked",
+      "NoInformationLeakage"
+    ],
+    "FR-007": [
+      "FR_007_TaskWellFormed"
+    ],
+    "FR-008": [
+      "FR_008_StatusEnum"
+    ],
+    "FR-009": [
+      "FR_009_ImmutableOwnerTeam",
+      "OwnershipExclusivity"
+    ],
+    "FR-010": [
+      "FR_010_OwnerOnlyShareControl",
+      "LeastPrivilege"
+    ],
+    "FR-011": [
+      "FR_011_ShareeNoDelete"
+    ],
+    "FR-012": [
+      "FR_012_NoCrossTeamSharing"
+    ],
+    "FR-013": [
+      "FR_013_ShareAudit"
+    ],
+    "FR-014": [
+      "FR_014_CrossTeamByteEquiv",
+      "NoInformationLeakage"
+    ],
+    "FR-015": [
+      "FR_015_NoOrphanAudit",
+      "AuditCompleteness"
+    ],
+    "FR-016": [
+      "FR_016_AuditFieldsConsistent",
+      "AttributionCorrectness"
+    ],
+    "FR-017": [
+      "FR_017_AuditImmutable",
+      "AppendOnly"
+    ],
+    "FR-018": [
+      "FR_018_AuditAtomicity"
+    ],
+    "FR-019": [
+      "FR_019_AuditAccess"
+    ],
+    "FR-020": [
+      "FR_020_AuditRetained"
+    ],
+    "FR-021": [
+      "FR_021_OperationWellFormed"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_AppendOnlyAuditEntries",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_017_AuditImmutable"
+      ],
+      "rationale": "removing this fact lets two distinct Operations share a single AuditEntry, breaking the append-only / immutability invariant on audit_entries.",
+      "inject_violation": "fact MUTATE_AppendOnly { some disj op1, op2: Operation | some (op1.produces & op2.produces) }"
+    },
+    {
+      "fact_name": "F_OwnerOnlySharedWith",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_010_OwnerOnlyShareControl"
+      ],
+      "rationale": "removing this fact lets a non-owner caller succeed at PATCHing shared_with, which is the exact owner-only-share-control violation FR-010/SC-011 forbids.",
+      "inject_violation": "fact MUTATE_NonOwnerShare { some op: Operation | op.kind = PatchSharedWithOp and op.outcome = Success and some op.target and op.caller != op.target.owner }"
+    },
+    {
+      "fact_name": "F_SharedWithSameTeam",
+      "asserts_violated": [
+        "FR_012_NoCrossTeamSharing"
+      ],
+      "rationale": "removing this fact lets a task carry a sharee from a different team, the exact cross-team-sharing case FR-012 forbids.",
+      "inject_violation": "fact MUTATE_CrossTeamSharee { some t: Task, u: t.sharedWith | u.userTeam != t.taskTeam }"
+    },
+    {
+      "fact_name": "F_GetTaskAccessRule",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_004_InTeamNoRelBlocked"
+      ],
+      "rationale": "removing this fact lets an in-team non-owner non-sharee non-admin caller successfully GET a task \u2014 the in-team-no-rel leak FR-004 forbids.",
+      "inject_violation": "fact MUTATE_NoRelGet { some op: Operation | op.kind = GetTaskOp and op.outcome = Success and some op.target and op.caller != op.target.owner and op.caller not in op.target.sharedWith and op.caller.userRole != TeamAdmin and op.caller.userTeam = op.target.taskTeam }"
+    },
+    {
+      "fact_name": "F_DeleteAccessRule",
+      "asserts_violated": [
+        "FR_011_ShareeNoDelete"
+      ],
+      "rationale": "removing this fact lets a sharee successfully DELETE a task, which is the Q3=B / FR-011 violation.",
+      "inject_violation": "fact MUTATE_ShareeDelete { some op: Operation | op.kind = DeleteTaskOp and op.outcome = Success and some op.target and op.caller in op.target.sharedWith and op.caller != op.target.owner and op.caller.userRole != TeamAdmin }"
+    },
+    {
+      "fact_name": "F_CrossTeamIsolation",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "FR_006_CrossTeamBlocked",
+        "FR_014_CrossTeamByteEquiv"
+      ],
+      "rationale": "removing this fact lets a caller in team A succeed at PATCHing fields of a task in team B \u2014 the cross-team leakage FR-014/SC-003 makes impossible.",
+      "inject_violation": "fact MUTATE_CrossTeamSuccess { some op: Operation | op.kind = PatchFieldsOp and op.outcome = Success and some op.target and op.caller.userTeam != op.target.taskTeam }"
+    },
+    {
+      "fact_name": "F_AuditPerMutation",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_015_NoOrphanAudit",
+        "FR_018_AuditAtomicity"
+      ],
+      "rationale": "removing this fact lets a successful task mutation slip through without producing any audit entry \u2014 exactly the state-change-without-audit case FR-015/SC-007 forbids.",
+      "inject_violation": "fact MUTATE_NoAuditMutation { some op: Operation | op.kind = PatchFieldsOp and op.outcome = Success and no op.produces }"
+    }
+  ]
+}

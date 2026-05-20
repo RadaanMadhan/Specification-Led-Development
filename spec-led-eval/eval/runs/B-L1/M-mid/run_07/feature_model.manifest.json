@@ -1,0 +1,146 @@
+{
+  "feature_id": "B-L1",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuthRequiredEverywhere",
+    "AppendOnly",
+    "AuditCompleteness",
+    "AttributionCorrectness",
+    "OwnershipExclusivity"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_CreatorFromAuthContext",
+    "FR_003_SingleWorkspaceAllVisible",
+    "FR_004_FlatPeerPermissions",
+    "FR_008_AssigneeMustBeMember",
+    "FR_009_CreatorRecorded",
+    "FR_010_ValidStatusSet",
+    "FR_011_ClosedTaskEditRule",
+    "FR_012_DeletionIsPermanent",
+    "FR_018_DeletionLogged"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_CreatorFromAuthContext"
+    ],
+    "FR-003": [
+      "FR_003_SingleWorkspaceAllVisible",
+      "PermissionCompleteness"
+    ],
+    "FR-004": [
+      "FR_004_FlatPeerPermissions",
+      "LeastPrivilege",
+      "PermissionCompleteness"
+    ],
+    "FR-005": [
+      "FR_009_CreatorRecorded"
+    ],
+    "FR-006": [
+      "FR_010_ValidStatusSet"
+    ],
+    "FR-007": [
+      "FR_010_ValidStatusSet"
+    ],
+    "FR-008": [
+      "FR_008_AssigneeMustBeMember",
+      "OwnershipExclusivity"
+    ],
+    "FR-009": [
+      "FR_009_CreatorRecorded",
+      "FR_002_CreatorFromAuthContext"
+    ],
+    "FR-010": [
+      "FR_010_ValidStatusSet"
+    ],
+    "FR-011": [
+      "FR_011_ClosedTaskEditRule"
+    ],
+    "FR-012": [
+      "FR_012_DeletionIsPermanent"
+    ],
+    "FR-013": [
+      "FR_004_FlatPeerPermissions"
+    ],
+    "FR-014": [
+      "FR_003_SingleWorkspaceAllVisible"
+    ],
+    "FR-015": [
+      "FR_003_SingleWorkspaceAllVisible"
+    ],
+    "FR-016": [
+      "FR_003_SingleWorkspaceAllVisible"
+    ],
+    "FR-017": [
+      "FR_009_CreatorRecorded"
+    ],
+    "FR-018": [
+      "FR_018_DeletionLogged",
+      "AppendOnly",
+      "AuditCompleteness",
+      "AttributionCorrectness"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_AppendOnlyDeletionLog",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_018_DeletionLogged"
+      ],
+      "rationale": "Clearing this fact allows TaskDeletion atoms to exist with no corresponding DeleteOperation, breaking the append-only invariant. The injection then forces a free-floating (unanchored) TaskDeletion to exist, which AppendOnly and FR_018_DeletionLogged should catch.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some td: TaskDeletion | no do: DeleteOperation | do.logEntry = td }"
+    },
+    {
+      "fact_name": "F_ClosedTaskEditRule",
+      "asserts_violated": [
+        "FR_011_ClosedTaskEditRule"
+      ],
+      "rationale": "Clearing this fact removes the constraint that editing a Done task requires a simultaneous status transition. The injection then forces an EditOperation targeting a Done task with no newStatus change, exactly the violation FR-011 prohibits.",
+      "inject_violation": "fact MUTATE_ClosedTaskViolation { some eo: EditOperation | eo.target.status = Done and no eo.newStatus }"
+    },
+    {
+      "fact_name": "F_DeletionAlwaysLogged",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "AttributionCorrectness",
+        "FR_018_DeletionLogged"
+      ],
+      "rationale": "Clearing this fact removes the requirement that a DeleteOperation's log entry is attributed to its caller. The injection forces a mismatch between deleter and caller, violating attribution correctness and audit completeness.",
+      "inject_violation": "fact MUTATE_AttributionViolation { some do: DeleteOperation | some m: Member | m != do.caller and do.logEntry.deletedBy = m }"
+    },
+    {
+      "fact_name": "F_FlatPermissions",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "PermissionCompleteness",
+        "FR_004_FlatPeerPermissions"
+      ],
+      "rationale": "Clearing this fact allows the PermMatrix.Allowed relation to be any subset of Member \u00d7 OperationKind, including one where some member is denied some operation. The injection then forces a missing cell, directly violating the flat peer invariant.",
+      "inject_violation": "fact MUTATE_FlatPermViolation { some m: Member | some ok: OperationKind | m -> ok not in PermMatrix.Allowed }"
+    },
+    {
+      "fact_name": "F_AssigneeIsMember",
+      "asserts_violated": [
+        "FR_008_AssigneeMustBeMember",
+        "OwnershipExclusivity"
+      ],
+      "rationale": "Clearing this fact allows a Task's assignee to be any atom, not necessarily a Member. The injection then forces a Task to have an assignee outside the Member sig, violating both the membership constraint and the exclusivity invariant.",
+      "inject_violation": "fact MUTATE_AssigneeViolation { some t: Task | some x: (Task - Member) | t.assignee = x }"
+    },
+    {
+      "fact_name": "F_CreatorRecorded",
+      "asserts_violated": [
+        "FR_009_CreatorRecorded",
+        "FR_002_CreatorFromAuthContext"
+      ],
+      "rationale": "Clearing this fact removes the guarantee that every Task has a creator. The injection then forces a Task whose creator is not a Member (i.e., the creator field references a non-member atom), violating FR-009's requirement that the creator always records the authenticated identity.",
+      "inject_violation": "fact MUTATE_CreatorViolation { some t: Task | t.creator not in Member }"
+    }
+  ]
+}

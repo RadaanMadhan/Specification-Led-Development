@@ -1,0 +1,117 @@
+==============================================================================
+  Design Compliance Report  (Phase 3 — feature_model.als)
+  feature       : A-L1
+  spec source   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/eval/specs/A-L1
+  alloy model   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/A-L1/feature_model.als
+  patterns      : LeastPrivilege, PermissionCompleteness, PermissionGrounding, AuthRequiredEverywhere, AuditCompleteness, AppendOnly, AttributionCorrectness, OwnershipBasedAccess, NoInformationLeakage, ConcurrencySafety
+  fr count      : 17 declared in spec.md
+  assertions    : 22 total (22/22 PASS via Alloy)
+==============================================================================
+
+  Compliance matrix
+  ----------------------------------------------------------------------------
+  Assertion                               Verdict   Anchor
+  ----------------------------------------------------------------------------
+  LeastPrivilege                          PASS      PATTERN LeastPrivilege: contracts/http-api.md permission table; spec.md FR-015
+  PermissionCompleteness                  PASS      PATTERN PermissionCompleteness: contracts/http-api.md permission table
+  PermissionGrounding                     PASS      PATTERN PermissionGrounding: spec.md FR-001,FR-007,FR-008,FR-009,FR-013,FR-015,FR-016; contracts/ permission table
+  AuthRequiredEverywhere                  PASS      PATTERN AuthRequiredEverywhere: spec.md FR-001; contracts/http-api.md Authentication section
+  AuditCompleteness                       PASS      PATTERN AuditCompleteness: spec.md FR-016; data-model.md application_events
+  AppendOnly                              PASS      PATTERN AppendOnly: spec.md FR-016, FR-017; data-model.md "no UPDATE/DELETE" note on application_events
+  AttributionCorrectness                  PASS      PATTERN AttributionCorrectness: spec.md FR-016; data-model.md application_events.actor_user_id
+  OwnershipBasedAccess                    PASS      PATTERN OwnershipBasedAccess: spec.md FR-013; data-model.md idx_one_pending_per_customer; contracts/http-api.md GetApplicationById
+  NoInformationLeakage                    PASS      PATTERN NoInformationLeakage: spec.md FR-013, SC-004; contracts/http-api.md GetApplicationById 404 rule
+  ConcurrencySafety                       PASS      PATTERN ConcurrencySafety: spec.md FR-012, SC-005; data-model.md conditional UPDATE + decision INSERT
+  FR_001_AuthenticatedSubmission          PASS      FEATURE-SPECIFIC: FR-001 — authenticated customer submits application
+  FR_004_UniqueReferenceAndInitialStatus  PASS      FEATURE-SPECIFIC: FR-004 — unique reference; submission timestamp; status = PendingReview at creation
+  FR_005_OnePendingPerCustomer            PASS      FEATURE-SPECIFIC: FR-005 — one PendingReview application per customer at a time
+  FR_009_DecisionReasonAndStaffOnly       PASS      FEATURE-SPECIFIC: FR-009 — decision requires a non-empty reason; only staff may decide
+  FR_010_DecisionPersisted                PASS      FEATURE-SPECIFIC: FR-010 — decision is persisted with decider identity; status changes to Approved/Rejected
+  FR_011_DecisionImmutability             PASS      FEATURE-SPECIFIC: FR-011 — decided applications are immutable; no further decision changes
+  FR_012_NoConcurrentDecisions            PASS      FEATURE-SPECIFIC: FR-012 — concurrent decisions: only first wins; second is rejected
+  FR_013_CustomerIsolation                PASS      FEATURE-SPECIFIC: FR-013 — customer isolation; no other customer's apps visible; SC-004
+  FR_014_NotificationOnDecision           PASS      FEATURE-SPECIFIC: FR-014 — customer notified on decision; notification channel matches contact preference
+  FR_015_RoleBasedAccess                  PASS      FEATURE-SPECIFIC: FR-015 — role-based access; customers cannot decide or view audit; SC-004
+  FR_016_AuditTrailComplete               PASS      FEATURE-SPECIFIC: FR-016 — audit trail of every status change; append-only; inspectable by staff
+  FR_017_RetentionNoDeletion              PASS      FEATURE-SPECIFIC: FR-017 — applications retained; no deletion path
+
+  FR coverage
+  ----------------------------------------------------------------------------
+  FR-001  →  FR_001_AuthenticatedSubmission=PASS, AuthRequiredEverywhere=PASS
+  FR-002  →  FR_001_AuthenticatedSubmission=PASS
+  FR-003  →  FR_001_AuthenticatedSubmission=PASS
+  FR-004  →  FR_004_UniqueReferenceAndInitialStatus=PASS
+  FR-005  →  FR_005_OnePendingPerCustomer=PASS
+  FR-006  →  FR_004_UniqueReferenceAndInitialStatus=PASS
+  FR-007  →  LeastPrivilege=PASS, FR_015_RoleBasedAccess=PASS
+  FR-008  →  LeastPrivilege=PASS, FR_015_RoleBasedAccess=PASS
+  FR-009  →  FR_009_DecisionReasonAndStaffOnly=PASS
+  FR-010  →  FR_010_DecisionPersisted=PASS
+  FR-011  →  FR_011_DecisionImmutability=PASS
+  FR-012  →  FR_012_NoConcurrentDecisions=PASS, ConcurrencySafety=PASS
+  FR-013  →  FR_013_CustomerIsolation=PASS, NoInformationLeakage=PASS, OwnershipBasedAccess=PASS
+  FR-014  →  FR_014_NotificationOnDecision=PASS
+  FR-015  →  FR_015_RoleBasedAccess=PASS, LeastPrivilege=PASS
+  FR-016  →  FR_016_AuditTrailComplete=PASS, AuditCompleteness=PASS, AppendOnly=PASS, AttributionCorrectness=PASS
+  FR-017  →  FR_017_RetentionNoDeletion=PASS
+
+  All FRs have at least one matching assertion.
+
+==============================================================================
+  Mutation tests  (assertion-strength validation)
+==============================================================================
+
+  Strategy: replace each named fact's body with `{}` (no constraint),
+  then re-run Alloy. Each listed assertion should now FAIL on the
+  mutated model. If it still PASSes, the assertion is vacuous and
+  must be strengthened.
+
+  - MUTATE F_AppendOnlyAuditEntries  → runs/A-L1/mutated_F_AppendOnlyAuditEntries.als
+    rationale: Removing F_AppendOnlyAuditEntries allows the model to generate two AuditEntries with the same (auditApp, eventType) pair. The injected violation forces exactly that state, so AppendOnly and the audit completeness assertions find a counterexample: the 'one ae' cardinality in AuditCompleteness becomes false when there are two submitted-event entries for the same application.
+    expected to FAIL: AppendOnly, FR_016_AuditTrailComplete, AuditCompleteness
+      - AppendOnly: FAIL (expected)
+      - FR_016_AuditTrailComplete: PASS (vacuous?)
+      - AuditCompleteness: PASS (vacuous?)
+
+  - MUTATE F_OnePendingPerCustomer  → runs/A-L1/mutated_F_OnePendingPerCustomer.als
+    rationale: Removing F_OnePendingPerCustomer allows two distinct LoanApplications for the same customer both to have status PendingReview. The injected violation forces this instance to exist, directly violating FR_005_OnePendingPerCustomer.
+    expected to FAIL: FR_005_OnePendingPerCustomer
+      - FR_005_OnePendingPerCustomer: FAIL (expected)
+
+  - MUTATE F_DeciderIsStaff  → runs/A-L1/mutated_F_DeciderIsStaff.als
+    rationale: Removing F_DeciderIsStaff permits a Decision whose decidedBy user has CustomerRole. The injected violation forces a Decision made by a customer-role user, directly falsifying FR_009_DecisionReasonAndStaffOnly (which requires all deciders to be BankStaffRole) and exposing the LeastPrivilege violation that customers should not be able to post decisions.
+    expected to FAIL: FR_009_DecisionReasonAndStaffOnly, LeastPrivilege, FR_015_RoleBasedAccess
+      - FR_009_DecisionReasonAndStaffOnly: FAIL (expected)
+      - LeastPrivilege: PASS (vacuous?)
+      - FR_015_RoleBasedAccess: PASS (vacuous?)
+
+  - MUTATE F_AtMostOneDecisionPerApplication  → runs/A-L1/mutated_F_AtMostOneDecisionPerApplication.als
+    rationale: Removing F_AtMostOneDecisionPerApplication allows two Decision atoms to point at the same LoanApplication, modelling a double-decision race. The injected violation forces this state, which is exactly what ConcurrencySafety and FR_011_DecisionImmutability are meant to exclude.
+    expected to FAIL: ConcurrencySafety, FR_011_DecisionImmutability, FR_012_NoConcurrentDecisions
+      - ConcurrencySafety: PASS (vacuous?)
+      - FR_011_DecisionImmutability: PASS (vacuous?)
+      - FR_012_NoConcurrentDecisions: PASS (vacuous?)
+
+  - MUTATE F_AuditActorAttribution  → runs/A-L1/mutated_F_AuditActorAttribution.als
+    rationale: Removing F_AuditActorAttribution allows audit entries to record an actor whose role does not match the event type — e.g., a bank staff member as actor on a SubmittedEvt, or a customer as actor on an ApprovedEvt. The injected violation creates a SubmittedEvt entry whose actor is a BankStaffRole user, falsifying AttributionCorrectness.
+    expected to FAIL: AttributionCorrectness, FR_016_AuditTrailComplete
+      - AttributionCorrectness: FAIL (expected)
+      - FR_016_AuditTrailComplete: PASS (vacuous?)
+
+  - MUTATE F_PermissionMatrix  → runs/A-L1/mutated_F_PermissionMatrix.als
+    rationale: Clearing F_PermissionMatrix leaves the Allowed relation unconstrained. The injected violation adds the forbidden cell CustomerRole->PostDecision, directly falsifying LeastPrivilege and FR_015_RoleBasedAccess, and also breaks PermissionCompleteness (cardinality check fails) and PermissionGrounding (extra ungrounded cell present).
+    expected to FAIL: LeastPrivilege, PermissionCompleteness, PermissionGrounding, FR_015_RoleBasedAccess
+      - LeastPrivilege: FAIL (expected)
+      - PermissionCompleteness: FAIL (expected)
+      - PermissionGrounding: FAIL (expected)
+      - FR_015_RoleBasedAccess: FAIL (expected)
+
+  Mutation summary
+  ----------------------------------------------------------------------------
+  - F_AppendOnlyAuditEntries: ASSERTION VACUOUS (AppendOnly, FR_016_AuditTrailComplete, AuditCompleteness)
+  - F_OnePendingPerCustomer: ASSERTIONS BIT (FR_005_OnePendingPerCustomer)
+  - F_DeciderIsStaff: ASSERTION VACUOUS (FR_009_DecisionReasonAndStaffOnly, LeastPrivilege, FR_015_RoleBasedAccess)
+  - F_AtMostOneDecisionPerApplication: ASSERTION VACUOUS (ConcurrencySafety, FR_011_DecisionImmutability, FR_012_NoConcurrentDecisions)
+  - F_AuditActorAttribution: ASSERTION VACUOUS (AttributionCorrectness, FR_016_AuditTrailComplete)
+  - F_PermissionMatrix: ASSERTIONS BIT (LeastPrivilege, PermissionCompleteness, PermissionGrounding, FR_015_RoleBasedAccess)
+

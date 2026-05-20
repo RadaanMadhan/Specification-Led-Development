@@ -1,0 +1,176 @@
+{
+  "feature_id": "A-L2",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "ConcurrencySafety"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_CustomerScopedActions",
+    "FR_003_LoanOfficerScope",
+    "FR_004_ComplianceReadOnly",
+    "FR_005_SubmissionIdentity",
+    "FR_008_OneInFlight",
+    "FR_009_SubmitAudit",
+    "FR_011_ClaimTransition",
+    "FR_012_OneAssignedOfficer",
+    "FR_013_AssignedDecides",
+    "FR_014_ReasonRequired",
+    "FR_015_DecisionAtomic",
+    "FR_016_DecidedTerminal",
+    "FR_017_AuditFields",
+    "FR_018_AppendOnly",
+    "FR_019_OneAuditPerChange",
+    "FR_020_CustomerOwnOnly",
+    "FR_021_NoAuditForCustomer",
+    "FR_023_ComplianceNoWrite"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired"
+    ],
+    "FR-002": [
+      "FR_002_CustomerScopedActions",
+      "LeastPrivilege"
+    ],
+    "FR-003": [
+      "FR_003_LoanOfficerScope",
+      "LeastPrivilege"
+    ],
+    "FR-004": [
+      "FR_004_ComplianceReadOnly",
+      "FR_023_ComplianceNoWrite",
+      "LeastPrivilege"
+    ],
+    "FR-005": [
+      "FR_005_SubmissionIdentity"
+    ],
+    "FR-006": [
+      "FR_014_ReasonRequired"
+    ],
+    "FR-007": [
+      "FR_014_ReasonRequired"
+    ],
+    "FR-008": [
+      "FR_008_OneInFlight"
+    ],
+    "FR-009": [
+      "FR_009_SubmitAudit",
+      "AuditCompleteness"
+    ],
+    "FR-010": [
+      "LeastPrivilege"
+    ],
+    "FR-011": [
+      "FR_011_ClaimTransition"
+    ],
+    "FR-012": [
+      "FR_012_OneAssignedOfficer",
+      "ConcurrencySafety"
+    ],
+    "FR-013": [
+      "FR_013_AssignedDecides"
+    ],
+    "FR-014": [
+      "FR_014_ReasonRequired"
+    ],
+    "FR-015": [
+      "FR_015_DecisionAtomic",
+      "AuditCompleteness"
+    ],
+    "FR-016": [
+      "FR_016_DecidedTerminal"
+    ],
+    "FR-017": [
+      "FR_017_AuditFields",
+      "AttributionCorrectness"
+    ],
+    "FR-018": [
+      "FR_018_AppendOnly",
+      "AppendOnly"
+    ],
+    "FR-019": [
+      "FR_019_OneAuditPerChange",
+      "AuditCompleteness"
+    ],
+    "FR-020": [
+      "FR_020_CustomerOwnOnly",
+      "OwnershipBasedAccess",
+      "NoInformationLeakage"
+    ],
+    "FR-021": [
+      "FR_021_NoAuditForCustomer"
+    ],
+    "FR-022": [
+      "AppendOnly"
+    ],
+    "FR-023": [
+      "FR_023_ComplianceNoWrite",
+      "FR_004_ComplianceReadOnly"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_LeastPrivilege",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_004_ComplianceReadOnly",
+        "FR_021_NoAuditForCustomer"
+      ],
+      "rationale": "Clearing F_LeastPrivilege removes the role/operation gate. The injected witness is a successful GetAudit call by a customer-role caller, which is explicitly denied by the permission matrix; LeastPrivilege should detect this.",
+      "inject_violation": "fact MUTATE_LeastPrivilegeViolation { some op: Operation | op.outcome = Success and op.caller.role = CustomerRole and op.kind = GetAudit }"
+    },
+    {
+      "fact_name": "F_AuditFromOp",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_018_AppendOnly"
+      ],
+      "rationale": "Clearing F_AuditFromOp lets an AuditEntry exist without any creating Operation \u2014 i.e., an entry that was 'forged' or rewritten with no provenance, which is exactly the append-only violation we want to catch.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some ae: AuditEntry | no op: Operation | op.createdEvent = ae }"
+    },
+    {
+      "fact_name": "F_StateChangingProducesAudit",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_009_SubmitAudit",
+        "FR_019_OneAuditPerChange"
+      ],
+      "rationale": "Clearing F_StateChangingProducesAudit lets a successful submission complete without writing an audit entry. The injected witness forces exactly that, so AuditCompleteness must report a counterexample.",
+      "inject_violation": "fact MUTATE_AuditCompletenessViolation { some op: Operation | op.kind = SubmitApp and op.outcome = Success and no op.createdEvent }"
+    },
+    {
+      "fact_name": "F_CustomerOwnership",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "NoInformationLeakage",
+        "FR_020_CustomerOwnOnly"
+      ],
+      "rationale": "Clearing F_CustomerOwnership permits a customer to successfully GET an application owned by a different customer; the ownership-based-access invariant should detect this leak.",
+      "inject_violation": "fact MUTATE_OwnershipViolation { some op: Operation, other: User | op.caller.role = CustomerRole and op.outcome = Success and op.kind = GetApp and some op.target and other.role = CustomerRole and op.target.customer = other and op.caller != other }"
+    },
+    {
+      "fact_name": "F_DecideRequiresAssigned",
+      "asserts_violated": [
+        "FR_013_AssignedDecides"
+      ],
+      "rationale": "Clearing F_DecideRequiresAssigned removes the only fact that binds the deciding officer to the assigned officer at the operation layer. Injecting a successful DecideApp whose caller is not the target's assigned officer must produce a counterexample.",
+      "inject_violation": "fact MUTATE_AssignedDecidesViolation { some op: Operation | op.kind = DecideApp and op.outcome = Success and some op.target and some op.target.assignedOfficer and op.target.assignedOfficer != op.caller }"
+    },
+    {
+      "fact_name": "F_OneInFlightPerCustomer",
+      "asserts_violated": [
+        "FR_008_OneInFlight"
+      ],
+      "rationale": "Clearing F_OneInFlightPerCustomer removes the partial-unique-index analogue. Injecting two distinct in-flight applications for the same customer must be detected by FR_008_OneInFlight.",
+      "inject_violation": "fact MUTATE_InFlightViolation { some disj a1, a2: LoanApplication | a1.customer = a2.customer and a1.status in (Submitted + UnderReview) and a2.status in (Submitted + UnderReview) }"
+    }
+  ]
+}

@@ -1,0 +1,165 @@
+{
+  "feature_id": "C-L3",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "PermissionGrounding",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequiredNoAuditOnUnauth",
+    "FR_002_ExactlyOneRolePerUser",
+    "FR_003_PatientAssignedRecord",
+    "FR_004_CareTeamGating",
+    "FR_005_ClinicianAuditAccess",
+    "FR_006_PatientSelfAccess",
+    "FR_007_ComplianceOfficerDeniedClinicalContent",
+    "FR_012_NotesAppendOnly",
+    "FR_013_AlwaysOnAudit",
+    "FR_014_AuditEntryShape",
+    "FR_015_AuditImmutability",
+    "FR_018_AccessLogComplianceOnly",
+    "FR_020_OpaqueRecordIdsOnly"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequiredNoAuditOnUnauth",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_ExactlyOneRolePerUser"
+    ],
+    "FR-003": [
+      "FR_003_PatientAssignedRecord",
+      "OwnershipExclusivity"
+    ],
+    "FR-004": [
+      "FR_004_CareTeamGating",
+      "LeastPrivilege"
+    ],
+    "FR-005": [
+      "FR_005_ClinicianAuditAccess"
+    ],
+    "FR-006": [
+      "FR_006_PatientSelfAccess",
+      "OwnershipBasedAccess"
+    ],
+    "FR-007": [
+      "FR_007_ComplianceOfficerDeniedClinicalContent",
+      "PermissionGrounding"
+    ],
+    "FR-008": [
+      "NoInformationLeakage"
+    ],
+    "FR-009": [
+      "FR_004_CareTeamGating"
+    ],
+    "FR-010": [
+      "FR_004_CareTeamGating"
+    ],
+    "FR-011": [
+      "FR_012_NotesAppendOnly"
+    ],
+    "FR-012": [
+      "FR_012_NotesAppendOnly",
+      "AppendOnly"
+    ],
+    "FR-013": [
+      "FR_013_AlwaysOnAudit",
+      "AuditCompleteness"
+    ],
+    "FR-014": [
+      "FR_014_AuditEntryShape",
+      "AttributionCorrectness"
+    ],
+    "FR-015": [
+      "FR_015_AuditImmutability",
+      "AppendOnly"
+    ],
+    "FR-016": [
+      "FR_013_AlwaysOnAudit"
+    ],
+    "FR-017": [
+      "FR_015_AuditImmutability"
+    ],
+    "FR-018": [
+      "FR_018_AccessLogComplianceOnly"
+    ],
+    "FR-019": [
+      "FR_007_ComplianceOfficerDeniedClinicalContent",
+      "PermissionGrounding"
+    ],
+    "FR-020": [
+      "FR_020_OpaqueRecordIdsOnly"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_AuthorisationEnforced",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_004_CareTeamGating",
+        "FR_006_PatientSelfAccess",
+        "FR_007_ComplianceOfficerDeniedClinicalContent"
+      ],
+      "rationale": "Removing the constraint that Permitted outcomes require an allowed (Relationship, OperationKind) cell lets Alloy construct a world where, e.g., a NonCTClinician receives Permitted on GetRecord, directly violating LeastPrivilege and FR_004_CareTeamGating.",
+      "inject_violation": "fact MUTATE_LeastPrivilegeViolation { some op: Operation | op.opRelation = NonCTClinician and op.opKind = GetRecord and op.opOutcome = Permitted }"
+    },
+    {
+      "fact_name": "F_AuditEntryBijection",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_013_AlwaysOnAudit",
+        "AppendOnly"
+      ],
+      "rationale": "Removing the bijection between Operations and AuditEntries allows Alloy to place two Operations sharing one AuditEntry, violating the one-entry-per-access invariant of FR-013, or to have an AuditEntry with no corresponding Operation, violating SC-002.",
+      "inject_violation": "fact MUTATE_AuditBijectionViolation { some disj op1, op2: Operation | op1.opEntry = op2.opEntry }"
+    },
+    {
+      "fact_name": "F_AppendOnlyAuditEntries",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_015_AuditImmutability"
+      ],
+      "rationale": "Removing the fact that pins an AuditEntry's outcome to its Operation's outcome lets Alloy construct a world where an entry's entryOutcome differs from the operation that produced it \u2014 a direct mutation of an immutable field, violating FR-015.",
+      "inject_violation": "fact MUTATE_AuditMutationViolation { some ae: AuditEntry, op: Operation | op.opEntry = ae and ae.entryOutcome != op.opOutcome }"
+    },
+    {
+      "fact_name": "F_NoteAuthorIsActiveCareteamClinician",
+      "asserts_violated": [
+        "FR_012_NotesAppendOnly",
+        "AppendOnly",
+        "LeastPrivilege"
+      ],
+      "rationale": "Removing the care-team constraint on note authorship allows Alloy to produce a ClinicalNote authored by a non-clinician or a clinician not on the care team, violating FR-012 and the LeastPrivilege property for PostNote.",
+      "inject_violation": "fact MUTATE_NoteAuthorViolation { some n: ClinicalNote | n.author.role = PatientRole }"
+    },
+    {
+      "fact_name": "F_PatientRecordExclusivity",
+      "asserts_violated": [
+        "OwnershipExclusivity",
+        "FR_003_PatientAssignedRecord",
+        "OwnershipBasedAccess"
+      ],
+      "rationale": "Removing the constraint that no two patients share an assigned record allows Alloy to place two Patient users pointing at the same Record, collapsing the ownership model and invalidating the basis for OwnershipBasedAccess assertions.",
+      "inject_violation": "fact MUTATE_SharedPatientRecord { some disj u1, u2: User | u1.role = PatientRole and u2.role = PatientRole and u1.assignedRecord = u2.assignedRecord and one u1.assignedRecord }"
+    },
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "PermissionCompleteness",
+        "PermissionGrounding",
+        "FR_007_ComplianceOfficerDeniedClinicalContent",
+        "FR_018_AccessLogComplianceOnly"
+      ],
+      "rationale": "Clearing the closed-world assignment of PermMatrix.Allowed lets Alloy add extra cells \u2014 e.g., ComplianceRel->GetRecord \u2014 which directly violates FR-007 (compliance content-blindness) and PermissionGrounding (no silent grants), and breaks PermissionCompleteness because the cell count would differ from 7.",
+      "inject_violation": "fact MUTATE_PermissionMatrixViolation { ComplianceRel -> GetRecord in PermMatrix.Allowed }"
+    }
+  ]
+}

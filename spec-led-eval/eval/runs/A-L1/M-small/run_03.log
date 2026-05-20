@@ -1,0 +1,40 @@
+$ /Users/leonhausmann/opt/anaconda3/bin/python3 -m speceval.cli verify-design --no-cache --model M-small --java-bin /Users/leonhausmann/opt/anaconda3/lib/python3.9/site-packages/jdk4py/java-runtime/bin/java /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/eval/specs/A-L1
+
+[parse]   feature 'A-L1', 17 FRs, 3 user stories
+[lift]    calling LLM (anthropic: tier=M-small, model=claude-haiku-4-5)...
+[lift]    fresh lift (sha=3d6b58afbce5)
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/A-L1/feature_model.als
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/A-L1/cost_log.json
+[alloy]   running alloy.jar on feature_model.als...
+[error]   Alloy produced no parseable verdicts. Raw output:
+--- alloy stdout ---
+
+--- alloy stderr ---
+[main] ERROR alloy - excuting sub command CLI:exec error Syntax error in /private/var/folders/fj/1zqdpxbj0b1g_r10m_bwm16m0000gn/T/speceval_3at99jmf/model.als at line 186 column 40:
+Empty string is not allowed; try rewriting your model to use an empty set instead.
+Syntax error in /private/var/folders/fj/1zqdpxbj0b1g_r10m_bwm16m0000gn/T/speceval_3at99jmf/model.als at line 186 column 40:
+Empty string is not allowed; try rewriting your model to use an empty set instead.
+	at edu.mit.csail.sdg.parser.CompLexer.alloy_string(CompLexer.java:613)
+	at edu.mit.csail.sdg.parser.CompLexer.next_token(CompLexer.java:1147)
+	at edu.mit.csail.sdg.parser.CompFilter$1.next_token(CompFilter.java:257)
+	at edu.mit.csail.sdg.parser.CompFilter$2.next_token(CompFilter.java:286)
+	at edu.mit.csail.sdg.parser.CompFilter$3.next_token(CompFilter.java:440)
+	at edu.mit.csail.sdg.parser.CompFilter.myread(CompFilter.java:156)
+	at edu.mit.csail.sdg.parser.CompFilter.next_token(CompFilter.java:171)
+	at java_cup.runtime.lr_parser.scan(lr_parser.java:405)
+	at edu.mit.csail.sdg.parser.CompParser.parse(CompParser.java:2469)
+	at edu.mit.csail.sdg.parser.CompParser.alloy_parseStream(CompParser.java:2675)
+	at edu.mit.csail.sdg.parser.CompUtil.parse(CompUtil.java:476)
+	at edu.mit.csail.sdg.parser.CompUtil.parseRecursively(CompUtil.java:238)
+	at edu.mit.csail.sdg.parser.CompUtil.parseEverything_fromFile(CompUtil.java:383)
+	at org.alloytools.alloy.cli.CLI._exec(CLI.java:176)
+	at aQute.lib.getopt.CommandLine.execute(CommandLine.java:158)
+	at org.alloytools.alloy.core.infra.AlloyDispatcher.__alloy(AlloyDispatcher.java:154)
+	at aQute.lib.getopt.CommandLine.execute(CommandLine.java:158)
+	at org.alloytools.alloy.core.infra.AlloyDispatcher.main(AlloyDispatcher.java:110)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(Unknown Source)
+	at java.base/java.lang.reflect.Method.invoke(Unknown Source)
+	at org.alloytools.alloy.core.infra.Alloy.main(Alloy.java:85)
+Error
+  0. [CompLexer.alloy_string] executing CLI:exec
+

@@ -1,0 +1,173 @@
+{
+  "feature_id": "A-L3",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "PrivilegeMonotonicity",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "NoSelfMutation",
+    "ValidationBeforeMutation"
+  ],
+  "feature_specific_predicates": [
+    "FR_002_RoleMultiplicity",
+    "FR_002_OfficerAuditorMutuallyExclusive",
+    "FR_003_ApplicantRestrictions",
+    "FR_005_AuditorReadOnly",
+    "FR_008_OneInFlightPerApplicant",
+    "FR_009_ValidTransitions",
+    "FR_009_NoSelfLoopTransitions",
+    "FR_010_SubmissionAttributedToApplicantOrSystem",
+    "FR_011_NoSelfAssignment",
+    "FR_012_OnlyAssignedOfficerCanPatch",
+    "FR_013_NoSelfApproval",
+    "FR_015_TerminalStatesFinal",
+    "FR_016_AuditEntryPerTransition",
+    "FR_018_AuditImmutable",
+    "FR_023_AuditEndpointAuditorOnly",
+    "FR_024_ApplicantCannotModifyPostSubmission"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_RoleMultiplicity",
+      "FR_002_OfficerAuditorMutuallyExclusive"
+    ],
+    "FR-003": [
+      "FR_003_ApplicantRestrictions",
+      "OwnershipBasedAccess"
+    ],
+    "FR-004": [
+      "LeastPrivilege",
+      "FR_012_OnlyAssignedOfficerCanPatch"
+    ],
+    "FR-005": [
+      "FR_005_AuditorReadOnly"
+    ],
+    "FR-006": [
+      "OwnershipExclusivity"
+    ],
+    "FR-007": [
+      "ValidationBeforeMutation"
+    ],
+    "FR-008": [
+      "FR_008_OneInFlightPerApplicant"
+    ],
+    "FR-009": [
+      "FR_009_ValidTransitions",
+      "FR_009_NoSelfLoopTransitions"
+    ],
+    "FR-010": [
+      "FR_010_SubmissionAttributedToApplicantOrSystem"
+    ],
+    "FR-011": [
+      "FR_011_NoSelfAssignment"
+    ],
+    "FR-012": [
+      "FR_012_OnlyAssignedOfficerCanPatch"
+    ],
+    "FR-013": [
+      "FR_013_NoSelfApproval",
+      "NoSelfMutation"
+    ],
+    "FR-014": [
+      "ValidationBeforeMutation"
+    ],
+    "FR-015": [
+      "FR_015_TerminalStatesFinal"
+    ],
+    "FR-016": [
+      "AuditCompleteness",
+      "FR_016_AuditEntryPerTransition",
+      "AttributionCorrectness"
+    ],
+    "FR-017": [
+      "AuditCompleteness",
+      "FR_016_AuditEntryPerTransition"
+    ],
+    "FR-018": [
+      "AppendOnly",
+      "FR_018_AuditImmutable"
+    ],
+    "FR-019": [
+      "AppendOnly"
+    ],
+    "FR-020": [
+      "NoInformationLeakage"
+    ],
+    "FR-021": [
+      "NoInformationLeakage",
+      "OwnershipBasedAccess"
+    ],
+    "FR-022": [
+      "NoInformationLeakage"
+    ],
+    "FR-023": [
+      "FR_023_AuditEndpointAuditorOnly"
+    ],
+    "FR-024": [
+      "FR_024_ApplicantCannotModifyPostSubmission"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_AppendOnlyAuditEntries",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_018_AuditImmutable"
+      ],
+      "rationale": "Removing F_AppendOnlyAuditEntries allows two AuditEntry atoms for the same application to share an identical (entryPrevStatus, entryNewStatus) pair, simulating a duplicate/mutated entry that the append-only invariant forbids. The injection forces exactly that scenario.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some disj e1, e2: AuditEntry | e1.entryApp = e2.entryApp and e1.entryPrevStatus = e2.entryPrevStatus and e1.entryNewStatus = e2.entryNewStatus }"
+    },
+    {
+      "fact_name": "F_NoSelfApproval",
+      "asserts_violated": [
+        "NoSelfMutation",
+        "FR_013_NoSelfApproval"
+      ],
+      "rationale": "Removing F_NoSelfApproval allows a successful PATCH operation where the caller is also the application's applicant. The injection forces an Operation with kind=PatchApplicationStatus, outcome=Success, and opCaller equal to the application's appApplicant, directly violating FR-013.",
+      "inject_violation": "fact MUTATE_SelfApprovalViolation { some op: Operation, a: LoanApplication | op.opKind = PatchApplicationStatus and op.opOutcome = Success and op.opTarget = a and op.opCaller = a.appApplicant }"
+    },
+    {
+      "fact_name": "F_OneInFlightPerApplicant",
+      "asserts_violated": [
+        "FR_008_OneInFlightPerApplicant"
+      ],
+      "rationale": "Removing F_OneInFlightPerApplicant allows two LoanApplication atoms to exist with the same appApplicant and both in a Pending/UnderReview status, violating the one-in-flight invariant from FR-008.",
+      "inject_violation": "fact MUTATE_TwoInFlightViolation { some disj a1, a2: LoanApplication | a1.appApplicant = a2.appApplicant and a1.appStatus = Pending and a2.appStatus = UnderReview }"
+    },
+    {
+      "fact_name": "F_AuditEndpointAuditorOnly",
+      "asserts_violated": [
+        "FR_023_AuditEndpointAuditorOnly"
+      ],
+      "rationale": "Removing F_AuditEndpointAuditorOnly allows a non-auditor caller (e.g., a pure applicant) to successfully access GetApplicationAudit, leaking audit log existence to non-auditors in violation of FR-023.",
+      "inject_violation": "fact MUTATE_AuditEndpointLeakViolation { some op: Operation | op.opKind = GetApplicationAudit and op.opOutcome = Success and RAuditor not in op.opCaller.userRoles }"
+    },
+    {
+      "fact_name": "F_OwnershipBasedAccess",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "NoInformationLeakage"
+      ],
+      "rationale": "Removing F_OwnershipBasedAccess permits a pure applicant (no officer, no auditor role) to successfully GET an application they do not own, breaking the byte-equivalent no-leakage guarantee from FR-020/FR-021.",
+      "inject_violation": "fact MUTATE_OwnershipLeakViolation { some op: Operation, a: LoanApplication | op.opKind = GetApplicationById and op.opOutcome = Success and op.opTarget = a and op.opCaller != a.appApplicant and RAuditor not in op.opCaller.userRoles and ROfficer not in op.opCaller.userRoles }"
+    },
+    {
+      "fact_name": "F_OnlyAssignedOfficerCanPatch",
+      "asserts_violated": [
+        "FR_012_OnlyAssignedOfficerCanPatch",
+        "LeastPrivilege"
+      ],
+      "rationale": "Removing F_OnlyAssignedOfficerCanPatch allows an officer who is NOT the assigned officer to successfully PATCH an application's status, violating the core assignment-control invariant of FR-012.",
+      "inject_violation": "fact MUTATE_UnassignedOfficerPatchViolation { some op: Operation, a: LoanApplication | op.opKind = PatchApplicationStatus and op.opOutcome = Success and op.opTarget = a and a.assignedOfficer != op.opCaller and ROfficer in op.opCaller.userRoles }"
+    }
+  ]
+}

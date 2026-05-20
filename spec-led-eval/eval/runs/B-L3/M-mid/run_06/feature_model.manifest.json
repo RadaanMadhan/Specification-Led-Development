@@ -1,0 +1,172 @@
+{
+  "feature_id": "B-L3",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "PrivilegeMonotonicity",
+    "ValidationBeforeMutation"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_RoleFromToken",
+    "FR_004_MemberNoUnauthorizedAccess",
+    "FR_005_AdminCannotChangeShareList",
+    "FR_006_CrossTeamIsolation",
+    "FR_009_ImmutableOwnerAndTeam",
+    "FR_010_OwnerOnlyShareControl",
+    "FR_011_ShareeCannotDelete",
+    "FR_012_NoInterTeamSharing",
+    "FR_013_ShareAuditEntries",
+    "FR_015_MutationAuditPairing",
+    "FR_016_AuditAttribution",
+    "FR_017_AuditImmutable",
+    "FR_019_AuditReadAccess"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "ValidationBeforeMutation"
+    ],
+    "FR-002": [
+      "FR_002_RoleFromToken",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002a": [
+      "FR_002_RoleFromToken"
+    ],
+    "FR-003": [
+      "LeastPrivilege",
+      "OwnershipBasedAccess"
+    ],
+    "FR-004": [
+      "FR_004_MemberNoUnauthorizedAccess",
+      "NoInformationLeakage"
+    ],
+    "FR-005": [
+      "FR_005_AdminCannotChangeShareList",
+      "PrivilegeMonotonicity",
+      "LeastPrivilege"
+    ],
+    "FR-006": [
+      "FR_006_CrossTeamIsolation",
+      "NoInformationLeakage"
+    ],
+    "FR-007": [
+      "FR_009_ImmutableOwnerAndTeam"
+    ],
+    "FR-008": [
+      "FR_009_ImmutableOwnerAndTeam"
+    ],
+    "FR-009": [
+      "FR_009_ImmutableOwnerAndTeam"
+    ],
+    "FR-010": [
+      "FR_010_OwnerOnlyShareControl",
+      "FR_005_AdminCannotChangeShareList"
+    ],
+    "FR-011": [
+      "FR_011_ShareeCannotDelete",
+      "OwnershipBasedAccess",
+      "NoInformationLeakage"
+    ],
+    "FR-012": [
+      "FR_012_NoInterTeamSharing"
+    ],
+    "FR-013": [
+      "FR_013_ShareAuditEntries"
+    ],
+    "FR-014": [
+      "NoInformationLeakage",
+      "FR_006_CrossTeamIsolation"
+    ],
+    "FR-015": [
+      "FR_015_MutationAuditPairing",
+      "AuditCompleteness"
+    ],
+    "FR-016": [
+      "FR_016_AuditAttribution",
+      "AttributionCorrectness"
+    ],
+    "FR-017": [
+      "FR_017_AuditImmutable",
+      "AppendOnly"
+    ],
+    "FR-018": [
+      "FR_015_MutationAuditPairing",
+      "ValidationBeforeMutation"
+    ],
+    "FR-019": [
+      "FR_019_AuditReadAccess"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_010_OwnerOnlyShareControl",
+        "FR_005_AdminCannotChangeShareList",
+        "PermissionCompleteness",
+        "FR_011_ShareeCannotDelete"
+      ],
+      "rationale": "Clearing the permission matrix body leaves PermMatrix.Allowed unconstrained. The injection adds TeamAdminRel -> PatchSharedWith and ShareeRel -> DeleteTask to the allowed set, directly violating the owner-only share-control invariant and the sharee-cannot-delete invariant. Without F_PermissionMatrix's closed-world equation, the solver is free to put any cell it likes into Allowed.",
+      "inject_violation": "fact MUTATE_PermissionMatrixViolation { TeamAdminRel -> PatchSharedWith in PermMatrix.Allowed and ShareeRel -> DeleteTask in PermMatrix.Allowed }"
+    },
+    {
+      "fact_name": "F_FailedOperationNoAuditEntry",
+      "asserts_violated": [
+        "FR_001_AuthRequired",
+        "ValidationBeforeMutation",
+        "FR_015_MutationAuditPairing"
+      ],
+      "rationale": "Clearing this fact removes the constraint that failed operations produce no audit entries. The injection forces a failed operation to have a non-empty audit entry set, which violates the no-side-effects-on-failure invariant (FR-001, FR-018) and the mutual-exclusion property of FR_015_MutationAuditPairing.",
+      "inject_violation": "fact MUTATE_FailedOpAuditViolation { some op: Operation | op.opOutcome = Failure and some op.opEntries }"
+    },
+    {
+      "fact_name": "F_AuthorizationEnforced",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "OwnershipBasedAccess",
+        "FR_004_MemberNoUnauthorizedAccess",
+        "FR_006_CrossTeamIsolation",
+        "NoInformationLeakage"
+      ],
+      "rationale": "Clearing this fact removes the link between PermMatrix.Allowed and Operation success. The injection creates a successful operation by an Outsider on a task in a different team, which directly counterexamples LeastPrivilege, FR_006_CrossTeamIsolation, and NoInformationLeakage simultaneously.",
+      "inject_violation": "fact MUTATE_AuthzEnforcedViolation { some op: Operation | some op.opTarget and op.opOutcome = Success and op.opCaller.userTeam != op.opTarget.taskTeam }"
+    },
+    {
+      "fact_name": "F_SuccessfulMutationHasAuditEntry",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_015_MutationAuditPairing"
+      ],
+      "rationale": "Clearing this fact removes the guarantee that every successful mutation has at least one audit entry. The injection forces a successful DeleteTask operation with an empty opEntries set, creating an observable state change (deletion) with no audit record \u2014 the exact scenario SC-007 forbids.",
+      "inject_violation": "fact MUTATE_MutationAuditViolation { some op: Operation | op.opKind = DeleteTask and op.opOutcome = Success and no op.opEntries }"
+    },
+    {
+      "fact_name": "F_ShareeSameTeamAsTask",
+      "asserts_violated": [
+        "FR_012_NoInterTeamSharing",
+        "NoInformationLeakage"
+      ],
+      "rationale": "Clearing this fact removes the structural guarantee that all sharees are in the same team as the task. The injection places a sharee in a different team from the task, violating FR-012's cross-team sharing prohibition and potentially enabling an Outsider to gain ShareeRel access (defeating cross-team isolation).",
+      "inject_violation": "fact MUTATE_CrossTeamShareViolation { some s: TaskShare | s.sharee.userTeam != s.shareTask.taskTeam }"
+    },
+    {
+      "fact_name": "F_AuditActorMatchesCaller",
+      "asserts_violated": [
+        "AttributionCorrectness",
+        "FR_016_AuditAttribution"
+      ],
+      "rationale": "Clearing this fact removes the requirement that audit entry actor fields match the operation's caller. The injection creates an audit entry whose recorded actor differs from the operation's actual caller, producing a misattributed audit record that violates FR-016's snapshot semantics and the AttributionCorrectness invariant.",
+      "inject_violation": "fact MUTATE_AttributionViolation { some op: Operation, ae: AuditEntry | ae in op.opEntries and ae.entryActor != op.opCaller }"
+    }
+  ]
+}

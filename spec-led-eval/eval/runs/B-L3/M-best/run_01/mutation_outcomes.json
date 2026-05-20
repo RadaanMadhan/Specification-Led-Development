@@ -1,0 +1,58 @@
+{
+  "F_LeastPrivilege": {
+    "targeted_asserts": {
+      "LeastPrivilege": "VACUOUS_OVERCONSTRAINT",
+      "FR_003_MemberPermissions": "VACUOUS_OVERCONSTRAINT",
+      "FR_005_AdminPermissions": "VACUOUS_OVERCONSTRAINT",
+      "FR_019_AuditReadAccess": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_CrossTeamIsolation": {
+    "targeted_asserts": {
+      "NoInformationLeakage": "VACUOUS_OVERCONSTRAINT",
+      "FR_006_CrossTeamIsolation": "VACUOUS_OVERCONSTRAINT",
+      "FR_014_ByteEquivalent": "VACUOUS_OVERCONSTRAINT",
+      "FR_004_NoUnauthorisedMember": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_OwnerOnlyShareControl": {
+    "targeted_asserts": {
+      "OwnershipBasedAccess": "VACUOUS_OVERCONSTRAINT",
+      "FR_010_OwnerOnlyShares": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_AuditOnMutation": {
+    "targeted_asserts": {
+      "AuditCompleteness": "BIT",
+      "FR_015_AuditPerMutation": "BIT",
+      "FR_018_AuditAtomic": "BIT",
+      "ValidationBeforeMutation": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AuditAttribution": {
+    "targeted_asserts": {
+      "AttributionCorrectness": "BIT",
+      "FR_002_RoleFromToken": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AuditEntryUnique": {
+    "targeted_asserts": {
+      "AppendOnly": "BIT",
+      "FR_017_AuditImmutable": "BIT",
+      "AuditCompleteness": "BIT",
+      "FR_015_AuditPerMutation": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_ShareeSameTeam": {
+    "targeted_asserts": {
+      "FR_012_SameTeamShare": "BIT"
+    },
+    "all_bit": true
+  }
+}

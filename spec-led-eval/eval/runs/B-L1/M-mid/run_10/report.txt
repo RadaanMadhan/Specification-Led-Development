@@ -1,0 +1,107 @@
+==============================================================================
+  Design Compliance Report  (Phase 3 — feature_model.als)
+  feature       : B-L1
+  spec source   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/eval/specs/B-L1
+  alloy model   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/B-L1/feature_model.als
+  patterns      : AuthRequiredEverywhere, AppendOnly, AuditCompleteness, AttributionCorrectness, OwnershipExclusivity, ValidationBeforeMutation
+  fr count      : 18 declared in spec.md
+  assertions    : 18 total (18/18 PASS via Alloy)
+==============================================================================
+
+  Compliance matrix
+  ----------------------------------------------------------------------------
+  Assertion                     Verdict   Anchor
+  ------------------------------------------------------------------
+  AuthRequiredEverywhere        PASS      PATTERN AuthRequiredEverywhere: spec.md FR-001; contracts/http-api.md auth section
+  AppendOnly                    PASS      PATTERN AppendOnly: spec.md FR-018; data-model.md "No UPDATE/DELETE … task_deletions"
+  AuditCompleteness             PASS      PATTERN AuditCompleteness: spec.md FR-018; data-model.md task_deletions
+  AttributionCorrectness        PASS      PATTERN AttributionCorrectness: spec.md FR-018; data-model.md deleted_by_user_id
+  OwnershipExclusivity          PASS      PATTERN OwnershipExclusivity: spec.md FR-008; data-model.md assignee_id lone FK
+  ValidationBeforeMutation      PASS      PATTERN ValidationBeforeMutation: spec.md FR-011 closed-task rule; contracts/http-api.md 409 task_closed
+  FR_003_004_FlatPeerAccess     PASS      FEATURE-SPECIFIC: FR-003; FR-004 flat peer model / single workspace
+  FR_001_AuthRequired           PASS      FEATURE-SPECIFIC: FR-001; spec.md Edge Cases "unauthenticated request"
+  FR_008_AssigneeIsMember       PASS      FEATURE-SPECIFIC: FR-008; data-model.md assignee_id FK→users.id
+  FR_009_CreatorIsAlwaysMember  PASS      FEATURE-SPECIFIC: FR-009; data-model.md created_by NOT NULL FK
+  FR_010_ValidStatus            PASS      FEATURE-SPECIFIC: FR-010; data-model.md TaskStatus enum + CHECK constraint
+  FR_011_ClosedTaskEditRule     PASS      FEATURE-SPECIFIC: FR-011; contracts/http-api.md 409 task_closed; spec.md US2 #5
+  FR_012_PermanentDeletion      PASS      FEATURE-SPECIFIC: FR-012; data-model.md "hard delete + INSERT task_deletions"
+  FR_017_EditorIsMember         PASS      FEATURE-SPECIFIC: FR-017; data-model.md created_at/updated_at semantics
+  FR_018_DeletionLogComplete    PASS      FEATURE-SPECIFIC: FR-018; data-model.md task_deletions NOT NULL fields
+  FR_002_AuthContextIdentity    PASS      FEATURE-SPECIFIC: FR-002; spec.md FR-002 identity from auth context
+  FR_004_NoPermissionDenial     PASS      FEATURE-SPECIFIC: FR-004; contracts/http-api.md "no 403 permission_denied"
+  FR_003_SingleWorkspace        PASS      FEATURE-SPECIFIC: spec.md FR-003; data-model.md "no Team entity"
+
+  FR coverage
+  ----------------------------------------------------------------------------
+  FR-001  →  FR_001_AuthRequired=PASS, AuthRequiredEverywhere=PASS
+  FR-002  →  FR_002_AuthContextIdentity=PASS
+  FR-003  →  FR_003_004_FlatPeerAccess=PASS, FR_003_SingleWorkspace=PASS
+  FR-004  →  FR_003_004_FlatPeerAccess=PASS, FR_004_NoPermissionDenial=PASS
+  FR-005  →  ValidationBeforeMutation=PASS
+  FR-006  →  ValidationBeforeMutation=PASS
+  FR-007  →  ValidationBeforeMutation=PASS
+  FR-008  →  FR_008_AssigneeIsMember=PASS, OwnershipExclusivity=PASS
+  FR-009  →  FR_009_CreatorIsAlwaysMember=PASS
+  FR-010  →  FR_010_ValidStatus=PASS
+  FR-011  →  FR_011_ClosedTaskEditRule=PASS, ValidationBeforeMutation=PASS
+  FR-012  →  FR_012_PermanentDeletion=PASS
+  FR-013  →  FR_003_004_FlatPeerAccess=PASS
+  FR-014  →  FR_003_SingleWorkspace=PASS
+  FR-015  →  FR_003_SingleWorkspace=PASS
+  FR-016  →  FR_003_SingleWorkspace=PASS
+  FR-017  →  FR_017_EditorIsMember=PASS
+  FR-018  →  FR_018_DeletionLogComplete=PASS, AppendOnly=PASS, AuditCompleteness=PASS, AttributionCorrectness=PASS
+
+  All FRs have at least one matching assertion.
+
+==============================================================================
+  Mutation tests  (assertion-strength validation)
+==============================================================================
+
+  Strategy: replace each named fact's body with `{}` (no constraint),
+  then re-run Alloy. Each listed assertion should now FAIL on the
+  mutated model. If it still PASSes, the assertion is vacuous and
+  must be strengthened.
+
+  - MUTATE F_AuthBoundary  → runs/B-L1/mutated_F_AuthBoundary.als
+    rationale: Clearing F_AuthBoundary allows Operations whose caller is Unauthenticated to exist in the model, directly violating FR-001 and the AuthRequiredEverywhere pattern predicate.
+    expected to FAIL: AuthRequiredEverywhere, FR_001_AuthRequired
+      - AuthRequiredEverywhere: FAIL (expected)
+      - FR_001_AuthRequired: FAIL (expected)
+
+  - MUTATE F_AppendOnlyDeletionLog  → runs/B-L1/mutated_F_AppendOnlyDeletionLog.als
+    rationale: Clearing F_AppendOnlyDeletionLog lets two distinct TaskDeletion atoms share the same loggedRef, meaning the same task appears twice in the deletion log — exactly the duplication the AppendOnly predicate is supposed to prevent.
+    expected to FAIL: AppendOnly
+      - AppendOnly: FAIL (expected)
+
+  - MUTATE F_ClosedTaskEditRule  → runs/B-L1/mutated_F_ClosedTaskEditRule.als
+    rationale: Clearing F_ClosedTaskEditRule allows an EditOp to target a Done task without supplying a non-Done newStatus (i.e., newStatus is empty or Done), which is exactly the closed-task violation FR-011 prohibits.
+    expected to FAIL: FR_011_ClosedTaskEditRule, ValidationBeforeMutation
+      - FR_011_ClosedTaskEditRule: PASS (vacuous?)
+      - ValidationBeforeMutation: PASS (vacuous?)
+
+  - MUTATE F_PermanentDeletion  → runs/B-L1/mutated_F_PermanentDeletion.als
+    rationale: Clearing F_PermanentDeletion allows a LiveTask to share its taskRef with a TaskDeletion loggedRef, meaning a 'deleted' task still appears as a live task — violating the permanent-deletion invariant.
+    expected to FAIL: FR_012_PermanentDeletion
+      - FR_012_PermanentDeletion: FAIL (expected)
+
+  - MUTATE F_AuditCompleteness  → runs/B-L1/mutated_F_AuditCompleteness.als
+    rationale: Clearing F_AuditCompleteness allows a TaskDeletion to exist with no corresponding DeleteOperation, meaning a deletion was logged but no operation ever triggered it — breaking the completeness invariant.
+    expected to FAIL: AuditCompleteness, FR_018_DeletionLogComplete
+      - AuditCompleteness: FAIL (expected)
+      - FR_018_DeletionLogComplete: PASS (vacuous?)
+
+  - MUTATE F_DeleteOpAttribution  → runs/B-L1/mutated_F_DeleteOpAttribution.als
+    rationale: Clearing F_DeleteOpAttribution allows a DeleteOperation whose auditEntry.deleter differs from its own caller, or whose auditEntry.loggedRef differs from deletedRef — a mis-attribution in the deletion log that AttributionCorrectness is designed to catch.
+    expected to FAIL: AttributionCorrectness
+      - AttributionCorrectness: FAIL (expected)
+
+  Mutation summary
+  ----------------------------------------------------------------------------
+  - F_AuthBoundary: ASSERTIONS BIT (AuthRequiredEverywhere, FR_001_AuthRequired)
+  - F_AppendOnlyDeletionLog: ASSERTIONS BIT (AppendOnly)
+  - F_ClosedTaskEditRule: ASSERTION VACUOUS (FR_011_ClosedTaskEditRule, ValidationBeforeMutation)
+  - F_PermanentDeletion: ASSERTIONS BIT (FR_012_PermanentDeletion)
+  - F_AuditCompleteness: ASSERTION VACUOUS (AuditCompleteness, FR_018_DeletionLogComplete)
+  - F_DeleteOpAttribution: ASSERTIONS BIT (AttributionCorrectness)
+

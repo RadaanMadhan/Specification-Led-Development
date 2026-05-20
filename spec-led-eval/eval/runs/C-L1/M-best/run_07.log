@@ -1,0 +1,67 @@
+$ /Users/leonhausmann/opt/anaconda3/bin/python3 -m speceval.cli verify-design --no-cache --model M-best --java-bin /Users/leonhausmann/opt/anaconda3/lib/python3.9/site-packages/jdk4py/java-runtime/bin/java /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/eval/specs/C-L1
+
+[parse]   feature 'C-L1', 15 FRs, 2 user stories
+[lift]    calling LLM (anthropic: tier=M-best, model=claude-opus-4-7)...
+[lift]    fresh lift (sha=3c9c51113247)
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/C-L1/feature_model.als
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/C-L1/cost_log.json
+[alloy]   running alloy.jar on feature_model.als...
+[error]   Alloy produced no parseable verdicts. Raw output:
+--- alloy stdout ---
+
+--- alloy stderr ---
+[main] ERROR alloy - excuting sub command CLI:exec error Type error in /private/var/folders/fj/1zqdpxbj0b1g_r10m_bwm16m0000gn/T/speceval_7ifhvv73/model.als at line 240 column 79:
+This cannot be a legal relational join where
+left hand side is ae (type = {this/AuditEntry})
+right hand side is op (type = {this/Operation})
+
+Type error in /private/var/folders/fj/1zqdpxbj0b1g_r10m_bwm16m0000gn/T/speceval_7ifhvv73/model.als at line 240 column 79:
+This cannot be a legal relational join where
+left hand side is ae (type = {this/AuditEntry})
+right hand side is op (type = {this/Operation})
+
+	at edu.mit.csail.sdg.ast.ExprBadJoin.make(ExprBadJoin.java:89)
+	at edu.mit.csail.sdg.ast.ExprBinary$Op.make(ExprBinary.java:441)
+	at edu.mit.csail.sdg.parser.CompModule$Context.visit(CompModule.java:510)
+	at edu.mit.csail.sdg.parser.CompModule$Context.visit(CompModule.java:269)
+	at edu.mit.csail.sdg.ast.ExprBadJoin.accept(ExprBadJoin.java:113)
+	at edu.mit.csail.sdg.ast.VisitReturn.visitThis(VisitReturn.java:35)
+	at edu.mit.csail.sdg.parser.CompModule$Context.visit(CompModule.java:527)
+	at edu.mit.csail.sdg.parser.CompModule$Context.visit(CompModule.java:269)
+	at edu.mit.csail.sdg.ast.ExprBinary.accept(ExprBinary.java:758)
+	at edu.mit.csail.sdg.ast.VisitReturn.visitThis(VisitReturn.java:35)
+	at edu.mit.csail.sdg.parser.CompModule$Context.visit(CompModule.java:644)
+	at edu.mit.csail.sdg.parser.CompModule$Context.visit(CompModule.java:269)
+	at edu.mit.csail.sdg.ast.ExprQt.accept(ExprQt.java:358)
+	at edu.mit.csail.sdg.ast.VisitReturn.visitThis(VisitReturn.java:35)
+	at edu.mit.csail.sdg.parser.CompModule$Context.visit(CompModule.java:478)
+	at edu.mit.csail.sdg.parser.CompModule$Context.visit(CompModule.java:269)
+	at edu.mit.csail.sdg.ast.ExprList.accept(ExprList.java:341)
+	at edu.mit.csail.sdg.ast.VisitReturn.visitThis(VisitReturn.java:35)
+	at edu.mit.csail.sdg.parser.CompModule$Context.visit(CompModule.java:528)
+	at edu.mit.csail.sdg.parser.CompModule$Context.visit(CompModule.java:269)
+	at edu.mit.csail.sdg.ast.ExprBinary.accept(ExprBinary.java:758)
+	at edu.mit.csail.sdg.ast.VisitReturn.visitThis(VisitReturn.java:35)
+	at edu.mit.csail.sdg.parser.CompModule$Context.visit(CompModule.java:644)
+	at edu.mit.csail.sdg.parser.CompModule$Context.visit(CompModule.java:269)
+	at edu.mit.csail.sdg.ast.ExprQt.accept(ExprQt.java:358)
+	at edu.mit.csail.sdg.ast.VisitReturn.visitThis(VisitReturn.java:35)
+	at edu.mit.csail.sdg.parser.CompModule$Context.visit(CompModule.java:672)
+	at edu.mit.csail.sdg.parser.CompModule$Context.visit(CompModule.java:269)
+	at edu.mit.csail.sdg.ast.ExprUnary.accept(ExprUnary.java:526)
+	at edu.mit.csail.sdg.ast.VisitReturn.visitThis(VisitReturn.java:35)
+	at edu.mit.csail.sdg.parser.CompModule$Context.check(CompModule.java:410)
+	at edu.mit.csail.sdg.parser.CompModule.resolveFuncBody(CompModule.java:1737)
+	at edu.mit.csail.sdg.parser.CompModule.resolveAll(CompModule.java:2289)
+	at edu.mit.csail.sdg.parser.CompUtil.parseEverything_fromFile(CompUtil.java:385)
+	at org.alloytools.alloy.cli.CLI._exec(CLI.java:176)
+	at aQute.lib.getopt.CommandLine.execute(CommandLine.java:158)
+	at org.alloytools.alloy.core.infra.AlloyDispatcher.__alloy(AlloyDispatcher.java:154)
+	at aQute.lib.getopt.CommandLine.execute(CommandLine.java:158)
+	at org.alloytools.alloy.core.infra.AlloyDispatcher.main(AlloyDispatcher.java:110)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(Unknown Source)
+	at java.base/java.lang.reflect.Method.invoke(Unknown Source)
+	at org.alloytools.alloy.core.infra.Alloy.main(Alloy.java:85)
+Error
+  0. [ExprBadJoin.make] executing CLI:exec
+

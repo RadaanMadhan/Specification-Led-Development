@@ -1,0 +1,116 @@
+{
+  "feature_id": "C-L2",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AppendOnly",
+    "AuditCompleteness",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "AuthRequiredEverywhere",
+    "AttributionCorrectness"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_RoleResolution",
+    "FR_004_CareTeamGating",
+    "FR_005_AdministratorNoClinicalContent",
+    "FR_006_ByteEquivalentResponse",
+    "FR_011_NotesAppendOnly",
+    "FR_012_AuditCompleteness",
+    "FR_014_AuditImmutable",
+    "FR_018_AdminContentBlindness"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "AuthRequiredEverywhere",
+      "FR_001_AuthRequired"
+    ],
+    "FR-002": [
+      "FR_002_RoleResolution"
+    ],
+    "FR-004": [
+      "OwnershipBasedAccess",
+      "FR_004_CareTeamGating"
+    ],
+    "FR-005": [
+      "FR_005_AdministratorNoClinicalContent"
+    ],
+    "FR-006": [
+      "NoInformationLeakage",
+      "FR_006_ByteEquivalentResponse"
+    ],
+    "FR-011": [
+      "AppendOnly",
+      "FR_011_NotesAppendOnly"
+    ],
+    "FR-012": [
+      "AuditCompleteness",
+      "FR_012_AuditCompleteness"
+    ],
+    "FR-013": [
+      "AttributionCorrectness"
+    ],
+    "FR-014": [
+      "AppendOnly",
+      "FR_014_AuditImmutable"
+    ],
+    "FR-018": [
+      "FR_018_AdminContentBlindness"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege"
+      ],
+      "rationale": "Removing the permission matrix fact allows the model to assign arbitrary (role, operation) pairs to PermMatrix.Allowed, violating the least-privilege constraint that only documented roles can access documented operations.",
+      "inject_violation": "fact MUTATE_PermissionViolation { HospitalAdministrator -> ReadRecord in PermMatrix.Allowed }"
+    },
+    {
+      "fact_name": "F_AppendOnlyNotes",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_011_NotesAppendOnly"
+      ],
+      "rationale": "Removing the structural uniqueness constraint on note_id allows two distinct clinical notes to have the same ID, violating the immutability and append-only invariants.",
+      "inject_violation": "fact MUTATE_DuplicateNoteIds { some disj n1, n2: ClinicalNote | n1.note_id = n2.note_id }"
+    },
+    {
+      "fact_name": "F_OneAuditPerAccess",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_012_AuditCompleteness"
+      ],
+      "rationale": "Removing the one-audit-per-note constraint allows orphaned notes (notes with no matching audit entry), violating the completeness requirement that every note addition must be logged.",
+      "inject_violation": "fact MUTATE_OrphanedNote { some n: ClinicalNote | no ae: AuditEntry | ae.access_type = AddNote and ae.note_id = n.note_id }"
+    },
+    {
+      "fact_name": "F_CareTeamGatingForNoteAuthors",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_004_CareTeamGating"
+      ],
+      "rationale": "Removing care-team gating allows a clinical note to be authored by a user not on the patient's care team, violating the ownership-based access control requirement.",
+      "inject_violation": "fact MUTATE_NonCareTeamAuthor { some n: ClinicalNote | no ctm: CareTeamMembership | ctm.clinician.user_id = n.author_user_id and ctm.patient = n.patient and ctm.status = Active }"
+    },
+    {
+      "fact_name": "F_ByteEquivalentUnauthorisedResponses",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "FR_006_ByteEquivalentResponse"
+      ],
+      "rationale": "Removing the byte-equivalence constraint allows a Denied outcome to occur when a valid care-team membership exists, which would leak information about membership status to an unauthorized caller.",
+      "inject_violation": "fact MUTATE_InfoLeakage { some ae: AuditEntry, ctm: CareTeamMembership | (ae.outcome = Denied or ae.outcome = NotFoundOrDenied) and ctm.clinician.user_id = ae.user_id and ctm.patient.patient_id = ae.patient_id and ctm.status = Active }"
+    },
+    {
+      "fact_name": "F_AuditAttributionCorrect",
+      "asserts_violated": [
+        "AttributionCorrectness"
+      ],
+      "rationale": "Removing the audit-attribution constraint allows an audit entry to record a user_role that differs from the actual user's role, violating the requirement that audit snapshots accurately represent the accessor's role at access time.",
+      "inject_violation": "fact MUTATE_MisattributedRole { some ae: AuditEntry, u: User | ae.user_id = u.user_id and ae.user_role != u.user_role }"
+    }
+  ]
+}

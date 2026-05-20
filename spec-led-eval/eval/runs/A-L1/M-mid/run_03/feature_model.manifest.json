@@ -1,0 +1,150 @@
+{
+  "feature_id": "A-L1",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "ConcurrencySafety"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_ValidationBeforeMutation",
+    "FR_004_UniqueReferenceAndOwner",
+    "FR_005_OnePendingPerCustomer",
+    "FR_009_DecisionReasonRequired",
+    "FR_010_DecisionRecordsDecider",
+    "FR_011_DecisionImmutability",
+    "FR_012_AtMostOneDecisionPerApp",
+    "FR_013_CustomerIsolation",
+    "FR_015_StaffOnlyDecisionAudit",
+    "FR_016_AuditAppendOnly",
+    "FR_017_RetentionNoDelete"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_ValidationBeforeMutation"
+    ],
+    "FR-003": [
+      "FR_002_ValidationBeforeMutation"
+    ],
+    "FR-004": [
+      "FR_004_UniqueReferenceAndOwner"
+    ],
+    "FR-005": [
+      "FR_005_OnePendingPerCustomer"
+    ],
+    "FR-006": [
+      "FR_004_UniqueReferenceAndOwner"
+    ],
+    "FR-007": [
+      "LeastPrivilege",
+      "FR_015_StaffOnlyDecisionAudit"
+    ],
+    "FR-008": [
+      "LeastPrivilege"
+    ],
+    "FR-009": [
+      "FR_009_DecisionReasonRequired"
+    ],
+    "FR-010": [
+      "FR_010_DecisionRecordsDecider",
+      "AttributionCorrectness"
+    ],
+    "FR-011": [
+      "FR_011_DecisionImmutability",
+      "ConcurrencySafety"
+    ],
+    "FR-012": [
+      "FR_012_AtMostOneDecisionPerApp",
+      "ConcurrencySafety"
+    ],
+    "FR-013": [
+      "FR_013_CustomerIsolation",
+      "OwnershipBasedAccess",
+      "NoInformationLeakage"
+    ],
+    "FR-014": [
+      "AttributionCorrectness"
+    ],
+    "FR-015": [
+      "FR_015_StaffOnlyDecisionAudit",
+      "LeastPrivilege"
+    ],
+    "FR-016": [
+      "FR_016_AuditAppendOnly",
+      "AppendOnly",
+      "AuditCompleteness",
+      "AttributionCorrectness"
+    ],
+    "FR-017": [
+      "FR_017_RetentionNoDelete"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_AppendOnlyAuditEntries",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_016_AuditAppendOnly"
+      ],
+      "rationale": "Clearing this fact allows Alloy to construct a world where two AuditEntries share the same (application, eventType) pair \u2014 an UPDATE-style overwrite. Both AppendOnly and FR_016_AuditAppendOnly require the pair to be unique; injecting a duplicate forces a counterexample.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some disj e1, e2: AuditEntry | e1.application = e2.application and e1.eventType = e2.eventType }"
+    },
+    {
+      "fact_name": "F_OnePendingPerCustomer",
+      "asserts_violated": [
+        "FR_005_OnePendingPerCustomer"
+      ],
+      "rationale": "Clearing this fact allows a customer to hold two simultaneous PendingReview applications, which violates FR-005 and the partial-unique-index invariant. The injection explicitly constructs this forbidden state, ensuring the predicate finds a counterexample.",
+      "inject_violation": "fact MUTATE_OnePendingViolation { some disj a1, a2: LoanApplication | a1.owner = a2.owner and a1.status = PendingReview and a2.status = PendingReview }"
+    },
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_015_StaffOnlyDecisionAudit"
+      ],
+      "rationale": "Clearing the closed-world matrix assignment lets Alloy freely populate PermMatrix.Allowed. Adding Customer -> PostDecision directly violates the LeastPrivilege predicate (which asserts that cell is denied) and exposes the missing staff-only guard checked by FR_015_StaffOnlyDecisionAudit.",
+      "inject_violation": "fact MUTATE_LeastPrivilegeViolation { Customer -> PostDecision in PermMatrix.Allowed }"
+    },
+    {
+      "fact_name": "F_AtMostOneDecisionPerApplication",
+      "asserts_violated": [
+        "ConcurrencySafety",
+        "FR_012_AtMostOneDecisionPerApp",
+        "FR_011_DecisionImmutability"
+      ],
+      "rationale": "Clearing this fact allows two Decision atoms to reference the same LoanApplication, modelling a race-condition win by two concurrent staff members. The injection forces exactly this forbidden state, causing all three assertions that prohibit dual decisions to find counterexamples.",
+      "inject_violation": "fact MUTATE_DualDecisionViolation { some disj d1, d2: Decision | d1.application = d2.application }"
+    },
+    {
+      "fact_name": "F_OwnershipBasedAccess",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_013_CustomerIsolation",
+        "NoInformationLeakage"
+      ],
+      "rationale": "Clearing this fact removes the constraint that a Customer's GetApplicationByRef operation must target only their own application. The injection constructs a Customer operation that targets another customer's application, violating all three ownership/isolation/leakage assertions.",
+      "inject_violation": "fact MUTATE_OwnershipViolation { some op: Operation | op.caller.role = Customer and op.kind = GetApplicationByRef and (some op.targetApp) and op.targetApp.owner != op.caller }"
+    },
+    {
+      "fact_name": "F_AuditAttribution",
+      "asserts_violated": [
+        "AttributionCorrectness",
+        "FR_016_AuditAppendOnly"
+      ],
+      "rationale": "Clearing this fact allows AuditEntries to carry a misattributed actor \u2014 e.g., a Submitted event attributed to a BankStaff member, or an Approved event attributed to a Customer. The injection forces the most egregious misattribution (a Submitted event attributed to staff), which is caught by AttributionCorrectness.",
+      "inject_violation": "fact MUTATE_AttributionViolation { some e: AuditEntry | e.eventType = Submitted_E and e.actor.role = BankStaff }"
+    }
+  ]
+}

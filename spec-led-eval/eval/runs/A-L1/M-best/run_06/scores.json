@@ -1,0 +1,318 @@
+{
+  "run_id": "A-L1/M-best/run_06",
+  "cell": "A-L1",
+  "model": "M-best",
+  "rep": 6,
+  "D1": 1.0,
+  "D2": 1.0,
+  "D3": 1.0,
+  "D4": 0.9705882352941176,
+  "aqs_partial": 0.9926470588235294,
+  "scored_at": "2026-05-20T04:29:03.862660+00:00",
+  "details": {
+    "D1": {
+      "n_assertions": 28,
+      "n_verdicts": 28
+    },
+    "D2": {
+      "patterns_applied": [
+        "LeastPrivilege",
+        "PermissionCompleteness",
+        "PermissionGrounding",
+        "AuthRequiredEverywhere",
+        "AuditCompleteness",
+        "AppendOnly",
+        "AttributionCorrectness",
+        "OwnershipExclusivity",
+        "OwnershipBasedAccess",
+        "NoInformationLeakage",
+        "ConcurrencySafety"
+      ],
+      "per_pattern": {
+        "LeastPrivilege": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "PermissionCompleteness": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "PermissionGrounding": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "AuthRequiredEverywhere": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "AuditCompleteness": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "AppendOnly": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "AttributionCorrectness": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "OwnershipExclusivity": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "OwnershipBasedAccess": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "NoInformationLeakage": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "ConcurrencySafety": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        }
+      }
+    },
+    "D3": {
+      "per_target": {
+        "F_OnePendingPerCustomer": {
+          "targeted_asserts": {
+            "FR_005_OnePendingPerCustomer": "BIT"
+          },
+          "score": 1.0
+        },
+        "F_DecisionByBankStaff": {
+          "targeted_asserts": {
+            "FR_015_StaffOnlyDecisions": "BIT"
+          },
+          "score": 1.0
+        },
+        "F_PermissionMatrix": {
+          "targeted_asserts": {
+            "LeastPrivilege": "BIT",
+            "FR_015_StaffOnlyDecisions": "BIT"
+          },
+          "score": 1.0
+        },
+        "F_DecisionEventIffDecided": {
+          "targeted_asserts": {
+            "AppendOnly": "BIT",
+            "AuditCompleteness": "BIT",
+            "FR_016_AuditTrailComplete": "BIT"
+          },
+          "score": 1.0
+        },
+        "F_AtMostOneDecisionPerApp": {
+          "targeted_asserts": {
+            "FR_011_DecisionImmutable": "BIT",
+            "FR_012_NoTwoDecisions": "BIT",
+            "ConcurrencySafety": "BIT"
+          },
+          "score": 1.0
+        },
+        "F_ApplicationCustomerIsCustomerRole": {
+          "targeted_asserts": {
+            "OwnershipExclusivity": "BIT",
+            "FR_001_CustomerSubmits": "BIT",
+            "FR_013_CustomerCannotSeeOthers": "BIT",
+            "NoInformationLeakage": "BIT"
+          },
+          "score": 1.0
+        }
+      },
+      "skipped": []
+    },
+    "D4": {
+      "per_fr": {
+        "FR-001": {
+          "covers": [
+            "FR_001_CustomerSubmits",
+            "PermissionGrounding"
+          ],
+          "verdicts": {
+            "FR_001_CustomerSubmits": "PASS",
+            "PermissionGrounding": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-002": {
+          "covers": [
+            "FR_002_AllFieldsPopulated"
+          ],
+          "verdicts": {
+            "FR_002_AllFieldsPopulated": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-003": {
+          "covers": [
+            "FR_003_StatusInClosedSet"
+          ],
+          "verdicts": {
+            "FR_003_StatusInClosedSet": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-004": {
+          "covers": [
+            "FR_004_InitialStatusPending"
+          ],
+          "verdicts": {
+            "FR_004_InitialStatusPending": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-005": {
+          "covers": [
+            "FR_005_OnePendingPerCustomer"
+          ],
+          "verdicts": {
+            "FR_005_OnePendingPerCustomer": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-006": {
+          "covers": [
+            "FR_006_SubmissionEventExists"
+          ],
+          "verdicts": {
+            "FR_006_SubmissionEventExists": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-007": {
+          "covers": [
+            "FR_007_StaffCanListApplications",
+            "PermissionGrounding"
+          ],
+          "verdicts": {
+            "FR_007_StaffCanListApplications": "PASS",
+            "PermissionGrounding": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-008": {
+          "covers": [
+            "FR_008_StaffCanViewAnyApplication"
+          ],
+          "verdicts": {
+            "FR_008_StaffCanViewAnyApplication": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-009": {
+          "covers": [
+            "FR_009_DecisionHasReason"
+          ],
+          "verdicts": {
+            "FR_009_DecisionHasReason": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-010": {
+          "covers": [
+            "FR_010_DecisionPersistedAtomically"
+          ],
+          "verdicts": {
+            "FR_010_DecisionPersistedAtomically": "FAIL"
+          },
+          "score": 0.5
+        },
+        "FR-011": {
+          "covers": [
+            "FR_011_DecisionImmutable",
+            "ConcurrencySafety"
+          ],
+          "verdicts": {
+            "FR_011_DecisionImmutable": "PASS",
+            "ConcurrencySafety": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-012": {
+          "covers": [
+            "FR_012_NoTwoDecisions",
+            "ConcurrencySafety"
+          ],
+          "verdicts": {
+            "FR_012_NoTwoDecisions": "PASS",
+            "ConcurrencySafety": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-013": {
+          "covers": [
+            "FR_013_CustomerCannotSeeOthers",
+            "OwnershipExclusivity",
+            "OwnershipBasedAccess",
+            "NoInformationLeakage"
+          ],
+          "verdicts": {
+            "FR_013_CustomerCannotSeeOthers": "PASS",
+            "OwnershipExclusivity": "PASS",
+            "OwnershipBasedAccess": "PASS",
+            "NoInformationLeakage": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-014": {
+          "covers": [
+            "FR_014_DecisionEventForEveryDecision"
+          ],
+          "verdicts": {
+            "FR_014_DecisionEventForEveryDecision": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-015": {
+          "covers": [
+            "FR_015_StaffOnlyDecisions",
+            "LeastPrivilege"
+          ],
+          "verdicts": {
+            "FR_015_StaffOnlyDecisions": "PASS",
+            "LeastPrivilege": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-016": {
+          "covers": [
+            "FR_016_AuditTrailComplete",
+            "AuditCompleteness",
+            "AppendOnly",
+            "AttributionCorrectness"
+          ],
+          "verdicts": {
+            "FR_016_AuditTrailComplete": "PASS",
+            "AuditCompleteness": "PASS",
+            "AppendOnly": "PASS",
+            "AttributionCorrectness": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-017": {
+          "covers": [
+            "FR_017_DecisionsRetained"
+          ],
+          "verdicts": {
+            "FR_017_DecisionsRetained": "PASS"
+          },
+          "score": 1.0
+        }
+      }
+    }
+  }
+}

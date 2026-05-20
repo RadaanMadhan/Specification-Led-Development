@@ -1,0 +1,52 @@
+{
+  "F_LeastPrivilegeMatrix": {
+    "targeted_asserts": {
+      "LeastPrivilege": "VACUOUS_OVERCONSTRAINT",
+      "FR_017_AdminEndpointRoleOnly": "VACUOUS_OVERCONSTRAINT",
+      "FR_005_AdminNoClinicalAccess": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_CareTeamGating": {
+    "targeted_asserts": {
+      "OwnershipBasedAccess": "BIT",
+      "FR_004_CareTeamGating": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AuditCompleteness": {
+    "targeted_asserts": {
+      "AuditCompleteness": "BIT",
+      "FR_012_OneAuditPerAttempt": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AuditAttributionCorrect": {
+    "targeted_asserts": {
+      "AttributionCorrectness": "BIT",
+      "FR_013_AuditAttribution": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AuditAppendOnly": {
+    "targeted_asserts": {
+      "AppendOnly": "BIT",
+      "FR_014_AuditImmutable": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_NotesAppendOnly": {
+    "targeted_asserts": {
+      "AppendOnly": "BIT",
+      "FR_011_NotesAppendOnly": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AdminNoClinicalContent": {
+    "targeted_asserts": {
+      "NoInformationLeakage": "BIT",
+      "FR_018_AdminNoClinicalContent": "BIT"
+    },
+    "all_bit": true
+  }
+}

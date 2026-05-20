@@ -1,0 +1,50 @@
+{
+  "F_PermissionMatrix": {
+    "targeted_asserts": {
+      "PermissionCompleteness": "BIT",
+      "PrivilegeMonotonicity": "BIT",
+      "FR_017_AuditSearchAdminOnly": "BIT",
+      "FR_018_AdminResponseContentBlind": "BIT",
+      "LeastPrivilege": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_CareTeamGating": {
+    "targeted_asserts": {
+      "OwnershipBasedAccess": "BIT",
+      "FR_004_CareTeamGating": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AppendOnlyNotes": {
+    "targeted_asserts": {
+      "AppendOnly": "BIT",
+      "FR_011_NotesAppendOnly": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AppendOnlyAuditEntries": {
+    "targeted_asserts": {
+      "AppendOnly": "VACUOUS_OVERCONSTRAINT",
+      "FR_014_AuditImmutability": "VACUOUS_OVERCONSTRAINT",
+      "AuditCompleteness": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_AuditCompleteness": {
+    "targeted_asserts": {
+      "AuditCompleteness": "VACUOUS_OVERCONSTRAINT",
+      "FR_012_AlwaysOnAudit": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_AdminNotClinical": {
+    "targeted_asserts": {
+      "NoInformationLeakage": "VACUOUS_OVERCONSTRAINT",
+      "FR_005_AdminContentBlindness": "VACUOUS_OVERCONSTRAINT",
+      "FR_018_AdminResponseContentBlind": "VACUOUS_OVERCONSTRAINT",
+      "LeastPrivilege": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  }
+}

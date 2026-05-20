@@ -1,0 +1,48 @@
+{
+  "F_CareTeamGating": {
+    "targeted_asserts": {
+      "FR_004_CareTeamGating": "BIT",
+      "OwnershipBasedAccess": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AuditCorrespondence": {
+    "targeted_asserts": {
+      "AuditCompleteness": "BIT",
+      "FR_012_AlwaysOnAudit": "BIT",
+      "AttributionCorrectness": "BIT",
+      "FR_013_AuditEntryShape": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_PermissionMatrix": {
+    "targeted_asserts": {
+      "LeastPrivilege": "BIT",
+      "PermissionCompleteness": "BIT",
+      "PermissionGrounding": "BIT",
+      "FR_017_AdminOnlyAuditEndpoint": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AppendOnlyClinicalNotes": {
+    "targeted_asserts": {
+      "AppendOnly": "BIT",
+      "FR_011_NotesAppendOnly": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_ClinicalEndpointsBlockAdmin": {
+    "targeted_asserts": {
+      "FR_005_AdminNoClinicalContent": "VACUOUS_OVERCONSTRAINT",
+      "LeastPrivilege": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_PermittedResponseIsSuccess": {
+    "targeted_asserts": {
+      "NoInformationLeakage": "BIT",
+      "FR_006_ByteEquivalentResponse": "BIT"
+    },
+    "all_bit": true
+  }
+}

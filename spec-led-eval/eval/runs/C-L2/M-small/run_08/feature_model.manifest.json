@@ -1,0 +1,110 @@
+{
+  "feature_id": "C-L2",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "OwnershipBasedAccess",
+    "AppendOnly",
+    "AuditCompleteness",
+    "AttributionCorrectness",
+    "NoInformationLeakage",
+    "AuthRequiredEverywhere"
+  ],
+  "feature_specific_predicates": [
+    "AdministratorContentBlindness",
+    "NoteAuthorClinicalRole",
+    "AuditNoteIdCorrect",
+    "AdministratorOnlyListAudit",
+    "AuthorisationBasisCorrect",
+    "NoteBodyNonEmpty"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "AuthRequiredEverywhere"
+    ],
+    "FR-004": [
+      "CareTeamGating",
+      "AuthorisationBasisCorrect"
+    ],
+    "FR-005": [
+      "AdministratorContentBlindness"
+    ],
+    "FR-006": [
+      "ByteEquivalentUnauthorised"
+    ],
+    "FR-009": [
+      "NoteBodyNonEmpty"
+    ],
+    "FR-010": [
+      "NoteAuthorClinicalRole"
+    ],
+    "FR-011": [
+      "NotesAppendOnly"
+    ],
+    "FR-012": [
+      "AlwaysOnAudit"
+    ],
+    "FR-013": [
+      "AuditAttributionCorrect",
+      "AuditNoteIdCorrect"
+    ],
+    "FR-014": [
+      "AuditImmutable"
+    ],
+    "FR-017": [
+      "AdministratorOnlyListAudit"
+    ],
+    "FR-018": [
+      "AdministratorContentBlindness"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_CareTeamGatingRule",
+      "asserts_violated": [
+        "CareTeamGating"
+      ],
+      "rationale": "Removing this fact allows Alloy to find audit entries where a clinician accesses a patient record with Permitted outcome despite not being on the active care team. The assertion CareTeamGating checks this invariant and will fail when the fact is removed and a violating instance is injected.",
+      "inject_violation": "fact MUTATE_CareTeamViolation { some disj ae: AuditEntry, ctm: CareTeamMembership | ae.user = ctm.clinician and ae.patient = ctm.patient and ae.accessType = ReadRecord and ae.outcome = Permitted and ctm.status = \"ended\" }"
+    },
+    {
+      "fact_name": "F_AuditEntryPerNote",
+      "asserts_violated": [
+        "AlwaysOnAudit"
+      ],
+      "rationale": "Removing this fact allows clinical notes to exist without corresponding audit entries. The AlwaysOnAudit assertion checks that every note has a matching audit entry and will fail when this fact is removed and a note without an audit is injected.",
+      "inject_violation": "fact MUTATE_AuditMissing { some n: ClinicalNote | no ae: AuditEntry | ae.noteId = n.noteId and ae.accessType = AddNote and ae.outcome = Permitted }"
+    },
+    {
+      "fact_name": "F_PermissionMatrixDef",
+      "asserts_violated": [
+        "LeastPrivilege"
+      ],
+      "rationale": "Removing this fact leaves the permission matrix empty or unconstrained, violating the least-privilege principle. Injecting that HospitalAdministrator can ReadRecord (which is not in the allowed matrix) causes LeastPrivilege to fail.",
+      "inject_violation": "fact MUTATE_PermissionViolation { (HospitalAdministrator -> ReadRecord) in PermissionMatrix.allowed }"
+    },
+    {
+      "fact_name": "F_ListAuditAdminOnly",
+      "asserts_violated": [
+        "AdministratorOnlyListAudit"
+      ],
+      "rationale": "Removing this fact allows non-administrators to perform ListAudit. Injecting an audit entry where a clinical role performs ListAudit with Permitted outcome causes the assertion to fail.",
+      "inject_violation": "fact MUTATE_ListAuditNonAdmin { some ae: AuditEntry | ae.accessType = ListAudit and ae.outcome = Permitted and ae.userRole in (Doctor + Nurse + Pharmacist + ClinicalAdmin) }"
+    },
+    {
+      "fact_name": "F_NoteAuthorMustBeClinical",
+      "asserts_violated": [
+        "NoteAuthorClinicalRole"
+      ],
+      "rationale": "Removing this fact allows administrators to author notes, violating the append-only clinical-notes invariant. Injecting a note authored by HospitalAdministrator causes the assertion to fail.",
+      "inject_violation": "fact MUTATE_AdminAuthorNote { some n: ClinicalNote | n.authorRole = HospitalAdministrator }"
+    },
+    {
+      "fact_name": "F_AuthorisationBasisRule",
+      "asserts_violated": [
+        "AuthorisationBasisCorrect"
+      ],
+      "rationale": "Removing this fact allows audit entries to have incorrect authorisation basis values. Injecting an audit with mismatched basis (e.g., a successful ReadRecord with PatientNotFoundBasis instead of CareTeamMemberBasis) causes the assertion to fail.",
+      "inject_violation": "fact MUTATE_WrongBasis { some ae: AuditEntry | ae.accessType = ReadRecord and ae.outcome = Permitted and ae.authorisationBasis != CareTeamMemberBasis }"
+    }
+  ]
+}

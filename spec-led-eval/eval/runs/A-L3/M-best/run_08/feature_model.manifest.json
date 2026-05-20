@@ -1,0 +1,187 @@
+{
+  "feature_id": "A-L3",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "NoSelfMutation",
+    "ValidationBeforeMutation"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_RoleMultiplicity",
+    "FR_003_ApplicantRights",
+    "FR_004_OfficerRights",
+    "FR_005_AuditorReadOnly",
+    "FR_006_ApplicantFromToken",
+    "FR_007_AmountPurpose",
+    "FR_008_OneInFlight",
+    "FR_009_ValidTransitions",
+    "FR_010_AutoAssign",
+    "FR_011_NoSelfAssign",
+    "FR_012_OnlyAssignedOfficerPatches",
+    "FR_013_NoSelfDecision",
+    "FR_014_ReasonRequired",
+    "FR_015_NoChangeAfterDecision",
+    "FR_016_AuditFields",
+    "FR_017_AuditCompleteness",
+    "FR_018_AuditAppendOnly",
+    "FR_019_Retention",
+    "FR_020_ByteEquivalent",
+    "FR_021_SameForOthers",
+    "FR_022_NoLeakOnPost",
+    "FR_023_AuditAuditorOnly",
+    "FR_024_ApplicantNoMutation"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_RoleMultiplicity"
+    ],
+    "FR-003": [
+      "FR_003_ApplicantRights"
+    ],
+    "FR-004": [
+      "FR_004_OfficerRights"
+    ],
+    "FR-005": [
+      "FR_005_AuditorReadOnly"
+    ],
+    "FR-006": [
+      "FR_006_ApplicantFromToken",
+      "OwnershipExclusivity"
+    ],
+    "FR-007": [
+      "FR_007_AmountPurpose",
+      "ValidationBeforeMutation"
+    ],
+    "FR-008": [
+      "FR_008_OneInFlight"
+    ],
+    "FR-009": [
+      "FR_009_ValidTransitions",
+      "ValidationBeforeMutation"
+    ],
+    "FR-010": [
+      "FR_010_AutoAssign"
+    ],
+    "FR-011": [
+      "FR_011_NoSelfAssign",
+      "NoSelfMutation"
+    ],
+    "FR-012": [
+      "FR_012_OnlyAssignedOfficerPatches",
+      "AttributionCorrectness",
+      "LeastPrivilege"
+    ],
+    "FR-013": [
+      "FR_013_NoSelfDecision",
+      "NoSelfMutation"
+    ],
+    "FR-014": [
+      "FR_014_ReasonRequired"
+    ],
+    "FR-015": [
+      "FR_015_NoChangeAfterDecision"
+    ],
+    "FR-016": [
+      "FR_016_AuditFields",
+      "AttributionCorrectness"
+    ],
+    "FR-017": [
+      "FR_017_AuditCompleteness",
+      "AuditCompleteness"
+    ],
+    "FR-018": [
+      "FR_018_AuditAppendOnly",
+      "AppendOnly"
+    ],
+    "FR-019": [
+      "FR_019_Retention"
+    ],
+    "FR-020": [
+      "FR_020_ByteEquivalent",
+      "NoInformationLeakage"
+    ],
+    "FR-021": [
+      "FR_021_SameForOthers",
+      "NoInformationLeakage"
+    ],
+    "FR-022": [
+      "FR_022_NoLeakOnPost"
+    ],
+    "FR-023": [
+      "FR_023_AuditAuditorOnly",
+      "NoInformationLeakage"
+    ],
+    "FR-024": [
+      "FR_024_ApplicantNoMutation"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_NoSelfAssignment",
+      "asserts_violated": [
+        "NoSelfMutation",
+        "FR_011_NoSelfAssign"
+      ],
+      "rationale": "Clearing the self-assignment fact lets Alloy invent a loan application where the assigned officer is the same User as the applicant; the injection forces that exact violating instance.",
+      "inject_violation": "fact MUTATE_SelfAssignViolation { some a: LoanApplication | a.assignedOfficer = a.applicant }"
+    },
+    {
+      "fact_name": "F_AppendOnlyAuditEntries",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_018_AuditAppendOnly"
+      ],
+      "rationale": "Clearing the append-only fact lets two distinct AuditEntries record the same transition for the same application; the injection forces such a duplicate to exist.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some disj e1, e2: AuditEntry | e1.app = e2.app and e1.prevStatus = e2.prevStatus and e1.newStatus = e2.newStatus }"
+    },
+    {
+      "fact_name": "F_AppAccessPolicy",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "FR_020_ByteEquivalent",
+        "FR_021_SameForOthers"
+      ],
+      "rationale": "Clearing the access-policy fact allows the appResponse relation to map a non-owner caller to OkResponse, which is precisely an information-leakage counterexample; the injection forces such a leak to exist.",
+      "inject_violation": "fact MUTATE_LeakViolation { some u: User, a: LoanApplication | u != a.applicant and u != a.assignedOfficer and Auditor not in u.roles and (u -> a -> OkResponse) in AccessControl.appResponse }"
+    },
+    {
+      "fact_name": "F_OfficerTransitionByAssigned",
+      "asserts_violated": [
+        "AttributionCorrectness",
+        "FR_012_OnlyAssignedOfficerPatches",
+        "FR_004_OfficerRights"
+      ],
+      "rationale": "Clearing the assigned-officer constraint lets an officer-attributed audit entry be authored by a User who is not the application's assigned officer; the injection forces such a misattribution.",
+      "inject_violation": "fact MUTATE_UnassignedOfficerViolation { some e: AuditEntry | e.actorRole = Officer and e.actor != e.app.assignedOfficer }"
+    },
+    {
+      "fact_name": "F_RoleMultiplicity",
+      "asserts_violated": [
+        "FR_002_RoleMultiplicity"
+      ],
+      "rationale": "Clearing the role multiplicity fact lets a User hold both the Officer and Auditor roles simultaneously, which the spec explicitly forbids; the injection forces that combination.",
+      "inject_violation": "fact MUTATE_RoleConflictViolation { some u: User | Officer in u.roles and Auditor in u.roles }"
+    },
+    {
+      "fact_name": "F_AuditAttribution",
+      "asserts_violated": [
+        "FR_005_AuditorReadOnly",
+        "AttributionCorrectness"
+      ],
+      "rationale": "Clearing the audit-attribution fact removes the no-auditor-writes constraint; the injection forces an audit entry whose actorRole is Auditor, which contradicts the read-only auditor invariant.",
+      "inject_violation": "fact MUTATE_AuditorWriteViolation { some e: AuditEntry | e.actorRole = Auditor }"
+    }
+  ]
+}

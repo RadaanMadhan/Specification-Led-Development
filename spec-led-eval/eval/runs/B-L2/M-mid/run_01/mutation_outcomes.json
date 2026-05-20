@@ -1,0 +1,48 @@
+{
+  "F_PermissionMatrix": {
+    "targeted_asserts": {
+      "LeastPrivilege": "BIT",
+      "PermissionCompleteness": "BIT",
+      "FR_009_NonOwnerMemberCannotEditDelete": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_EachTaskHasCreatedEntry": {
+    "targeted_asserts": {
+      "AuditCompleteness": "BIT",
+      "FR_015_AuditPerEditEvent": "BIT",
+      "FR_006_OwnerImmutable": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_DeletedTaskHasDeletedEntry": {
+    "targeted_asserts": {
+      "FR_016_AuditOutlivesTask": "BIT",
+      "AppendOnly": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_AuditActorRoleMatchesMembership": {
+    "targeted_asserts": {
+      "AttributionCorrectness": "BIT",
+      "FR_010_AdminAuditRoleSnapshot": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_OperationTaskInSameTeam": {
+    "targeted_asserts": {
+      "NoInformationLeakage": "BIT",
+      "FR_011_CrossTeamIsolation": "BIT",
+      "FR_019_ListScopedToTeam": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AllOperationsAreAuthorized": {
+    "targeted_asserts": {
+      "LeastPrivilege": "BIT",
+      "OwnershipBasedAccess": "BIT",
+      "FR_009_NonOwnerMemberCannotEditDelete": "BIT"
+    },
+    "all_bit": true
+  }
+}

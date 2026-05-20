@@ -1,0 +1,126 @@
+{
+  "feature_id": "B-L1",
+  "patterns_applied": [
+    "AuthRequiredEverywhere",
+    "PermissionCompleteness",
+    "LeastPrivilege",
+    "AppendOnly",
+    "AuditCompleteness",
+    "AttributionCorrectness",
+    "ValidationBeforeMutation"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_IdentityFromAuth",
+    "FR_003_SingleWorkspace",
+    "FR_004_FlatPermissions",
+    "FR_008_AtMostOneAssignee",
+    "FR_009_CreatorRecorded",
+    "FR_010_StatusEnum",
+    "FR_011_ClosedTaskEditRule",
+    "FR_012_DeletionPermanent",
+    "FR_013_ScopeExactlyFive",
+    "FR_017_TimestampsPresent",
+    "FR_018_DeletionLogged"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_IdentityFromAuth"
+    ],
+    "FR-003": [
+      "FR_003_SingleWorkspace"
+    ],
+    "FR-004": [
+      "FR_004_FlatPermissions",
+      "PermissionCompleteness",
+      "LeastPrivilege"
+    ],
+    "FR-008": [
+      "FR_008_AtMostOneAssignee"
+    ],
+    "FR-009": [
+      "FR_009_CreatorRecorded",
+      "FR_002_IdentityFromAuth"
+    ],
+    "FR-010": [
+      "FR_010_StatusEnum"
+    ],
+    "FR-011": [
+      "FR_011_ClosedTaskEditRule"
+    ],
+    "FR-012": [
+      "FR_012_DeletionPermanent",
+      "AppendOnly"
+    ],
+    "FR-013": [
+      "FR_013_ScopeExactlyFive"
+    ],
+    "FR-017": [
+      "FR_017_TimestampsPresent"
+    ],
+    "FR-018": [
+      "FR_018_DeletionLogged",
+      "AuditCompleteness",
+      "AttributionCorrectness"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_AuthRequiredOnAllOps",
+      "asserts_violated": [
+        "AuthRequiredEverywhere",
+        "FR_001_AuthRequired"
+      ],
+      "rationale": "Removing the auth-required fact lets Alloy invent an Operation with no caller but outcome Accepted, which is exactly what FR-001 and the AuthRequiredEverywhere pattern forbid.",
+      "inject_violation": "fact MUTATE_AuthViolation { some op: Operation | op.outcome = Accepted and no op.caller }"
+    },
+    {
+      "fact_name": "F_AppendOnlyDeletionLog",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_012_DeletionPermanent"
+      ],
+      "rationale": "Removing the append-only constraint on task_deletions lets two TaskDeletion rows reference the same Task, violating the permanence/append-only guarantee.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some disj td1, td2: TaskDeletion | td1.deletedTaskRef = td2.deletedTaskRef }"
+    },
+    {
+      "fact_name": "F_DeleteAcceptedProducesDeletion",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_018_DeletionLogged"
+      ],
+      "rationale": "Removing the produces-deletion fact lets an accepted DELETE happen without writing a task_deletions row, which is the exact audit-completeness failure mode for FR-018.",
+      "inject_violation": "fact MUTATE_AuditViolation { some op: Operation | op.kind = DeleteOp and op.outcome = Accepted and no op.producedDeletion }"
+    },
+    {
+      "fact_name": "F_DeletionAttribution",
+      "asserts_violated": [
+        "AttributionCorrectness",
+        "FR_018_DeletionLogged"
+      ],
+      "rationale": "Removing the deletion-attribution fact lets the deletion row record a deleter that is not the calling user, which the AttributionCorrectness pattern explicitly forbids.",
+      "inject_violation": "fact MUTATE_AttributionViolation { some op: Operation, td: TaskDeletion | op.producedDeletion = td and td.deletedBy != op.caller }"
+    },
+    {
+      "fact_name": "F_ClosedTaskEditRule",
+      "asserts_violated": [
+        "FR_011_ClosedTaskEditRule"
+      ],
+      "rationale": "Removing the closed-task-edit rule lets Alloy accept a PATCH on a done task that does not simultaneously reopen it, which FR-011 (and US2 #5/#6) forbid.",
+      "inject_violation": "fact MUTATE_ClosedTaskViolation { some op: Operation | op.kind = EditOp and op.outcome = Accepted and some op.target and op.target.status = Done and no op.setsStatusTo }"
+    },
+    {
+      "fact_name": "F_ValidationBeforeMutation",
+      "asserts_violated": [
+        "ValidationBeforeMutation",
+        "FR_002_IdentityFromAuth"
+      ],
+      "rationale": "Removing the validation-before-mutation fact lets a rejected CreateOp still produce a Task row, which violates the atomicity contract in data-model.md and the validation gate for FR-005..FR-008.",
+      "inject_violation": "fact MUTATE_ValidationViolation { some op: Operation | op.kind = CreateOp and op.outcome != Accepted and some op.produced }"
+    }
+  ]
+}

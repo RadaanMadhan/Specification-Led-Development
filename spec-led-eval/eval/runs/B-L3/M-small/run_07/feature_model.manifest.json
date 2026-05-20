@@ -1,0 +1,136 @@
+{
+  "feature_id": "B-L3",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuthRequiredEverywhere",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "AppendOnly",
+    "AuditCompleteness"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_OneTeamPerUser",
+    "FR_003_MemberCanCreateOwnTasks",
+    "FR_004_MemberIsolationWithinTeam",
+    "FR_005_TeamAdminCanEditAnyTeamTask",
+    "FR_006_NoInterTeamAccess",
+    "FR_009_ImmutableOwnerAndTeam",
+    "FR_010_OwnerOnlyShareControl",
+    "FR_011_ShareeCanViewAndEdit",
+    "FR_012_SameTeamSharing",
+    "FR_013_ShareAuditEntries",
+    "FR_014_ByteEquivalentUnauthorized",
+    "FR_015_OneAuditPerMutation",
+    "FR_016_AuditEntryStructure",
+    "FR_017_AuditImmutableAppendOnly",
+    "FR_019_AuditReadableByAuthorized"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_OneTeamPerUser"
+    ],
+    "FR-003": [
+      "FR_003_MemberCanCreateOwnTasks"
+    ],
+    "FR-004": [
+      "FR_004_MemberIsolationWithinTeam"
+    ],
+    "FR-005": [
+      "FR_005_TeamAdminCanEditAnyTeamTask"
+    ],
+    "FR-006": [
+      "FR_006_NoInterTeamAccess"
+    ],
+    "FR-009": [
+      "FR_009_ImmutableOwnerAndTeam"
+    ],
+    "FR-010": [
+      "FR_010_OwnerOnlyShareControl"
+    ],
+    "FR-011": [
+      "FR_011_ShareeCanViewAndEdit"
+    ],
+    "FR-012": [
+      "FR_012_SameTeamSharing"
+    ],
+    "FR-013": [
+      "FR_013_ShareAuditEntries"
+    ],
+    "FR-014": [
+      "FR_014_ByteEquivalentUnauthorized"
+    ],
+    "FR-015": [
+      "FR_015_OneAuditPerMutation",
+      "AuditCompleteness"
+    ],
+    "FR-016": [
+      "FR_016_AuditEntryStructure"
+    ],
+    "FR-017": [
+      "FR_017_AuditImmutableAppendOnly",
+      "AppendOnly"
+    ],
+    "FR-019": [
+      "FR_019_AuditReadableByAuthorized"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "PermissionCompleteness",
+        "FR_001_AuthRequired",
+        "AuthRequiredEverywhere"
+      ],
+      "rationale": "The permission matrix defines which roles are allowed to perform each operation. Removing this constraint leaves PermMatrix.Allowed unconstrained; without the closed-world definition, Alloy can choose an empty set of permissions, causing all assertions checking 'some role can perform operation X' to fail.",
+      "inject_violation": "fact MUTATE_NoPermissions { PermMatrix.Allowed = none }"
+    },
+    {
+      "fact_name": "F_ShareeTeamRestriction",
+      "asserts_violated": [
+        "FR_012_SameTeamSharing",
+        "NoInformationLeakage",
+        "FR_014_ByteEquivalentUnauthorized"
+      ],
+      "rationale": "This fact enforces that all sharees must belong to the same team as the task owner (FR-012). Removing it allows Alloy to create cross-team shares, which directly violates the isolation requirement and permits information leakage to users in other teams.",
+      "inject_violation": "fact MUTATE_CrossTeamShare { some disj t: Task, u: User | u in t.shared_with and u.team != t.owner.team }"
+    },
+    {
+      "fact_name": "F_AuditForTaskMutations",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_015_OneAuditPerMutation"
+      ],
+      "rationale": "This fact mandates that every task must have at least one audit entry, ensuring audit completeness (FR-015 and SC-007). Without it, Alloy can create tasks that never produced any audit trail, violating the invariant that every mutation must be recorded.",
+      "inject_violation": "fact MUTATE_NoAuditEntry { some t: Task | no ae: AuditEntry | ae.task = t }"
+    },
+    {
+      "fact_name": "F_TaskOwnerInTeam",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_006_NoInterTeamAccess",
+        "NoInformationLeakage"
+      ],
+      "rationale": "This fact ensures every task's owner belongs to the task's team, supporting the ownership-based access control model and cross-team isolation (FR-006). Removing it allows owners from other teams, breaking the invariant that tasks are scoped to a single team.",
+      "inject_violation": "fact MUTATE_CrossTeamOwner { some disj t: Task, u: User | t.owner = u and u.team != t.team }"
+    },
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_003_MemberCanCreateOwnTasks",
+        "FR_005_TeamAdminCanEditAnyTeamTask"
+      ],
+      "rationale": "The permission matrix is the canonical source of what operations are permitted for each role. Clearing it (making Allowed empty) removes all role-operation allowances, directly falsifying assertions that check members can create tasks or admins can edit team tasks.",
+      "inject_violation": "fact MUTATE_EmptyPermMatrix { all r: Role, op: OperationKind | r -> op not in PermMatrix.Allowed }"
+    }
+  ]
+}

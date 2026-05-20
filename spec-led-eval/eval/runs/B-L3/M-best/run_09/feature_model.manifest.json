@@ -1,0 +1,178 @@
+{
+  "feature_id": "B-L3",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "AuthRequiredEverywhere",
+    "PermissionCompleteness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "ValidationBeforeMutation"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_RoleFromToken",
+    "FR_003_MemberOwnedOrShared",
+    "FR_005_AdminInTeamOnly",
+    "FR_006_CrossTeamIsolation",
+    "FR_009_OneOwnerPerTask",
+    "FR_010_OwnerOnlyShares",
+    "FR_011_ShareeCannotDelete",
+    "FR_012_NoCrossTeamShare",
+    "FR_013_ShareUnshareAudit",
+    "FR_014_ByteEquivIsolation",
+    "FR_015_AuditPerEvent",
+    "FR_016_AuditFields",
+    "FR_017_AuditImmutable",
+    "FR_018_AuditAtomicity",
+    "FR_019_AuditVisibility",
+    "FR_020_AuditRetention",
+    "FR_021_PerformanceShape"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired"
+    ],
+    "FR-002": [
+      "FR_002_RoleFromToken"
+    ],
+    "FR-003": [
+      "FR_003_MemberOwnedOrShared",
+      "LeastPrivilege"
+    ],
+    "FR-004": [
+      "FR_003_MemberOwnedOrShared",
+      "LeastPrivilege"
+    ],
+    "FR-005": [
+      "FR_005_AdminInTeamOnly",
+      "LeastPrivilege",
+      "PermissionCompleteness"
+    ],
+    "FR-006": [
+      "FR_006_CrossTeamIsolation",
+      "NoInformationLeakage"
+    ],
+    "FR-007": [
+      "FR_009_OneOwnerPerTask"
+    ],
+    "FR-008": [
+      "FR_009_OneOwnerPerTask"
+    ],
+    "FR-009": [
+      "FR_009_OneOwnerPerTask",
+      "OwnershipExclusivity"
+    ],
+    "FR-010": [
+      "FR_010_OwnerOnlyShares",
+      "LeastPrivilege",
+      "PermissionCompleteness"
+    ],
+    "FR-011": [
+      "FR_011_ShareeCannotDelete",
+      "OwnershipBasedAccess",
+      "PermissionCompleteness"
+    ],
+    "FR-012": [
+      "FR_012_NoCrossTeamShare"
+    ],
+    "FR-013": [
+      "FR_013_ShareUnshareAudit"
+    ],
+    "FR-014": [
+      "FR_014_ByteEquivIsolation",
+      "NoInformationLeakage"
+    ],
+    "FR-015": [
+      "FR_015_AuditPerEvent",
+      "AuditCompleteness"
+    ],
+    "FR-016": [
+      "FR_016_AuditFields",
+      "AttributionCorrectness"
+    ],
+    "FR-017": [
+      "FR_017_AuditImmutable",
+      "AppendOnly"
+    ],
+    "FR-018": [
+      "FR_018_AuditAtomicity",
+      "ValidationBeforeMutation"
+    ],
+    "FR-019": [
+      "FR_019_AuditVisibility"
+    ],
+    "FR-020": [
+      "FR_020_AuditRetention"
+    ],
+    "FR-021": [
+      "FR_021_PerformanceShape"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_AuthRequired",
+      "asserts_violated": [
+        "FR_001_AuthRequired"
+      ],
+      "rationale": "Clearing F_AuthRequired lets the model invent a successful operation by an unauthenticated caller, which is exactly the case FR_001_AuthRequired forbids.",
+      "inject_violation": "fact MUTATE_AuthRequiredViolation { some op: Operation, t: Task | op.opAuthenticated = BFalse and op.opOutcome = Success and op.opTarget = t and op.opKind = GetTask }"
+    },
+    {
+      "fact_name": "F_AccessControl",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_010_OwnerOnlyShares",
+        "FR_011_ShareeCannotDelete",
+        "OwnershipBasedAccess",
+        "FR_003_MemberOwnedOrShared",
+        "FR_005_AdminInTeamOnly",
+        "FR_006_CrossTeamIsolation",
+        "NoInformationLeakage",
+        "FR_014_ByteEquivIsolation",
+        "FR_019_AuditVisibility"
+      ],
+      "rationale": "F_AccessControl is the load-bearing matrix-based fact gating every successful operation. Removing it lets Alloy invent a sharee successfully changing shared_with \u2014 a cell denied by the permission matrix \u2014 which violates LeastPrivilege, FR_010 and ripple-violates the other access assertions across cells.",
+      "inject_violation": "fact MUTATE_AccessControlViolation { some op: Operation, u: User, t: Task | op.opKind = PatchShares and op.opOutcome = Success and op.opCaller = u and op.opTarget = t and u in t.sharedWith and u != t.taskOwner and op.opAuthenticated = BTrue }"
+    },
+    {
+      "fact_name": "F_AppendOnly",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_017_AuditImmutable"
+      ],
+      "rationale": "Clearing F_AppendOnly allows an audit entry to be claimed by two distinct operations, modelling an UPDATE/overwrite on an existing audit row \u2014 exactly the append-only violation the assertion catches.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some disj op1, op2: Operation | some ae: AuditEntry | ae in op1.opAuditEntries and ae in op2.opAuditEntries }"
+    },
+    {
+      "fact_name": "F_AuditCompleteness",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_015_AuditPerEvent"
+      ],
+      "rationale": "Clearing F_AuditCompleteness lets the model exhibit a successful mutation (e.g., a created task) with no corresponding audit entry \u2014 the FR-015/SC-007 invariant the assertion is designed to catch.",
+      "inject_violation": "fact MUTATE_AuditCompletenessViolation { some op: Operation, t: Task | op.opKind = PostTasks and op.opOutcome = Success and op.opTarget = t and op.opAuthenticated = BTrue and no op.opAuditEntries }"
+    },
+    {
+      "fact_name": "F_AuditAttribution",
+      "asserts_violated": [
+        "AttributionCorrectness",
+        "FR_002_RoleFromToken",
+        "FR_016_AuditFields"
+      ],
+      "rationale": "F_AuditAttribution forces the audit row's recorded actor_role to equal the actor's actual role (FR-002 / FR-016 / Q2=A semantics). Removing it lets the model record a falsified role on an audit row \u2014 the misattribution AttributionCorrectness exists to catch.",
+      "inject_violation": "fact MUTATE_AttributionViolation { some ae: AuditEntry | ae.auditActorRole != ae.auditActor.userRole }"
+    },
+    {
+      "fact_name": "F_SharedWithSameTeam",
+      "asserts_violated": [
+        "FR_012_NoCrossTeamShare"
+      ],
+      "rationale": "F_SharedWithSameTeam enforces FR-012's prohibition on cross-team sharing. Removing it lets Alloy place a task whose sharedWith contains a user in a different team, the precise FR-012 violation.",
+      "inject_violation": "fact MUTATE_CrossTeamShareViolation { some t: Task, u: t.sharedWith | u.userTeam != t.taskTeam }"
+    }
+  ]
+}

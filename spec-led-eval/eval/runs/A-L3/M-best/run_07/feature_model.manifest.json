@@ -1,0 +1,188 @@
+{
+  "feature_id": "A-L3",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "NoSelfMutation",
+    "ValidationBeforeMutation"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_RoleExclusivity",
+    "FR_003_ApplicantCannotPatch",
+    "FR_004_OnlyAssignedOfficerPatches",
+    "FR_005_AuditorCannotWrite",
+    "FR_006_ApplicantIdentityFromCaller",
+    "FR_007_ValidationBackstop",
+    "FR_008_OneInFlightPerApplicant",
+    "FR_009_ValidTransitions",
+    "FR_010_AssignedOfficerHasOfficerRole",
+    "FR_011_NoSelfAssignment",
+    "FR_012_OnlyAssignedOfficerCanPatch",
+    "FR_013_NoSelfDecision",
+    "FR_014_ReasonOnTransitions",
+    "FR_015_NoChangesAfterDecided",
+    "FR_016_AuditEntryPerTransition",
+    "FR_017_AuditAtomicWithTransition",
+    "FR_018_AuditAppendOnly",
+    "FR_019_RetentionStructural",
+    "FR_020_NotFoundForUnauthorizedReads",
+    "FR_021_NoCrossApplicantLeak",
+    "FR_022_NoLeakViaPostResponse",
+    "FR_023_AuditEndpointAuditorOnly",
+    "FR_024_ApplicantCannotModify"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_RoleExclusivity"
+    ],
+    "FR-003": [
+      "FR_003_ApplicantCannotPatch",
+      "LeastPrivilege"
+    ],
+    "FR-004": [
+      "FR_004_OnlyAssignedOfficerPatches"
+    ],
+    "FR-005": [
+      "FR_005_AuditorCannotWrite"
+    ],
+    "FR-006": [
+      "FR_006_ApplicantIdentityFromCaller",
+      "AttributionCorrectness"
+    ],
+    "FR-007": [
+      "FR_007_ValidationBackstop",
+      "ValidationBeforeMutation"
+    ],
+    "FR-008": [
+      "FR_008_OneInFlightPerApplicant"
+    ],
+    "FR-009": [
+      "FR_009_ValidTransitions"
+    ],
+    "FR-010": [
+      "FR_010_AssignedOfficerHasOfficerRole"
+    ],
+    "FR-011": [
+      "FR_011_NoSelfAssignment",
+      "NoSelfMutation"
+    ],
+    "FR-012": [
+      "FR_012_OnlyAssignedOfficerCanPatch",
+      "OwnershipBasedAccess"
+    ],
+    "FR-013": [
+      "FR_013_NoSelfDecision",
+      "NoSelfMutation"
+    ],
+    "FR-014": [
+      "FR_014_ReasonOnTransitions"
+    ],
+    "FR-015": [
+      "FR_015_NoChangesAfterDecided"
+    ],
+    "FR-016": [
+      "FR_016_AuditEntryPerTransition",
+      "AuditCompleteness"
+    ],
+    "FR-017": [
+      "FR_017_AuditAtomicWithTransition"
+    ],
+    "FR-018": [
+      "FR_018_AuditAppendOnly",
+      "AppendOnly"
+    ],
+    "FR-019": [
+      "FR_019_RetentionStructural"
+    ],
+    "FR-020": [
+      "FR_020_NotFoundForUnauthorizedReads",
+      "NoInformationLeakage"
+    ],
+    "FR-021": [
+      "FR_021_NoCrossApplicantLeak",
+      "NoInformationLeakage"
+    ],
+    "FR-022": [
+      "FR_022_NoLeakViaPostResponse"
+    ],
+    "FR-023": [
+      "FR_023_AuditEndpointAuditorOnly",
+      "NoInformationLeakage"
+    ],
+    "FR-024": [
+      "FR_024_ApplicantCannotModify"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_AuditAppendOnly",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_018_AuditAppendOnly"
+      ],
+      "rationale": "Removing this fact lets the model construct two distinct audit entries describing the same (application, prev_status, new_status) transition, which is exactly the append-only/duplicate violation the assertion forbids.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some disj ae1, ae2: AuditEntry | ae1.application = ae2.application and ae1.prevStatus = ae2.prevStatus and ae1.newStatus = ae2.newStatus }"
+    },
+    {
+      "fact_name": "F_NoSelfAssignment",
+      "asserts_violated": [
+        "NoSelfMutation",
+        "FR_011_NoSelfAssignment"
+      ],
+      "rationale": "Removing this fact allows the auto-assignment to produce an application whose assigned officer is the same user as the applicant, violating FR-011.",
+      "inject_violation": "fact MUTATE_SelfAssignmentViolation { some a: LoanApplication | some a.assignedOfficer and a.assignedOfficer = a.applicant }"
+    },
+    {
+      "fact_name": "F_PatchRequiresAssignedOfficerNotApplicant",
+      "asserts_violated": [
+        "NoSelfMutation",
+        "FR_013_NoSelfDecision",
+        "FR_012_OnlyAssignedOfficerCanPatch",
+        "FR_024_ApplicantCannotModify"
+      ],
+      "rationale": "Removing this fact allows a successful PATCH where the caller is the application's applicant (self-decision) or not its assigned officer \u2014 both forbidden by FR-012/FR-013/FR-024.",
+      "inject_violation": "fact MUTATE_SelfDecisionViolation { some op: Operation | op.response = Ok and op.kind = PatchStatus and some op.target and op.caller = op.target.applicant }"
+    },
+    {
+      "fact_name": "F_NotFoundForUnauthorizedReads",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "FR_020_NotFoundForUnauthorizedReads",
+        "FR_021_NoCrossApplicantLeak"
+      ],
+      "rationale": "Removing this fact lets an unauthorized GET on an existing application return Ok instead of the byte-equivalent NotFound, leaking the application's existence to an outsider.",
+      "inject_violation": "fact MUTATE_LeakageViolation { some op: Operation | op.kind = GetApplication and op.authenticated = True and some op.target and op.response = Ok and not legitimateApplicationRead[op] }"
+    },
+    {
+      "fact_name": "F_AuthBeforeBusinessLogic",
+      "asserts_violated": [
+        "AuthRequiredEverywhere",
+        "FR_001_AuthRequired"
+      ],
+      "rationale": "Removing this fact lets an unauthenticated request succeed with response Ok, bypassing the OAuth bearer requirement that FR-001 makes mandatory before any business logic.",
+      "inject_violation": "fact MUTATE_AuthBypass { some op: Operation | op.authenticated = False and op.response = Ok and op.kind = GetApplication }"
+    },
+    {
+      "fact_name": "F_AuditOnlyOnSuccessfulStateChange",
+      "asserts_violated": [
+        "ValidationBeforeMutation",
+        "FR_017_AuditAtomicWithTransition",
+        "AuditCompleteness"
+      ],
+      "rationale": "Removing this fact lets the model produce an audit entry for a failed (non-Ok) operation, violating the atomic-commit guarantee of FR-017 and the validation-before-mutation pattern.",
+      "inject_violation": "fact MUTATE_AuditForFailedOp { some op: Operation | op.response != Ok and some op.resultingAudit }"
+    }
+  ]
+}

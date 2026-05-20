@@ -1,0 +1,114 @@
+{
+  "feature_id": "C-L1",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "NoInformationLeakage"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthenticationRequired",
+    "FR_002_ClinicianIdentityResolution",
+    "FR_005_ReadOnlyAccess",
+    "FR_006_CareTeamMembershipGating",
+    "FR_007_ByteEquivalentDeniedNotFound",
+    "FR_008_AlwaysOnAudit",
+    "FR_009_AuditEntryShape",
+    "FR_010_AuditImmutability",
+    "FR_011_AuditReadableByIGOnly"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthenticationRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_ClinicianIdentityResolution"
+    ],
+    "FR-005": [
+      "FR_005_ReadOnlyAccess"
+    ],
+    "FR-006": [
+      "FR_006_CareTeamMembershipGating",
+      "LeastPrivilege"
+    ],
+    "FR-007": [
+      "FR_007_ByteEquivalentDeniedNotFound",
+      "NoInformationLeakage"
+    ],
+    "FR-008": [
+      "FR_008_AlwaysOnAudit",
+      "AuditCompleteness"
+    ],
+    "FR-009": [
+      "FR_009_AuditEntryShape"
+    ],
+    "FR-010": [
+      "FR_010_AuditImmutability",
+      "AppendOnly"
+    ],
+    "FR-011": [
+      "FR_011_AuditReadableByIGOnly",
+      "LeastPrivilege"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_CareTeamMembershipGates",
+      "asserts_violated": [
+        "FR_006_CareTeamMembershipGating",
+        "LeastPrivilege"
+      ],
+      "rationale": "Removing this fact allows the model to invent access attempts where a clinician who is NOT on the care team can still have a Permitted outcome. This directly violates the care-team-membership gating rule, which is the core authorization invariant.",
+      "inject_violation": "fact MUTATE_CareTeamGateBreach { some attempt: AccessAttempt, member: CareTeamMembership | attempt.actor.role in (Doctor + Nurse + Pharmacist + ClinicalAdmin) and attempt.outcome = Permitted and not (member.clinician = attempt.actor and member.patient = attempt.target_patient and member.status = Active) }"
+    },
+    {
+      "fact_name": "F_AuditEntriesMatchAttempts",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "AttributionCorrectness"
+      ],
+      "rationale": "Removing this fact breaks the one-to-one correspondence between access attempts and audit entries, and allows audit entries to be disconnected from the attempts they record. This violates both the completeness and attribution correctness invariants.",
+      "inject_violation": "fact MUTATE_AuditMismatch { some audit1, audit2: AuditEntry | audit1 != audit2 and audit1.recorded_actor = audit2.recorded_actor and audit1.access_attempt.actor != audit2.access_attempt.actor }"
+    },
+    {
+      "fact_name": "F_AuthorisationBasisConsistency",
+      "asserts_violated": [
+        "FR_009_AuditEntryShape",
+        "FR_008_AlwaysOnAudit"
+      ],
+      "rationale": "Removing this fact allows audit entries to have inconsistent authorisation basis (e.g., Permitted outcome with NotCareTeamMember basis, which is logically impossible). This violates the audit entry shape constraint.",
+      "inject_violation": "fact MUTATE_AuthBasisInconsistency { some audit: AuditEntry | audit.outcome = Permitted and audit.authorisation_basis != CareTeamMember }"
+    },
+    {
+      "fact_name": "F_NonEmptyUniverse",
+      "asserts_violated": [
+        "AppendOnly",
+        "AuditCompleteness",
+        "AuthRequiredEverywhere"
+      ],
+      "rationale": "When the universe is empty, universally quantified predicates like 'all audit: AuditEntry | ...' become vacuously true. Removing this fact causes assertions to pass trivially without constraining anything meaningful. This is a test of predicate non-vacuity.",
+      "inject_violation": "fact MUTATE_PopulateUniverse { some User; some Patient; some CareTeamMembership; some AccessAttempt; some AuditEntry }"
+    },
+    {
+      "fact_name": "LeastPrivilege",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_011_AuditReadableByIGOnly"
+      ],
+      "rationale": "Removing the permission matrix facts allows the model to invent arbitrary role-operation pairs, violating the least-privilege principle. Specifically, clinical roles could gain access to SearchAuditLog or AuditOfficer could gain access to LookupPatientRecord.",
+      "inject_violation": "fact MUTATE_PermissionBreach { some role: (Doctor + Nurse + Pharmacist + ClinicalAdmin) | role -> SearchAuditLog in PermissionMatrix.allowed }"
+    },
+    {
+      "fact_name": "F_AllOutcomesCovered",
+      "asserts_violated": [
+        "FR_008_AlwaysOnAudit",
+        "AuditCompleteness"
+      ],
+      "rationale": "Removing this fact allows the model to invent outcomes outside the defined set, violating the closed-world assumption on access outcomes and making it impossible to ensure all paths are audited with valid outcomes.",
+      "inject_violation": "fact MUTATE_InvalidOutcome { some audit: AuditEntry | audit.outcome not in (Permitted + Denied + NotFoundOrDenied) }"
+    }
+  ]
+}

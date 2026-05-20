@@ -1,0 +1,225 @@
+{
+  "run_id": "C-L2/M-small/run_10",
+  "cell": "C-L2",
+  "model": "M-small",
+  "rep": 10,
+  "D1": 0.0,
+  "D2": 0.6666666666666666,
+  "D3": 0.0,
+  "D4": 0.275,
+  "aqs_partial": 0.23541666666666666,
+  "scored_at": "2026-05-20T04:29:04.998359+00:00",
+  "details": {
+    "D1": {
+      "n_assertions": 16,
+      "n_verdicts": 0
+    },
+    "D2": {
+      "patterns_applied": [
+        "LeastPrivilege",
+        "AuthRequiredEverywhere",
+        "AuditCompleteness",
+        "AppendOnly",
+        "AttributionCorrectness",
+        "NoInformationLeakage"
+      ],
+      "per_pattern": {
+        "LeastPrivilege": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "AuthRequiredEverywhere": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "AuditCompleteness": {
+          "in_catalog": true,
+          "has_pred": false,
+          "score": 0.5
+        },
+        "AppendOnly": {
+          "in_catalog": true,
+          "has_pred": false,
+          "score": 0.5
+        },
+        "AttributionCorrectness": {
+          "in_catalog": true,
+          "has_pred": false,
+          "score": 0.5
+        },
+        "NoInformationLeakage": {
+          "in_catalog": true,
+          "has_pred": false,
+          "score": 0.5
+        }
+      }
+    },
+    "D3": {
+      "per_target": {},
+      "skipped": [],
+      "note": "no scoreable mutation targets"
+    },
+    "D4": {
+      "per_fr": {
+        "FR-001": {
+          "covers": [
+            "AuthRequiredEverywhere"
+          ],
+          "verdicts": {
+            "AuthRequiredEverywhere": "MISSING"
+          },
+          "score": 0.5
+        },
+        "FR-002": {
+          "covers": [],
+          "verdicts": {},
+          "score": 0.0
+        },
+        "FR-003": {
+          "covers": [],
+          "verdicts": {},
+          "score": 0.0
+        },
+        "FR-004": {
+          "covers": [
+            "CareTeamGatingForClinicals",
+            "LeastPrivilege"
+          ],
+          "verdicts": {
+            "CareTeamGatingForClinicals": "MISSING",
+            "LeastPrivilege": "MISSING"
+          },
+          "score": 0.5
+        },
+        "FR-005": {
+          "covers": [
+            "AdminCannotAccessClinical",
+            "LeastPrivilege"
+          ],
+          "verdicts": {
+            "AdminCannotAccessClinical": "MISSING",
+            "LeastPrivilege": "MISSING"
+          },
+          "score": 0.5
+        },
+        "FR-006": {
+          "covers": [
+            "NoInformationLeakageOnDenial"
+          ],
+          "verdicts": {
+            "NoInformationLeakageOnDenial": "MISSING"
+          },
+          "score": 0.5
+        },
+        "FR-007": {
+          "covers": [],
+          "verdicts": {},
+          "score": 0.0
+        },
+        "FR-008": {
+          "covers": [],
+          "verdicts": {},
+          "score": 0.0
+        },
+        "FR-009": {
+          "covers": [
+            "ValidNoteTypeOnly"
+          ],
+          "verdicts": {
+            "ValidNoteTypeOnly": "MISSING"
+          },
+          "score": 0.5
+        },
+        "FR-010": {
+          "covers": [],
+          "verdicts": {},
+          "score": 0.0
+        },
+        "FR-011": {
+          "covers": [
+            "NotesAppendOnly",
+            "NoteAuthorsAreClinical"
+          ],
+          "verdicts": {
+            "NotesAppendOnly": "MISSING",
+            "NoteAuthorsAreClinical": "MISSING"
+          },
+          "score": 0.5
+        },
+        "FR-012": {
+          "covers": [
+            "AuditCompletenessForNotes"
+          ],
+          "verdicts": {
+            "AuditCompletenessForNotes": "MISSING"
+          },
+          "score": 0.5
+        },
+        "FR-013": {
+          "covers": [
+            "AuditNoteIdOnlyForAddNotePermitted",
+            "AuditUserRoleSnapshot",
+            "ValidAuditOutcome",
+            "ValidAuthorisationBasis"
+          ],
+          "verdicts": {
+            "AuditNoteIdOnlyForAddNotePermitted": "MISSING",
+            "AuditUserRoleSnapshot": "MISSING",
+            "ValidAuditOutcome": "MISSING",
+            "ValidAuthorisationBasis": "MISSING"
+          },
+          "score": 0.5
+        },
+        "FR-014": {
+          "covers": [
+            "AuditAppendOnly"
+          ],
+          "verdicts": {
+            "AuditAppendOnly": "MISSING"
+          },
+          "score": 0.5
+        },
+        "FR-015": {
+          "covers": [],
+          "verdicts": {},
+          "score": 0.0
+        },
+        "FR-016": {
+          "covers": [],
+          "verdicts": {},
+          "score": 0.0
+        },
+        "FR-017": {
+          "covers": [
+            "ListAuditOnlyByAdmin"
+          ],
+          "verdicts": {
+            "ListAuditOnlyByAdmin": "MISSING"
+          },
+          "score": 0.5
+        },
+        "FR-018": {
+          "covers": [
+            "AdminCannotAccessClinical"
+          ],
+          "verdicts": {
+            "AdminCannotAccessClinical": "MISSING"
+          },
+          "score": 0.5
+        },
+        "FR-019": {
+          "covers": [],
+          "verdicts": {},
+          "score": 0.0
+        },
+        "FR-020": {
+          "covers": [],
+          "verdicts": {},
+          "score": 0.0
+        }
+      }
+    }
+  }
+}

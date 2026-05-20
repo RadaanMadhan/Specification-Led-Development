@@ -1,0 +1,120 @@
+{
+  "feature_id": "B-L1",
+  "patterns_applied": [
+    "AuthRequiredEverywhere",
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_IdentityFromAuth",
+    "FR_003_SingleImplicitWorkspace",
+    "FR_004_FlatPermissions",
+    "FR_008_AssigneeIsMember",
+    "FR_009_CreatorAlwaysSet",
+    "FR_010_StatusEnum",
+    "FR_011_ClosedTaskEdit",
+    "FR_012_DeletionRecorded",
+    "FR_013_OnlyCoreOps",
+    "FR_018_DeletionLogged"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "AuthRequiredEverywhere",
+      "FR_001_AuthRequired"
+    ],
+    "FR-002": [
+      "FR_002_IdentityFromAuth"
+    ],
+    "FR-003": [
+      "FR_003_SingleImplicitWorkspace"
+    ],
+    "FR-004": [
+      "LeastPrivilege",
+      "PermissionMatrixComplete",
+      "FR_004_FlatPermissions"
+    ],
+    "FR-008": [
+      "FR_008_AssigneeIsMember"
+    ],
+    "FR-009": [
+      "FR_009_CreatorAlwaysSet"
+    ],
+    "FR-010": [
+      "FR_010_StatusEnum"
+    ],
+    "FR-011": [
+      "FR_011_ClosedTaskEdit"
+    ],
+    "FR-012": [
+      "FR_012_DeletionRecorded",
+      "AuditCompleteness"
+    ],
+    "FR-013": [
+      "FR_013_OnlyCoreOps"
+    ],
+    "FR-018": [
+      "AuditCompleteness",
+      "AppendOnly",
+      "AttributionCorrectness",
+      "FR_018_DeletionLogged"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_AuthRequired",
+      "asserts_violated": [
+        "AuthRequiredEverywhere",
+        "FR_001_AuthRequired"
+      ],
+      "rationale": "F_AuthRequired is the only fact directly forbidding a successful op with no caller (F_CallerIsTokenResolved is intentionally weakened to fire only when a caller exists). Removing it and forcing such an op makes the auth-required invariant fail.",
+      "inject_violation": "fact MUTATE_AuthRequiredViolation { some op: Operation | op.outcome = Success and no op.caller and op.role = MemberRole }"
+    },
+    {
+      "fact_name": "F_LeastPrivilege",
+      "asserts_violated": [
+        "LeastPrivilege"
+      ],
+      "rationale": "F_LeastPrivilege is the only fact tying Operation success to a matrix cell. Clearing it and forcing a successful Anonymous-role op produces an instance where (role -> kind) is not in PermMatrix.Allowed, which the LeastPrivilege predicate must reject.",
+      "inject_violation": "fact MUTATE_LeastPrivilegeViolation { some op: Operation | op.outcome = Success and op.role = Anonymous and some op.caller and op.kind = ViewTask }"
+    },
+    {
+      "fact_name": "F_DeletionLogCompleteness",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_012_DeletionRecorded",
+        "FR_018_DeletionLogged"
+      ],
+      "rationale": "F_DeletionLogCompleteness is the only fact requiring every successful delete to spawn a log entry. Clearing it and injecting a successful delete with no log directly contradicts the completeness predicate.",
+      "inject_violation": "fact MUTATE_AuditCompletenessViolation { some op: Operation | op.kind = DeleteTask and op.outcome = Success and no op.deletionLog and some op.targetTask and some op.caller }"
+    },
+    {
+      "fact_name": "F_DeletionLogAttribution",
+      "asserts_violated": [
+        "AttributionCorrectness",
+        "FR_018_DeletionLogged"
+      ],
+      "rationale": "F_DeletionLogAttribution is the only fact aligning a log entry's deleter/taskRef with the operation's caller/targetTask. Clearing it lets a delete op record a deleter different from its caller, which the AttributionCorrectness predicate explicitly rejects.",
+      "inject_violation": "fact MUTATE_AttributionViolation { some op: Operation | some op.deletionLog and op.deletionLog.deleter != op.caller }"
+    },
+    {
+      "fact_name": "F_AppendOnlyDeletionLog",
+      "asserts_violated": [
+        "AppendOnly"
+      ],
+      "rationale": "F_AppendOnlyDeletionLog is the only fact enforcing a 1-to-1 mapping between log entries and successful delete operations. Removing it and forcing two distinct operations to share a single DeletionLogEntry constructs an instance the AppendOnly predicate must flag.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some disj op1, op2: Operation | some op1.deletionLog and op1.deletionLog = op2.deletionLog }"
+    },
+    {
+      "fact_name": "F_ClosedTaskEditRule",
+      "asserts_violated": [
+        "FR_011_ClosedTaskEdit"
+      ],
+      "rationale": "F_ClosedTaskEditRule is the only fact blocking a successful edit of a Done task that doesn't transition it out of Done. Clearing it and injecting such an edit (preStatus = newStatus = Done with outcome Success) violates the closed-task edit predicate directly.",
+      "inject_violation": "fact MUTATE_ClosedTaskEditViolation { some op: Operation | op.kind = EditTask and op.outcome = Success and op.preStatus = Done and op.newStatus = Done and some op.targetTask and some op.caller }"
+    }
+  ]
+}

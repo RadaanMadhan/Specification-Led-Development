@@ -1,0 +1,142 @@
+{
+  "feature_id": "C-L1",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_IdentityResolved",
+    "FR_003_AuditPerPatientQueryable",
+    "FR_004_NoUrlPathPatientId",
+    "FR_005_ReadOnly",
+    "FR_006_CareTeamGating",
+    "FR_007_ByteEquivalentNotFound",
+    "FR_008_AlwaysAudit",
+    "FR_009_AuditFieldsCorrect",
+    "FR_010_AuditAppendOnly",
+    "FR_011_AuditSearchIGOnly",
+    "FR_012_NoDelete",
+    "FR_013_NoRecordWithoutAudit",
+    "FR_014_SafetyContentReturned",
+    "FR_015_PatientIdAtTop"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_IdentityResolved"
+    ],
+    "FR-003": [
+      "FR_003_AuditPerPatientQueryable"
+    ],
+    "FR-004": [
+      "FR_004_NoUrlPathPatientId"
+    ],
+    "FR-005": [
+      "FR_005_ReadOnly"
+    ],
+    "FR-006": [
+      "FR_006_CareTeamGating",
+      "OwnershipBasedAccess"
+    ],
+    "FR-007": [
+      "FR_007_ByteEquivalentNotFound",
+      "NoInformationLeakage"
+    ],
+    "FR-008": [
+      "FR_008_AlwaysAudit",
+      "AuditCompleteness"
+    ],
+    "FR-009": [
+      "FR_009_AuditFieldsCorrect",
+      "AttributionCorrectness"
+    ],
+    "FR-010": [
+      "FR_010_AuditAppendOnly",
+      "AppendOnly"
+    ],
+    "FR-011": [
+      "FR_011_AuditSearchIGOnly",
+      "NoInformationLeakage",
+      "LeastPrivilege"
+    ],
+    "FR-012": [
+      "FR_012_NoDelete",
+      "AppendOnly"
+    ],
+    "FR-013": [
+      "FR_013_NoRecordWithoutAudit"
+    ],
+    "FR-014": [
+      "FR_014_SafetyContentReturned"
+    ],
+    "FR-015": [
+      "FR_015_PatientIdAtTop"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_LeastPrivilege",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_011_AuditSearchIGOnly"
+      ],
+      "rationale": "Removing the matrix-enforced Permitted-implies-allowed rule lets Alloy invent a Permitted operation whose caller's role lacks the matrix entry, which is exactly what LeastPrivilege (and the FR-011 specialisation) must refuse.",
+      "inject_violation": "fact MUTATE_LeastPrivilegeViolation { some op: Operation | op.outcome = Permitted and (op.caller.role -> op.kind) not in PermMatrix.Allowed }"
+    },
+    {
+      "fact_name": "F_AppendOnlyAuditEntries",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_010_AuditAppendOnly"
+      ],
+      "rationale": "Removing the at-most-one-audit-entry-per-operation constraint lets Alloy create two distinct AuditEntries pointing at the same Operation, which the AppendOnly assertion must catch.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some disj ae1, ae2: AuditEntry | ae1.op = ae2.op }"
+    },
+    {
+      "fact_name": "F_AuditCompleteness",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_008_AlwaysAudit"
+      ],
+      "rationale": "Removing the obligation to write an audit row for every served LookupRecord access lets Alloy invent a permitted/denied access with no audit row \u2014 exactly the SC-001/SC-002 failure mode.",
+      "inject_violation": "fact MUTATE_AuditCompletenessViolation { some op: Operation | op.kind = LookupRecord and op.authenticated = True and some op.outcome and (no ae: AuditEntry | ae.op = op) }"
+    },
+    {
+      "fact_name": "F_NoInfoLeakage",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "FR_007_ByteEquivalentNotFound"
+      ],
+      "rationale": "Removing the byte-equivalence rule lets Alloy create a Denied LookupRecord whose response is not the canonical 404 \u2014 directly violating FR-007's no-leakage guarantee.",
+      "inject_violation": "fact MUTATE_InfoLeakViolation { some op: Operation | op.kind = LookupRecord and op.outcome = Denied and op.byteEquivNotFound = False }"
+    },
+    {
+      "fact_name": "F_CareTeamGating",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_006_CareTeamGating"
+      ],
+      "rationale": "Removing the care-team membership check lets Alloy permit a clinician's read of a patient they have no membership for \u2014 the exact SC-010 violation the ownership pattern exists to detect.",
+      "inject_violation": "fact MUTATE_CareTeamGatingViolation { some op: Operation | op.kind = LookupRecord and op.outcome = Permitted and (no m: CareTeamMembership | m.clinician = op.caller and m.patient = op.targetPatient) }"
+    },
+    {
+      "fact_name": "F_AuthBoundary",
+      "asserts_violated": [
+        "AuthRequiredEverywhere",
+        "FR_001_AuthRequired"
+      ],
+      "rationale": "Removing the auth-boundary rule lets Alloy invent an unauthenticated operation that nonetheless writes an audit row / returns content \u2014 the exact FR-001 / SC-004 failure surface.",
+      "inject_violation": "fact MUTATE_AuthBoundaryViolation { some op: Operation, ae: AuditEntry | op.authenticated = False and op.kind = LookupRecord and ae.op = op and some op.caller }"
+    }
+  ]
+}

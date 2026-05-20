@@ -1,0 +1,112 @@
+==============================================================================
+  Design Compliance Report  (Phase 3 — feature_model.als)
+  feature       : C-L2
+  spec source   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/eval/specs/C-L2
+  alloy model   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/C-L2/feature_model.als
+  patterns      : LeastPrivilege, PermissionCompleteness, AuthRequiredEverywhere, OwnershipBasedAccess, AuditCompleteness, AppendOnly, AttributionCorrectness, NoInformationLeakage, ValidationBeforeMutation
+  fr count      : 20 declared in spec.md
+  assertions    : 24 total (24/24 PASS via Alloy)
+==============================================================================
+
+  Compliance matrix
+  ----------------------------------------------------------------------------
+  Assertion                         Verdict   Anchor
+  ----------------------------------------------------------------------
+  LeastPrivilege                    PASS      PATTERN LeastPrivilege: contracts/http-api.md perm tables; spec.md FR-004, FR-005, FR-017
+  PermissionCompleteness            PASS      PATTERN PermissionCompleteness: contracts/http-api.md permission tables
+  AuthRequiredEverywhere            PASS      PATTERN AuthRequiredEverywhere: spec.md FR-001; contracts/http-api.md auth section
+  OwnershipBasedAccess              PASS      PATTERN OwnershipBasedAccess: spec.md FR-004; data-model.md CareTeamMembership
+  AuditCompleteness                 PASS      PATTERN AuditCompleteness: spec.md FR-012; data-model.md audit_entries
+  AppendOnly                        PASS      PATTERN AppendOnly: spec.md FR-011, FR-014; data-model.md "no UPDATE/DELETE"
+  AttributionCorrectness            PASS      PATTERN AttributionCorrectness: spec.md FR-013; data-model.md AuditEntry fields
+  NoInformationLeakage              PASS      PATTERN NoInformationLeakage: spec.md FR-006; contracts/http-api.md byte-equivalent envelope
+  ValidationBeforeMutation          PASS      PATTERN ValidationBeforeMutation: spec.md FR-009; data-model.md note CHECKs
+  FR_001_AuthRequired               PASS      FEATURE-SPECIFIC: FR-001 Authentication required
+  FR_002_RoleCatalogue              PASS      FEATURE-SPECIFIC: FR-002 Five-role catalogue
+  FR_004_CareTeamGating             PASS      FEATURE-SPECIFIC: FR-004 Care-team gating
+  FR_005_AdminContentBlind          PASS      FEATURE-SPECIFIC: FR-005 Administrator content-blindness (no clinical content path)
+  FR_006_ByteEquivalentDenial       PASS      FEATURE-SPECIFIC: FR-006 Byte-equivalent unauthorised response
+  FR_009_NoteValidation             PASS      FEATURE-SPECIFIC: FR-009 Note submission validation
+  FR_010_NoteShape                  PASS      FEATURE-SPECIFIC: FR-010 Note shape + author/role snapshot
+  FR_011_NotesAppendOnly            PASS      FEATURE-SPECIFIC: FR-011 Notes append-only
+  FR_012_AlwaysOnAudit              PASS      FEATURE-SPECIFIC: FR-012 Always-on audit
+  FR_013_AuditShape                 PASS      FEATURE-SPECIFIC: FR-013 Audit entry shape + note_id paired with permitted add_note
+  FR_014_AuditAppendOnly            PASS      FEATURE-SPECIFIC: FR-014 Audit append-only
+  FR_015_NoPermitWithoutAudit       PASS      FEATURE-SPECIFIC: FR-015 No permitted operation without a matching audit
+  FR_016_AuditRetention             PASS      FEATURE-SPECIFIC: FR-016 Audit retention floor — no delete path
+  FR_017_AdminOnlyAuditEndpoint     PASS      FEATURE-SPECIFIC: FR-017 Administrator-only audit-list endpoint
+  FR_018_AdminContentBlindResponse  PASS      FEATURE-SPECIFIC: FR-018 Administrator response carries no clinical content
+
+  FR coverage
+  ----------------------------------------------------------------------------
+  FR-001  →  FR_001_AuthRequired=PASS, AuthRequiredEverywhere=PASS
+  FR-002  →  FR_002_RoleCatalogue=PASS
+  FR-003  [uncovered]
+  FR-004  →  FR_004_CareTeamGating=PASS, OwnershipBasedAccess=PASS
+  FR-005  →  FR_005_AdminContentBlind=PASS, FR_018_AdminContentBlindResponse=PASS
+  FR-006  →  FR_006_ByteEquivalentDenial=PASS, NoInformationLeakage=PASS
+  FR-007  [uncovered]
+  FR-008  [uncovered]
+  FR-009  →  FR_009_NoteValidation=PASS, ValidationBeforeMutation=PASS
+  FR-010  →  FR_010_NoteShape=PASS, AttributionCorrectness=PASS
+  FR-011  →  FR_011_NotesAppendOnly=PASS, AppendOnly=PASS
+  FR-012  →  FR_012_AlwaysOnAudit=PASS, AuditCompleteness=PASS
+  FR-013  →  FR_013_AuditShape=PASS, AttributionCorrectness=PASS
+  FR-014  →  FR_014_AuditAppendOnly=PASS, AppendOnly=PASS
+  FR-015  →  FR_015_NoPermitWithoutAudit=PASS
+  FR-016  →  FR_016_AuditRetention=PASS
+  FR-017  →  FR_017_AdminOnlyAuditEndpoint=PASS, LeastPrivilege=PASS
+  FR-018  →  FR_018_AdminContentBlindResponse=PASS
+  FR-019  [uncovered]
+  FR-020  [uncovered]
+
+  WARNING: 5 FR(s) without any matching assertion: FR-003, FR-007, FR-008, FR-019, FR-020
+
+==============================================================================
+  Mutation tests  (assertion-strength validation)
+==============================================================================
+
+  Strategy: replace each named fact's body with `{}` (no constraint),
+  then re-run Alloy. Each listed assertion should now FAIL on the
+  mutated model. If it still PASSes, the assertion is vacuous and
+  must be strengthened.
+
+  - MUTATE F_CareTeamGating  → runs/C-L2/mutated_F_CareTeamGating.als
+    rationale: Removing the care-team gating fact lets the model invent a permitted clinical access (ReadRecord) by a clinician who has no active care-team membership for the target patient.
+    expected to FAIL: OwnershipBasedAccess, FR_004_CareTeamGating
+      - OwnershipBasedAccess: FAIL (expected)
+      - FR_004_CareTeamGating: FAIL (expected)
+
+  - MUTATE F_AuditCompleteness  → runs/C-L2/mutated_F_AuditCompleteness.als
+    rationale: Removing the always-on-audit fact lets the model produce a permitted access (admin ListAudit) with no matching audit entry.
+    expected to FAIL: AuditCompleteness, FR_012_AlwaysOnAudit, FR_015_NoPermitWithoutAudit
+      - AuditCompleteness: FAIL (expected)
+      - FR_012_AlwaysOnAudit: FAIL (expected)
+      - FR_015_NoPermitWithoutAudit: FAIL (expected)
+
+  - MUTATE F_AuditAttribution  → runs/C-L2/mutated_F_AuditAttribution.als
+    rationale: Removing the attribution fact lets an audit entry attribute the access to someone other than the actual caller.
+    expected to FAIL: AttributionCorrectness, FR_013_AuditShape
+      - AttributionCorrectness: FAIL (expected)
+      - FR_013_AuditShape: FAIL (expected)
+
+  - MUTATE F_AdminOnlyAudit  → runs/C-L2/mutated_F_AdminOnlyAudit.als
+    rationale: Without the admin-only gate on the audit endpoint, a clinical-role caller can be permitted on ListAudit — but Doctor->ListAudit is not in the permission matrix, so LeastPrivilege bites.
+    expected to FAIL: LeastPrivilege, FR_017_AdminOnlyAuditEndpoint
+      - LeastPrivilege: FAIL (expected)
+      - FR_017_AdminOnlyAuditEndpoint: FAIL (expected)
+
+  - MUTATE F_ByteEquivalentDenial  → runs/C-L2/mutated_F_ByteEquivalentDenial.als
+    rationale: Removing the byte-equivalent-denial fact lets a Denied response and a NotFoundOrDenied response take on different external response shapes, leaking the existence of restricted resources.
+    expected to FAIL: NoInformationLeakage, FR_006_ByteEquivalentDenial
+      - NoInformationLeakage: FAIL (expected)
+      - FR_006_ByteEquivalentDenial: FAIL (expected)
+
+  Mutation summary
+  ----------------------------------------------------------------------------
+  - F_CareTeamGating: ASSERTIONS BIT (OwnershipBasedAccess, FR_004_CareTeamGating)
+  - F_AuditCompleteness: ASSERTIONS BIT (AuditCompleteness, FR_012_AlwaysOnAudit, FR_015_NoPermitWithoutAudit)
+  - F_AuditAttribution: ASSERTIONS BIT (AttributionCorrectness, FR_013_AuditShape)
+  - F_AdminOnlyAudit: ASSERTIONS BIT (LeastPrivilege, FR_017_AdminOnlyAuditEndpoint)
+  - F_ByteEquivalentDenial: ASSERTIONS BIT (NoInformationLeakage, FR_006_ByteEquivalentDenial)
+

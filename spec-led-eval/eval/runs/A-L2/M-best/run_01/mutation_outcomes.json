@@ -1,0 +1,42 @@
+{
+  "F_AssignmentMatchesStatus": {
+    "targeted_asserts": {
+      "FR_010_UnassignedQueueShape": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_DecisionByAssignedOfficer": {
+    "targeted_asserts": {
+      "FR_013_OnlyAssignedOfficerDecides": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_SuccessRequiresPermission": {
+    "targeted_asserts": {
+      "LeastPrivilege": "BIT",
+      "FR_002_CustomerScope": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_DecisionReasonNonEmpty": {
+    "targeted_asserts": {
+      "FR_014_NonEmptyReason": "BIT",
+      "ValidationBeforeMutation": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_InitialSubmissionEvent": {
+    "targeted_asserts": {
+      "FR_009_InitialSubmissionAudit": "BIT",
+      "AuditCompleteness": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_CustomerNonOwnedReturnsNotFound": {
+    "targeted_asserts": {
+      "NoInformationLeakage": "BIT",
+      "FR_020_OwnershipAndNoLeak": "BIT"
+    },
+    "all_bit": true
+  }
+}

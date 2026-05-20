@@ -1,0 +1,48 @@
+{
+  "F_AppendOnlyAuditEntries": {
+    "targeted_asserts": {
+      "AppendOnly": "BIT",
+      "FR_018_AuditAppendOnly": "BIT",
+      "FR_019_ExactlyOneEntryPerTransition": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_DecisionByAssignedOfficer": {
+    "targeted_asserts": {
+      "FR_013_OnlyAssignedOfficerDecides": "BIT",
+      "AttributionCorrectness": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_OneInflightPerCustomer": {
+    "targeted_asserts": {
+      "FR_008_OneInflightPerCustomer": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_OperationsAreAuthorised": {
+    "targeted_asserts": {
+      "LeastPrivilege": "VACUOUS_OVERCONSTRAINT",
+      "FR_002_CustomerActions": "VACUOUS_OVERCONSTRAINT",
+      "FR_004_ComplianceReadOnly": "VACUOUS_OVERCONSTRAINT",
+      "FR_023_ComplianceNoWrite": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_AuditHasDecisionEntry": {
+    "targeted_asserts": {
+      "AuditCompleteness": "BIT",
+      "FR_015_DecisionAtomicWithAudit": "BIT",
+      "FR_017_EveryTransitionHasAuditEntry": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_ComplianceReadOnly": {
+    "targeted_asserts": {
+      "FR_004_ComplianceReadOnly": "VACUOUS_OVERCONSTRAINT",
+      "FR_023_ComplianceNoWrite": "VACUOUS_OVERCONSTRAINT",
+      "LeastPrivilege": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  }
+}

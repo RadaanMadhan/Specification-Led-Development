@@ -1,0 +1,135 @@
+{
+  "feature_id": "A-L3",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "NoSelfMutation"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_OneRolePerUser",
+    "FR_007_AmountAndPurpose",
+    "FR_008_OneInFlightPerApplicant",
+    "FR_009_StatusStateMachine",
+    "FR_010_NoSelfAssignment",
+    "FR_013_NoSelfApproval",
+    "FR_016_AuditEntryFields",
+    "FR_018_AuditImmutable",
+    "FR_020_ByteEquivalentResponses",
+    "FR_023_AuditorOnlyAuditRead",
+    "FR_024_ApplicantCannotModifyPostSubmission"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_OneRolePerUser"
+    ],
+    "FR-007": [
+      "FR_007_AmountAndPurpose"
+    ],
+    "FR-008": [
+      "FR_008_OneInFlightPerApplicant"
+    ],
+    "FR-009": [
+      "FR_009_StatusStateMachine"
+    ],
+    "FR-010": [
+      "FR_010_NoSelfAssignment"
+    ],
+    "FR-011": [
+      "FR_010_NoSelfAssignment"
+    ],
+    "FR-013": [
+      "FR_013_NoSelfApproval",
+      "NoSelfMutation"
+    ],
+    "FR-016": [
+      "FR_016_AuditEntryFields",
+      "AuditCompleteness",
+      "AttributionCorrectness"
+    ],
+    "FR-018": [
+      "FR_018_AuditImmutable",
+      "AppendOnly"
+    ],
+    "FR-020": [
+      "FR_020_ByteEquivalentResponses",
+      "NoInformationLeakage"
+    ],
+    "FR-021": [
+      "FR_020_ByteEquivalentResponses",
+      "NoInformationLeakage"
+    ],
+    "FR-023": [
+      "FR_023_AuditorOnlyAuditRead"
+    ],
+    "FR-024": [
+      "FR_024_ApplicantCannotModifyPostSubmission"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_LeastPrivilegeMatrix",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_023_AuditorOnlyAuditRead",
+        "FR_024_ApplicantCannotModifyPostSubmission"
+      ],
+      "rationale": "Removing this fact allows arbitrary permissions to be added; the permission matrix becomes unconstrained. The LeastPrivilege assertion checks that permissions are strictly defined per the contract. FR-023 and FR-024 depend on specific permission denials. Injecting an unauthorized permission (e.g., Applicant -> PatchApplicationStatus) forces a violation.",
+      "inject_violation": "fact MUTATE_UnauthorizedPermission { Applicant -> PatchApplicationStatus in PermMatrix.allowed }"
+    },
+    {
+      "fact_name": "F_OneInFlightPerApplicant",
+      "asserts_violated": [
+        "FR_008_OneInFlightPerApplicant"
+      ],
+      "rationale": "Removing this constraint allows multiple in-flight applications for the same applicant. The assertion checks that at most one application per applicant can be in Pending or UnderReview status simultaneously. Injecting two in-flight apps for the same applicant violates this invariant.",
+      "inject_violation": "fact MUTATE_TwoInFlightApps { some disj app1, app2: LoanApplication, u: User | app1.applicant = u and app2.applicant = u and app1.status in Pending + UnderReview and app2.status in Pending + UnderReview }"
+    },
+    {
+      "fact_name": "F_NoSelfAssignment",
+      "asserts_violated": [
+        "FR_010_NoSelfAssignment",
+        "NoSelfMutation"
+      ],
+      "rationale": "Removing this fact permits an officer to be assigned to an application they themselves are the applicant on. This violates the no-self-assignment invariant (FR-010) and the no-self-mutation pattern. Injecting a self-assigned application directly violates both assertions.",
+      "inject_violation": "fact MUTATE_SelfAssignment { some app: LoanApplication, u: User | app.applicant = u and app.assignedOfficer = u }"
+    },
+    {
+      "fact_name": "F_AppendOnlyAuditLog",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_018_AuditImmutable"
+      ],
+      "rationale": "Removing this fact allows audit entries to be created without required fields or to exist in a mutable state. The assertion checks that all audit entries have the core fields (application, actor, actorRole, newStatus). Without this constraint, the append-only invariant is violated. Injecting an audit entry with missing fields forces the violation.",
+      "inject_violation": "fact MUTATE_IncompleteAuditEntry { some ae: AuditEntry | no ae.actor or no ae.actorRole or no ae.newStatus }"
+    },
+    {
+      "fact_name": "F_NoInformationLeakage",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "FR_020_ByteEquivalentResponses"
+      ],
+      "rationale": "Removing this fact permits applicants to access other applicants' applications. The assertion checks that non-owning applicants cannot retrieve applications they don't own. Injecting permission for one applicant to view another applicant's application violates the invariant.",
+      "inject_violation": "fact MUTATE_InfoLeakage { some disj u1, u2: User, app: LoanApplication | Applicant in u1.userRoles and Applicant in u2.userRoles and u1 != u2 and app.applicant = u2 and (u1 -> GetApplicationById in PermMatrix.allowed) }"
+    },
+    {
+      "fact_name": "F_RoleMultiplicity",
+      "asserts_violated": [
+        "FR_002_OneRolePerUser"
+      ],
+      "rationale": "Removing this constraint allows a user to simultaneously hold both Officer and Auditor roles, which violates the mutually-exclusive role constraint. The assertion checks that no user has both roles. Injecting a user with both roles forces the violation.",
+      "inject_violation": "fact MUTATE_ConflictingRoles { some u: User | Officer in u.userRoles and Auditor in u.userRoles }"
+    }
+  ]
+}

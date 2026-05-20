@@ -1,0 +1,143 @@
+{
+  "feature_id": "003-loan-application",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "PermissionGrounding",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_StructuralFieldsPresent",
+    "FR_004_SubmissionRecorded",
+    "FR_005_OnePendingPerCustomer",
+    "FR_009_DecisionReasonRequired",
+    "FR_010_DecisionPersisted",
+    "FR_011_DecidedImmutable",
+    "FR_012_NoTwoDecisions",
+    "FR_013_CustomerOwnAccess",
+    "FR_014_StatusChangeObservable",
+    "FR_015_OnlyStaffDecides",
+    "FR_016_AuditTrail",
+    "FR_017_RetentionOrphanFreedom"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "LeastPrivilege"
+    ],
+    "FR-002": [
+      "FR_002_StructuralFieldsPresent"
+    ],
+    "FR-003": [
+      "FR_002_StructuralFieldsPresent"
+    ],
+    "FR-004": [
+      "FR_004_SubmissionRecorded"
+    ],
+    "FR-005": [
+      "FR_005_OnePendingPerCustomer"
+    ],
+    "FR-006": [
+      "FR_004_SubmissionRecorded"
+    ],
+    "FR-007": [
+      "LeastPrivilege",
+      "PermissionCompleteness"
+    ],
+    "FR-008": [
+      "LeastPrivilege"
+    ],
+    "FR-009": [
+      "FR_009_DecisionReasonRequired"
+    ],
+    "FR-010": [
+      "FR_010_DecisionPersisted"
+    ],
+    "FR-011": [
+      "FR_011_DecidedImmutable"
+    ],
+    "FR-012": [
+      "FR_012_NoTwoDecisions"
+    ],
+    "FR-013": [
+      "FR_013_CustomerOwnAccess",
+      "OwnershipBasedAccess"
+    ],
+    "FR-014": [
+      "FR_014_StatusChangeObservable"
+    ],
+    "FR-015": [
+      "FR_015_OnlyStaffDecides",
+      "LeastPrivilege",
+      "PermissionGrounding"
+    ],
+    "FR-016": [
+      "FR_016_AuditTrail",
+      "AuditCompleteness",
+      "AppendOnly",
+      "AttributionCorrectness"
+    ],
+    "FR-017": [
+      "FR_017_RetentionOrphanFreedom"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_LeastPrivilege",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_015_OnlyStaffDecides"
+      ],
+      "rationale": "Clearing this fact lets the model invent an Operation whose caller's role is not present in the permission matrix for that operation kind. The injection forces a customer to call PostDecision, which the matrix forbids, so LeastPrivilege (matrix membership) and FR_015 (staff-only decisions) both fail.",
+      "inject_violation": "fact MUTATE_CustomerDecides { some op: Operation | op.caller.role = CustomerRole and op.kind = PostDecision }"
+    },
+    {
+      "fact_name": "F_OnePendingPerCustomer",
+      "asserts_violated": [
+        "FR_005_OnePendingPerCustomer"
+      ],
+      "rationale": "Clearing this fact removes the partial-unique constraint, allowing two simultaneous Pending Review applications for the same customer, which is exactly the FR-005 bug.",
+      "inject_violation": "fact MUTATE_TwoPending { some disj la1, la2: LoanApplication | la1.customer = la2.customer and la1.status = PendingReview and la2.status = PendingReview }"
+    },
+    {
+      "fact_name": "F_OneSubmittedEventPerApp",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_016_AuditTrail",
+        "AppendOnly"
+      ],
+      "rationale": "Clearing this fact lets an application exist without (or with multiple) submitted audit events. The injection picks an application with zero submitted events, falsifying the 'one submitted event per application' clause in all three assertions.",
+      "inject_violation": "fact MUTATE_AppNoSubmittedEvent { some la: LoanApplication | no e: ApplicationEvent | e.app = la and e.eventType = SubmittedEvent }"
+    },
+    {
+      "fact_name": "F_OwnershipBasedAccess",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_013_CustomerOwnAccess"
+      ],
+      "rationale": "Clearing this fact removes the ownership-conditional gate. The injection forces a customer to view another customer's application via GetApplicationById, which is the FR-013 information-leakage scenario.",
+      "inject_violation": "fact MUTATE_CrossCustomerView { some op: Operation | op.caller.role = CustomerRole and op.kind = GetApplicationById and some op.target and op.target.customer != op.caller }"
+    },
+    {
+      "fact_name": "F_SubmittedEventAttribution",
+      "asserts_violated": [
+        "AttributionCorrectness"
+      ],
+      "rationale": "Clearing this fact lets a submitted audit event record an actor other than the application's customer. The injection forces exactly such a misattribution, which AttributionCorrectness should catch.",
+      "inject_violation": "fact MUTATE_MisattributedSubmit { some e: ApplicationEvent | e.eventType = SubmittedEvent and e.actor != e.app.customer }"
+    },
+    {
+      "fact_name": "F_DecisionReasonNonEmpty",
+      "asserts_violated": [
+        "FR_009_DecisionReasonRequired"
+      ],
+      "rationale": "Clearing this fact lets a Decision exist with no recorded Reason (since the field is declared `lone`). The injection forces such an empty-reason decision, which FR-009 prohibits.",
+      "inject_violation": "fact MUTATE_EmptyReason { some d: Decision | no d.reason }"
+    }
+  ]
+}

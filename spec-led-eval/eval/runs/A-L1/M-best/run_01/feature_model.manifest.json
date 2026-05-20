@@ -1,0 +1,166 @@
+{
+  "feature_id": "003-loan-application",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "PermissionGrounding",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "ValidationBeforeMutation",
+    "ConcurrencySafety"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_CustomerSubmits",
+    "FR_002_ValidationRejection",
+    "FR_003_RangeAndTermValidated",
+    "FR_004_UniqueReference",
+    "FR_005_OnePendingPerCustomer",
+    "FR_006_SubmissionConfirmation",
+    "FR_007_StaffQueueAccess",
+    "FR_008_StaffViewsAny",
+    "FR_009_ReasonRequired",
+    "FR_010_DecisionPersisted",
+    "FR_011_NoSecondDecision",
+    "FR_012_ConcurrentDecisionSafe",
+    "FR_013_CustomerSeesOwnOnly",
+    "FR_014_NotificationOnDecision",
+    "FR_015_CustomersCantDecideOrAudit",
+    "FR_016_AuditTrail",
+    "FR_017_Retention"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_CustomerSubmits",
+      "PermissionGrounding"
+    ],
+    "FR-002": [
+      "FR_002_ValidationRejection",
+      "ValidationBeforeMutation"
+    ],
+    "FR-003": [
+      "FR_003_RangeAndTermValidated"
+    ],
+    "FR-004": [
+      "FR_004_UniqueReference"
+    ],
+    "FR-005": [
+      "FR_005_OnePendingPerCustomer"
+    ],
+    "FR-006": [
+      "FR_006_SubmissionConfirmation"
+    ],
+    "FR-007": [
+      "FR_007_StaffQueueAccess",
+      "PermissionGrounding"
+    ],
+    "FR-008": [
+      "FR_008_StaffViewsAny"
+    ],
+    "FR-009": [
+      "FR_009_ReasonRequired"
+    ],
+    "FR-010": [
+      "FR_010_DecisionPersisted"
+    ],
+    "FR-011": [
+      "FR_011_NoSecondDecision",
+      "ConcurrencySafety"
+    ],
+    "FR-012": [
+      "FR_012_ConcurrentDecisionSafe",
+      "ConcurrencySafety"
+    ],
+    "FR-013": [
+      "FR_013_CustomerSeesOwnOnly",
+      "OwnershipBasedAccess",
+      "NoInformationLeakage"
+    ],
+    "FR-014": [
+      "FR_014_NotificationOnDecision"
+    ],
+    "FR-015": [
+      "FR_015_CustomersCantDecideOrAudit",
+      "LeastPrivilege",
+      "PermissionGrounding"
+    ],
+    "FR-016": [
+      "FR_016_AuditTrail",
+      "AuditCompleteness",
+      "AppendOnly",
+      "AttributionCorrectness"
+    ],
+    "FR-017": [
+      "FR_017_Retention"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_LeastPrivilege",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_015_CustomersCantDecideOrAudit"
+      ],
+      "rationale": "Without F_LeastPrivilege, nothing forces successful operations to lie inside the permission matrix. Injecting a successful Customer GetAudit op contradicts (CustomerRole -> GetAudit not in Allowed), so the LeastPrivilege assertion must surface a counterexample.",
+      "inject_violation": "fact MUTATE_LeastPrivilegeViolation { some op: Operation | op.succeeded = True and op.caller in Customer and op.kind = GetAudit }"
+    },
+    {
+      "fact_name": "F_OnePendingPerCustomer",
+      "asserts_violated": [
+        "FR_005_OnePendingPerCustomer"
+      ],
+      "rationale": "Removing the partial-unique-index analogue lets the model invent two PendingReview applications for the same customer, which is exactly FR-005's prohibition.",
+      "inject_violation": "fact MUTATE_TwoPendingPerCustomer { some disj a1, a2: LoanApplication | a1.customer = a2.customer and a1.status = PendingReview and a2.status = PendingReview }"
+    },
+    {
+      "fact_name": "F_AppendOnlyAuditEntries",
+      "asserts_violated": [
+        "AppendOnly"
+      ],
+      "rationale": "Clearing this fact removes the (app, eventType) uniqueness on the audit log; injecting two distinct events for the same application and type produces a structural violation the AppendOnly assertion must catch.",
+      "inject_violation": "fact MUTATE_DuplicateAuditEvent { some disj e1, e2: ApplicationEvent | e1.app = e2.app and e1.eventType = e2.eventType }"
+    },
+    {
+      "fact_name": "F_AuditCompleteness",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_014_NotificationOnDecision",
+        "FR_016_AuditTrail"
+      ],
+      "rationale": "Without F_AuditCompleteness no fact mandates a decision event per decided application. Injecting an Approved application with zero matching approved events flunks the AuditCompleteness assertion.",
+      "inject_violation": "fact MUTATE_MissingAuditEntry { some a: LoanApplication | a.status = ApprovedStatus and (no e: ApplicationEvent | e.app = a and e.eventType = EventApproved) }"
+    },
+    {
+      "fact_name": "F_OneDecisionPerApplication",
+      "asserts_violated": [
+        "ConcurrencySafety",
+        "FR_011_NoSecondDecision",
+        "FR_012_ConcurrentDecisionSafe"
+      ],
+      "rationale": "The PK on decisions.application_id is what guarantees SC-005. Drop the fact and inject two Decision atoms pointing at the same LoanApplication; ConcurrencySafety must report a counterexample.",
+      "inject_violation": "fact MUTATE_TwoDecisions { some disj d1, d2: Decision | d1.application = d2.application }"
+    },
+    {
+      "fact_name": "F_OwnershipForGet",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "NoInformationLeakage",
+        "FR_013_CustomerSeesOwnOnly"
+      ],
+      "rationale": "Without ownership-gated access, the model can let a customer successfully GET another customer's application. The injection forces such a witness and the ownership-based-access predicates fail.",
+      "inject_violation": "fact MUTATE_CrossCustomerRead { some op: Operation | op.caller in Customer and op.kind = GetApplicationById and op.succeeded = True and some op.target and op.target.customer != op.caller }"
+    },
+    {
+      "fact_name": "F_AuditAttribution",
+      "asserts_violated": [
+        "AttributionCorrectness"
+      ],
+      "rationale": "F_AuditAttribution is the only constraint that binds an approved/rejected event's actor to staff. Removing it and injecting an Approved event whose actor is a Customer produces a clear AttributionCorrectness counterexample.",
+      "inject_violation": "fact MUTATE_WrongAttribution { some e: ApplicationEvent | e.eventType = EventApproved and e.actor in Customer }"
+    }
+  ]
+}

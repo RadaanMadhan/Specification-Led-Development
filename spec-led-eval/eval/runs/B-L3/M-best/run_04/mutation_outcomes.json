@@ -1,0 +1,46 @@
+{
+  "F_AccessControl": {
+    "targeted_asserts": {
+      "LeastPrivilege": "BIT",
+      "OwnershipBasedAccess": "BIT",
+      "FR_011_ShareeCannotDelete": "BIT",
+      "FR_010_OwnerOnlySharesChange": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AppendOnlyAuditEntries": {
+    "targeted_asserts": {
+      "AppendOnly": "VACUOUS_OVERCONSTRAINT",
+      "FR_017_AuditAppendOnly": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_AuditOnePerMutation": {
+    "targeted_asserts": {
+      "AuditCompleteness": "BIT",
+      "FR_015_PerEventAudit": "BIT",
+      "FR_018_NoOrphanStateChange": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AuditAttribution": {
+    "targeted_asserts": {
+      "AttributionCorrectness": "BIT",
+      "FR_016_AuditFields": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_SharedWithSameTeam": {
+    "targeted_asserts": {
+      "FR_012_NoCrossTeamSharing": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_UnauthenticatedRejected": {
+    "targeted_asserts": {
+      "AuthRequiredEverywhere": "BIT",
+      "FR_001_AuthRequired": "BIT"
+    },
+    "all_bit": true
+  }
+}

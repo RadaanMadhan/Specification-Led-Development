@@ -1,0 +1,137 @@
+{
+  "feature_id": "C-L1",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_RoleFromIdentityContext",
+    "FR_005_ReadOnlyAccess",
+    "FR_006_CareTeamMembershipGating",
+    "FR_007_ByteEquivalentDenied",
+    "FR_008_AlwaysOnAudit",
+    "FR_009_AuditEntryFields",
+    "FR_010_AuditImmutability",
+    "FR_011_AuditSearchIGOnly",
+    "FR_012_RetentionFloor",
+    "FR_013_NoRecordWithoutAudit",
+    "FR_014_FR_015_ClinicalSafetyFields"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "AuthRequiredEverywhere",
+      "FR_001_AuthRequired"
+    ],
+    "FR-002": [
+      "FR_002_RoleFromIdentityContext"
+    ],
+    "FR-003": [],
+    "FR-004": [],
+    "FR-005": [
+      "FR_005_ReadOnlyAccess"
+    ],
+    "FR-006": [
+      "OwnershipBasedAccess",
+      "FR_006_CareTeamMembershipGating"
+    ],
+    "FR-007": [
+      "NoInformationLeakage",
+      "FR_007_ByteEquivalentDenied"
+    ],
+    "FR-008": [
+      "AuditCompleteness",
+      "FR_008_AlwaysOnAudit"
+    ],
+    "FR-009": [
+      "AttributionCorrectness",
+      "FR_009_AuditEntryFields"
+    ],
+    "FR-010": [
+      "AppendOnly",
+      "FR_010_AuditImmutability"
+    ],
+    "FR-011": [
+      "FR_011_AuditSearchIGOnly"
+    ],
+    "FR-012": [
+      "AppendOnly",
+      "FR_012_RetentionFloor"
+    ],
+    "FR-013": [
+      "FR_013_NoRecordWithoutAudit"
+    ],
+    "FR-014": [
+      "FR_014_FR_015_ClinicalSafetyFields"
+    ],
+    "FR-015": [
+      "FR_014_FR_015_ClinicalSafetyFields"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_AppendOnlyAuditEntries",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_010_AuditImmutability",
+        "FR_012_RetentionFloor"
+      ],
+      "rationale": "Clearing this fact removes the constraint that distinct AccessAttempts must hold distinct AuditEntries. The injected violation forces two different AccessAttempts to share the same AuditEntry, simulating an in-place mutation (an 'updated' audit record). Both AppendOnly and FR_010_AuditImmutability assert that no two attempts share an entry, so they find a counterexample immediately.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some disj a1, a2: AccessAttempt | some a1.aAudit and a1.aAudit = a2.aAudit }"
+    },
+    {
+      "fact_name": "F_CareTeamGating",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_006_CareTeamMembershipGating"
+      ],
+      "rationale": "Clearing this fact removes the constraint that Permitted outcomes require an active CareTeamMembership. The injected violation forces a Permitted RecordsLookup attempt to exist for a caller who has no active membership for the target patient, directly violating the care-team-only authorisation rule from FR-006.",
+      "inject_violation": "fact MUTATE_CareTeamViolation { some a: AccessAttempt | a.aKind = RecordsLookup and a.aOutcome = Permitted and (no m: CareTeamMembership | m.member = a.aCaller and m.carePatient = a.aTarget and m.mstatus = Active) }"
+    },
+    {
+      "fact_name": "F_ResponseShapeMapping",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "FR_007_ByteEquivalentDenied",
+        "FR_014_FR_015_ClinicalSafetyFields"
+      ],
+      "rationale": "Clearing this fact removes the outcome-to-response-shape mapping. The injected violation forces a Denied attempt to return OkShape, making the externally visible response distinguish 'denied' from 'not-found' and leaking the existence of the patient. Both NoInformationLeakage and FR_007_ByteEquivalentDenied catch this.",
+      "inject_violation": "fact MUTATE_LeakageViolation { some a: AccessAttempt | a.aOutcome = Denied and a.aResponse = OkShape }"
+    },
+    {
+      "fact_name": "F_AuditCompleteness",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_008_AlwaysOnAudit",
+        "FR_013_NoRecordWithoutAudit"
+      ],
+      "rationale": "Clearing this fact removes the guarantee that every RecordsLookup attempt produces exactly one audit entry. The injected violation forces a RecordsLookup attempt to exist with no linked AuditEntry, simulating the 'record observed without audit trail' scenario that FR-013 and SC-002 prohibit.",
+      "inject_violation": "fact MUTATE_AuditMissing { some a: AccessAttempt | a.aKind = RecordsLookup and no a.aAudit }"
+    },
+    {
+      "fact_name": "F_CallerOperationConstraint",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_011_AuditSearchIGOnly"
+      ],
+      "rationale": "Clearing this fact removes the enforcement that callers may only invoke operations in their allowed permission matrix cell. The injected violation places an AuditOfficer on a RecordsLookup attempt, which is explicitly denied in the permission matrix and would allow an IG officer to read clinical records directly \u2014 violating LeastPrivilege.",
+      "inject_violation": "fact MUTATE_PrivilegeViolation { some a: AccessAttempt | a.aCaller.role = AuditOfficer and a.aKind = RecordsLookup }"
+    },
+    {
+      "fact_name": "F_AttributionCorrectness",
+      "asserts_violated": [
+        "AttributionCorrectness",
+        "FR_002_RoleFromIdentityContext",
+        "FR_009_AuditEntryFields"
+      ],
+      "rationale": "Clearing this fact removes the constraint that an audit entry's recorded clinician and snapshot role must match the AccessAttempt's actual caller. The injected violation forces an audit entry to name a different clinician than the one who made the request \u2014 a misattribution that would make the audit log forensically unreliable and violate FR-009's snapshot semantics.",
+      "inject_violation": "fact MUTATE_AttributionViolation { some a: AccessAttempt | some ae: AuditEntry | a.aAudit = ae and ae.aClinician != a.aCaller }"
+    }
+  ]
+}

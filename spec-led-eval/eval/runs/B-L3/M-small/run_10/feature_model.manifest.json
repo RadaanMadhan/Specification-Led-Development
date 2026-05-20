@@ -1,0 +1,129 @@
+{
+  "feature_id": "B-L3",
+  "patterns_applied": [
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "AppendOnly",
+    "AuditCompleteness",
+    "AttributionCorrectness",
+    "LeastPrivilege",
+    "AuthRequiredEverywhere"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AllEndpointsRequireAuth",
+    "FR_002_UserTeamAndRoleFromToken",
+    "FR_003_MemberCanCreateTask",
+    "FR_005_TeamAdminCanAccessTeamTask",
+    "FR_006_CrossTeamIsolationStrict",
+    "FR_009_OwnerAndTeamImmutable",
+    "FR_010_OwnerOnlyControlsSharing",
+    "FR_012_NoXTeamSharees",
+    "FR_014_ByteEquivalentResponses",
+    "FR_015_PerEventAuditEntries",
+    "FR_017_AuditEntriesImmutable"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "AuthRequiredEverywhere",
+      "FR_001_AllEndpointsRequireAuth"
+    ],
+    "FR-002": [
+      "FR_002_UserTeamAndRoleFromToken"
+    ],
+    "FR-003": [
+      "OwnershipBasedAccess",
+      "FR_003_MemberCanCreateTask"
+    ],
+    "FR-004": [
+      "OwnershipBasedAccess"
+    ],
+    "FR-005": [
+      "FR_005_TeamAdminCanAccessTeamTask"
+    ],
+    "FR-006": [
+      "FR_006_CrossTeamIsolationStrict"
+    ],
+    "FR-009": [
+      "OwnershipExclusivity",
+      "FR_009_OwnerAndTeamImmutable"
+    ],
+    "FR-010": [
+      "FR_010_OwnerOnlyControlsSharing"
+    ],
+    "FR-012": [
+      "FR_012_NoXTeamSharees"
+    ],
+    "FR-014": [
+      "NoInformationLeakage",
+      "FR_014_ByteEquivalentResponses"
+    ],
+    "FR-015": [
+      "AuditCompleteness",
+      "FR_015_PerEventAuditEntries"
+    ],
+    "FR-016": [
+      "AttributionCorrectness"
+    ],
+    "FR-017": [
+      "AppendOnly",
+      "FR_017_AuditEntriesImmutable"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_AppendOnlyAuditEntries",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_017_AuditEntriesImmutable"
+      ],
+      "rationale": "Removing this fact allows audit entries with identical content to exist as distinct atoms. Alloy can then instantiate a universe where two audit entries record the same event, violating the append-only immutability invariant that AppendOnly and FR_017 check for.",
+      "inject_violation": "fact MUTATE_DuplicateAuditEntry { some disj ae1, ae2: AuditEntry | ae1.task_id = ae2.task_id and ae1.operation = ae2.operation and ae1.actor_user_id = ae2.actor_user_id and ae1.actor_role = ae2.actor_role and ae1.diff_summary = ae2.diff_summary }"
+    },
+    {
+      "fact_name": "F_AuditCompleteness",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_015_PerEventAuditEntries"
+      ],
+      "rationale": "Removing this fact allows a task to exist without any audit entry, particularly without a Created entry. The AuditCompleteness assertion verifies that every task has at least a creation audit entry; without the constraining fact, a counterexample (task with no audit) becomes satisfiable.",
+      "inject_violation": "fact MUTATE_TaskWithoutAudit { some t: Task | no ae: AuditEntry | ae.task_id = t }"
+    },
+    {
+      "fact_name": "F_CrossTeamIsolation",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "FR_006_CrossTeamIsolationStrict"
+      ],
+      "rationale": "Removing this fact permits users from one team to have access (ownership or sharing) to tasks in another team. The NoInformationLeakage and FR_006 assertions enforce that such cross-team access is impossible; without the constraint, Alloy can find a counterexample (user from team A is sharee or owner of a task in team B).",
+      "inject_violation": "fact MUTATE_CrossTeamAccess { some t: Task, u: User | u.team_id != t.team_id and (u in t.shared_with or u = t.owner_id) }"
+    },
+    {
+      "fact_name": "F_OwnerInTeam",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_009_OwnerAndTeamImmutable"
+      ],
+      "rationale": "Removing this fact allows a task to have an owner from a different team than the task itself. OwnershipBasedAccess and FR_009 assert that owners are in the same team; without the constraint, a counterexample (owner.team_id != task.team_id) satisfies the formula.",
+      "inject_violation": "fact MUTATE_OwnerXTeam { some t: Task | t.owner_id.team_id != t.team_id }"
+    },
+    {
+      "fact_name": "F_AccessControlByOwnership",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_003_MemberCanCreateTask"
+      ],
+      "rationale": "Removing this fact allows in-team members (non-owners) to access tasks they do not own and are not shared on. OwnershipBasedAccess asserts that such members must be in the shared_with set to access; without the constraint, a member can be unshared yet still implicitly allowed access.",
+      "inject_violation": "fact MUTATE_MemberAccessUnsharedTask { some t: Task, u: User | u.role = Member and u.team_id = t.team_id and u != t.owner_id and u not in t.shared_with }"
+    },
+    {
+      "fact_name": "F_NoXTeamSharing",
+      "asserts_violated": [
+        "FR_012_NoXTeamSharees",
+        "NoInformationLeakage"
+      ],
+      "rationale": "Removing this fact permits users from different teams to be added to the shared_with list of a task. FR_012 and NoInformationLeakage assert that all sharees are in the task's team; without the constraint, a counterexample (sharee.team_id != task.team_id) becomes possible.",
+      "inject_violation": "fact MUTATE_XTeamSharee { some t: Task, s: t.shared_with | s.team_id != t.team_id }"
+    }
+  ]
+}

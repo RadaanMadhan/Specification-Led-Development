@@ -1,0 +1,169 @@
+{
+  "feature_id": "013-hipaa-clinical-records",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "PermissionGrounding",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "NoSelfMutation"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_OneRolePerUser",
+    "FR_003_PatientAssignedRecord",
+    "FR_004_CareTeamGating",
+    "FR_005_ClinicianNoAccessLog",
+    "FR_006_PatientSelfAccess",
+    "FR_007_ComplianceNoClinicalContent",
+    "FR_008_ByteEquivalentForbidden",
+    "FR_009_NonCareTeam403",
+    "FR_010_NoteOnAppendOnly",
+    "FR_011_NoteAttribution",
+    "FR_012_AppendOnlyNotes",
+    "FR_013_AuditEveryAccess",
+    "FR_014_AuditFields",
+    "FR_015_AuditImmutable",
+    "FR_017_AuditRetained",
+    "FR_018_ComplianceOnlyAccessLog",
+    "FR_019_ContentBlindness",
+    "FR_020_RecordIdOnly"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_OneRolePerUser"
+    ],
+    "FR-003": [
+      "FR_003_PatientAssignedRecord",
+      "OwnershipExclusivity"
+    ],
+    "FR-004": [
+      "FR_004_CareTeamGating",
+      "OwnershipBasedAccess"
+    ],
+    "FR-005": [
+      "FR_005_ClinicianNoAccessLog"
+    ],
+    "FR-006": [
+      "FR_006_PatientSelfAccess",
+      "OwnershipBasedAccess"
+    ],
+    "FR-007": [
+      "FR_007_ComplianceNoClinicalContent",
+      "LeastPrivilege"
+    ],
+    "FR-008": [
+      "FR_008_ByteEquivalentForbidden",
+      "NoInformationLeakage"
+    ],
+    "FR-009": [
+      "FR_009_NonCareTeam403"
+    ],
+    "FR-010": [
+      "FR_010_NoteOnAppendOnly"
+    ],
+    "FR-011": [
+      "FR_011_NoteAttribution"
+    ],
+    "FR-012": [
+      "FR_012_AppendOnlyNotes",
+      "NoSelfMutation",
+      "AppendOnly"
+    ],
+    "FR-013": [
+      "FR_013_AuditEveryAccess",
+      "AuditCompleteness"
+    ],
+    "FR-014": [
+      "FR_014_AuditFields",
+      "AttributionCorrectness"
+    ],
+    "FR-015": [
+      "FR_015_AuditImmutable",
+      "AppendOnly"
+    ],
+    "FR-017": [
+      "FR_017_AuditRetained"
+    ],
+    "FR-018": [
+      "FR_018_ComplianceOnlyAccessLog",
+      "LeastPrivilege"
+    ],
+    "FR-019": [
+      "FR_019_ContentBlindness"
+    ],
+    "FR-020": [
+      "FR_020_RecordIdOnly"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_AuditUniqueToAttempt",
+      "asserts_violated": [
+        "AppendOnly",
+        "AuditCompleteness",
+        "FR_015_AuditImmutable",
+        "FR_013_AuditEveryAccess"
+      ],
+      "rationale": "Clearing this fact lets Alloy invent a state in which two AccessAttempts share a single AuditEntry \u2014 i.e., an audit entry has been re-bound/mutated. The injection forces such an instance to exist, so the append-only and 1:1-audit assertions must fail.",
+      "inject_violation": "fact MUTATE_AuditNonUnique { some disj a1, a2: AccessAttempt | a1.audit = a2.audit }"
+    },
+    {
+      "fact_name": "F_PermittedRequiresAllowed",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_007_ComplianceNoClinicalContent",
+        "FR_018_ComplianceOnlyAccessLog",
+        "FR_005_ClinicianNoAccessLog"
+      ],
+      "rationale": "Clearing this load-bearing fact removes the constraint that a Permitted outcome lies in a documented Allowed cell. The injection forces a clinician-on-GetAccessLog Permitted attempt (a denied cell in the matrix); LeastPrivilege and the role-specific FRs must find it.",
+      "inject_violation": "fact MUTATE_LeastPrivilegeViolation { some a: AccessAttempt | a.caller.role = Clinician and a.operation = GetAccessLog and a.outcome = Permitted }"
+    },
+    {
+      "fact_name": "F_DeniedEnvelope",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "FR_008_ByteEquivalentForbidden"
+      ],
+      "rationale": "Clearing this fact lets the envelope vary across denied responses. The injection forces two denied attempts to have different envelopes \u2014 the existence-leak the byte-equivalent 403 envelope is designed to prevent.",
+      "inject_violation": "fact MUTATE_EnvelopeLeak { some disj a1, a2: AccessAttempt | a1.outcome = Denied and a2.outcome = Denied and a1.envelope != a2.envelope }"
+    },
+    {
+      "fact_name": "F_ClinicianCareTeamGate",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_004_CareTeamGating"
+      ],
+      "rationale": "Removes the structural care-team requirement on permitted clinician access. The injection forces a clinician to be permitted on GetRecord with no matching CareTeamMembership, which is exactly the FR-004 / SC-010 violation pattern.",
+      "inject_violation": "fact MUTATE_NoCareTeamButPermitted { some a: AccessAttempt, u: User, r: Record | a.caller = u and u.role = Clinician and a.operation = GetRecord and a.targetRecord = r and a.outcome = Permitted and (no m: CareTeamMembership | m.ctClinician = u and m.ctRecord = r) }"
+    },
+    {
+      "fact_name": "F_AuditAttribution",
+      "asserts_violated": [
+        "AttributionCorrectness",
+        "FR_014_AuditFields"
+      ],
+      "rationale": "Clearing this fact lets the audit entry's recorded accessor/role/op/outcome drift from the attempt that produced it. The injection forces a recorded-accessor mismatch, which is exactly the misattribution pattern the assertions guard against.",
+      "inject_violation": "fact MUTATE_AuditMisattributed { some a: AccessAttempt | a.audit.recordedAccessor != a.caller }"
+    },
+    {
+      "fact_name": "F_NoteUniqueToAttempt",
+      "asserts_violated": [
+        "NoSelfMutation",
+        "FR_012_AppendOnlyNotes",
+        "AppendOnly"
+      ],
+      "rationale": "Clearing this fact allows the same ClinicalNote to be bound to two distinct AccessAttempts \u2014 i.e., a note has been re-pointed or duplicated, the structural shadow of mutation/deletion. The injection forces two attempts to share one note.",
+      "inject_violation": "fact MUTATE_NoteShared { some disj a1, a2: AccessAttempt | some a1.createdNote and a1.createdNote = a2.createdNote }"
+    }
+  ]
+}

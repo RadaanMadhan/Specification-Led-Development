@@ -1,0 +1,46 @@
+{
+  "F_AppendOnlyAuditEntries": {
+    "targeted_asserts": {
+      "AppendOnly": "VACUOUS_OVERCONSTRAINT",
+      "FR_010_AuditImmutable": "VACUOUS_OVERCONSTRAINT",
+      "AuditCompleteness": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_CareTeamGating": {
+    "targeted_asserts": {
+      "OwnershipBasedAccess": "BIT",
+      "FR_006_CareTeamGating": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_NoInformationLeakageFact": {
+    "targeted_asserts": {
+      "NoInformationLeakage": "BIT",
+      "FR_007_ByteEquivalentDenyNotFound": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AuditOneToOne": {
+    "targeted_asserts": {
+      "AuditCompleteness": "BIT",
+      "FR_008_AlwaysAudit": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_PermissionMatrix": {
+    "targeted_asserts": {
+      "PermissionCompleteness": "BIT",
+      "FR_011_AuditOfficerOnly": "BIT",
+      "LeastPrivilege": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_AuditRoleSnapshotCorrect": {
+    "targeted_asserts": {
+      "AttributionCorrectness": "BIT",
+      "FR_009_AuditEntryShape": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  }
+}

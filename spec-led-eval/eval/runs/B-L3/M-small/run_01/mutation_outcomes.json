@@ -1,0 +1,37 @@
+{
+  "F_AuditImmutable": {
+    "targeted_asserts": {
+      "FR_017_AuditImmutable": "BIT",
+      "AppendOnly": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_OwnerOnlyShareControl": {
+    "targeted_asserts": {
+      "FR_010_OwnerOnlyShareControl": "BIT",
+      "OwnershipBasedAccess": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_NoTeamSharing": {
+    "targeted_asserts": {
+      "FR_012_NoTeamSharing": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_CrossTeamIsolation": {
+    "targeted_asserts": {
+      "FR_006_CrossTeamIsolation": "VACUOUS_OVERCONSTRAINT",
+      "NoInformationLeakage": "VACUOUS_OVERCONSTRAINT",
+      "FR_014_ByteEquivalentNotFound": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_AuditCompleteness": {
+    "targeted_asserts": {
+      "FR_015_AuditCompleteness": "BIT",
+      "AuditCompleteness": "BIT"
+    },
+    "all_bit": true
+  }
+}

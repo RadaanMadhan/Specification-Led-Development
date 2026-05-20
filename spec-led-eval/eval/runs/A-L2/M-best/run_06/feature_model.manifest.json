@@ -1,0 +1,178 @@
+{
+  "feature_id": "004-loan-application-rbac",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "PermissionGrounding",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_CustomerPermissions",
+    "FR_003_OfficerPermissions",
+    "FR_004_CompliancePermissions",
+    "FR_005_CustomerIdentityFromAuth",
+    "FR_007_ValidApplicationShape",
+    "FR_008_OneInFlightPerCustomer",
+    "FR_009_UniqueReference",
+    "FR_010_UnassignedQueue",
+    "FR_011_ClaimTransition",
+    "FR_012_OneOfficerPerClaim",
+    "FR_013_OnlyAssignedOfficerDecides",
+    "FR_014_ReasonRequired",
+    "FR_015_DecisionAtomic",
+    "FR_016_DecidedImmutable",
+    "FR_017_AuditEntryPerStatusChange",
+    "FR_018_AppendOnlyAudit",
+    "FR_019_ExactlyOneEntryPerAppliedTransition",
+    "FR_020_CustomerSeesOnlyOwn",
+    "FR_021_OfficerIdentityHidden",
+    "FR_022_NoDeletion",
+    "FR_023_ComplianceReadOnly"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_CustomerPermissions",
+      "LeastPrivilege"
+    ],
+    "FR-003": [
+      "FR_003_OfficerPermissions",
+      "LeastPrivilege"
+    ],
+    "FR-004": [
+      "FR_004_CompliancePermissions",
+      "LeastPrivilege"
+    ],
+    "FR-005": [
+      "FR_005_CustomerIdentityFromAuth",
+      "OwnershipExclusivity"
+    ],
+    "FR-006": [
+      "FR_007_ValidApplicationShape"
+    ],
+    "FR-007": [
+      "FR_007_ValidApplicationShape"
+    ],
+    "FR-008": [
+      "FR_008_OneInFlightPerCustomer"
+    ],
+    "FR-009": [
+      "FR_009_UniqueReference"
+    ],
+    "FR-010": [
+      "FR_010_UnassignedQueue"
+    ],
+    "FR-011": [
+      "FR_011_ClaimTransition"
+    ],
+    "FR-012": [
+      "FR_012_OneOfficerPerClaim"
+    ],
+    "FR-013": [
+      "FR_013_OnlyAssignedOfficerDecides",
+      "FR_003_OfficerPermissions"
+    ],
+    "FR-014": [
+      "FR_014_ReasonRequired"
+    ],
+    "FR-015": [
+      "FR_015_DecisionAtomic"
+    ],
+    "FR-016": [
+      "FR_016_DecidedImmutable"
+    ],
+    "FR-017": [
+      "FR_017_AuditEntryPerStatusChange",
+      "AuditCompleteness",
+      "AttributionCorrectness"
+    ],
+    "FR-018": [
+      "FR_018_AppendOnlyAudit",
+      "AppendOnly"
+    ],
+    "FR-019": [
+      "FR_019_ExactlyOneEntryPerAppliedTransition",
+      "AuditCompleteness"
+    ],
+    "FR-020": [
+      "FR_020_CustomerSeesOnlyOwn",
+      "OwnershipBasedAccess",
+      "NoInformationLeakage"
+    ],
+    "FR-021": [
+      "FR_021_OfficerIdentityHidden"
+    ],
+    "FR-022": [
+      "FR_022_NoDeletion"
+    ],
+    "FR-023": [
+      "FR_023_ComplianceReadOnly",
+      "FR_004_CompliancePermissions"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_OperationsRespectPermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_002_CustomerPermissions",
+        "FR_021_OfficerIdentityHidden"
+      ],
+      "rationale": "Removing this fact lets the model invent a Customer-role caller invoking GetAudit, which is denied by the permission matrix and forbidden to customers in FR-002/FR-021. The injection forces exactly that operation to exist.",
+      "inject_violation": "fact MUTATE_LeastPrivilegeViolation { some op: Operation | op.caller.role = Customer and op.kind = GetAudit }"
+    },
+    {
+      "fact_name": "F_NoDuplicateAuditEntries",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_018_AppendOnlyAudit"
+      ],
+      "rationale": "Removing the no-duplicate-events fact lets the model construct two distinct ApplicationEvent atoms recording the same applied transition on the same application. The injection forces this duplication so the AppendOnly invariant has something to catch.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some disj e1, e2: ApplicationEvent | e1.application = e2.application and e1.previousStatus = e2.previousStatus and e1.newStatus = e2.newStatus }"
+    },
+    {
+      "fact_name": "F_OneInFlightPerCustomer",
+      "asserts_violated": [
+        "FR_008_OneInFlightPerCustomer"
+      ],
+      "rationale": "Removing the partial-unique-index fact lets a single customer hold two simultaneous in-flight applications. The injection forces two distinct Submitted applications owned by the same customer, which the FR-008 assertion is designed to reject.",
+      "inject_violation": "fact MUTATE_TwoInFlight { some disj a1, a2: LoanApplication | a1.customer = a2.customer and a1.status = Submitted and a2.status = Submitted }"
+    },
+    {
+      "fact_name": "F_DecidedByEqualsAssignedOfficer",
+      "asserts_violated": [
+        "FR_013_OnlyAssignedOfficerDecides"
+      ],
+      "rationale": "Removing the decided-by-equals-assigned fact lets a Decision atom record a deciding officer different from the application's assigned officer. The injection forces an Approved application whose decision.decidedBy is not the assignedOfficer, violating FR-013.",
+      "inject_violation": "fact MUTATE_DecidedByNotAssigned { some a: LoanApplication | a.status = Approved and a.decision.decidedBy != a.assignedOfficer }"
+    },
+    {
+      "fact_name": "F_AuditEntryExistsForEveryTransition",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_019_ExactlyOneEntryPerAppliedTransition"
+      ],
+      "rationale": "Removing the audit-existence fact lets an Approved application exist without any newStatus=Approved event recording the decision transition. The injection forces exactly this missing-entry instance, which AuditCompleteness must catch.",
+      "inject_violation": "fact MUTATE_MissingAuditEntry { some a: LoanApplication | a.status = Approved and (no e: ApplicationEvent | e.application = a and e.newStatus = Approved) }"
+    },
+    {
+      "fact_name": "F_AppCustomerIsCustomerRole",
+      "asserts_violated": [
+        "OwnershipExclusivity",
+        "FR_005_CustomerIdentityFromAuth"
+      ],
+      "rationale": "Removing the customer-role-of-customer fact lets a LoanApplication be owned by a User whose role is LoanOfficer or ComplianceReviewer, breaking the ownership-role pairing that FR-005 and OwnershipExclusivity rely on.",
+      "inject_violation": "fact MUTATE_NonCustomerOwnsApp { some a: LoanApplication | a.customer.role != Customer }"
+    }
+  ]
+}

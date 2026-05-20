@@ -1,0 +1,171 @@
+{
+  "feature_id": "B-L2",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "PermissionGrounding",
+    "PrivilegeMonotonicity",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "ValidationBeforeMutation"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_003_TeamContextRequired",
+    "FR_005_TaskTeamImmutable",
+    "FR_006_OwnerImmutable",
+    "FR_007_PerTeamRole",
+    "FR_008_009_MemberOwnerOnly",
+    "FR_010_AdminFullAccess",
+    "FR_011_014_CrossTeamIsolation",
+    "FR_012_AssigneeTeamMember",
+    "FR_015_AuditPerEditEvent",
+    "FR_016_AuditImmutable",
+    "FR_017_AuditVisibility",
+    "FR_019_020_TeamScopedList"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_001_AuthRequired"
+    ],
+    "FR-003": [
+      "FR_003_TeamContextRequired"
+    ],
+    "FR-004": [
+      "FR_003_TeamContextRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-005": [
+      "FR_005_TaskTeamImmutable",
+      "OwnershipExclusivity"
+    ],
+    "FR-006": [
+      "FR_006_OwnerImmutable",
+      "ValidationBeforeMutation"
+    ],
+    "FR-007": [
+      "FR_007_PerTeamRole"
+    ],
+    "FR-008": [
+      "FR_008_009_MemberOwnerOnly",
+      "OwnershipBasedAccess"
+    ],
+    "FR-009": [
+      "FR_008_009_MemberOwnerOnly",
+      "OwnershipBasedAccess",
+      "LeastPrivilege"
+    ],
+    "FR-010": [
+      "FR_010_AdminFullAccess",
+      "OwnershipBasedAccess",
+      "PrivilegeMonotonicity"
+    ],
+    "FR-011": [
+      "FR_011_014_CrossTeamIsolation",
+      "NoInformationLeakage"
+    ],
+    "FR-012": [
+      "FR_012_AssigneeTeamMember",
+      "ValidationBeforeMutation"
+    ],
+    "FR-013": [
+      "FR_019_020_TeamScopedList"
+    ],
+    "FR-014": [
+      "FR_011_014_CrossTeamIsolation",
+      "NoInformationLeakage"
+    ],
+    "FR-015": [
+      "FR_015_AuditPerEditEvent",
+      "AuditCompleteness",
+      "AttributionCorrectness"
+    ],
+    "FR-016": [
+      "FR_016_AuditImmutable",
+      "AppendOnly"
+    ],
+    "FR-017": [
+      "FR_017_AuditVisibility",
+      "NoInformationLeakage"
+    ],
+    "FR-018": [
+      "FR_016_AuditImmutable",
+      "AppendOnly"
+    ],
+    "FR-019": [
+      "FR_019_020_TeamScopedList"
+    ],
+    "FR-020": [
+      "FR_019_020_TeamScopedList"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_OwnershipAccessControl",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_008_009_MemberOwnerOnly",
+        "LeastPrivilege"
+      ],
+      "rationale": "Removing this fact allows the model to construct an Operation where a non-owner member performs OpPatchTask or OpDeleteTask on a task they do not own. This directly violates FR-008/FR-009 and the OwnershipBasedAccess predicate, which requires that every such operation be performed by the owner or an admin.",
+      "inject_violation": "fact MUTATE_OwnershipViolation { some op: Operation, t: Task | op.op_kind = OpPatchTask and op.op_actor_role = MemberRole and t in op.op_task and t.task_owner != op.op_actor }"
+    },
+    {
+      "fact_name": "F_AppendOnlyAuditEntries",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_016_AuditImmutable",
+        "AuditCompleteness"
+      ],
+      "rationale": "Clearing this fact dissolves the one-to-one binding between Operations and AuditEntries. The injected violation creates two Operations both claiming the same AuditEntry, which simulates a 'reuse/rewrite' of an audit record \u2014 exactly the mutation that the append-only invariant forbids.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some disj op1, op2: Operation, ae: AuditEntry | ae in op1.op_audit_entry and ae in op2.op_audit_entry }"
+    },
+    {
+      "fact_name": "F_CrossTeamIsolation",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "FR_011_014_CrossTeamIsolation"
+      ],
+      "rationale": "Removing this fact lets the model place an Operation that targets a task whose team differs from the operation's team. The injection explicitly constructs such a cross-team access, violating the byte-equivalent 404 isolation invariant central to FR-014 and SC-004.",
+      "inject_violation": "fact MUTATE_CrossTeamViolation { some op: Operation, t: Task | t in op.op_task and t.task_team != op.op_team }"
+    },
+    {
+      "fact_name": "F_AuditCompleteness",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_015_AuditPerEditEvent",
+        "AppendOnly"
+      ],
+      "rationale": "Clearing this fact removes the requirement that PostTask and DeleteTask operations produce exactly one audit entry. The injection creates a PostTask operation with no associated audit entry, modelling the SC-007 failure mode where a task change has no corresponding audit trail entry.",
+      "inject_violation": "fact MUTATE_MissingAuditEntry { some op: Operation | op.op_kind = OpPostTask and no op.op_audit_entry }"
+    },
+    {
+      "fact_name": "F_TeamMembershipUnique",
+      "asserts_violated": [
+        "FR_007_PerTeamRole",
+        "AuthRequiredEverywhere",
+        "AttributionCorrectness"
+      ],
+      "rationale": "Removing the composite-PK uniqueness constraint allows a user to hold two different roles in the same team simultaneously. The injection creates exactly this scenario, which would let a member claim admin privileges in the same team \u2014 violating the per-team single-role invariant of FR-007.",
+      "inject_violation": "fact MUTATE_DualRoleViolation { some disj m1, m2: TeamMembership | m1.tm_user = m2.tm_user and m1.tm_team = m2.tm_team and m1.tm_role != m2.tm_role }"
+    },
+    {
+      "fact_name": "F_AssigneeIsMember",
+      "asserts_violated": [
+        "FR_012_AssigneeTeamMember",
+        "ValidationBeforeMutation"
+      ],
+      "rationale": "Removing this fact allows a task to carry an assignee who is not a member of the task's team. The injection creates a task whose assignee belongs to a different team, directly violating the FR-012 same-team-assignee constraint and the ValidationBeforeMutation predicate.",
+      "inject_violation": "fact MUTATE_AssigneeTeamViolation { some t: Task, u: User, tm: Team | u in t.task_assignee and tm != t.task_team and (some m: TeamMembership | m.tm_user = u and m.tm_team = tm) and (no m2: TeamMembership | m2.tm_user = u and m2.tm_team = t.task_team) }"
+    }
+  ]
+}

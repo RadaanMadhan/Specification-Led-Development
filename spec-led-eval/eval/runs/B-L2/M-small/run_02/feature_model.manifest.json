@@ -1,0 +1,117 @@
+{
+  "feature_id": "B-L2",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_003_TeamContextRequired",
+    "FR_005_TaskTeamImmutable",
+    "FR_006_OwnerImmutable",
+    "FR_008_MemberPermissions",
+    "FR_010_AdminPermissions",
+    "FR_014_CrossTeamIsolation",
+    "FR_015_AuditStructure",
+    "FR_016_AuditAppendOnly"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "AuthRequiredEverywhere",
+      "FR_001_AuthRequired"
+    ],
+    "FR-003": [
+      "FR_003_TeamContextRequired"
+    ],
+    "FR-005": [
+      "FR_005_TaskTeamImmutable"
+    ],
+    "FR-006": [
+      "OwnershipExclusivity",
+      "FR_006_OwnerImmutable"
+    ],
+    "FR-008": [
+      "OwnershipBasedAccess",
+      "FR_008_MemberPermissions"
+    ],
+    "FR-010": [
+      "FR_010_AdminPermissions"
+    ],
+    "FR-014": [
+      "NoInformationLeakage",
+      "FR_014_CrossTeamIsolation"
+    ],
+    "FR-015": [
+      "AuditCompleteness",
+      "AttributionCorrectness",
+      "FR_015_AuditStructure"
+    ],
+    "FR-016": [
+      "AppendOnly",
+      "FR_016_AuditAppendOnly"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "PermissionCompleteness"
+      ],
+      "rationale": "Removing the permission matrix fact leaves the Allowed relation unconstrained. The LeastPrivilege and PermissionCompleteness assertions require specific role-operation pairs to be allowed or denied; without the fact, Alloy can construct models where the matrix is inconsistent or incomplete.",
+      "inject_violation": "fact MUTATE_PermMatrixViolation { some r: Role, op: OperationKind | not (r -> op in PermMatrix.Allowed) and (r = Member and op = PostTasks) }"
+    },
+    {
+      "fact_name": "F_AuditAppendOnly",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_016_AuditAppendOnly"
+      ],
+      "rationale": "Removing the append-only constraint allows two audit entries with the same id to have different fields. The AppendOnly assertion checks that identical audit IDs imply identical content; without the fact, Alloy can find models where an audit entry is mutated.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some disj ae1, ae2: AuditEntry | ae1.id = ae2.id and ae1.task_id != ae2.task_id }"
+    },
+    {
+      "fact_name": "F_AuditPerTask",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_015_AuditStructure"
+      ],
+      "rationale": "Removing the one-audit-per-task constraint allows tasks without audit entries. The AuditCompleteness assertion requires every task to have exactly one audit entry; without the fact, Alloy can construct models where a task exists with no audit trail.",
+      "inject_violation": "fact MUTATE_AuditCompletenessViolation { some t: Task | no ae: AuditEntry | ae.task_id = t }"
+    },
+    {
+      "fact_name": "F_CrossTeamIsolation",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "FR_014_CrossTeamIsolation"
+      ],
+      "rationale": "Removing the cross-team isolation fact allows team members to be associated with tasks from other teams. The NoInformationLeakage assertion checks that team-membership boundaries are respected; without the fact, Alloy can find models where a member of Team1 can see a task from Team2.",
+      "inject_violation": "fact MUTATE_CrossTeamLeakage { some t1, t2: Task, tm: TeamMembership | tm.team = t1.team_id and t1.team_id != t2.team_id and tm.team = t2.team_id }"
+    },
+    {
+      "fact_name": "F_OneOwnerPerTask",
+      "asserts_violated": [
+        "OwnershipExclusivity",
+        "OwnershipBasedAccess"
+      ],
+      "rationale": "Removing the one-owner constraint allows tasks to have zero, one, or many owners. The OwnershipExclusivity assertion checks that every task has exactly one owner; without the fact, Alloy can construct models where a task has no owner or multiple owners, violating the ownership-based access control invariant.",
+      "inject_violation": "fact MUTATE_OwnershipViolation { some t: Task | no u: User | u = t.owner_id }"
+    },
+    {
+      "fact_name": "F_TaskOwnerMemberOfTeam",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_008_MemberPermissions"
+      ],
+      "rationale": "Removing the owner-must-be-member constraint allows a task owner to not belong to the task's team. The OwnershipBasedAccess assertion requires that the owner is a member of the task's team (enabling edit/delete permissions); without the fact, Alloy can find models where an owner has no team membership, breaking the access-control model.",
+      "inject_violation": "fact MUTATE_OwnerNotInTeam { some t: Task | no tm: TeamMembership | tm.user = t.owner_id and tm.team = t.team_id }"
+    }
+  ]
+}

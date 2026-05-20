@@ -1,0 +1,133 @@
+{
+  "feature_id": "B-L1",
+  "patterns_applied": [
+    "AuthRequiredEverywhere",
+    "AppendOnly",
+    "AuditCompleteness",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "ValidationBeforeMutation"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_IdentityFromAuthContext",
+    "FR_004_FlatPermissions",
+    "FR_008_AssigneeIsMember",
+    "FR_009_CreatorRecordedOnCreation",
+    "FR_010_InitialStatusTodo",
+    "FR_010_ValidStatusSet",
+    "FR_011_ClosedTaskEditRule",
+    "FR_011_ReopenSetsNonDoneStatus",
+    "FR_012_DeletionPermanentAndLogged",
+    "FR_017_EditorAlwaysRecorded",
+    "FR_018_DeletionLogHasDeleterIdentity",
+    "FR_018_UniqueDeletionLogEntry"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_IdentityFromAuthContext",
+      "AttributionCorrectness"
+    ],
+    "FR-003": [
+      "FR_004_FlatPermissions"
+    ],
+    "FR-004": [
+      "FR_004_FlatPermissions"
+    ],
+    "FR-005": [
+      "ValidationBeforeMutation"
+    ],
+    "FR-006": [],
+    "FR-007": [],
+    "FR-008": [
+      "FR_008_AssigneeIsMember",
+      "OwnershipExclusivity"
+    ],
+    "FR-009": [
+      "FR_009_CreatorRecordedOnCreation",
+      "AttributionCorrectness"
+    ],
+    "FR-010": [
+      "FR_010_InitialStatusTodo",
+      "FR_010_ValidStatusSet"
+    ],
+    "FR-011": [
+      "FR_011_ClosedTaskEditRule",
+      "FR_011_ReopenSetsNonDoneStatus"
+    ],
+    "FR-012": [
+      "FR_012_DeletionPermanentAndLogged"
+    ],
+    "FR-013": [],
+    "FR-014": [],
+    "FR-015": [],
+    "FR-016": [],
+    "FR-017": [
+      "FR_017_EditorAlwaysRecorded"
+    ],
+    "FR-018": [
+      "FR_018_DeletionLogHasDeleterIdentity",
+      "FR_018_UniqueDeletionLogEntry",
+      "AuditCompleteness",
+      "AppendOnly"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_AuthRequiredEverywhere",
+      "asserts_violated": [
+        "AuthRequiredEverywhere",
+        "FR_001_AuthRequired"
+      ],
+      "rationale": "Clearing this fact allows a successful Operation whose callerToken.resolves differs from its caller \u2014 i.e., an operation succeeds without valid authentication. The injection forces exactly such a world.",
+      "inject_violation": "fact MUTATE_AuthBypass { some op: Operation | op.outcome = Success and op.callerToken.resolves != op.caller }"
+    },
+    {
+      "fact_name": "F_AppendOnlyDeletionLog",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_018_UniqueDeletionLogEntry"
+      ],
+      "rationale": "Clearing this fact allows two distinct successful DeleteOps to share the same TaskDeletion record, violating append-only uniqueness. The injection forces that shared-record world.",
+      "inject_violation": "fact MUTATE_SharedDeletionRecord { some disj op1, op2: Operation | op1.kind = OpDelete and op1.outcome = Success and op2.kind = OpDelete and op2.outcome = Success and op1.deletion = op2.deletion }"
+    },
+    {
+      "fact_name": "F_DeletionLogged",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_012_DeletionPermanentAndLogged"
+      ],
+      "rationale": "Clearing this fact allows a successful DeleteOp to have no associated TaskDeletion (op.deletion is empty). The injection forces a successful delete with no deletion log entry.",
+      "inject_violation": "fact MUTATE_DeletionNotLogged { some op: Operation | op.kind = OpDelete and op.outcome = Success and no op.deletion }"
+    },
+    {
+      "fact_name": "F_DeletionAttributionCorrectness",
+      "asserts_violated": [
+        "AttributionCorrectness",
+        "FR_018_DeletionLogHasDeleterIdentity"
+      ],
+      "rationale": "Clearing this fact allows a TaskDeletion's deletedBy to differ from the caller of the DeleteOp that produced it \u2014 misattribution in the audit log. The injection forces that mismatch.",
+      "inject_violation": "fact MUTATE_WrongDeleter { some op: Operation | op.kind = OpDelete and op.outcome = Success and some op.deletion and op.deletion.deletedBy != op.caller }"
+    },
+    {
+      "fact_name": "F_ClosedTaskEditRule",
+      "asserts_violated": [
+        "FR_011_ClosedTaskEditRule"
+      ],
+      "rationale": "Clearing this fact allows an edit on a Done task to succeed even when includesReopen = BFalse, violating the 409 task_closed rule. The injection forces exactly that world.",
+      "inject_violation": "fact MUTATE_ClosedTaskEdited { some op: Operation | op.kind = OpEdit and op.outcome = Success and some op.targetTask and op.targetTask.status = Done and op.includesReopen = BFalse }"
+    },
+    {
+      "fact_name": "F_InitialStatusTodo",
+      "asserts_violated": [
+        "FR_010_InitialStatusTodo"
+      ],
+      "rationale": "Clearing this fact allows a CreateOp to succeed while producing a task whose status is InProgress or Done, violating FR-010. The injection forces a created task with status Done.",
+      "inject_violation": "fact MUTATE_BadInitialStatus { some op: Operation | op.kind = OpCreate and op.outcome = Success and op.targetTask.status = Done }"
+    }
+  ]
+}

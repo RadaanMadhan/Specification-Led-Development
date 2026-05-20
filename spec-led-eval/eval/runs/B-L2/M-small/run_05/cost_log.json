@@ -1,0 +1,13 @@
+{
+  "run_id": "B-L2",
+  "model": "M-small",
+  "thinking_enabled": true,
+  "thinking_budget_tokens": 32768,
+  "input_tokens": 21044,
+  "output_tokens": 13793,
+  "thinking_tokens": null,
+  "cost_usd": 0.090009,
+  "cost_per_assertion_usd": 0.00529464705882353,
+  "started_at": "2026-05-19T13:08:22.217481+00:00",
+  "elapsed_seconds": 84.761279125
+}

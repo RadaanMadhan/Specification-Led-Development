@@ -1,0 +1,113 @@
+{
+  "feature_id": "A-L1",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "AppendOnly",
+    "AuditCompleteness",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "ValidationBeforeMutation",
+    "ConcurrencySafety",
+    "AuthRequiredEverywhere"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_CustomerCanSubmit",
+    "FR_003_AmountTermConstraints",
+    "FR_004_UniqueReferenceAndDetails",
+    "FR_005_OnePendingPerCustomer",
+    "FR_009_DecisionReason",
+    "FR_011_DecisionImmutability",
+    "FR_012_ConcurrentDecisionResolution",
+    "FR_013_CustomerSeesOwnOnly",
+    "FR_015_StaffOnlyDecision",
+    "FR_016_AuditTrail"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_CustomerCanSubmit"
+    ],
+    "FR-002": [
+      "ValidationBeforeMutation"
+    ],
+    "FR-003": [
+      "FR_003_AmountTermConstraints"
+    ],
+    "FR-004": [
+      "FR_004_UniqueReferenceAndDetails"
+    ],
+    "FR-005": [
+      "FR_005_OnePendingPerCustomer",
+      "OwnershipBasedAccess"
+    ],
+    "FR-009": [
+      "FR_009_DecisionReason"
+    ],
+    "FR-011": [
+      "FR_011_DecisionImmutability"
+    ],
+    "FR-012": [
+      "FR_012_ConcurrentDecisionResolution",
+      "ConcurrencySafety"
+    ],
+    "FR-013": [
+      "FR_013_CustomerSeesOwnOnly",
+      "OwnershipBasedAccess"
+    ],
+    "FR-015": [
+      "FR_015_StaffOnlyDecision",
+      "LeastPrivilege"
+    ],
+    "FR-016": [
+      "FR_016_AuditTrail",
+      "AppendOnly",
+      "AuditCompleteness",
+      "AttributionCorrectness"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege"
+      ],
+      "rationale": "Removing the permission matrix definition allows the matrix to be populated arbitrarily (e.g., CustomerRole granted PostDecision). The LeastPrivilege assertion checks that only the documented cells are allowed; if the fact is removed, a counterexample with unauthorized role-operation pairs will be found.",
+      "inject_violation": "fact MUTATE_UnauthorizedPermission { CustomerRole -> PostDecision in PermMatrix.allowed }"
+    },
+    {
+      "fact_name": "F_AppendOnlyAuditEntries",
+      "asserts_violated": [
+        "AppendOnly"
+      ],
+      "rationale": "This fact ensures every decision has a corresponding audit event. Removing it allows decisions to exist without audit entries, violating the append-only invariant.",
+      "inject_violation": "fact MUTATE_MissingAuditEvent { some dec: Decision | no evt: ApplicationEvent | evt.application = dec.application and ((dec.decisionType = ApprovedDecision and evt.eventType = ApprovedEvent) or (dec.decisionType = RejectedDecision and evt.eventType = RejectedEvent)) }"
+    },
+    {
+      "fact_name": "F_OnePendingPerCustomer",
+      "asserts_violated": [
+        "FR_005_OnePendingPerCustomer",
+        "OwnershipBasedAccess"
+      ],
+      "rationale": "This constraint enforces the business rule that a customer can have at most one pending application at a time. Removing it allows multiple pending applications for the same customer, violating FR-005 and the access-control invariant.",
+      "inject_violation": "fact MUTATE_MultiplePendingPerCustomer { some disj app1, app2: LoanApplication, u: User | app1.customer = u and app2.customer = u and app1.status = PendingReview and app2.status = PendingReview }"
+    },
+    {
+      "fact_name": "F_OneDecisionPerApplication",
+      "asserts_violated": [
+        "ConcurrencySafety",
+        "FR_012_ConcurrentDecisionResolution"
+      ],
+      "rationale": "This fact ensures only one decision can exist per application. Removing it allows multiple decisions to be recorded for the same application, violating the concurrency-safety invariant and allowing duplicate decisions despite the spec's requirement that only the first wins.",
+      "inject_violation": "fact MUTATE_DuplicateDecision { some disj dec1, dec2: Decision | dec1.application = dec2.application }"
+    },
+    {
+      "fact_name": "F_AuditTrailCompleteness",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_016_AuditTrail"
+      ],
+      "rationale": "This fact requires every application to have a submitted event. Removing it allows applications to exist without submission audit entries, violating the completeness invariant.",
+      "inject_violation": "fact MUTATE_MissingSubmittedEvent { some app: LoanApplication | no evt: ApplicationEvent | evt.application = app and evt.eventType = Submitted }"
+    }
+  ]
+}

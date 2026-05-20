@@ -1,0 +1,219 @@
+{
+  "run_id": "B-L1/M-small/run_10",
+  "cell": "B-L1",
+  "model": "M-small",
+  "rep": 10,
+  "D1": 0.0,
+  "D2": 1.0,
+  "D3": 0.0,
+  "D4": 0.3888888888888889,
+  "aqs_partial": 0.3472222222222222,
+  "scored_at": "2026-05-20T04:29:04.385084+00:00",
+  "details": {
+    "D1": {
+      "n_assertions": 18,
+      "n_verdicts": 0
+    },
+    "D2": {
+      "patterns_applied": [
+        "LeastPrivilege",
+        "AuthRequiredEverywhere",
+        "AppendOnly",
+        "ValidationBeforeMutation"
+      ],
+      "per_pattern": {
+        "LeastPrivilege": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "AuthRequiredEverywhere": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "AppendOnly": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "ValidationBeforeMutation": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        }
+      }
+    },
+    "D3": {
+      "per_target": {},
+      "skipped": [],
+      "note": "no scoreable mutation targets"
+    },
+    "D4": {
+      "per_fr": {
+        "FR-001": {
+          "covers": [
+            "AuthRequiredEverywhere",
+            "FR_001_AuthRequired"
+          ],
+          "verdicts": {
+            "AuthRequiredEverywhere": "MISSING",
+            "FR_001_AuthRequired": "MISSING"
+          },
+          "score": 0.5
+        },
+        "FR-002": {
+          "covers": [
+            "FR_002_ActorFromContext"
+          ],
+          "verdicts": {
+            "FR_002_ActorFromContext": "MISSING"
+          },
+          "score": 0.5
+        },
+        "FR-003": {
+          "covers": [
+            "FR_003_SingleWorkspace"
+          ],
+          "verdicts": {
+            "FR_003_SingleWorkspace": "MISSING"
+          },
+          "score": 0.5
+        },
+        "FR-004": {
+          "covers": [
+            "LeastPrivilege",
+            "FR_004_FlatPermissions"
+          ],
+          "verdicts": {
+            "LeastPrivilege": "MISSING",
+            "FR_004_FlatPermissions": "MISSING"
+          },
+          "score": 0.5
+        },
+        "FR-005": {
+          "covers": [
+            "ValidationBeforeMutation",
+            "FR_005_TitleConstraint"
+          ],
+          "verdicts": {
+            "ValidationBeforeMutation": "MISSING",
+            "FR_005_TitleConstraint": "MISSING"
+          },
+          "score": 0.5
+        },
+        "FR-006": {
+          "covers": [
+            "ValidationBeforeMutation",
+            "FR_006_DescriptionConstraint"
+          ],
+          "verdicts": {
+            "ValidationBeforeMutation": "MISSING",
+            "FR_006_DescriptionConstraint": "MISSING"
+          },
+          "score": 0.5
+        },
+        "FR-007": {
+          "covers": [
+            "ValidationBeforeMutation",
+            "FR_007_DueDateConstraint"
+          ],
+          "verdicts": {
+            "ValidationBeforeMutation": "MISSING",
+            "FR_007_DueDateConstraint": "MISSING"
+          },
+          "score": 0.5
+        },
+        "FR-008": {
+          "covers": [
+            "ValidationBeforeMutation",
+            "FR_008_AssigneeConstraint"
+          ],
+          "verdicts": {
+            "ValidationBeforeMutation": "MISSING",
+            "FR_008_AssigneeConstraint": "MISSING"
+          },
+          "score": 0.5
+        },
+        "FR-009": {
+          "covers": [
+            "FR_009_CreationMetadataImmutable"
+          ],
+          "verdicts": {
+            "FR_009_CreationMetadataImmutable": "MISSING"
+          },
+          "score": 0.5
+        },
+        "FR-010": {
+          "covers": [
+            "ValidationBeforeMutation",
+            "FR_010_StatusConstraint"
+          ],
+          "verdicts": {
+            "ValidationBeforeMutation": "MISSING",
+            "FR_010_StatusConstraint": "MISSING"
+          },
+          "score": 0.5
+        },
+        "FR-011": {
+          "covers": [
+            "FR_011_ClosedTaskRule"
+          ],
+          "verdicts": {
+            "FR_011_ClosedTaskRule": "MISSING"
+          },
+          "score": 0.5
+        },
+        "FR-012": {
+          "covers": [
+            "FR_012_PermanentDeletion"
+          ],
+          "verdicts": {
+            "FR_012_PermanentDeletion": "MISSING"
+          },
+          "score": 0.5
+        },
+        "FR-013": {
+          "covers": [],
+          "verdicts": {},
+          "score": 0.0
+        },
+        "FR-014": {
+          "covers": [],
+          "verdicts": {},
+          "score": 0.0
+        },
+        "FR-015": {
+          "covers": [],
+          "verdicts": {},
+          "score": 0.0
+        },
+        "FR-016": {
+          "covers": [],
+          "verdicts": {},
+          "score": 0.0
+        },
+        "FR-017": {
+          "covers": [
+            "FR_017_TimestampSemantics"
+          ],
+          "verdicts": {
+            "FR_017_TimestampSemantics": "MISSING"
+          },
+          "score": 0.5
+        },
+        "FR-018": {
+          "covers": [
+            "AppendOnly",
+            "FR_018_DeletionLogging"
+          ],
+          "verdicts": {
+            "AppendOnly": "MISSING",
+            "FR_018_DeletionLogging": "MISSING"
+          },
+          "score": 0.5
+        }
+      }
+    }
+  }
+}

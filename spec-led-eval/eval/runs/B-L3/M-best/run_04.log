@@ -1,0 +1,137 @@
+$ /Users/leonhausmann/opt/anaconda3/bin/python3 -m speceval.cli verify-design --no-cache --model M-best --java-bin /Users/leonhausmann/opt/anaconda3/lib/python3.9/site-packages/jdk4py/java-runtime/bin/java /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/eval/specs/B-L3
+
+[parse]   feature 'B-L3', 21 FRs, 7 user stories
+[lift]    calling LLM (anthropic: tier=M-best, model=claude-opus-4-7)...
+[lift]    fresh lift (sha=974d72b9481e)
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/B-L3/feature_model.als
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/B-L3/cost_log.json
+[alloy]   running alloy.jar on feature_model.als...
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/B-L3/alloy_verdicts.json
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/B-L3/mutation_outcomes.json
+
+==============================================================================
+  Design Compliance Report  (Phase 3 — feature_model.als)
+  feature       : B-L3
+  spec source   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/eval/specs/B-L3
+  alloy model   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/B-L3/feature_model.als
+  patterns      : LeastPrivilege, PermissionCompleteness, AuditCompleteness, AppendOnly, AttributionCorrectness, OwnershipExclusivity, OwnershipBasedAccess, NoInformationLeakage, AuthRequiredEverywhere, ValidationBeforeMutation
+  fr count      : 21 declared in spec.md
+  assertions    : 27 total (27/27 PASS via Alloy)
+==============================================================================
+
+  Compliance matrix
+  ----------------------------------------------------------------------------
+  Assertion                         Verdict   Anchor
+  ----------------------------------------------------------------------
+  LeastPrivilege                    PASS      PATTERN LeastPrivilege: contracts/http-api.md permission matrix; spec.md FR-003,005,010,011,014
+  PermissionCompleteness            PASS      PATTERN PermissionCompleteness: contracts/http-api.md permission matrix
+  AuditCompleteness                 PASS      PATTERN AuditCompleteness: spec.md FR-015; data-model.md per-event decomposition
+  AppendOnly                        PASS      PATTERN AppendOnly: spec.md FR-017; data-model.md "no UPDATE/DELETE on audit_entries"
+  AttributionCorrectness            PASS      PATTERN AttributionCorrectness: spec.md FR-016 audit fields
+  OwnershipExclusivity              PASS      PATTERN OwnershipExclusivity: data-model.md owner_id, team_id immutable; FR-009
+  OwnershipBasedAccess              PASS      PATTERN OwnershipBasedAccess: spec.md FR-003, FR-005, FR-011
+  NoInformationLeakage              PASS      PATTERN NoInformationLeakage: spec.md FR-014; SC-003 byte-equivalent 404
+  AuthRequiredEverywhere            PASS      PATTERN AuthRequiredEverywhere: spec.md FR-001
+  ValidationBeforeMutation          PASS      PATTERN ValidationBeforeMutation: spec.md FR-001, FR-018
+  FR_001_AuthRequired               PASS      FEATURE-SPECIFIC: FR-001 OAuth bearer required
+  FR_002_RoleFromToken              PASS      FEATURE-SPECIFIC: FR-002 / FR-002a team_id and role from token only
+  FR_003_MemberPermissions          PASS      FEATURE-SPECIFIC: FR-003 member permissions
+  FR_004_MemberCannotAccessUnowned  PASS      FEATURE-SPECIFIC: FR-004 member cannot access non-owned non-shared
+  FR_005_AdminTeamAccess            PASS      FEATURE-SPECIFIC: FR-005 admin team-wide access; admin cannot change shared_with
+  FR_006_NoCrossTeamAccess          PASS      FEATURE-SPECIFIC: FR-006 cross-team isolation under role
+  FR_009_OwnerTeamImmutable         PASS      FEATURE-SPECIFIC: FR-009 owner_id / team_id immutable, exactly one owner per task
+  FR_010_OwnerOnlySharesChange      PASS      FEATURE-SPECIFIC: FR-010 only the task owner may change shared_with
+  FR_011_ShareeCannotDelete         PASS      FEATURE-SPECIFIC: FR-011 sharee may view+edit, never delete
+  FR_012_NoCrossTeamSharing         PASS      FEATURE-SPECIFIC: FR-012 cross-team sharing forbidden
+  FR_013_ShareAuditEntries          PASS      FEATURE-SPECIFIC: FR-013 share/unshare audit entries
+  FR_014_ByteEquivalent404          PASS      FEATURE-SPECIFIC: FR-014 byte-equivalent 404
+  FR_015_PerEventAudit              PASS      FEATURE-SPECIFIC: FR-015 per-event audit
+  FR_016_AuditFields                PASS      FEATURE-SPECIFIC: FR-016 audit-entry fields are faithful to the operation
+  FR_017_AuditAppendOnly            PASS      FEATURE-SPECIFIC: FR-017 audit immutable / append-only
+  FR_018_NoOrphanStateChange        PASS      FEATURE-SPECIFIC: FR-018 no observable state change without audit entry
+  FR_019_AuditAccess                PASS      FEATURE-SPECIFIC: FR-019 audit readable by owner / sharee / admin only
+
+  FR coverage
+  ----------------------------------------------------------------------------
+  FR-001  →  FR_001_AuthRequired=PASS, AuthRequiredEverywhere=PASS
+  FR-002  →  FR_002_RoleFromToken=PASS
+  FR-003  →  FR_003_MemberPermissions=PASS, OwnershipBasedAccess=PASS, LeastPrivilege=PASS
+  FR-004  →  FR_004_MemberCannotAccessUnowned=PASS, OwnershipBasedAccess=PASS
+  FR-005  →  FR_005_AdminTeamAccess=PASS, LeastPrivilege=PASS
+  FR-006  →  FR_006_NoCrossTeamAccess=PASS, NoInformationLeakage=PASS
+  FR-007  [uncovered]
+  FR-008  [uncovered]
+  FR-009  →  FR_009_OwnerTeamImmutable=PASS, OwnershipExclusivity=PASS
+  FR-010  →  FR_010_OwnerOnlySharesChange=PASS, LeastPrivilege=PASS
+  FR-011  →  FR_011_ShareeCannotDelete=PASS, LeastPrivilege=PASS
+  FR-012  →  FR_012_NoCrossTeamSharing=PASS
+  FR-013  →  FR_013_ShareAuditEntries=PASS
+  FR-014  →  FR_014_ByteEquivalent404=PASS, NoInformationLeakage=PASS
+  FR-015  →  FR_015_PerEventAudit=PASS, AuditCompleteness=PASS
+  FR-016  →  FR_016_AuditFields=PASS, AttributionCorrectness=PASS
+  FR-017  →  FR_017_AuditAppendOnly=PASS, AppendOnly=PASS
+  FR-018  →  FR_018_NoOrphanStateChange=PASS, AuditCompleteness=PASS, ValidationBeforeMutation=PASS
+  FR-019  →  FR_019_AuditAccess=PASS, LeastPrivilege=PASS
+  FR-020  [uncovered]
+  FR-021  [uncovered]
+
+  WARNING: 4 FR(s) without any matching assertion: FR-007, FR-008, FR-020, FR-021
+
+==============================================================================
+  Mutation tests  (assertion-strength validation)
+==============================================================================
+
+  Strategy: replace each named fact's body with `{}` (no constraint),
+  then re-run Alloy. Each listed assertion should now FAIL on the
+  mutated model. If it still PASSes, the assertion is vacuous and
+  must be strengthened.
+
+  - MUTATE F_AccessControl  → runs/B-L3/mutated_F_AccessControl.als
+    rationale: F_AccessControl is the load-bearing constraint tying (relationship, opKind) to the permission matrix. Clearing it removes the link; the injection forces an explicit sharee-doing-DELETE success, which the matrix forbids — so LeastPrivilege and the related FRs must produce a counterexample.
+    expected to FAIL: LeastPrivilege, OwnershipBasedAccess, FR_011_ShareeCannotDelete, FR_010_OwnerOnlySharesChange
+      - LeastPrivilege: FAIL (expected)
+      - OwnershipBasedAccess: FAIL (expected)
+      - FR_011_ShareeCannotDelete: FAIL (expected)
+      - FR_010_OwnerOnlySharesChange: FAIL (expected)
+
+  - MUTATE F_AppendOnlyAuditEntries  → runs/B-L3/mutated_F_AppendOnlyAuditEntries.als
+    rationale: Clearing this fact lets two AuditEntries describe the same logical operation event (a rewrite/duplicate), which is exactly what append-only forbids. The injection forces two such entries to coexist.
+    expected to FAIL: AppendOnly, FR_017_AuditAppendOnly
+      - AppendOnly: PASS (vacuous?)
+      - FR_017_AuditAppendOnly: PASS (vacuous?)
+
+  - MUTATE F_AuditOnePerMutation  → runs/B-L3/mutated_F_AuditOnePerMutation.als
+    rationale: Clearing this removes the requirement that every successful mutating operation be backed by an audit entry; the injection constructs an orphan state change — a successful PATCH with no matching AuditEntry — which violates the per-event audit invariant.
+    expected to FAIL: AuditCompleteness, FR_015_PerEventAudit, FR_018_NoOrphanStateChange
+      - AuditCompleteness: FAIL (expected)
+      - FR_015_PerEventAudit: FAIL (expected)
+      - FR_018_NoOrphanStateChange: FAIL (expected)
+
+  - MUTATE F_AuditAttribution  → runs/B-L3/mutated_F_AuditAttribution.als
+    rationale: Clearing this lets an AuditEntry record an actor that is not the operation's caller, i.e., misattribution. The injection forces a recordedActor mismatch.
+    expected to FAIL: AttributionCorrectness, FR_016_AuditFields
+      - AttributionCorrectness: FAIL (expected)
+      - FR_016_AuditFields: FAIL (expected)
+
+  - MUTATE F_SharedWithSameTeam  → runs/B-L3/mutated_F_SharedWithSameTeam.als
+    rationale: Removing this fact lets a sharee live in a different team than the task — exactly the cross-team-sharing escape FR-012 prohibits. The injection makes such a configuration exist.
+    expected to FAIL: FR_012_NoCrossTeamSharing
+      - FR_012_NoCrossTeamSharing: FAIL (expected)
+
+  - MUTATE F_UnauthenticatedRejected  → runs/B-L3/mutated_F_UnauthenticatedRejected.als
+    rationale: Clearing this fact removes the gate forcing successful operations to be authenticated. The injection produces a successful unauthenticated operation, breaking the auth invariant.
+    expected to FAIL: AuthRequiredEverywhere, FR_001_AuthRequired
+      - AuthRequiredEverywhere: FAIL (expected)
+      - FR_001_AuthRequired: FAIL (expected)
+
+  Mutation summary
+  ----------------------------------------------------------------------------
+  - F_AccessControl: ASSERTIONS BIT (LeastPrivilege, OwnershipBasedAccess, FR_011_ShareeCannotDelete, FR_010_OwnerOnlySharesChange)
+  - F_AppendOnlyAuditEntries: ASSERTION VACUOUS (AppendOnly, FR_017_AuditAppendOnly)
+  - F_AuditOnePerMutation: ASSERTIONS BIT (AuditCompleteness, FR_015_PerEventAudit, FR_018_NoOrphanStateChange)
+  - F_AuditAttribution: ASSERTIONS BIT (AttributionCorrectness, FR_016_AuditFields)
+  - F_SharedWithSameTeam: ASSERTIONS BIT (FR_012_NoCrossTeamSharing)
+  - F_UnauthenticatedRejected: ASSERTIONS BIT (AuthRequiredEverywhere, FR_001_AuthRequired)
+
+
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/B-L3/report.txt

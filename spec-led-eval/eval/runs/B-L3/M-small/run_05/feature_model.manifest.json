@@ -1,0 +1,150 @@
+{
+  "feature_id": "B-L3",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionGrounding",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage"
+  ],
+  "feature_specific_predicates": [
+    "RoleAndTeamFromToken",
+    "MemberVisibilityControl",
+    "OnlyOwnerChangesShares",
+    "ShareeCannotDelete",
+    "CrossTeamSharingForbidden",
+    "OwnerIdImmutable",
+    "TeamIdImmutable",
+    "ShareAuditEntries",
+    "ByteEquivalent404",
+    "OneAuditPerMutation",
+    "AuditImmutable",
+    "AuditReadability",
+    "CrossTeamIsolation",
+    "AuthenticationBoundary"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "AuthRequiredEverywhere",
+      "AuthenticationBoundary"
+    ],
+    "FR-002": [
+      "OneTeamPerUser",
+      "OneRolePerUser"
+    ],
+    "FR-002a": [
+      "RoleAndTeamFromToken"
+    ],
+    "FR-003": [
+      "MemberVisibilityControl",
+      "OwnershipBasedAccess"
+    ],
+    "FR-004": [
+      "MemberVisibilityControl",
+      "NoInformationLeakage"
+    ],
+    "FR-005": [
+      "CrossTeamIsolation",
+      "OwnershipBasedAccess"
+    ],
+    "FR-006": [
+      "CrossTeamIsolation",
+      "NoInformationLeakage"
+    ],
+    "FR-009": [
+      "OwnerIdImmutable",
+      "TeamIdImmutable",
+      "OwnershipExclusivity"
+    ],
+    "FR-010": [
+      "OnlyOwnerChangesShares"
+    ],
+    "FR-011": [
+      "ShareeCannotDelete"
+    ],
+    "FR-012": [
+      "CrossTeamSharingForbidden"
+    ],
+    "FR-013": [
+      "ShareAuditEntries"
+    ],
+    "FR-014": [
+      "NoInformationLeakage",
+      "ByteEquivalent404",
+      "CrossTeamIsolation"
+    ],
+    "FR-015": [
+      "OneAuditPerMutation",
+      "AuditCompleteness"
+    ],
+    "FR-016": [
+      "AttributionCorrectness",
+      "AuditFieldIntegrity"
+    ],
+    "FR-017": [
+      "AuditImmutable",
+      "AppendOnly"
+    ],
+    "FR-019": [
+      "AuditReadability"
+    ],
+    "FR-021": []
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_AuditCompleteness",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "OneAuditPerMutation"
+      ],
+      "rationale": "Removing F_AuditCompleteness allows the model to create tasks without any audit entries. The AuditCompleteness and OneAuditPerMutation assertions require at least one audit entry per task. Injecting a violation forces a counterexample: a task with no creation event.",
+      "inject_violation": "fact MUTATE_AuditCompleteness { some t: Task | (all ae: AuditEntry | ae.task_id != t.id) }"
+    },
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "PermissionGrounding"
+      ],
+      "rationale": "Removing F_PermissionMatrix leaves the Allowed relation undefined or empty. The LeastPrivilege and PermissionGrounding assertions will fail because they expect explicit (role, operation) pairs in the matrix. Injecting an empty matrix shows no permissions are granted.",
+      "inject_violation": "fact MUTATE_PermissionMatrix { PermMatrix.Allowed = none }"
+    },
+    {
+      "fact_name": "F_OnlyOwnerChangesShares",
+      "asserts_violated": [
+        "OnlyOwnerChangesShares"
+      ],
+      "rationale": "Removing this fact allows non-owners to be in the shared_with set without the owner's authority. The OnlyOwnerChangesShares assertion will fail when a non-owner user is found in shared_with.",
+      "inject_violation": "fact MUTATE_OwnerShares { some t: Task | some u: User | (u in t.shared_with) and (u != t.owner_id) }"
+    },
+    {
+      "fact_name": "F_CrossTeamSharingForbidden",
+      "asserts_violated": [
+        "CrossTeamSharingForbidden"
+      ],
+      "rationale": "Removing this fact allows shares to cross team boundaries. The CrossTeamSharingForbidden assertion will fail when Alloy finds a sharee in a different team than the task owner.",
+      "inject_violation": "fact MUTATE_CrossTeamShare { some t: Task | some u: User | (u in t.shared_with) and (u.team_id != t.owner_id.team_id) }"
+    },
+    {
+      "fact_name": "F_CrossTeamIsolation",
+      "asserts_violated": [
+        "CrossTeamIsolation",
+        "NoInformationLeakage"
+      ],
+      "rationale": "Removing this fact allows cross-team users to appear in a task's ownership or sharing lists. The CrossTeamIsolation and NoInformationLeakage assertions will fail when a user from a different team is found with access to a task.",
+      "inject_violation": "fact MUTATE_CrossTeamAccess { some t: Task | some u: User | (u.team_id != t.team_id) and (u = t.owner_id or u in t.shared_with) }"
+    },
+    {
+      "fact_name": "F_AuditAttribution",
+      "asserts_violated": [
+        "AttributionCorrectness"
+      ],
+      "rationale": "Removing this fact allows audit entries to record an incorrect actor_role (e.g., recording 'Member' when the user was 'TeamAdmin'). The AttributionCorrectness assertion will fail when the recorded role does not match the user's actual role.",
+      "inject_violation": "fact MUTATE_Attribution { some ae: AuditEntry | ae.actor_role != ae.actor_user_id.role }"
+    }
+  ]
+}

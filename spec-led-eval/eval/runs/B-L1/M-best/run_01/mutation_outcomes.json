@@ -1,0 +1,43 @@
+{
+  "F_AuthRequiredOnAllOps": {
+    "targeted_asserts": {
+      "AuthRequiredEverywhere": "BIT",
+      "FR_001_AuthRequired": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AppendOnlyDeletionLog": {
+    "targeted_asserts": {
+      "AppendOnly": "BIT",
+      "FR_012_DeletionPermanent": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_DeleteAcceptedProducesDeletion": {
+    "targeted_asserts": {
+      "AuditCompleteness": "BIT",
+      "FR_018_DeletionLogged": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_DeletionAttribution": {
+    "targeted_asserts": {
+      "AttributionCorrectness": "BIT",
+      "FR_018_DeletionLogged": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_ClosedTaskEditRule": {
+    "targeted_asserts": {
+      "FR_011_ClosedTaskEditRule": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_ValidationBeforeMutation": {
+    "targeted_asserts": {
+      "ValidationBeforeMutation": "BIT",
+      "FR_002_IdentityFromAuth": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  }
+}

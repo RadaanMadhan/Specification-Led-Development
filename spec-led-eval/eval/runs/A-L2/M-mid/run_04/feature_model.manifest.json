@@ -1,0 +1,179 @@
+{
+  "feature_id": "A-L2",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_CustomerPermissions",
+    "FR_003_OfficerPermissions",
+    "FR_004_ComplianceReadOnly",
+    "FR_008_OneInFlightPerCustomer",
+    "FR_009_InitialAuditEntry",
+    "FR_012_ExactlyOneClaimPerApp",
+    "FR_013_OnlyAssignedOfficerDecides",
+    "FR_016_TerminalStatusImmutable",
+    "FR_017_AuditEveryStatusChange",
+    "FR_018_AuditAppendOnly",
+    "FR_019_ExactlyOneAuditPerTransition",
+    "FR_020_CustomerOwnershipAccess",
+    "FR_021_OfficerIdentityHiddenFromCustomer",
+    "FR_023_ComplianceNoWriteAtAll"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_CustomerPermissions",
+      "LeastPrivilege"
+    ],
+    "FR-003": [
+      "FR_003_OfficerPermissions",
+      "LeastPrivilege"
+    ],
+    "FR-004": [
+      "FR_004_ComplianceReadOnly",
+      "LeastPrivilege"
+    ],
+    "FR-005": [
+      "FR_009_InitialAuditEntry",
+      "OwnershipExclusivity"
+    ],
+    "FR-006": [
+      "FR_002_CustomerPermissions"
+    ],
+    "FR-007": [
+      "FR_002_CustomerPermissions"
+    ],
+    "FR-008": [
+      "FR_008_OneInFlightPerCustomer",
+      "OwnershipExclusivity"
+    ],
+    "FR-009": [
+      "FR_009_InitialAuditEntry",
+      "AuditCompleteness"
+    ],
+    "FR-010": [
+      "FR_003_OfficerPermissions"
+    ],
+    "FR-011": [
+      "FR_012_ExactlyOneClaimPerApp",
+      "AuditCompleteness"
+    ],
+    "FR-012": [
+      "FR_012_ExactlyOneClaimPerApp"
+    ],
+    "FR-013": [
+      "FR_013_OnlyAssignedOfficerDecides"
+    ],
+    "FR-014": [
+      "FR_003_OfficerPermissions"
+    ],
+    "FR-015": [
+      "FR_013_OnlyAssignedOfficerDecides",
+      "FR_017_AuditEveryStatusChange"
+    ],
+    "FR-016": [
+      "FR_016_TerminalStatusImmutable"
+    ],
+    "FR-017": [
+      "FR_017_AuditEveryStatusChange",
+      "AuditCompleteness",
+      "AttributionCorrectness"
+    ],
+    "FR-018": [
+      "FR_018_AuditAppendOnly",
+      "AppendOnly"
+    ],
+    "FR-019": [
+      "FR_019_ExactlyOneAuditPerTransition",
+      "AuditCompleteness"
+    ],
+    "FR-020": [
+      "FR_020_CustomerOwnershipAccess",
+      "OwnershipBasedAccess",
+      "NoInformationLeakage"
+    ],
+    "FR-021": [
+      "FR_021_OfficerIdentityHiddenFromCustomer"
+    ],
+    "FR-022": [
+      "FR_016_TerminalStatusImmutable"
+    ],
+    "FR-023": [
+      "FR_023_ComplianceNoWriteAtAll",
+      "FR_004_ComplianceReadOnly"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_004_ComplianceReadOnly",
+        "FR_023_ComplianceNoWriteAtAll",
+        "FR_021_OfficerIdentityHiddenFromCustomer"
+      ],
+      "rationale": "Clearing F_PermissionMatrix removes the closed-world definition of PermMatrix.Allowed. The injection grants ComplianceReviewer all write operations and Customer the GetAudit endpoint, directly violating LeastPrivilege, FR_004, FR_023, and FR_021.",
+      "inject_violation": "fact MUTATE_PermissionMatrixViolation { PermMatrix.Allowed = Role -> OperationKind }"
+    },
+    {
+      "fact_name": "F_AppendOnlyAuditEntries",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_018_AuditAppendOnly",
+        "FR_016_TerminalStatusImmutable"
+      ],
+      "rationale": "Clearing F_AppendOnlyAuditEntries removes the constraint that audit entries must match valid transition shapes. The injection forces an event with prevStatus=Approved (a terminal-status transition), which is a mutation of an already-decided state and violates AppendOnly and FR_016.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some e: ApplicationEvent | e.prevStatus = Approved and e.newStatus = Rejected }"
+    },
+    {
+      "fact_name": "F_OneInFlightPerCustomer",
+      "asserts_violated": [
+        "FR_008_OneInFlightPerCustomer",
+        "OwnershipExclusivity"
+      ],
+      "rationale": "Clearing F_OneInFlightPerCustomer removes the partial-unique-index analogue. The injection forces two distinct applications for the same customer both in Submitted status, exactly the concurrent-submission scenario FR-008 forbids.",
+      "inject_violation": "fact MUTATE_OneInFlightViolation { some disj a1, a2: LoanApplication | a1.customer = a2.customer and a1.status = Submitted and a2.status = Submitted }"
+    },
+    {
+      "fact_name": "F_DecisionByAssignedOfficer",
+      "asserts_violated": [
+        "FR_013_OnlyAssignedOfficerDecides",
+        "AuditCompleteness"
+      ],
+      "rationale": "Clearing F_DecisionByAssignedOfficer removes the constraint that decidedBy must equal assignedOfficer. The injection forces a Decision whose decidedBy is a different loan officer than the one assigned to the application, violating FR_013.",
+      "inject_violation": "fact MUTATE_DecisionByWrongOfficer { some d: Decision | some u: User | u.role = LoanOfficer and u != d.application.assignedOfficer and d.decidedBy = u }"
+    },
+    {
+      "fact_name": "F_AuditNoDuplicates",
+      "asserts_violated": [
+        "FR_019_ExactlyOneAuditPerTransition",
+        "AppendOnly",
+        "AuditCompleteness"
+      ],
+      "rationale": "Clearing F_AuditNoDuplicates removes the no-duplicate-transitions constraint. The injection forces two distinct ApplicationEvent atoms for the same application with identical prevStatus and newStatus, violating FR_019 and AppendOnly.",
+      "inject_violation": "fact MUTATE_DuplicateAuditEntry { some disj e1, e2: ApplicationEvent | e1.application = e2.application and e1.prevStatus = e2.prevStatus and e1.newStatus = e2.newStatus and no e1.prevStatus }"
+    },
+    {
+      "fact_name": "F_CustomerOwnershipAccessReturnsNotFound",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "FR_020_CustomerOwnershipAccess",
+        "OwnershipBasedAccess"
+      ],
+      "rationale": "Clearing F_CustomerOwnershipAccessReturnsNotFound removes the 404-not-404 existence-leak rule. The injection forces a customer operation on another customer's application to return Denied rather than NotFound, leaking the existence of the application.",
+      "inject_violation": "fact MUTATE_ExistenceLeakViolation { some op: Operation | some op.caller and op.caller.role = Customer and op.kind = GetApplicationByRef and some op.targetApp and op.targetApp.customer != op.caller and op.outcome = Denied }"
+    }
+  ]
+}

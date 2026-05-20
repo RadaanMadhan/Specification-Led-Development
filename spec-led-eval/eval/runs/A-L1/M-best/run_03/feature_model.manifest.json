@@ -1,0 +1,150 @@
+{
+  "feature_id": "003-loan-application",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "PermissionGrounding",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_CustomerSubmitsApplication",
+    "FR_002_ValidationBeforeMutation",
+    "FR_004_UniqueReference",
+    "FR_005_OnePendingPerCustomer",
+    "FR_009_DecisionReasonNonEmpty",
+    "FR_010_DecisionPersistsAndStatusChanges",
+    "FR_011_DecidedImmutable",
+    "FR_012_OnlyOneDecision",
+    "FR_013_CustomerSeesOnlyOwn",
+    "FR_014_NotificationOnDecision",
+    "FR_015_StaffOnlyDecisions",
+    "FR_016_AuditTrail",
+    "FR_017_RetentionAppendOnly"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_CustomerSubmitsApplication",
+      "PermissionGrounding"
+    ],
+    "FR-002": [
+      "FR_002_ValidationBeforeMutation"
+    ],
+    "FR-003": [
+      "FR_002_ValidationBeforeMutation"
+    ],
+    "FR-004": [
+      "FR_004_UniqueReference"
+    ],
+    "FR-005": [
+      "FR_005_OnePendingPerCustomer"
+    ],
+    "FR-006": [
+      "FR_001_CustomerSubmitsApplication"
+    ],
+    "FR-007": [
+      "LeastPrivilege",
+      "PermissionGrounding"
+    ],
+    "FR-008": [
+      "LeastPrivilege",
+      "PermissionGrounding"
+    ],
+    "FR-009": [
+      "FR_009_DecisionReasonNonEmpty"
+    ],
+    "FR-010": [
+      "FR_010_DecisionPersistsAndStatusChanges",
+      "AuditCompleteness"
+    ],
+    "FR-011": [
+      "FR_011_DecidedImmutable",
+      "AppendOnly"
+    ],
+    "FR-012": [
+      "FR_012_OnlyOneDecision"
+    ],
+    "FR-013": [
+      "FR_013_CustomerSeesOnlyOwn",
+      "OwnershipBasedAccess",
+      "NoInformationLeakage"
+    ],
+    "FR-014": [
+      "FR_014_NotificationOnDecision"
+    ],
+    "FR-015": [
+      "FR_015_StaffOnlyDecisions",
+      "LeastPrivilege",
+      "PermissionCompleteness"
+    ],
+    "FR-016": [
+      "FR_016_AuditTrail",
+      "AuditCompleteness",
+      "AppendOnly",
+      "AttributionCorrectness"
+    ],
+    "FR-017": [
+      "FR_017_RetentionAppendOnly"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_PermissionEnforced",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_015_StaffOnlyDecisions"
+      ],
+      "rationale": "Removing the fact lets a successful operation occur without the (role, kind) being licensed by PermMatrix.Allowed. The injection forces a customer to successfully POST a decision, which LeastPrivilege and FR_015 forbid.",
+      "inject_violation": "fact MUTATE_LeastPrivilegeViolation { some op: Operation | op.kind = PostDecision and some op.presented and op.presented.role = Customer and op.outcome = OkSuccess }"
+    },
+    {
+      "fact_name": "F_AuditAppendOnly",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_016_AuditTrail",
+        "FR_017_RetentionAppendOnly"
+      ],
+      "rationale": "Removing the fact lets two events share the same (application, eventType) pair \u2014 the structural signature of an UPDATE/replace masquerading as an append. The injection forces such a duplicate to exist.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some disj e1, e2: ApplicationEvent | e1.application = e2.application and e1.eventType = e2.eventType }"
+    },
+    {
+      "fact_name": "F_AuditCompleteness",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_016_AuditTrail"
+      ],
+      "rationale": "Without this fact, a decided application can exist with no corresponding decision event. The injection produces an Approved application that has zero approved events.",
+      "inject_violation": "fact MUTATE_AuditCompletenessViolation { some a: LoanApplication | a.status = ApprovedS and (no e: ApplicationEvent | e.application = a and e.eventType = EvtApproved) }"
+    },
+    {
+      "fact_name": "F_NoLeakageOnUnauthorisedRead",
+      "asserts_violated": [
+        "NoInformationLeakage"
+      ],
+      "rationale": "Removing the fact lets a customer who probes another customer's reference receive PermissionDenied \u2014 a side channel revealing that the resource exists. The injection forces precisely that leaky outcome.",
+      "inject_violation": "fact MUTATE_NoLeakageViolation { some op: Operation | op.kind = GetApplicationByRef and some op.presented and op.presented.role = Customer and some op.target and op.target.customer != op.presented and op.outcome = OkPermissionDenied }"
+    },
+    {
+      "fact_name": "F_OnePendingPerCustomer",
+      "asserts_violated": [
+        "FR_005_OnePendingPerCustomer"
+      ],
+      "rationale": "Without this fact, a single customer can hold multiple in-flight applications. The injection forces two distinct Pending Review applications to share one customer.",
+      "inject_violation": "fact MUTATE_OnePendingViolation { some disj a1, a2: LoanApplication | a1.customer = a2.customer and a1.status = PendingReview and a2.status = PendingReview }"
+    },
+    {
+      "fact_name": "F_AtMostOneDecisionPerApplication",
+      "asserts_violated": [
+        "FR_012_OnlyOneDecision",
+        "FR_017_RetentionAppendOnly"
+      ],
+      "rationale": "Without this fact, two staff members can both have their decisions recorded against the same application (the SC-005 race). The injection forces two distinct decisions for one application.",
+      "inject_violation": "fact MUTATE_TwoDecisionsViolation { some disj d1, d2: Decision | d1.application = d2.application }"
+    }
+  ]
+}

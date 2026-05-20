@@ -1,0 +1,269 @@
+{
+  "run_id": "C-L3/M-best/run_01",
+  "cell": "C-L3",
+  "model": "M-best",
+  "rep": 1,
+  "D1": 0.0,
+  "D2": 1.0,
+  "D3": 0.0,
+  "D4": 0.5,
+  "aqs_partial": 0.375,
+  "scored_at": "2026-05-20T04:29:05.002996+00:00",
+  "details": {
+    "D1": {
+      "n_assertions": 27,
+      "n_verdicts": 0
+    },
+    "D2": {
+      "patterns_applied": [
+        "LeastPrivilege",
+        "AuditCompleteness",
+        "AppendOnly",
+        "AttributionCorrectness",
+        "OwnershipExclusivity",
+        "OwnershipBasedAccess",
+        "NoInformationLeakage"
+      ],
+      "per_pattern": {
+        "LeastPrivilege": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "AuditCompleteness": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "AppendOnly": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "AttributionCorrectness": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "OwnershipExclusivity": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "OwnershipBasedAccess": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "NoInformationLeakage": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        }
+      }
+    },
+    "D3": {
+      "per_target": {},
+      "skipped": [],
+      "note": "no scoreable mutation targets"
+    },
+    "D4": {
+      "per_fr": {
+        "FR-001": {
+          "covers": [
+            "FR_001_AuthRequired"
+          ],
+          "verdicts": {
+            "FR_001_AuthRequired": "MISSING"
+          },
+          "score": 0.5
+        },
+        "FR-002": {
+          "covers": [
+            "FR_002_OneRolePerUser"
+          ],
+          "verdicts": {
+            "FR_002_OneRolePerUser": "MISSING"
+          },
+          "score": 0.5
+        },
+        "FR-003": {
+          "covers": [
+            "FR_003_PatientAssignedRecord",
+            "OwnershipExclusivity"
+          ],
+          "verdicts": {
+            "FR_003_PatientAssignedRecord": "MISSING",
+            "OwnershipExclusivity": "MISSING"
+          },
+          "score": 0.5
+        },
+        "FR-004": {
+          "covers": [
+            "FR_004_CareTeamGating"
+          ],
+          "verdicts": {
+            "FR_004_CareTeamGating": "MISSING"
+          },
+          "score": 0.5
+        },
+        "FR-005": {
+          "covers": [
+            "FR_005_ClinicianAuditAccess"
+          ],
+          "verdicts": {
+            "FR_005_ClinicianAuditAccess": "MISSING"
+          },
+          "score": 0.5
+        },
+        "FR-006": {
+          "covers": [
+            "FR_006_PatientSelfAccess",
+            "OwnershipBasedAccess"
+          ],
+          "verdicts": {
+            "FR_006_PatientSelfAccess": "MISSING",
+            "OwnershipBasedAccess": "MISSING"
+          },
+          "score": 0.5
+        },
+        "FR-007": {
+          "covers": [
+            "FR_007_ComplianceContentBlind"
+          ],
+          "verdicts": {
+            "FR_007_ComplianceContentBlind": "MISSING"
+          },
+          "score": 0.5
+        },
+        "FR-008": {
+          "covers": [
+            "FR_008_ByteEquivalent403",
+            "NoInformationLeakage"
+          ],
+          "verdicts": {
+            "FR_008_ByteEquivalent403": "MISSING",
+            "NoInformationLeakage": "MISSING"
+          },
+          "score": 0.5
+        },
+        "FR-009": {
+          "covers": [
+            "FR_009_NonCareTeamDenied"
+          ],
+          "verdicts": {
+            "FR_009_NonCareTeamDenied": "MISSING"
+          },
+          "score": 0.5
+        },
+        "FR-010": {
+          "covers": [
+            "FR_010_NoteValidation"
+          ],
+          "verdicts": {
+            "FR_010_NoteValidation": "MISSING"
+          },
+          "score": 0.5
+        },
+        "FR-011": {
+          "covers": [
+            "FR_011_NotePersistence"
+          ],
+          "verdicts": {
+            "FR_011_NotePersistence": "MISSING"
+          },
+          "score": 0.5
+        },
+        "FR-012": {
+          "covers": [
+            "FR_012_NotesAppendOnly",
+            "AppendOnly"
+          ],
+          "verdicts": {
+            "FR_012_NotesAppendOnly": "MISSING",
+            "AppendOnly": "MISSING"
+          },
+          "score": 0.5
+        },
+        "FR-013": {
+          "covers": [
+            "FR_013_AlwaysOnAudit",
+            "AuditCompleteness"
+          ],
+          "verdicts": {
+            "FR_013_AlwaysOnAudit": "MISSING",
+            "AuditCompleteness": "MISSING"
+          },
+          "score": 0.5
+        },
+        "FR-014": {
+          "covers": [
+            "FR_014_AuditEntryShape",
+            "AttributionCorrectness"
+          ],
+          "verdicts": {
+            "FR_014_AuditEntryShape": "MISSING",
+            "AttributionCorrectness": "MISSING"
+          },
+          "score": 0.5
+        },
+        "FR-015": {
+          "covers": [
+            "FR_015_AuditImmutable",
+            "AppendOnly"
+          ],
+          "verdicts": {
+            "FR_015_AuditImmutable": "MISSING",
+            "AppendOnly": "MISSING"
+          },
+          "score": 0.5
+        },
+        "FR-016": {
+          "covers": [
+            "FR_016_AuditWriteSLA"
+          ],
+          "verdicts": {
+            "FR_016_AuditWriteSLA": "MISSING"
+          },
+          "score": 0.5
+        },
+        "FR-017": {
+          "covers": [
+            "FR_017_AuditRetention"
+          ],
+          "verdicts": {
+            "FR_017_AuditRetention": "MISSING"
+          },
+          "score": 0.5
+        },
+        "FR-018": {
+          "covers": [
+            "FR_018_ComplianceAccessLog"
+          ],
+          "verdicts": {
+            "FR_018_ComplianceAccessLog": "MISSING"
+          },
+          "score": 0.5
+        },
+        "FR-019": {
+          "covers": [
+            "FR_019_ContentBlindResponses"
+          ],
+          "verdicts": {
+            "FR_019_ContentBlindResponses": "MISSING"
+          },
+          "score": 0.5
+        },
+        "FR-020": {
+          "covers": [
+            "FR_020_RecordIdOnly"
+          ],
+          "verdicts": {
+            "FR_020_RecordIdOnly": "MISSING"
+          },
+          "score": 0.5
+        }
+      }
+    }
+  }
+}

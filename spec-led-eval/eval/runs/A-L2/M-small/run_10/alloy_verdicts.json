@@ -1,0 +1,17 @@
+{
+  "FR_001_AuthRequiredEverywhere": "PASS",
+  "FR_002_CustomerPermissions": "PASS",
+  "FR_003_LoanOfficerPermissions": "PASS",
+  "FR_004_ComplianceReviewerPermissions": "PASS",
+  "FR_008_OneInFlightPerCustomer": "FAIL",
+  "FR_011_ClaimTransition": "FAIL",
+  "FR_013_OnlyAssignedOfficerDecides": "FAIL",
+  "FR_016_DecidedApplicationsImmutable": "FAIL",
+  "FR_017_AuditCompleteness": "FAIL",
+  "AppendOnly": "PASS",
+  "FR_020_OwnershipBasedCustomerAccess": "PASS",
+  "OwnershipExclusivity": "PASS",
+  "NoInformationLeakage": "PASS",
+  "PermissionCompleteness": "PASS",
+  "PermissionGrounding": "PASS"
+}

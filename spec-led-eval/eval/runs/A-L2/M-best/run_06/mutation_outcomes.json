@@ -1,0 +1,43 @@
+{
+  "F_OperationsRespectPermissionMatrix": {
+    "targeted_asserts": {
+      "LeastPrivilege": "BIT",
+      "FR_002_CustomerPermissions": "BIT",
+      "FR_021_OfficerIdentityHidden": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_NoDuplicateAuditEntries": {
+    "targeted_asserts": {
+      "AppendOnly": "VACUOUS_OVERCONSTRAINT",
+      "FR_018_AppendOnlyAudit": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_OneInFlightPerCustomer": {
+    "targeted_asserts": {
+      "FR_008_OneInFlightPerCustomer": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_DecidedByEqualsAssignedOfficer": {
+    "targeted_asserts": {
+      "FR_013_OnlyAssignedOfficerDecides": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AuditEntryExistsForEveryTransition": {
+    "targeted_asserts": {
+      "AuditCompleteness": "BIT",
+      "FR_019_ExactlyOneEntryPerAppliedTransition": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AppCustomerIsCustomerRole": {
+    "targeted_asserts": {
+      "OwnershipExclusivity": "BIT",
+      "FR_005_CustomerIdentityFromAuth": "BIT"
+    },
+    "all_bit": true
+  }
+}

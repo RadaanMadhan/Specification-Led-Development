@@ -1,0 +1,49 @@
+{
+  "F_CareTeamGating": {
+    "targeted_asserts": {
+      "OwnershipBasedAccess": "VACUOUS_OVERCONSTRAINT",
+      "FR_004_CareTeamGating": "VACUOUS_OVERCONSTRAINT",
+      "NoInformationLeakage": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_AdminRestrictedToListAudit": {
+    "targeted_asserts": {
+      "LeastPrivilege": "BIT",
+      "FR_005_AdminRestrictedToListAudit": "BIT",
+      "FR_018_AdminNoClinicaContent": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AuditOperationBijection": {
+    "targeted_asserts": {
+      "AuditCompleteness": "BIT",
+      "FR_012_AlwaysOnAudit": "BIT",
+      "FR_014_AuditImmutable": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_NoteCreatedOnlyForPermittedAddNote": {
+    "targeted_asserts": {
+      "FR_011_NotesAppendOnly": "BIT",
+      "ValidationBeforeMutation": "BIT",
+      "AppendOnly": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_AuditNoteRefConstraint": {
+    "targeted_asserts": {
+      "FR_013_AuditEntryShape": "BIT",
+      "FR_015_AuditAtomicWithAccess": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_ClinicalRolesCannotAccessListAudit": {
+    "targeted_asserts": {
+      "LeastPrivilege": "BIT",
+      "FR_017_AdminOnlyListAudit": "BIT",
+      "NoInformationLeakage": "BIT"
+    },
+    "all_bit": true
+  }
+}

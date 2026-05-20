@@ -1,0 +1,173 @@
+{
+  "feature_id": "005-fca-loan-applications",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "PermissionGrounding",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "NoSelfMutation"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_RoleExclusivity",
+    "FR_008_OneInFlight",
+    "FR_009_ValidTransitions",
+    "FR_010_AssignmentInvariants",
+    "FR_011_NoSelfAssignment",
+    "FR_012_OnlyAssignedOfficerDecides",
+    "FR_013_NoSelfDecision",
+    "FR_015_TerminalImmutable",
+    "FR_016_AuditFieldsPresent",
+    "FR_018_AuditAppendOnly",
+    "FR_020_ByteEquivalentNoLeak",
+    "FR_022_NoCrossApplicantLeak",
+    "FR_023_AuditEndpointAuditorOnly",
+    "FR_024_ApplicantImmutability"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_RoleExclusivity"
+    ],
+    "FR-003": [
+      "LeastPrivilege",
+      "FR_024_ApplicantImmutability"
+    ],
+    "FR-004": [
+      "LeastPrivilege",
+      "FR_012_OnlyAssignedOfficerDecides"
+    ],
+    "FR-005": [
+      "LeastPrivilege",
+      "FR_023_AuditEndpointAuditorOnly"
+    ],
+    "FR-006": [
+      "OwnershipExclusivity"
+    ],
+    "FR-007": [
+      "FR_009_ValidTransitions"
+    ],
+    "FR-008": [
+      "FR_008_OneInFlight"
+    ],
+    "FR-009": [
+      "FR_009_ValidTransitions"
+    ],
+    "FR-010": [
+      "FR_010_AssignmentInvariants"
+    ],
+    "FR-011": [
+      "FR_011_NoSelfAssignment",
+      "NoSelfMutation"
+    ],
+    "FR-012": [
+      "FR_012_OnlyAssignedOfficerDecides"
+    ],
+    "FR-013": [
+      "FR_013_NoSelfDecision",
+      "NoSelfMutation"
+    ],
+    "FR-014": [
+      "FR_016_AuditFieldsPresent"
+    ],
+    "FR-015": [
+      "FR_015_TerminalImmutable"
+    ],
+    "FR-016": [
+      "AuditCompleteness",
+      "AttributionCorrectness",
+      "FR_016_AuditFieldsPresent"
+    ],
+    "FR-017": [
+      "AuditCompleteness"
+    ],
+    "FR-018": [
+      "AppendOnly",
+      "FR_018_AuditAppendOnly"
+    ],
+    "FR-019": [
+      "AppendOnly"
+    ],
+    "FR-020": [
+      "NoInformationLeakage",
+      "FR_020_ByteEquivalentNoLeak",
+      "OwnershipBasedAccess"
+    ],
+    "FR-021": [
+      "NoInformationLeakage",
+      "FR_020_ByteEquivalentNoLeak"
+    ],
+    "FR-022": [
+      "FR_022_NoCrossApplicantLeak"
+    ],
+    "FR-023": [
+      "FR_023_AuditEndpointAuditorOnly"
+    ],
+    "FR-024": [
+      "FR_024_ApplicantImmutability"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_AppendOnlyAuditEntries",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_018_AuditAppendOnly"
+      ],
+      "rationale": "removing this fact lets Alloy materialise two distinct audit entries recording the same (application, prev->new) transition \u2014 i.e., a history rewrite, which the append-only invariant exists to forbid.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some disj e1, e2: AuditEntry | e1.application = e2.application and e1.prevStatus = e2.prevStatus and e1.newStatus = e2.newStatus and e1.prevStatus = Pending and e1.newStatus = UnderReview }"
+    },
+    {
+      "fact_name": "F_NoSelfAssignment",
+      "asserts_violated": [
+        "NoSelfMutation",
+        "FR_011_NoSelfAssignment"
+      ],
+      "rationale": "removing the schema-level no-self-assignment lets Alloy assign an application's officer to be the same user as the applicant, which FR-011 and the CHECK constraint forbid.",
+      "inject_violation": "fact MUTATE_NoSelfAssignment { some a: LoanApplication | some a.assignedOfficer and a.assignedOfficer = a.applicant }"
+    },
+    {
+      "fact_name": "F_StatusReflectsAudit",
+      "asserts_violated": [
+        "AuditCompleteness"
+      ],
+      "rationale": "removing this fact lets Alloy invent an application whose current status has no witnessing audit entry \u2014 exactly the 'observable state change without audit' case that SC-008 forbids.",
+      "inject_violation": "fact MUTATE_AuditCompletenessViolation { some a: LoanApplication | a.status = Approved and no e: AuditEntry | e.application = a and e.newStatus = Approved }"
+    },
+    {
+      "fact_name": "F_LeastPrivilege",
+      "asserts_violated": [
+        "LeastPrivilege"
+      ],
+      "rationale": "removing the enforcement fact while keeping the matrix definition lets Alloy materialise an operation whose caller's role set has no allowed cell for the operation's kind \u2014 the canonical least-privilege violation.",
+      "inject_violation": "fact MUTATE_LeastPrivilegeViolation { some op: Operation | op.kind = PatchStatus and OfficerRole not in op.caller.roles and AuditorRole not in op.caller.roles }"
+    },
+    {
+      "fact_name": "F_GetApplicationOutcome",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "FR_020_ByteEquivalentNoLeak",
+        "OwnershipBasedAccess"
+      ],
+      "rationale": "removing the outcome-binding fact lets Alloy mark an unauthorised GET as OkSuccess \u2014 leaking the existence of an application to a caller who is neither the applicant, the assigned officer, nor an auditor.",
+      "inject_violation": "fact MUTATE_NoLeakageViolation { some op: Operation | op.kind = GetApplicationOp and op.outcome = OkSuccess and some op.target and op.caller != op.target.applicant and op.caller != op.target.assignedOfficer and AuditorRole not in op.caller.roles }"
+    },
+    {
+      "fact_name": "F_OneInFlightPerApplicant",
+      "asserts_violated": [
+        "FR_008_OneInFlight"
+      ],
+      "rationale": "removing the in-flight uniqueness fact lets Alloy create two simultaneous in-flight applications for the same applicant, which the partial-unique index in data-model.md structurally forbids.",
+      "inject_violation": "fact MUTATE_OneInFlightViolation { some disj a1, a2: LoanApplication | a1.applicant = a2.applicant and a1.status in (Pending + UnderReview) and a2.status in (Pending + UnderReview) }"
+    }
+  ]
+}

@@ -1,0 +1,109 @@
+==============================================================================
+  Design Compliance Report  (Phase 3 — feature_model.als)
+  feature       : B-L2
+  spec source   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/eval/specs/B-L2
+  alloy model   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/B-L2/feature_model.als
+  patterns      : AuthRequiredEverywhere, LeastPrivilege, PermissionCompleteness, OwnershipExclusivity, OwnershipBasedAccess, NoInformationLeakage, AuditCompleteness, AppendOnly, AttributionCorrectness
+  fr count      : 20 declared in spec.md
+  assertions    : 17 total (16/17 PASS via Alloy)
+==============================================================================
+
+  Compliance matrix
+  ----------------------------------------------------------------------------
+  Assertion                       Verdict   Anchor
+  --------------------------------------------------------------------
+  OwnershipExclusivity            PASS      PATTERN OwnershipExclusivity: spec.md FR-006
+  OwnershipBasedAccess            PASS      PATTERN OwnershipBasedAccess: spec.md FR-008/009/010; contracts/http-api.md permission matrix
+  NoInformationLeakage            PASS      PATTERN NoInformationLeakage: spec.md FR-014; contracts/http-api.md byte-equivalent-not-found
+  AuditCompleteness               PASS      PATTERN AuditCompleteness: spec.md FR-015; data-model.md per-edit-event
+  AppendOnly                      PASS      PATTERN AppendOnly: spec.md FR-016 immutable; contracts/http-api.md no UPDATE/DELETE paths
+  AttributionCorrectness          PASS      PATTERN AttributionCorrectness: spec.md FR-015 actor_display_name/actor_role snapshot
+  AuthRequiredEverywhere          PASS      PATTERN AuthRequiredEverywhere: spec.md FR-001
+  LeastPrivilege                  PASS      PATTERN LeastPrivilege: spec.md FR-008/009/010
+  PermissionCompleteness          PASS      PATTERN PermissionCompleteness: contracts/http-api.md permission matrix table
+  FR_001_AuthRequired             PASS      FEATURE-SPECIFIC: spec.md FR-001 authentication required
+  FR_003_004_TeamContextRequired  PASS      FEATURE-SPECIFIC: spec.md FR-003/004 team context and membership
+  FR_005_TaskTeamImmutable        PASS      FEATURE-SPECIFIC: spec.md FR-005 task team immutable
+  FR_006_OwnerImmutable           PASS      FEATURE-SPECIFIC: spec.md FR-006 owner immutable
+  FR_007_PerTeamRole              FAIL      FEATURE-SPECIFIC: spec.md FR-007 per-team role
+  FR_014_CrossTeamIsolation       PASS      FEATURE-SPECIFIC: spec.md FR-014 cross-team isolation byte-equivalent-404
+  FR_015_PerEditEventAudit        PASS      FEATURE-SPECIFIC: spec.md FR-015 per-edit-event audit
+  FR_016_AuditAppendOnly          PASS      FEATURE-SPECIFIC: spec.md FR-016 audit append-only immutable
+
+  Counterexamples (Alloy SAT)
+  ----------------------------------------------------------------------------
+  FR_007_PerTeamRole  [FEATURE-SPECIFIC: spec.md FR-007 per-team role]
+    Alloy: 13. check FR_007_PerTeamRole       0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR coverage
+  ----------------------------------------------------------------------------
+  FR-001  →  AuthRequiredEverywhere=PASS, FR_001_AuthRequired=PASS
+  FR-002  [uncovered]
+  FR-003  →  FR_003_004_TeamContextRequired=PASS
+  FR-004  →  FR_003_004_TeamContextRequired=PASS
+  FR-005  →  FR_005_TaskTeamImmutable=PASS
+  FR-006  →  OwnershipExclusivity=PASS, FR_006_OwnerImmutable=PASS
+  FR-007  →  FR_007_PerTeamRole=FAIL
+  FR-008  →  OwnershipBasedAccess=PASS, LeastPrivilege=PASS
+  FR-009  →  OwnershipBasedAccess=PASS, LeastPrivilege=PASS
+  FR-010  →  OwnershipBasedAccess=PASS, LeastPrivilege=PASS
+  FR-011  →  NoInformationLeakage=PASS
+  FR-012  [uncovered]
+  FR-013  [uncovered]
+  FR-014  →  NoInformationLeakage=PASS, FR_014_CrossTeamIsolation=PASS
+  FR-015  →  AuditCompleteness=PASS, AttributionCorrectness=PASS, FR_015_PerEditEventAudit=PASS
+  FR-016  →  AppendOnly=PASS, FR_016_AuditAppendOnly=PASS
+  FR-017  →  AuditCompleteness=PASS
+  FR-018  [uncovered]
+  FR-019  →  AuthRequiredEverywhere=PASS
+  FR-020  →  LeastPrivilege=PASS
+
+  WARNING: 4 FR(s) without any matching assertion: FR-002, FR-012, FR-013, FR-018
+
+==============================================================================
+  Mutation tests  (assertion-strength validation)
+==============================================================================
+
+  Strategy: replace each named fact's body with `{}` (no constraint),
+  then re-run Alloy. Each listed assertion should now FAIL on the
+  mutated model. If it still PASSes, the assertion is vacuous and
+  must be strengthened.
+
+  - MUTATE F_CrossTeamIsolation  → runs/B-L2/mutated_F_CrossTeamIsolation.als
+    rationale: Removing this fact allows actors to modify tasks in teams they are not members of, directly violating the cross-team isolation invariant (FR-014). The assertion checks that every audit entry's actor is a member of the task's team.
+    expected to FAIL: NoInformationLeakage, FR_014_CrossTeamIsolation
+      - NoInformationLeakage: PASS (vacuous?)
+      - FR_014_CrossTeamIsolation: PASS (vacuous?)
+
+  - MUTATE F_OwnershipBasedAccess  → runs/B-L2/mutated_F_OwnershipBasedAccess.als
+    rationale: Removing this fact allows non-owner members to edit or delete tasks they do not own, and allows non-admin members to modify tasks at all. This directly violates FR-008/009/010.
+    expected to FAIL: OwnershipBasedAccess, LeastPrivilege
+      - OwnershipBasedAccess: PASS (vacuous?)
+      - LeastPrivilege: PASS (vacuous?)
+
+  - MUTATE F_TaskHasCreatedAuditEntry  → runs/B-L2/mutated_F_TaskHasCreatedAuditEntry.als
+    rationale: Removing this fact allows tasks to exist without a 'created' audit entry, violating FR-015 which requires every task to have an audit trail starting with creation.
+    expected to FAIL: AuditCompleteness, FR_015_PerEditEventAudit
+      - AuditCompleteness: FAIL (expected)
+      - FR_015_PerEditEventAudit: FAIL (expected)
+
+  - MUTATE F_ActorRoleSnapshot  → runs/B-L2/mutated_F_ActorRoleSnapshot.als
+    rationale: Removing this fact allows audit entries to record an actor's role that differs from their actual role in that team at the time of the change, violating FR-015's requirement for role snapshots.
+    expected to FAIL: AttributionCorrectness
+      - AttributionCorrectness: FAIL (expected)
+
+  - MUTATE F_PermissionMatrix  → runs/B-L2/mutated_F_PermissionMatrix.als
+    rationale: Removing this fact removes the definition of which roles can perform which operations, allowing the model to explore inconsistent permission states and violating the feature's permission matrix contract.
+    expected to FAIL: PermissionCompleteness, LeastPrivilege
+      - PermissionCompleteness: PASS (vacuous?)
+      - LeastPrivilege: PASS (vacuous?)
+
+  Mutation summary
+  ----------------------------------------------------------------------------
+  - F_CrossTeamIsolation: ASSERTION VACUOUS (NoInformationLeakage, FR_014_CrossTeamIsolation)
+  - F_OwnershipBasedAccess: ASSERTION VACUOUS (OwnershipBasedAccess, LeastPrivilege)
+  - F_TaskHasCreatedAuditEntry: ASSERTIONS BIT (AuditCompleteness, FR_015_PerEditEventAudit)
+  - F_ActorRoleSnapshot: ASSERTIONS BIT (AttributionCorrectness)
+  - F_PermissionMatrix: ASSERTION VACUOUS (PermissionCompleteness, LeastPrivilege)
+

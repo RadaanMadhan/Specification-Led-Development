@@ -1,0 +1,51 @@
+{
+  "F_LeastPrivilege": {
+    "targeted_asserts": {
+      "LeastPrivilege": "BIT",
+      "FR_015_CustomersCantDecideOrAudit": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_OnePendingPerCustomer": {
+    "targeted_asserts": {
+      "FR_005_OnePendingPerCustomer": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AppendOnlyAuditEntries": {
+    "targeted_asserts": {
+      "AppendOnly": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AuditCompleteness": {
+    "targeted_asserts": {
+      "AuditCompleteness": "BIT",
+      "FR_014_NotificationOnDecision": "BIT",
+      "FR_016_AuditTrail": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_OneDecisionPerApplication": {
+    "targeted_asserts": {
+      "ConcurrencySafety": "BIT",
+      "FR_011_NoSecondDecision": "BIT",
+      "FR_012_ConcurrentDecisionSafe": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_OwnershipForGet": {
+    "targeted_asserts": {
+      "OwnershipBasedAccess": "BIT",
+      "NoInformationLeakage": "BIT",
+      "FR_013_CustomerSeesOwnOnly": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AuditAttribution": {
+    "targeted_asserts": {
+      "AttributionCorrectness": "BIT"
+    },
+    "all_bit": true
+  }
+}

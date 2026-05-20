@@ -1,0 +1,86 @@
+{
+  "feature_id": "B-L1",
+  "patterns_applied": [
+    "AuthRequiredEverywhere",
+    "AppendOnly"
+  ],
+  "feature_specific_predicates": [
+    "FR_010_StatusMustBeValid",
+    "FR_009_CreatorRecorded",
+    "FR_005_TitleNonEmpty",
+    "FR_008_AssigneeIsMember",
+    "FR_017_TimestampsExist",
+    "FR_004_FlatPermissions"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "AuthRequiredEverywhere"
+    ],
+    "FR-003": [
+      "FR_004_FlatPermissions"
+    ],
+    "FR-004": [
+      "FR_004_FlatPermissions"
+    ],
+    "FR-005": [
+      "FR_005_TitleNonEmpty"
+    ],
+    "FR-008": [
+      "FR_008_AssigneeIsMember"
+    ],
+    "FR-009": [
+      "FR_009_CreatorRecorded"
+    ],
+    "FR-010": [
+      "FR_010_StatusMustBeValid"
+    ],
+    "FR-017": [
+      "FR_017_TimestampsExist"
+    ],
+    "FR-018": [
+      "AppendOnlyDeletionLog"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_AuthenticationRequired",
+      "asserts_violated": [
+        "AuthRequiredEverywhere"
+      ],
+      "rationale": "Removing this fact allows Operation atoms to exist with no actor field set (since actor is declared lone). The assertion enforces that all operations must have an authenticated actor; clearing the fact lets the injected violation satisfy Alloy while violating the assertion.",
+      "inject_violation": "fact MUTATE_UnauthenticatedOperation { some op: Operation | no op.actor }"
+    },
+    {
+      "fact_name": "F_CreatorRecorded",
+      "asserts_violated": [
+        "FR_009_CreatorRecorded"
+      ],
+      "rationale": "Removing this fact allows Task atoms to exist with no created_by field set (since created_by is declared lone). The assertion checks that all tasks have a recorded creator; the injection forces a task with no creator into the model.",
+      "inject_violation": "fact MUTATE_NoCreator { some t: Task | no t.created_by }"
+    },
+    {
+      "fact_name": "F_StatusValid",
+      "asserts_violated": [
+        "FR_010_StatusMustBeValid"
+      ],
+      "rationale": "Removing this fact allows TaskStatus atoms outside the defined set (Todo, InProgress, Done) to be assigned to Task.status. The assertion checks that all task statuses are one of the three valid values.",
+      "inject_violation": "fact MUTATE_InvalidStatus { some t: Task | t.status not in (Todo + InProgress + Done) }"
+    },
+    {
+      "fact_name": "F_TitleRequired",
+      "asserts_violated": [
+        "FR_005_TitleNonEmpty"
+      ],
+      "rationale": "Although title is declared one String (always present), the fact F_TitleRequired explicitly constrains it. Removing this fact allows us to test that the assertion meaningfully checks the constraint.",
+      "inject_violation": "fact MUTATE_NoTitle { some t: Task | no t.title }"
+    },
+    {
+      "fact_name": "F_DeletionLogged",
+      "asserts_violated": [
+        "AppendOnlyDeletionLog"
+      ],
+      "rationale": "Removing this fact allows TaskDeletion atoms to exist with no deleted_by or deleted_at fields set. The assertion enforces that all deletion log entries have complete metadata for append-only correctness.",
+      "inject_violation": "fact MUTATE_IncompleteLog { some td: TaskDeletion | no td.deleted_by or no td.deleted_at }"
+    }
+  ]
+}

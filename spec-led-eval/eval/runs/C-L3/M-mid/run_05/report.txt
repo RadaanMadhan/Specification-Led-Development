@@ -1,0 +1,176 @@
+==============================================================================
+  Design Compliance Report  (Phase 3 — feature_model.als)
+  feature       : C-L3
+  spec source   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/eval/specs/C-L3
+  alloy model   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/C-L3/feature_model.als
+  patterns      : LeastPrivilege, PermissionCompleteness, AuthRequiredEverywhere, AuditCompleteness, AppendOnly, AttributionCorrectness, OwnershipExclusivity, OwnershipBasedAccess, NoInformationLeakage
+  fr count      : 20 declared in spec.md
+  assertions    : 25 total (11/25 PASS via Alloy)
+==============================================================================
+
+  Compliance matrix
+  ----------------------------------------------------------------------------
+  Assertion                              Verdict   Anchor
+  ---------------------------------------------------------------------------
+  LeastPrivilege                         PASS      (no anchor comment found)
+  PermissionCompleteness                 PASS      (no anchor comment found)
+  AuthRequiredEverywhere                 PASS      (no anchor comment found)
+  AuditCompleteness                      PASS      (no anchor comment found)
+  AppendOnly                             PASS      (no anchor comment found)
+  AttributionCorrectness                 PASS      (no anchor comment found)
+  OwnershipExclusivity                   FAIL      (no anchor comment found)
+  OwnershipBasedAccess                   FAIL      (no anchor comment found)
+  NoInformationLeakage                   FAIL      (no anchor comment found)
+  FR_001_AuthRequired                    PASS      FEATURE-SPECIFIC: FR-001 — unauthenticated requests produce no AccessOp or AuditEntry
+  FR_002_SingleRoleAndPatientPairing     FAIL      FEATURE-SPECIFIC: FR-002 FR-003 — single role per user; patient↔record pairing
+  FR_004_CareTeamGating                  FAIL      FEATURE-SPECIFIC: FR-004 — clinician access gated on active care-team membership
+  FR_005_ClinicianAuditAccess            FAIL      FEATURE-SPECIFIC: FR-005 — clinician may read per-record audit iff in care team
+  FR_006_PatientSelfAccess               FAIL      FEATURE-SPECIFIC: FR-006 — patient self-access only
+  FR_007_ComplianceContentBlindness      FAIL      FEATURE-SPECIFIC: FR-007 FR-019 — compliance officer content blindness
+  FR_008_ByteEquivalentDenied            FAIL      FEATURE-SPECIFIC: FR-008 — byte-equivalent denied response (existence-leak prevention)
+  FR_012_NotesAppendOnly                 PASS      FEATURE-SPECIFIC: FR-012 — clinical notes are append-only (no delete or edit endpoint)
+  FR_013_AlwaysOnAudit                   FAIL      FEATURE-SPECIFIC: FR-013 — always-on audit: exactly one entry per access
+  FR_014_AuditEntryFields                PASS      FEATURE-SPECIFIC: FR-014 — audit entry attribution fields are correct
+  FR_015_AuditImmutability               PASS      FEATURE-SPECIFIC: FR-015 FR-017 — audit entries are immutable; no two share an AccessOp
+  FR_016_NoStateChangeWithoutAudit       FAIL      FEATURE-SPECIFIC: FR-016 — no state change without a durable audit entry
+  FR_018_AccessLogComplianceOfficerOnly  FAIL      FEATURE-SPECIFIC: FR-018 — GET /access-log is compliance-officer-only
+  FR_019_ComplianceAuditAccessNoContent  FAIL      FEATURE-SPECIFIC: FR-019 — compliance officer GetRecordAudit is permitted but content-blind
+  FR_011_NoteAuthorConstraint            PASS      FEATURE-SPECIFIC: FR-011 data-model.md ClinicalNote.author_role CHECK
+  FR_013_AuditNoteIdConsistency          FAIL      FEATURE-SPECIFIC: data-model.md AuditEntry CHECK (operation='append' AND outcome='permitted' → note_id IS NOT NULL)
+
+  Counterexamples (Alloy SAT)
+  ----------------------------------------------------------------------------
+  OwnershipExclusivity  [(no anchor)]
+    Alloy: 06. check OwnershipExclusivity     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  OwnershipBasedAccess  [(no anchor)]
+    Alloy: 07. check OwnershipBasedAccess     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  NoInformationLeakage  [(no anchor)]
+    Alloy: 08. check NoInformationLeakage     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR_002_SingleRoleAndPatientPairing  [FEATURE-SPECIFIC: FR-002 FR-003 — single role per user; patient↔record pairing]
+    Alloy: 10. check FR_002_SingleRoleAndPatientPairing     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR_004_CareTeamGating  [FEATURE-SPECIFIC: FR-004 — clinician access gated on active care-team membership]
+    Alloy: 11. check FR_004_CareTeamGating     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR_005_ClinicianAuditAccess  [FEATURE-SPECIFIC: FR-005 — clinician may read per-record audit iff in care team]
+    Alloy: 12. check FR_005_ClinicianAuditAccess     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR_006_PatientSelfAccess  [FEATURE-SPECIFIC: FR-006 — patient self-access only]
+    Alloy: 13. check FR_006_PatientSelfAccess     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR_007_ComplianceContentBlindness  [FEATURE-SPECIFIC: FR-007 FR-019 — compliance officer content blindness]
+    Alloy: 14. check FR_007_ComplianceContentBlindness     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR_008_ByteEquivalentDenied  [FEATURE-SPECIFIC: FR-008 — byte-equivalent denied response (existence-leak prevention)]
+    Alloy: 15. check FR_008_ByteEquivalentDenied     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR_013_AlwaysOnAudit  [FEATURE-SPECIFIC: FR-013 — always-on audit: exactly one entry per access]
+    Alloy: 17. check FR_013_AlwaysOnAudit     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR_016_NoStateChangeWithoutAudit  [FEATURE-SPECIFIC: FR-016 — no state change without a durable audit entry]
+    Alloy: 20. check FR_016_NoStateChangeWithoutAudit     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR_018_AccessLogComplianceOfficerOnly  [FEATURE-SPECIFIC: FR-018 — GET /access-log is compliance-officer-only]
+    Alloy: 21. check FR_018_AccessLogComplianceOfficerOnly     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR_019_ComplianceAuditAccessNoContent  [FEATURE-SPECIFIC: FR-019 — compliance officer GetRecordAudit is permitted but content-blind]
+    Alloy: 22. check FR_019_ComplianceAuditAccessNoContent     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR_013_AuditNoteIdConsistency  [FEATURE-SPECIFIC: data-model.md AuditEntry CHECK (operation='append' AND outcome='permitted' → note_id IS NOT NULL)]
+    Alloy: 24. check FR_013_AuditNoteIdConsistency     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR coverage
+  ----------------------------------------------------------------------------
+  FR-001  →  FR_001_AuthRequired=PASS, AuthRequiredEverywhere=PASS
+  FR-002  →  FR_002_SingleRoleAndPatientPairing=FAIL, OwnershipExclusivity=FAIL
+  FR-003  →  FR_002_SingleRoleAndPatientPairing=FAIL, OwnershipExclusivity=FAIL
+  FR-004  →  FR_004_CareTeamGating=FAIL, LeastPrivilege=PASS
+  FR-005  →  FR_005_ClinicianAuditAccess=FAIL
+  FR-006  →  FR_006_PatientSelfAccess=FAIL, OwnershipBasedAccess=FAIL
+  FR-007  →  FR_007_ComplianceContentBlindness=FAIL, LeastPrivilege=PASS
+  FR-008  →  FR_008_ByteEquivalentDenied=FAIL, NoInformationLeakage=FAIL
+  FR-009  →  FR_004_CareTeamGating=FAIL, LeastPrivilege=PASS
+  FR-010  →  FR_012_NotesAppendOnly=PASS
+  FR-011  →  FR_011_NoteAuthorConstraint=PASS
+  FR-012  →  FR_012_NotesAppendOnly=PASS, AppendOnly=PASS
+  FR-013  →  FR_013_AlwaysOnAudit=FAIL, AuditCompleteness=PASS, FR_013_AuditNoteIdConsistency=FAIL
+  FR-014  →  FR_014_AuditEntryFields=PASS, AttributionCorrectness=PASS
+  FR-015  →  FR_015_AuditImmutability=PASS, AppendOnly=PASS
+  FR-016  →  FR_016_NoStateChangeWithoutAudit=FAIL
+  FR-017  →  FR_015_AuditImmutability=PASS, AppendOnly=PASS
+  FR-018  →  FR_018_AccessLogComplianceOfficerOnly=FAIL
+  FR-019  →  FR_019_ComplianceAuditAccessNoContent=FAIL, FR_007_ComplianceContentBlindness=FAIL
+  FR-020  →  FR_008_ByteEquivalentDenied=FAIL
+
+  All FRs have at least one matching assertion.
+
+==============================================================================
+  Mutation tests  (assertion-strength validation)
+==============================================================================
+
+  Strategy: replace each named fact's body with `{}` (no constraint),
+  then re-run Alloy. Each listed assertion should now FAIL on the
+  mutated model. If it still PASSes, the assertion is vacuous and
+  must be strengthened.
+
+  - MUTATE F_AuthorizationRules: ERROR — mutation target fact `F_AuthorizationRules` not found in feature_model.als
+
+  - MUTATE F_AppendOnlyAuditEntries  → runs/C-L3/mutated_F_AppendOnlyAuditEntries.als
+    rationale: Removing F_AppendOnlyAuditEntries allows two AuditEntries to share the same AccessOp, which models overwriting an existing audit entry — exactly the mutation the AppendOnly invariant forbids.
+    expected to FAIL: AppendOnly, FR_015_AuditImmutability
+      - AppendOnly: PASS (vacuous?)
+      - FR_015_AuditImmutability: PASS (vacuous?)
+
+  - MUTATE F_AuditCompleteness  → runs/C-L3/mutated_F_AuditCompleteness.als
+    rationale: Removing F_AuditCompleteness allows an AccessOp to exist without a matching AuditEntry, so a permitted record read or note append could occur with no audit trail — the core SC-002 violation.
+    expected to FAIL: AuditCompleteness, FR_013_AlwaysOnAudit, FR_016_NoStateChangeWithoutAudit
+      - AuditCompleteness: FAIL (expected)
+      - FR_013_AlwaysOnAudit: FAIL (expected)
+      - FR_016_NoStateChangeWithoutAudit: FAIL (expected)
+
+  - MUTATE F_ComplianceContentBlind  → runs/C-L3/mutated_F_ComplianceContentBlind.als
+    rationale: Removing F_ComplianceContentBlind allows Alloy to assign Permitted to a ComplianceOfficer calling GetRecord, directly violating the HIPAA content-blindness invariant for compliance officers.
+    expected to FAIL: FR_007_ComplianceContentBlindness, LeastPrivilege, FR_019_ComplianceAuditAccessNoContent
+      - FR_007_ComplianceContentBlindness: PASS (vacuous?)
+      - LeastPrivilege: PASS (vacuous?)
+      - FR_019_ComplianceAuditAccessNoContent: PASS (vacuous?)
+
+  - MUTATE F_AuditEntryAttribution  → runs/C-L3/mutated_F_AuditEntryAttribution.als
+    rationale: Removing F_AuditEntryAttribution allows an AuditEntry's snapshotted role or outcome to differ from the actual operation, so a denied access could be recorded as permitted or attributed to the wrong role.
+    expected to FAIL: AttributionCorrectness, FR_014_AuditEntryFields
+      - AttributionCorrectness: FAIL (expected)
+      - FR_014_AuditEntryFields: FAIL (expected)
+
+  - MUTATE F_PatientRecordPairing  → runs/C-L3/mutated_F_PatientRecordPairing.als
+    rationale: Removing F_PatientRecordPairing allows a Patient to have no assigned record or multiple assigned records, breaking the ownership-based access check that gates patient self-access.
+    expected to FAIL: OwnershipExclusivity, FR_002_SingleRoleAndPatientPairing, OwnershipBasedAccess
+      - OwnershipExclusivity: FAIL (expected)
+      - FR_002_SingleRoleAndPatientPairing: FAIL (expected)
+      - OwnershipBasedAccess: FAIL (expected)
+
+  Mutation summary
+  ----------------------------------------------------------------------------
+  - MUTATE F_AuthorizationRules: skipped (fact not found)
+  - F_AppendOnlyAuditEntries: ASSERTION VACUOUS (AppendOnly, FR_015_AuditImmutability)
+  - F_AuditCompleteness: ASSERTIONS BIT (AuditCompleteness, FR_013_AlwaysOnAudit, FR_016_NoStateChangeWithoutAudit)
+  - F_ComplianceContentBlind: ASSERTION VACUOUS (FR_007_ComplianceContentBlindness, LeastPrivilege, FR_019_ComplianceAuditAccessNoContent)
+  - F_AuditEntryAttribution: ASSERTIONS BIT (AttributionCorrectness, FR_014_AuditEntryFields)
+  - F_PatientRecordPairing: ASSERTIONS BIT (OwnershipExclusivity, FR_002_SingleRoleAndPatientPairing, OwnershipBasedAccess)
+

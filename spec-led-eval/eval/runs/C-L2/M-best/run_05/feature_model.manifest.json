@@ -1,0 +1,178 @@
+{
+  "feature_id": "012-hospital-clinical-records",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "ValidationBeforeMutation"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_RoleCatalogueClosed",
+    "FR_003_PatientIdViaBody",
+    "FR_004_CareTeamGating",
+    "FR_005_AdminNoClinicalRead",
+    "FR_006_ByteEquivalentDenial",
+    "FR_007_ResponseShape",
+    "FR_008_RecordReadHasPatient",
+    "FR_009_NoteValidation",
+    "FR_010_NoteFields",
+    "FR_011_NotesAppendOnly",
+    "FR_012_AlwaysOnAudit",
+    "FR_013_AuditFields",
+    "FR_014_AuditImmutable",
+    "FR_015_AuditSLA",
+    "FR_016_AuditRetention",
+    "FR_017_AdminOnlyAuditEndpoint",
+    "FR_018_AdminContentBlindness",
+    "FR_019_SafetyFieldsOnRead",
+    "FR_020_NotesCountOnRead"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_RoleCatalogueClosed"
+    ],
+    "FR-003": [
+      "FR_003_PatientIdViaBody"
+    ],
+    "FR-004": [
+      "FR_004_CareTeamGating",
+      "OwnershipBasedAccess"
+    ],
+    "FR-005": [
+      "FR_005_AdminNoClinicalRead",
+      "LeastPrivilege"
+    ],
+    "FR-006": [
+      "FR_006_ByteEquivalentDenial",
+      "NoInformationLeakage"
+    ],
+    "FR-007": [
+      "FR_007_ResponseShape"
+    ],
+    "FR-008": [
+      "FR_008_RecordReadHasPatient"
+    ],
+    "FR-009": [
+      "FR_009_NoteValidation",
+      "ValidationBeforeMutation"
+    ],
+    "FR-010": [
+      "FR_010_NoteFields"
+    ],
+    "FR-011": [
+      "FR_011_NotesAppendOnly",
+      "AppendOnly"
+    ],
+    "FR-012": [
+      "FR_012_AlwaysOnAudit",
+      "AuditCompleteness"
+    ],
+    "FR-013": [
+      "FR_013_AuditFields",
+      "AttributionCorrectness"
+    ],
+    "FR-014": [
+      "FR_014_AuditImmutable",
+      "AppendOnly"
+    ],
+    "FR-015": [
+      "FR_015_AuditSLA"
+    ],
+    "FR-016": [
+      "FR_016_AuditRetention"
+    ],
+    "FR-017": [
+      "FR_017_AdminOnlyAuditEndpoint",
+      "LeastPrivilege"
+    ],
+    "FR-018": [
+      "FR_018_AdminContentBlindness"
+    ],
+    "FR-019": [
+      "FR_019_SafetyFieldsOnRead"
+    ],
+    "FR-020": [
+      "FR_020_NotesCountOnRead"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_LeastPrivilege",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_017_AdminOnlyAuditEndpoint"
+      ],
+      "rationale": "Clearing the matrix-enforcement fact lets Alloy invent a Permitted ListAudit attempt by a non-administrator (Nurse), which is exactly the role-op cell the matrix forbids and which FR-017 explicitly disallows.",
+      "inject_violation": "fact MUTATE_LeastPrivilegeViolation { some a: AccessAttempt | a.outcome = Permitted and a.kind = ListAudit and a.caller.role = Nurse }"
+    },
+    {
+      "fact_name": "F_CareTeamGating",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_004_CareTeamGating"
+      ],
+      "rationale": "Removing the care-team gating fact lets a clinician obtain a Permitted ReadRecord outcome with no matching active care-team-membership row, which is the canonical ownership-based-access violation.",
+      "inject_violation": "fact MUTATE_CareTeamGatingViolation { some a: AccessAttempt | a.outcome = Permitted and a.kind = ReadRecord and a.caller.role = Doctor and (no m: CareTeamMembership | m.clinician = a.caller and m.ctmPatient = a.targetPatient and m.status = Active) }"
+    },
+    {
+      "fact_name": "F_AuditCompleteness",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_012_AlwaysOnAudit",
+        "FR_015_AuditSLA"
+      ],
+      "rationale": "Clearing the always-on audit fact lets Alloy produce an authenticated, Permitted ReadRecord attempt with no associated AuditEntry, violating audit completeness and the SLA invariant.",
+      "inject_violation": "fact MUTATE_AuditMissing { some a: AccessAttempt | a.authenticated = True and a.kind = ReadRecord and a.outcome = Permitted and (no e: AuditEntry | e.attempt = a) }"
+    },
+    {
+      "fact_name": "F_NoteAuthorIsClinical",
+      "asserts_violated": [
+        "FR_011_NotesAppendOnly",
+        "AppendOnly"
+      ],
+      "rationale": "Clearing the clinical-author-only fact lets a ClinicalNote materialise with an administrator author-role snapshot, which the data-model CHECK on author_role and FR-011's append-only constraints rule out.",
+      "inject_violation": "fact MUTATE_AdminAuthoredNote { some n: ClinicalNote | n.authorRoleSnap = HospitalAdministrator }"
+    },
+    {
+      "fact_name": "F_AdminContentBlindness",
+      "asserts_violated": [
+        "FR_018_AdminContentBlindness",
+        "FR_007_ResponseShape",
+        "FR_019_SafetyFieldsOnRead",
+        "FR_020_NotesCountOnRead"
+      ],
+      "rationale": "Clearing the admin content-blindness fact lets a ListAudit attempt expose clinical content, breaking the administrator-only audit-endpoint invariant and the response-shape constraint.",
+      "inject_violation": "fact MUTATE_AdminLeak { some a: AccessAttempt | a.kind = ListAudit and a.exposesClinicalContent = True and a.outcome = Permitted and a.caller.role = HospitalAdministrator }"
+    },
+    {
+      "fact_name": "F_DeniedNoClinicalContent",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "FR_006_ByteEquivalentDenial",
+        "FR_007_ResponseShape"
+      ],
+      "rationale": "Clearing the byte-equivalent-denial fact lets Alloy build a Denied attempt that still exposes clinical content, which is exactly the information-leak counterexample the assertion targets.",
+      "inject_violation": "fact MUTATE_DenialLeak { some a: AccessAttempt | a.outcome = Denied and a.exposesClinicalContent = True }"
+    },
+    {
+      "fact_name": "F_AuditEntryUnique",
+      "asserts_violated": [
+        "FR_014_AuditImmutable",
+        "AppendOnly",
+        "FR_016_AuditRetention"
+      ],
+      "rationale": "Clearing the per-attempt uniqueness of AuditEntries lets two audit rows point at the same attempt, which is how an UPDATE-equivalent mutation of audit state would manifest structurally.",
+      "inject_violation": "fact MUTATE_DuplicateAudit { some disj e1, e2: AuditEntry | e1.attempt = e2.attempt }"
+    }
+  ]
+}

@@ -1,0 +1,331 @@
+{
+  "run_id": "A-L3/M-small/run_01",
+  "cell": "A-L3",
+  "model": "M-small",
+  "rep": 1,
+  "D1": 1.0,
+  "D2": 1.0,
+  "D3": 0.5,
+  "D4": 0.875,
+  "aqs_partial": 0.84375,
+  "scored_at": "2026-05-20T04:29:04.231027+00:00",
+  "details": {
+    "D1": {
+      "n_assertions": 24,
+      "n_verdicts": 24
+    },
+    "D2": {
+      "patterns_applied": [
+        "LeastPrivilege",
+        "PermissionCompleteness",
+        "AuthRequiredEverywhere",
+        "AuditCompleteness",
+        "AppendOnly",
+        "AttributionCorrectness",
+        "OwnershipExclusivity",
+        "OwnershipBasedAccess",
+        "NoSelfMutation"
+      ],
+      "per_pattern": {
+        "LeastPrivilege": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "PermissionCompleteness": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "AuthRequiredEverywhere": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "AuditCompleteness": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "AppendOnly": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "AttributionCorrectness": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "OwnershipExclusivity": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "OwnershipBasedAccess": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "NoSelfMutation": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        }
+      }
+    },
+    "D3": {
+      "per_target": {
+        "F_RoleMultiplicity": {
+          "targeted_asserts": {
+            "FR_002_RoleMultiplicity": "VACUOUS_OVERCONSTRAINT"
+          },
+          "score": 0.5
+        },
+        "F_OneInFlightPerApplicant": {
+          "targeted_asserts": {
+            "FR_008_OneInFlightPerApplicant": "VACUOUS_OVERCONSTRAINT"
+          },
+          "score": 0.5
+        },
+        "F_NoSelfAssignment": {
+          "targeted_asserts": {
+            "FR_010_AutoAssignmentExcludesApplicant": "VACUOUS_OVERCONSTRAINT"
+          },
+          "score": 0.5
+        },
+        "F_AppendOnlyAuditLog": {
+          "targeted_asserts": {
+            "AppendOnly": "VACUOUS_OVERCONSTRAINT",
+            "FR_018_AuditImmutableTamperDetectable": "VACUOUS_OVERCONSTRAINT"
+          },
+          "score": 0.5
+        },
+        "F_NoSelfApprovalStructural": {
+          "targeted_asserts": {
+            "FR_013_NoSelfApproval": "VACUOUS_OVERCONSTRAINT",
+            "NoSelfMutation": "VACUOUS_OVERCONSTRAINT"
+          },
+          "score": 0.5
+        },
+        "F_AllowedTransitions": {
+          "targeted_asserts": {
+            "FR_009_AllowedStatusTransitions": "VACUOUS_OVERCONSTRAINT"
+          },
+          "score": 0.5
+        }
+      },
+      "skipped": []
+    },
+    "D4": {
+      "per_fr": {
+        "FR-001": {
+          "covers": [
+            "AuthRequiredEverywhere"
+          ],
+          "verdicts": {
+            "AuthRequiredEverywhere": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-002": {
+          "covers": [
+            "FR_002_RoleMultiplicity"
+          ],
+          "verdicts": {
+            "FR_002_RoleMultiplicity": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-003": {
+          "covers": [
+            "FR_003_ApplicantCanSubmit"
+          ],
+          "verdicts": {
+            "FR_003_ApplicantCanSubmit": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-004": {
+          "covers": [
+            "FR_004_OfficerCanViewAssigned"
+          ],
+          "verdicts": {
+            "FR_004_OfficerCanViewAssigned": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-005": {
+          "covers": [
+            "FR_005_AuditorReadOnly"
+          ],
+          "verdicts": {
+            "FR_005_AuditorReadOnly": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-006": {
+          "covers": [
+            "FR_003_ApplicantCanSubmit"
+          ],
+          "verdicts": {
+            "FR_003_ApplicantCanSubmit": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-007": {
+          "covers": [
+            "FR_007_AmountAndPurposeLimits"
+          ],
+          "verdicts": {
+            "FR_007_AmountAndPurposeLimits": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-008": {
+          "covers": [
+            "FR_008_OneInFlightPerApplicant"
+          ],
+          "verdicts": {
+            "FR_008_OneInFlightPerApplicant": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-009": {
+          "covers": [
+            "FR_009_AllowedStatusTransitions"
+          ],
+          "verdicts": {
+            "FR_009_AllowedStatusTransitions": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-010": {
+          "covers": [
+            "FR_010_AutoAssignmentExcludesApplicant"
+          ],
+          "verdicts": {
+            "FR_010_AutoAssignmentExcludesApplicant": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-011": {
+          "covers": [
+            "FR_010_AutoAssignmentExcludesApplicant"
+          ],
+          "verdicts": {
+            "FR_010_AutoAssignmentExcludesApplicant": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-012": {
+          "covers": [
+            "FR_012_OnlyAssignedOfficerCanPatch"
+          ],
+          "verdicts": {
+            "FR_012_OnlyAssignedOfficerCanPatch": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-013": {
+          "covers": [
+            "FR_013_NoSelfApproval"
+          ],
+          "verdicts": {
+            "FR_013_NoSelfApproval": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-014": {
+          "covers": [],
+          "verdicts": {},
+          "score": 0.0
+        },
+        "FR-015": {
+          "covers": [],
+          "verdicts": {},
+          "score": 0.0
+        },
+        "FR-016": {
+          "covers": [
+            "AuditCompleteness",
+            "FR_016_AuditEntryStructure"
+          ],
+          "verdicts": {
+            "AuditCompleteness": "PASS",
+            "FR_016_AuditEntryStructure": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-017": {
+          "covers": [
+            "AppendOnly"
+          ],
+          "verdicts": {
+            "AppendOnly": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-018": {
+          "covers": [
+            "FR_018_AuditImmutableTamperDetectable"
+          ],
+          "verdicts": {
+            "FR_018_AuditImmutableTamperDetectable": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-019": {
+          "covers": [],
+          "verdicts": {},
+          "score": 0.0
+        },
+        "FR-020": {
+          "covers": [
+            "FR_020_ByteEquivalentResponse"
+          ],
+          "verdicts": {
+            "FR_020_ByteEquivalentResponse": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-021": {
+          "covers": [
+            "FR_020_ByteEquivalentResponse"
+          ],
+          "verdicts": {
+            "FR_020_ByteEquivalentResponse": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-022": {
+          "covers": [
+            "FR_020_ByteEquivalentResponse"
+          ],
+          "verdicts": {
+            "FR_020_ByteEquivalentResponse": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-023": {
+          "covers": [
+            "FR_023_AuditEndpointAuditorOnly"
+          ],
+          "verdicts": {
+            "FR_023_AuditEndpointAuditorOnly": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-024": {
+          "covers": [
+            "FR_024_ApplicantCannotModifyAfterSubmission"
+          ],
+          "verdicts": {
+            "FR_024_ApplicantCannotModifyAfterSubmission": "PASS"
+          },
+          "score": 1.0
+        }
+      }
+    }
+  }
+}

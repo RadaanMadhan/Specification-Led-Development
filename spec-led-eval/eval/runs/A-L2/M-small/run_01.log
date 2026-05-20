@@ -1,0 +1,139 @@
+$ /Users/leonhausmann/opt/anaconda3/bin/python3 -m speceval.cli verify-design --no-cache --model M-small --java-bin /Users/leonhausmann/opt/anaconda3/lib/python3.9/site-packages/jdk4py/java-runtime/bin/java /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/eval/specs/A-L2
+
+[parse]   feature 'A-L2', 23 FRs, 4 user stories
+[lift]    calling LLM (anthropic: tier=M-small, model=claude-haiku-4-5)...
+[lift]    fresh lift (sha=d51706750f50)
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/A-L2/feature_model.als
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/A-L2/cost_log.json
+[alloy]   running alloy.jar on feature_model.als...
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/A-L2/alloy_verdicts.json
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/A-L2/mutation_outcomes.json
+
+==============================================================================
+  Design Compliance Report  (Phase 3 — feature_model.als)
+  feature       : A-L2
+  spec source   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/eval/specs/A-L2
+  alloy model   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/A-L2/feature_model.als
+  patterns      : LeastPrivilege, PermissionCompleteness, AuthRequiredEverywhere, AuditCompleteness, AppendOnly, OwnershipExclusivity, OwnershipBasedAccess, NoInformationLeakage, ConcurrencySafety, AttributionCorrectness
+  fr count      : 23 declared in spec.md
+  assertions    : 23 total (23/23 PASS via Alloy)
+==============================================================================
+
+  Compliance matrix
+  ----------------------------------------------------------------------------
+  Assertion                             Verdict   Anchor
+  --------------------------------------------------------------------------
+  LeastPrivilege                        PASS      PATTERN LeastPrivilege: contracts/http-api.md; spec.md FR-002, FR-003, FR-004
+  PermissionCompleteness                PASS      PATTERN PermissionCompleteness: contracts/http-api.md permission matrix
+  AuthRequiredEverywhere                PASS      PATTERN AuthRequiredEverywhere: spec.md FR-001
+  AuditCompleteness                     PASS      PATTERN AuditCompleteness: spec.md FR-017, FR-019
+  AppendOnly                            PASS      PATTERN AppendOnly: spec.md FR-018, data-model.md "append-only audit"
+  OwnershipExclusivity                  PASS      PATTERN OwnershipExclusivity: spec.md FR-020, data-model.md LoanApplication.customer
+  OwnershipBasedAccess                  PASS      PATTERN OwnershipBasedAccess: spec.md FR-020, contracts/http-api.md per-role scoping
+  NoInformationLeakage                  PASS      PATTERN NoInformationLeakage: spec.md FR-020, contracts/http-api.md 404 response
+  ConcurrencySafety                     PASS      PATTERN ConcurrencySafety: spec.md FR-012, contracts/http-api.md 409 already_claimed
+  FR_001_AuthenticationRequired         PASS      FEATURE-SPECIFIC: FR-001
+  FR_002_CustomerPermissions            PASS      FEATURE-SPECIFIC: FR-002
+  FR_003_LoanOfficerPermissions         PASS      FEATURE-SPECIFIC: FR-003
+  FR_004_ComplianceReviewerPermissions  PASS      FEATURE-SPECIFIC: FR-004
+  FR_008_OneInFlightPerCustomer         PASS      FEATURE-SPECIFIC: FR-008
+  FR_009_SubmissionCreatesAuditEntry    PASS      FEATURE-SPECIFIC: FR-009
+  FR_011_ClaimTransitionAndAudit        PASS      FEATURE-SPECIFIC: FR-011
+  FR_012_UniqueClaim                    PASS      FEATURE-SPECIFIC: FR-012
+  FR_013_OnlyAssignedOfficerDecides     PASS      FEATURE-SPECIFIC: FR-013
+  FR_015_DecisionCreatesAuditEntry      PASS      FEATURE-SPECIFIC: FR-015
+  FR_016_ImmutableAfterDecision         PASS      FEATURE-SPECIFIC: FR-016
+  FR_019_UniqueAuditPerTransition       PASS      FEATURE-SPECIFIC: FR-019
+  FR_020_CustomerPrivacy                PASS      FEATURE-SPECIFIC: FR-020
+  FR_021_OfficerIdentityHidden          PASS      FEATURE-SPECIFIC: FR-021
+
+  FR coverage
+  ----------------------------------------------------------------------------
+  FR-001  →  FR_001_AuthenticationRequired=PASS, AuthRequiredEverywhere=PASS
+  FR-002  →  FR_002_CustomerPermissions=PASS
+  FR-003  →  FR_003_LoanOfficerPermissions=PASS
+  FR-004  →  FR_004_ComplianceReviewerPermissions=PASS
+  FR-005  [uncovered]
+  FR-006  [uncovered]
+  FR-007  [uncovered]
+  FR-008  →  FR_008_OneInFlightPerCustomer=PASS
+  FR-009  →  FR_009_SubmissionCreatesAuditEntry=PASS
+  FR-010  [uncovered]
+  FR-011  →  FR_011_ClaimTransitionAndAudit=PASS
+  FR-012  →  FR_012_UniqueClaim=PASS, ConcurrencySafety=PASS
+  FR-013  →  FR_013_OnlyAssignedOfficerDecides=PASS
+  FR-014  [uncovered]
+  FR-015  →  FR_015_DecisionCreatesAuditEntry=PASS
+  FR-016  →  FR_016_ImmutableAfterDecision=PASS
+  FR-017  →  AuditCompleteness=PASS
+  FR-018  →  AppendOnly=PASS
+  FR-019  →  FR_019_UniqueAuditPerTransition=PASS
+  FR-020  →  FR_020_CustomerPrivacy=PASS, OwnershipBasedAccess=PASS, NoInformationLeakage=PASS
+  FR-021  →  FR_021_OfficerIdentityHidden=PASS
+  FR-022  [uncovered]
+  FR-023  →  LeastPrivilege=PASS
+
+  WARNING: 6 FR(s) without any matching assertion: FR-005, FR-006, FR-007, FR-010, FR-014, FR-022
+
+==============================================================================
+  Mutation tests  (assertion-strength validation)
+==============================================================================
+
+  Strategy: replace each named fact's body with `{}` (no constraint),
+  then re-run Alloy. Each listed assertion should now FAIL on the
+  mutated model. If it still PASSes, the assertion is vacuous and
+  must be strengthened.
+
+  - MUTATE F_PermissionMatrix  → runs/A-L2/mutated_F_PermissionMatrix.als
+    rationale: The permission matrix is the load-bearing constraint that encodes role-based access control. Removing it allows any role to perform any action, which violates the core least-privilege principle and all role-specific permission assertions.
+    expected to FAIL: LeastPrivilege, FR_002_CustomerPermissions, FR_003_LoanOfficerPermissions, FR_004_ComplianceReviewerPermissions
+      - LeastPrivilege: PASS (vacuous?)
+      - FR_002_CustomerPermissions: PASS (vacuous?)
+      - FR_003_LoanOfficerPermissions: PASS (vacuous?)
+      - FR_004_ComplianceReviewerPermissions: PASS (vacuous?)
+
+  - MUTATE F_AuditActorCorrectness  → runs/A-L2/mutated_F_AuditActorCorrectness.als
+    rationale: This fact ensures audit entries record the correct actor type for each transition. Removing it allows audit entries to have incorrect actors (e.g., a loan officer claiming an application records a customer as the actor), violating the attribution correctness principle.
+    expected to FAIL: AttributionCorrectness, FR_009_SubmissionCreatesAuditEntry, FR_011_ClaimTransitionAndAudit, FR_015_DecisionCreatesAuditEntry
+      - AttributionCorrectness: MISSING
+      - FR_009_SubmissionCreatesAuditEntry: PASS (vacuous?)
+      - FR_011_ClaimTransitionAndAudit: PASS (vacuous?)
+      - FR_015_DecisionCreatesAuditEntry: PASS (vacuous?)
+
+  - MUTATE F_AssignmentStatusCoupling  → runs/A-L2/mutated_F_AssignmentStatusCoupling.als
+    rationale: This fact enforces that assigned_officer is set only when status is not Submitted. Removing it allows inconsistent states where an application is Submitted but already has an assigned officer, or is UnderReview/Approved/Rejected but has no assignment, breaking the state machine invariant.
+    expected to FAIL: FR_011_ClaimTransitionAndAudit, FR_013_OnlyAssignedOfficerDecides, FR_016_ImmutableAfterDecision
+      - FR_011_ClaimTransitionAndAudit: PASS (vacuous?)
+      - FR_013_OnlyAssignedOfficerDecides: PASS (vacuous?)
+      - FR_016_ImmutableAfterDecision: PASS (vacuous?)
+
+  - MUTATE F_DecisionWhenDecided  → runs/A-L2/mutated_F_DecisionWhenDecided.als
+    rationale: This fact ensures that a Decision row exists if and only if the application is Approved or Rejected. Removing it allows applications to be Approved/Rejected without a corresponding Decision record, or to have a Decision when not yet decided.
+    expected to FAIL: FR_013_OnlyAssignedOfficerDecides, FR_015_DecisionCreatesAuditEntry
+      - FR_013_OnlyAssignedOfficerDecides: PASS (vacuous?)
+      - FR_015_DecisionCreatesAuditEntry: PASS (vacuous?)
+
+  - MUTATE F_AssignedOfficerIsLoanOfficer  → runs/A-L2/mutated_F_AssignedOfficerIsLoanOfficer.als
+    rationale: This fact ensures the assigned officer always has the LoanOfficer role. Removing it allows applications to be assigned to users with other roles (Customer, ComplianceReviewer), violating the workflow invariant that only loan officers can claim and decide applications.
+    expected to FAIL: FR_011_ClaimTransitionAndAudit, FR_013_OnlyAssignedOfficerDecides
+      - FR_011_ClaimTransitionAndAudit: PASS (vacuous?)
+      - FR_013_OnlyAssignedOfficerDecides: PASS (vacuous?)
+
+  - MUTATE F_ApplicationOwnership  → runs/A-L2/mutated_F_ApplicationOwnership.als
+    rationale: This fact enforces that every application is owned by exactly one customer. Removing it allows applications with no owner or multiple owners, breaking the ownership model and enabling customers to see applications they don't own.
+    expected to FAIL: OwnershipExclusivity, FR_020_CustomerPrivacy, OwnershipBasedAccess
+      - OwnershipExclusivity: PASS (vacuous?)
+      - FR_020_CustomerPrivacy: PASS (vacuous?)
+      - OwnershipBasedAccess: PASS (vacuous?)
+
+  Mutation summary
+  ----------------------------------------------------------------------------
+  - F_PermissionMatrix: ASSERTION VACUOUS (LeastPrivilege, FR_002_CustomerPermissions, FR_003_LoanOfficerPermissions, FR_004_ComplianceReviewerPermissions)
+  - F_AuditActorCorrectness: ASSERTION VACUOUS (AttributionCorrectness, FR_009_SubmissionCreatesAuditEntry, FR_011_ClaimTransitionAndAudit, FR_015_DecisionCreatesAuditEntry)
+  - F_AssignmentStatusCoupling: ASSERTION VACUOUS (FR_011_ClaimTransitionAndAudit, FR_013_OnlyAssignedOfficerDecides, FR_016_ImmutableAfterDecision)
+  - F_DecisionWhenDecided: ASSERTION VACUOUS (FR_013_OnlyAssignedOfficerDecides, FR_015_DecisionCreatesAuditEntry)
+  - F_AssignedOfficerIsLoanOfficer: ASSERTION VACUOUS (FR_011_ClaimTransitionAndAudit, FR_013_OnlyAssignedOfficerDecides)
+  - F_ApplicationOwnership: ASSERTION VACUOUS (OwnershipExclusivity, FR_020_CustomerPrivacy, OwnershipBasedAccess)
+
+
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/A-L2/report.txt

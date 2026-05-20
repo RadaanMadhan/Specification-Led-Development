@@ -1,0 +1,134 @@
+{
+  "feature_id": "C-L3",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "NoInformationLeakage"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_OneRolePerUser",
+    "FR_003_PatientAssignedRecord",
+    "FR_004_CareTeamGating",
+    "FR_005_ClinicianNoSystemAudit",
+    "FR_006_PatientSelfAccess",
+    "FR_007_ComplianceNoRecordRead",
+    "FR_009_LatencySLA",
+    "FR_010_NoteValidation",
+    "FR_011_NotePersistence",
+    "FR_012_NotesAppendOnly",
+    "FR_013_OneAuditPerAccess",
+    "FR_015_AuditImmutable",
+    "FR_019_ComplianceContentBlind",
+    "FR_020_NoPIIInURLPaths"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_OneRolePerUser"
+    ],
+    "FR-003": [
+      "FR_003_PatientAssignedRecord"
+    ],
+    "FR-004": [
+      "FR_004_CareTeamGating",
+      "LeastPrivilege"
+    ],
+    "FR-005": [
+      "FR_005_ClinicianNoSystemAudit"
+    ],
+    "FR-006": [
+      "FR_006_PatientSelfAccess"
+    ],
+    "FR-007": [
+      "FR_007_ComplianceNoRecordRead"
+    ],
+    "FR-008": [
+      "NoInformationLeakage"
+    ],
+    "FR-009": [
+      "FR_009_LatencySLA"
+    ],
+    "FR-010": [
+      "FR_010_NoteValidation"
+    ],
+    "FR-011": [
+      "FR_011_NotePersistence"
+    ],
+    "FR-012": [
+      "FR_012_NotesAppendOnly",
+      "AppendOnly"
+    ],
+    "FR-013": [
+      "FR_013_OneAuditPerAccess",
+      "AuditCompleteness"
+    ],
+    "FR-014": [
+      "AttributionCorrectness"
+    ],
+    "FR-015": [
+      "FR_015_AuditImmutable",
+      "AppendOnly"
+    ],
+    "FR-019": [
+      "FR_019_ComplianceContentBlind"
+    ],
+    "FR-020": [
+      "FR_020_NoPIIInURLPaths"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_NonEmptyUniverse",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "AuthRequiredEverywhere",
+        "AuditCompleteness"
+      ],
+      "rationale": "Removing the non-empty universe fact allows Alloy to explore worlds where no users, records, or access events exist. This makes universal quantifications vacuously true. By injecting atoms, we force the assertions to actually constrain concrete instances.",
+      "inject_violation": "fact MUTATE_NonEmptyUniverse { some User some Record some CareTeamMembership some ClinicalNote some AuditEntry some AccessEvent }"
+    },
+    {
+      "fact_name": "F_NonEmptyUniverse",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_012_NotesAppendOnly"
+      ],
+      "rationale": "The append-only assertions only bite when there exist clinical notes to check immutability over. An empty note universe makes them vacuous.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some n1, n2: ClinicalNote | n1.note_id = n2.note_id && n1 != n2 }"
+    },
+    {
+      "fact_name": "F_NonEmptyUniverse",
+      "asserts_violated": [
+        "FR_015_AuditImmutable",
+        "AppendOnly"
+      ],
+      "rationale": "Audit immutability assertions need at least two audit entries to meaningfully check that identical entry_ids map to identical tuples.",
+      "inject_violation": "fact MUTATE_AuditMutationViolation { some a1, a2: AuditEntry | a1.entry_id = a2.entry_id && a1 != a2 }"
+    },
+    {
+      "fact_name": "F_NonEmptyUniverse",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_004_CareTeamGating"
+      ],
+      "rationale": "Care-team gating assertions require at least one clinician user and one record to check that unauthorized access is denied. An empty universe trivializes these checks.",
+      "inject_violation": "fact MUTATE_CareTeamViolation { some u: User, r: Record, ae: AccessEvent | u.role = ClinicianRole && ae.accessor = u && ae.record = r && ae.operation = ReadOp && ae.outcome = PermittedOutcome && (no m: CareTeamMembership | m.clinician_user_id = u.user_id && m.record_id = r.record_id) }"
+    },
+    {
+      "fact_name": "F_NonEmptyUniverse",
+      "asserts_violated": [
+        "FR_006_PatientSelfAccess"
+      ],
+      "rationale": "Patient self-access assertions require patient users and records to check that patients can only read their assigned record. Empty universe makes this vacuous.",
+      "inject_violation": "fact MUTATE_PatientViolation { some u: User, r: Record, ae: AccessEvent | u.role = PatientRole && ae.accessor = u && ae.record = r && ae.operation = ReadOp && ae.outcome = PermittedOutcome && u.assigned_record_id != r.record_id }"
+    }
+  ]
+}

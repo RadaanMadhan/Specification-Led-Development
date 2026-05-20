@@ -1,0 +1,48 @@
+{
+  "F_AuthRequired": {
+    "targeted_asserts": {
+      "AuthRequiredEverywhere": "BIT",
+      "FR_001_AuthRequired": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_ReadAccessForReadOps": {
+    "targeted_asserts": {
+      "NoInformationLeakage": "BIT",
+      "FR_014_ByteEquivalent404": "BIT",
+      "FR_004_MemberNoForeignTask": "BIT",
+      "LeastPrivilege": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_PatchSharedOwnerOnly": {
+    "targeted_asserts": {
+      "OwnershipBasedAccess": "BIT",
+      "FR_010_OwnerOnlyShareControl": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_DeleteAccess": {
+    "targeted_asserts": {
+      "LeastPrivilege": "BIT",
+      "FR_011_ShareeNoDelete": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_NoAuditsWithoutSuccess": {
+    "targeted_asserts": {
+      "AppendOnly": "BIT",
+      "ValidationBeforeMutation": "BIT",
+      "FR_018_RollbackNoAudit": "BIT",
+      "FR_017_AuditAppendOnly": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AuditAttribution": {
+    "targeted_asserts": {
+      "AttributionCorrectness": "BIT",
+      "FR_016_AuditAttribution": "BIT"
+    },
+    "all_bit": true
+  }
+}

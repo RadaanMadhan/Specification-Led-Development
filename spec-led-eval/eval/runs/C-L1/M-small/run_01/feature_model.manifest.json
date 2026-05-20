@@ -1,0 +1,104 @@
+{
+  "feature_id": "C-L1",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "AttributionCorrectness"
+  ],
+  "feature_specific_predicates": [
+    "FR_005_ReadOnlyScope",
+    "FR_006_CareTeamRequirement",
+    "FR_007_DenialIndistinguishability",
+    "FR_011_AuditOfficerRecordAccess",
+    "FR_010_AuditImmutability"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "AuthRequiredEverywhere"
+    ],
+    "FR-005": [
+      "FR_005_ReadOnlyScope"
+    ],
+    "FR-006": [
+      "OwnershipBasedAccess",
+      "FR_006_CareTeamRequirement"
+    ],
+    "FR-007": [
+      "NoInformationLeakage",
+      "FR_007_DenialIndistinguishability"
+    ],
+    "FR-008": [
+      "AuditCompleteness"
+    ],
+    "FR-009": [
+      "AuditCompleteness",
+      "AttributionCorrectness"
+    ],
+    "FR-010": [
+      "AppendOnly",
+      "FR_010_AuditImmutability"
+    ],
+    "FR-011": [
+      "FR_011_AuditOfficerRecordAccess"
+    ],
+    "FR-012": [
+      "AppendOnly"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_PermissionMatrixDef",
+      "asserts_violated": [
+        "LeastPrivilege"
+      ],
+      "rationale": "Removing the permission-matrix definition allows the model to assign arbitrary role-op pairs, which directly contradicts the LeastPrivilege assertion that enforces only explicitly allowed pairs.",
+      "inject_violation": "fact MUTATE_ExtraPermission { AuditOfficer -> RecordLookup in PermissionMatrix.allowed }"
+    },
+    {
+      "fact_name": "F_CareTeamGating",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_006_CareTeamRequirement"
+      ],
+      "rationale": "Removing the care-team gating fact allows an access attempt to succeed (Permitted outcome) without the clinician being on the patient's care team, directly violating the ownership-based access control invariant.",
+      "inject_violation": "fact MUTATE_BypassCareTeam { some aa: AccessAttempt, p: Patient | aa.operation = RecordLookup and aa.outcome = Permitted and aa.targetPatient = p and no ctm: CareTeamMembership | ctm.clinician = aa.clinician and ctm.patient = p and ctm.status = Active }"
+    },
+    {
+      "fact_name": "F_AuditCompleteness",
+      "asserts_violated": [
+        "AuditCompleteness"
+      ],
+      "rationale": "Removing the audit-completeness constraint allows an access attempt to exist without a corresponding audit entry with matching clinician, role, and outcome, violating the one-to-one audit obligation.",
+      "inject_violation": "fact MUTATE_MissingAudit { some aa: AccessAttempt | no ae: AuditEntry | ae.clinician = aa.clinician and ae.clinicianRole = aa.clinician.role and ae.patient = aa.targetPatient and ae.outcome = aa.outcome }"
+    },
+    {
+      "fact_name": "F_NoInfoLeakage",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "FR_007_DenialIndistinguishability"
+      ],
+      "rationale": "Removing the no-information-leakage fact allows denied and not-found outcomes to occur when the clinician IS on the care team, which would leak information about patient existence.",
+      "inject_violation": "fact MUTATE_InfoLeakage { some aa: AccessAttempt, ctm: CareTeamMembership | aa.operation = RecordLookup and (aa.outcome = Denied or aa.outcome = NotFoundOrDenied) and ctm.clinician = aa.clinician and ctm.patient = aa.targetPatient and ctm.status = Active }"
+    },
+    {
+      "fact_name": "F_AttributionCorrect",
+      "asserts_violated": [
+        "AttributionCorrectness"
+      ],
+      "rationale": "Removing the attribution-correctness constraint allows an audit entry to record a different clinician role than the one who actually performed the access, violating the snapshot semantics requirement.",
+      "inject_violation": "fact MUTATE_BadAttribution { some ae: AuditEntry, aa: AccessAttempt, c2: ClinicianRole | aa.auditEntry = ae and ae.clinician = aa.clinician and ae.clinicianRole = c2 and c2 != aa.clinician.role }"
+    },
+    {
+      "fact_name": "F_AuditOfficerCannotAccessRecords",
+      "asserts_violated": [
+        "FR_011_AuditOfficerRecordAccess"
+      ],
+      "rationale": "Removing this constraint allows the audit officer to attempt record lookups, which violates the role-based segregation (audit officers can only use the audit-search endpoint).",
+      "inject_violation": "fact MUTATE_AuditOfficerBypass { some aa: AccessAttempt | aa.clinician.role = AuditOfficer and aa.operation = RecordLookup }"
+    }
+  ]
+}

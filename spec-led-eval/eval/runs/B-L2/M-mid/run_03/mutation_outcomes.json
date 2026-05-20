@@ -1,0 +1,47 @@
+{
+  "F_OwnerOrAdminForMutations": {
+    "targeted_asserts": {
+      "OwnershipBasedAccess": "BIT",
+      "FR_008_010_OwnerOrAdminCanMutate": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_CreatedEntryExistsForEveryTask": {
+    "targeted_asserts": {
+      "AuditCompleteness": "BIT",
+      "FR_015_OneCreatedEntryPerTask": "BIT",
+      "FR_018_AuditRetention": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_DeletedEntryForDeletedTask": {
+    "targeted_asserts": {
+      "AuditCompleteness": "BIT",
+      "FR_016_AuditOutlivesTask": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_PermissionMatrix": {
+    "targeted_asserts": {
+      "LeastPrivilege": "VACUOUS_OVERCONSTRAINT",
+      "PrivilegeMonotonicity": "VACUOUS_OVERCONSTRAINT",
+      "PermissionCompleteness": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_AuditTeamConsistency": {
+    "targeted_asserts": {
+      "NoInformationLeakage": "BIT",
+      "FR_011_014_CrossTeamIsolation": "BIT",
+      "FR_017_AuditReadableByAnyTeamMember": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_CreatedEntryActorIsOwner": {
+    "targeted_asserts": {
+      "AttributionCorrectness": "BIT",
+      "FR_006_OwnerImmutable": "BIT"
+    },
+    "all_bit": true
+  }
+}

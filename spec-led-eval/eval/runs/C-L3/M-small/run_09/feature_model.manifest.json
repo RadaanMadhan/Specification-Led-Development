@@ -1,0 +1,133 @@
+{
+  "feature_id": "C-L3",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "PermissionGrounding",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_SingleRole",
+    "FR_003_PatientAssignedRecord",
+    "FR_004_CareTeamGating",
+    "FR_006_PatientSelfAccess",
+    "FR_007_ComplianceReadOnly",
+    "FR_008_ByteEquivalentUnauth",
+    "FR_012_AppendOnlyNotes",
+    "FR_013_AlwaysOnAudit",
+    "FR_014_AuditEntryFields",
+    "FR_015_AuditImmutable",
+    "FR_019_ComplianceContentBlind"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_SingleRole"
+    ],
+    "FR-003": [
+      "FR_003_PatientAssignedRecord",
+      "OwnershipExclusivity"
+    ],
+    "FR-004": [
+      "FR_004_CareTeamGating",
+      "OwnershipBasedAccess"
+    ],
+    "FR-006": [
+      "FR_006_PatientSelfAccess",
+      "OwnershipBasedAccess"
+    ],
+    "FR-007": [
+      "FR_007_ComplianceReadOnly",
+      "LeastPrivilege"
+    ],
+    "FR-008": [
+      "FR_008_ByteEquivalentUnauth",
+      "NoInformationLeakage"
+    ],
+    "FR-012": [
+      "FR_012_AppendOnlyNotes",
+      "AppendOnly"
+    ],
+    "FR-013": [
+      "FR_013_AlwaysOnAudit",
+      "AuditCompleteness"
+    ],
+    "FR-014": [
+      "FR_014_AuditEntryFields",
+      "AttributionCorrectness"
+    ],
+    "FR-015": [
+      "FR_015_AuditImmutable",
+      "AppendOnly"
+    ],
+    "FR-019": [
+      "FR_019_ComplianceContentBlind"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_AppendOnlyNotes",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_012_AppendOnlyNotes"
+      ],
+      "rationale": "Removing this fact allows Alloy to invent instances where a ClinicalNote is duplicated or modified. The AppendOnly assertion checks that all notes persist uniquely and immutably; without this fact, a counterexample can exist where a note is replicated or mutated.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some disj n1, n2: ClinicalNote | n1.note_id = n2.note_id }"
+    },
+    {
+      "fact_name": "F_AuditImmutable",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_015_AuditImmutable"
+      ],
+      "rationale": "Removing this fact allows multiple instances of the same AuditEntry. The assertion verifies each audit entry is unique and immutable; without this constraint, a counterexample can exist where an audit entry is duplicated.",
+      "inject_violation": "fact MUTATE_AuditMutability { some disj a1, a2: AuditEntry | a1.entry_id = a2.entry_id }"
+    },
+    {
+      "fact_name": "F_CareTeamGatingForRead",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_004_CareTeamGating"
+      ],
+      "rationale": "Removing this fact allows a clinician not in the care team to read a record. The OwnershipBasedAccess and CareTeamGating assertions verify that clinicians can only read records where they have an active membership; without this gating, a counterexample can exist where an unauthorized clinician accesses a record.",
+      "inject_violation": "fact MUTATE_CareTeamBypass { some u: User, r: Record, a: AuditEntry | u.role = Clinician and a.accessor = u and a.record = r and a.operation = Read and a.outcome = Permitted and (no m: CareTeamMembership | m.clinician = u and m.record = r and m.status = \"active\") }"
+    },
+    {
+      "fact_name": "F_PatientOwnRecordOnly",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_006_PatientSelfAccess"
+      ],
+      "rationale": "Removing this fact allows a patient to access records other than their assigned record. The PatientSelfAccess assertion verifies that patients can only read/list their own record; without this constraint, a counterexample can exist where a patient accesses another patient's record.",
+      "inject_violation": "fact MUTATE_PatientCrossAccess { some u: User, r: Record, a: AuditEntry | u.role = Patient and a.accessor = u and a.record = r and a.outcome = Permitted and u.assigned_record_id != r.record_id }"
+    },
+    {
+      "fact_name": "F_AuditForEveryNote",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_013_AlwaysOnAudit"
+      ],
+      "rationale": "Removing this fact allows ClinicalNotes to exist without corresponding audit entries. The AuditCompleteness assertion verifies that every note append is audited; without this requirement, a counterexample can exist where a note is created but no audit entry records it.",
+      "inject_violation": "fact MUTATE_AuditMissing { some n: ClinicalNote | no a: AuditEntry | a.note = n and a.operation = Append and a.outcome = Permitted }"
+    },
+    {
+      "fact_name": "F_NoInfoLeakOnDenial",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "FR_008_ByteEquivalentUnauth"
+      ],
+      "rationale": "Removing this fact allows a denied access to distinguish between a non-existent record and an unauthorized access by referencing a specific record. The NoInformationLeakage assertion verifies that denied accesses are byte-equivalent regardless of record existence; without this constraint, a counterexample can exist where a denied access leaks the existence of a record.",
+      "inject_violation": "fact MUTATE_InfoLeak { some a: AuditEntry, r: Record | a.outcome = Denied and a.record = r }"
+    }
+  ]
+}

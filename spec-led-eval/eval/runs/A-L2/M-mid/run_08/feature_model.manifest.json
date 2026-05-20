@@ -1,0 +1,179 @@
+{
+  "feature_id": "A-L2",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "ValidationBeforeMutation",
+    "PrivilegeMonotonicity"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_CustomerActionsLimited",
+    "FR_003_LoanOfficerActionsLimited",
+    "FR_004_ComplianceReadOnly",
+    "FR_008_OneInFlightPerCustomer",
+    "FR_009_SubmissionAuditEntry",
+    "FR_011_ClaimTransitionAndAudit",
+    "FR_012_ExactlyOneClaim",
+    "FR_013_OnlyAssignedOfficerDecides",
+    "FR_014_ReasonRequiredForDecision",
+    "FR_015_DecisionAtomic",
+    "FR_016_DecidedApplicationImmutable",
+    "FR_017_019_ExactlyOneAuditEntryPerTransition",
+    "FR_020_CustomerSeesOnlyOwnApplications",
+    "FR_021_OfficerIdentityHiddenFromCustomer",
+    "FR_022_DataRetention"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_CustomerActionsLimited",
+      "LeastPrivilege"
+    ],
+    "FR-003": [
+      "FR_003_LoanOfficerActionsLimited",
+      "LeastPrivilege"
+    ],
+    "FR-004": [
+      "FR_004_ComplianceReadOnly",
+      "LeastPrivilege"
+    ],
+    "FR-005": [
+      "FR_001_AuthRequired",
+      "FR_021_OfficerIdentityHiddenFromCustomer"
+    ],
+    "FR-006": [
+      "ValidationBeforeMutation"
+    ],
+    "FR-007": [
+      "ValidationBeforeMutation"
+    ],
+    "FR-008": [
+      "FR_008_OneInFlightPerCustomer",
+      "OwnershipExclusivity"
+    ],
+    "FR-009": [
+      "FR_009_SubmissionAuditEntry",
+      "AuditCompleteness"
+    ],
+    "FR-010": [
+      "LeastPrivilege"
+    ],
+    "FR-011": [
+      "FR_011_ClaimTransitionAndAudit",
+      "AuditCompleteness"
+    ],
+    "FR-012": [
+      "FR_012_ExactlyOneClaim"
+    ],
+    "FR-013": [
+      "FR_013_OnlyAssignedOfficerDecides"
+    ],
+    "FR-014": [
+      "FR_014_ReasonRequiredForDecision",
+      "ValidationBeforeMutation"
+    ],
+    "FR-015": [
+      "FR_015_DecisionAtomic",
+      "AuditCompleteness"
+    ],
+    "FR-016": [
+      "FR_016_DecidedApplicationImmutable"
+    ],
+    "FR-017": [
+      "FR_017_019_ExactlyOneAuditEntryPerTransition",
+      "AuditCompleteness",
+      "AttributionCorrectness"
+    ],
+    "FR-018": [
+      "AppendOnly"
+    ],
+    "FR-019": [
+      "FR_017_019_ExactlyOneAuditEntryPerTransition",
+      "AppendOnly"
+    ],
+    "FR-020": [
+      "FR_020_CustomerSeesOnlyOwnApplications",
+      "OwnershipBasedAccess",
+      "NoInformationLeakage"
+    ],
+    "FR-021": [
+      "FR_021_OfficerIdentityHiddenFromCustomer"
+    ],
+    "FR-022": [
+      "FR_022_DataRetention"
+    ],
+    "FR-023": [
+      "FR_004_ComplianceReadOnly",
+      "LeastPrivilege"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_002_CustomerActionsLimited",
+        "FR_004_ComplianceReadOnly"
+      ],
+      "rationale": "Clearing this fact removes all permission-matrix cell assignments. Injecting a violation adds a cell that should be denied \u2014 CustomerRole allowed to ClaimApplication \u2014 which LeastPrivilege and FR_002 catch directly.",
+      "inject_violation": "fact MUTATE_PermissionMatrixViolation { CustomerRole -> ClaimApplication in PermMatrix.Allowed }"
+    },
+    {
+      "fact_name": "F_AuditEntryCompleteness",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_011_ClaimTransitionAndAudit",
+        "FR_015_DecisionAtomic"
+      ],
+      "rationale": "Clearing this fact removes the requirement for claim and decision audit entries. Injecting a violation creates an Approved application with no Submitted\u2192UnderReview audit entry, which AuditCompleteness catches.",
+      "inject_violation": "fact MUTATE_AuditCompletenessViolation { some a : LoanApplication | a.appStatus = Approved and (no ae : AuditEntry | ae.auditApp = a and ae.auditPrevStatus = Submitted and ae.auditNewStatus = UnderReview) }"
+    },
+    {
+      "fact_name": "F_AuditEntryCounts",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_017_019_ExactlyOneAuditEntryPerTransition"
+      ],
+      "rationale": "Clearing the count fact allows duplicate audit entries per transition. Injecting a violation forces two distinct submission entries for one application, which AppendOnly and the exact-count assertion both catch.",
+      "inject_violation": "fact MUTATE_DuplicateAuditEntry { some disj ae1, ae2 : AuditEntry | ae1.auditApp = ae2.auditApp and no ae1.auditPrevStatus and no ae2.auditPrevStatus and ae1.auditNewStatus = Submitted and ae2.auditNewStatus = Submitted }"
+    },
+    {
+      "fact_name": "F_DecisionByAssignedOfficer",
+      "asserts_violated": [
+        "FR_013_OnlyAssignedOfficerDecides",
+        "AttributionCorrectness"
+      ],
+      "rationale": "Clearing this fact removes the constraint tying a Decision's decidedBy to the application's assignedOfficer. Injecting a violation creates a Decision whose decidedBy is a different LoanOfficer than the one assigned, which FR_013 catches.",
+      "inject_violation": "fact MUTATE_WrongOfficerDecides { some d : Decision | some u : User | u.userRole = LoanOfficerRole and u != d.decisionApp.assignedOfficer and d.decidedBy = u }"
+    },
+    {
+      "fact_name": "F_OneInFlightPerCustomer",
+      "asserts_violated": [
+        "FR_008_OneInFlightPerCustomer",
+        "OwnershipExclusivity"
+      ],
+      "rationale": "Clearing this fact removes the one-in-flight constraint. Injecting a violation forces two applications owned by the same customer to both be in-flight simultaneously, which FR_008 catches.",
+      "inject_violation": "fact MUTATE_TwoInFlightSameCustomer { some disj a1, a2 : LoanApplication | a1.appCustomer = a2.appCustomer and a1.appStatus = Submitted and a2.appStatus = UnderReview }"
+    },
+    {
+      "fact_name": "F_ReasonRequired",
+      "asserts_violated": [
+        "FR_014_ReasonRequiredForDecision",
+        "ValidationBeforeMutation"
+      ],
+      "rationale": "Clearing this fact allows Decisions to have no reason token. Injecting a violation creates a Decision with no decisionReason, which FR_014 and ValidationBeforeMutation both catch.",
+      "inject_violation": "fact MUTATE_DecisionWithoutReason { some d : Decision | no d.decisionReason }"
+    }
+  ]
+}

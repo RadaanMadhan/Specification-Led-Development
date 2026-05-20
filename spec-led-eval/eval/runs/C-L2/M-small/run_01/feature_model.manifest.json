@@ -1,0 +1,115 @@
+{
+  "feature_id": "C-L2",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "AppendOnly",
+    "AuditCompleteness",
+    "AttributionCorrectness",
+    "NoInformationLeakage",
+    "AuthRequiredEverywhere",
+    "PermissionGrounding"
+  ],
+  "feature_specific_predicates": [
+    "FR_004_CareTeamGating",
+    "FR_005_AdminCannotReadClinicalContent",
+    "FR_017_AuditListAdminOnly",
+    "FR_011_NotesAppendOnly",
+    "FR_001_AuthRequired",
+    "FR_012_EveryAccessAudited",
+    "FR_006_ByteEquivalentResponse",
+    "FR_014_AuditImmutable",
+    "FR_018_AdminNoClinicaljContent"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-004": [
+      "FR_004_CareTeamGating",
+      "LeastPrivilege"
+    ],
+    "FR-005": [
+      "FR_005_AdminCannotReadClinicalContent"
+    ],
+    "FR-006": [
+      "FR_006_ByteEquivalentResponse",
+      "NoInformationLeakage"
+    ],
+    "FR-011": [
+      "FR_011_NotesAppendOnly",
+      "AppendOnly"
+    ],
+    "FR-012": [
+      "FR_012_EveryAccessAudited",
+      "AuditCompleteness"
+    ],
+    "FR-014": [
+      "FR_014_AuditImmutable",
+      "AppendOnly"
+    ],
+    "FR-017": [
+      "FR_017_AuditListAdminOnly"
+    ],
+    "FR-018": [
+      "FR_018_AdminNoClinicaljContent"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_004_CareTeamGating",
+        "FR_005_AdminCannotReadClinicalContent",
+        "FR_017_AuditListAdminOnly"
+      ],
+      "rationale": "Removing the permission matrix fact body lets the model assign arbitrary permissions to roles, violating the least-privilege and role-based access control invariants.",
+      "inject_violation": "fact MUTATE_BadPermissions { some r: Role | some ok: OperationKind | (r -> ok) in PermMatrix.allowed and not ((r in (DoctorRole + NurseRole + PharmacistRole + ClinicalAdminRole) and ok in (ReadRecord + AddNote)) or (r = HospitalAdministratorRole and ok = ListAudit)) }"
+    },
+    {
+      "fact_name": "F_AuditOnePerNote",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_012_EveryAccessAudited"
+      ],
+      "rationale": "Removing this fact allows notes to exist without matching audit entries, violating the one-to-one correspondence and always-on audit invariants.",
+      "inject_violation": "fact MUTATE_MissingAuditEntry { some n: ClinicalNote | no ae: AuditEntry | ae.noteId = n.noteId and ae.accessType = AddNote and ae.outcome = Permitted }"
+    },
+    {
+      "fact_name": "F_NotesAppendOnly",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_011_NotesAppendOnly"
+      ],
+      "rationale": "Removing this fact permits notes to be deleted or mutated, violating append-only semantics.",
+      "inject_violation": "fact MUTATE_NotesDeletable { some n: ClinicalNote | n not in ClinicalNote }"
+    },
+    {
+      "fact_name": "F_AuditAttributionCorrect",
+      "asserts_violated": [
+        "AttributionCorrectness"
+      ],
+      "rationale": "Removing this fact allows audit entries to have mismatched user display names or roles, violating attribution correctness.",
+      "inject_violation": "fact MUTATE_BadAttribution { some ae: AuditEntry | some u: User | u.userId = ae.userId and (u.displayName != ae.displayName or u.userRole != ae.userRole) }"
+    },
+    {
+      "fact_name": "F_DeniedAndNotFoundIdentical",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "FR_006_ByteEquivalentResponse"
+      ],
+      "rationale": "Removing this fact allows Denied and NotFoundOrDenied outcomes to differ structurally, leaking information about whether a resource exists.",
+      "inject_violation": "fact MUTATE_InfoLeakage { some ae: AuditEntry | (ae.outcome = Denied or ae.outcome = NotFoundOrDenied) and ae.accessType != ReadRecord and ae.accessType != AddNote }"
+    },
+    {
+      "fact_name": "F_AuthRequired",
+      "asserts_violated": [
+        "AuthRequiredEverywhere",
+        "FR_001_AuthRequired"
+      ],
+      "rationale": "Removing this fact allows audit entries with no matching authenticated user, violating the authentication-required invariant.",
+      "inject_violation": "fact MUTATE_Unauthenticated { some ae: AuditEntry | no u: User | u.userId = ae.userId }"
+    }
+  ]
+}

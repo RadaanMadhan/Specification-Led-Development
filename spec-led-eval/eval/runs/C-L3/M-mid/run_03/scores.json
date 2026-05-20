@@ -1,0 +1,330 @@
+{
+  "run_id": "C-L3/M-mid/run_03",
+  "cell": "C-L3",
+  "model": "M-mid",
+  "rep": 3,
+  "D1": 1.0,
+  "D2": 0.8125,
+  "D3": 0.6666666666666666,
+  "D4": 0.875,
+  "aqs_partial": 0.8385416666666666,
+  "scored_at": "2026-05-20T04:29:05.066936+00:00",
+  "details": {
+    "D1": {
+      "n_assertions": 22,
+      "n_verdicts": 22
+    },
+    "D2": {
+      "patterns_applied": [
+        "LeastPrivilege",
+        "PermissionCompleteness",
+        "AuthRequiredEverywhere",
+        "AuditCompleteness",
+        "AppendOnly",
+        "AttributionCorrectness",
+        "OwnershipBasedAccess",
+        "NoInformationLeakage"
+      ],
+      "per_pattern": {
+        "LeastPrivilege": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "PermissionCompleteness": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "AuthRequiredEverywhere": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "AuditCompleteness": {
+          "in_catalog": true,
+          "has_pred": false,
+          "score": 0.5
+        },
+        "AppendOnly": {
+          "in_catalog": true,
+          "has_pred": false,
+          "score": 0.5
+        },
+        "AttributionCorrectness": {
+          "in_catalog": true,
+          "has_pred": false,
+          "score": 0.5
+        },
+        "OwnershipBasedAccess": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "NoInformationLeakage": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        }
+      }
+    },
+    "D3": {
+      "per_target": {
+        "F_PermissionMatrix": {
+          "targeted_asserts": {
+            "FR_007_ComplianceContentBlindness": "BIT",
+            "FR_019_ComplianceNoClinicContent": "BIT",
+            "FR_018_AccessLogComplianceOnly": "BIT",
+            "LeastPrivilege": "VACUOUS_OVERCONSTRAINT"
+          },
+          "score": 0.5
+        },
+        "F_CareTeamRelationshipCorrectness": {
+          "targeted_asserts": {
+            "FR_004_CareTeamGating": "BIT",
+            "OwnershipBasedAccess": "BIT",
+            "LeastPrivilege": "VACUOUS_OVERCONSTRAINT"
+          },
+          "score": 0.5
+        },
+        "F_NoteAuthorIsClinician": {
+          "targeted_asserts": {
+            "AppendOnlyNotes": "VACUOUS_OVERCONSTRAINT",
+            "FR_012_NotesAppendOnly": "VACUOUS_OVERCONSTRAINT"
+          },
+          "score": 0.5
+        },
+        "F_AuditCompleteness": {
+          "targeted_asserts": {
+            "AuditCompletenessCheck": "VACUOUS_OVERCONSTRAINT",
+            "FR_013_AuditCompletenessOneToOne": "VACUOUS_OVERCONSTRAINT",
+            "AppendOnlyAuditEntries": "VACUOUS_OVERCONSTRAINT"
+          },
+          "score": 0.5
+        },
+        "F_AttributionCorrectness": {
+          "targeted_asserts": {
+            "AttributionCorrectnessCheck": "BIT",
+            "FR_015_AuditImmutableRetained": "BIT",
+            "AppendOnlyAuditEntries": "BIT"
+          },
+          "score": 1.0
+        },
+        "F_PatientOwnRecordCorrectness": {
+          "targeted_asserts": {
+            "OwnershipBasedAccess": "BIT",
+            "FR_006_PatientSelfAccessOnly": "BIT"
+          },
+          "score": 1.0
+        }
+      },
+      "skipped": []
+    },
+    "D4": {
+      "per_fr": {
+        "FR-001": {
+          "covers": [
+            "FR_001_AuthRequired",
+            "AuthRequiredEverywhere"
+          ],
+          "verdicts": {
+            "FR_001_AuthRequired": "PASS",
+            "AuthRequiredEverywhere": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-002": {
+          "covers": [
+            "FR_002_ExactlyOneRoleAndPatientRecord"
+          ],
+          "verdicts": {
+            "FR_002_ExactlyOneRoleAndPatientRecord": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-003": {
+          "covers": [
+            "FR_002_ExactlyOneRoleAndPatientRecord"
+          ],
+          "verdicts": {
+            "FR_002_ExactlyOneRoleAndPatientRecord": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-004": {
+          "covers": [
+            "FR_004_CareTeamGating",
+            "LeastPrivilege"
+          ],
+          "verdicts": {
+            "FR_004_CareTeamGating": "FAIL",
+            "LeastPrivilege": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-005": {
+          "covers": [
+            "FR_005_ClinicianAccessLogDenied"
+          ],
+          "verdicts": {
+            "FR_005_ClinicianAccessLogDenied": "FAIL"
+          },
+          "score": 0.5
+        },
+        "FR-006": {
+          "covers": [
+            "FR_006_PatientSelfAccessOnly",
+            "OwnershipBasedAccess"
+          ],
+          "verdicts": {
+            "FR_006_PatientSelfAccessOnly": "FAIL",
+            "OwnershipBasedAccess": "FAIL"
+          },
+          "score": 0.5
+        },
+        "FR-007": {
+          "covers": [
+            "FR_007_ComplianceContentBlindness",
+            "FR_019_ComplianceNoClinicContent"
+          ],
+          "verdicts": {
+            "FR_007_ComplianceContentBlindness": "FAIL",
+            "FR_019_ComplianceNoClinicContent": "FAIL"
+          },
+          "score": 0.5
+        },
+        "FR-008": {
+          "covers": [
+            "FR_008_ByteEquivalentDenial",
+            "NoInformationLeakage"
+          ],
+          "verdicts": {
+            "FR_008_ByteEquivalentDenial": "FAIL",
+            "NoInformationLeakage": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-009": {
+          "covers": [
+            "FR_004_CareTeamGating",
+            "LeastPrivilege"
+          ],
+          "verdicts": {
+            "FR_004_CareTeamGating": "FAIL",
+            "LeastPrivilege": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-010": {
+          "covers": [
+            "FR_012_NotesAppendOnly"
+          ],
+          "verdicts": {
+            "FR_012_NotesAppendOnly": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-011": {
+          "covers": [
+            "FR_012_NotesAppendOnly"
+          ],
+          "verdicts": {
+            "FR_012_NotesAppendOnly": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-012": {
+          "covers": [
+            "FR_012_NotesAppendOnly",
+            "AppendOnlyNotes"
+          ],
+          "verdicts": {
+            "FR_012_NotesAppendOnly": "PASS",
+            "AppendOnlyNotes": "FAIL"
+          },
+          "score": 1.0
+        },
+        "FR-013": {
+          "covers": [
+            "FR_013_AuditCompletenessOneToOne",
+            "AuditCompletenessCheck"
+          ],
+          "verdicts": {
+            "FR_013_AuditCompletenessOneToOne": "PASS",
+            "AuditCompletenessCheck": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-014": {
+          "covers": [
+            "FR_014_AuditNoteIdLinkage",
+            "AttributionCorrectnessCheck"
+          ],
+          "verdicts": {
+            "FR_014_AuditNoteIdLinkage": "PASS",
+            "AttributionCorrectnessCheck": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-015": {
+          "covers": [
+            "FR_015_AuditImmutableRetained",
+            "AppendOnlyAuditEntries"
+          ],
+          "verdicts": {
+            "FR_015_AuditImmutableRetained": "PASS",
+            "AppendOnlyAuditEntries": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-016": {
+          "covers": [
+            "FR_013_AuditCompletenessOneToOne"
+          ],
+          "verdicts": {
+            "FR_013_AuditCompletenessOneToOne": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-017": {
+          "covers": [
+            "FR_015_AuditImmutableRetained"
+          ],
+          "verdicts": {
+            "FR_015_AuditImmutableRetained": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-018": {
+          "covers": [
+            "FR_018_AccessLogComplianceOnly"
+          ],
+          "verdicts": {
+            "FR_018_AccessLogComplianceOnly": "FAIL"
+          },
+          "score": 0.5
+        },
+        "FR-019": {
+          "covers": [
+            "FR_019_ComplianceNoClinicContent",
+            "FR_007_ComplianceContentBlindness"
+          ],
+          "verdicts": {
+            "FR_019_ComplianceNoClinicContent": "FAIL",
+            "FR_007_ComplianceContentBlindness": "FAIL"
+          },
+          "score": 0.5
+        },
+        "FR-020": {
+          "covers": [
+            "FR_001_AuthRequired"
+          ],
+          "verdicts": {
+            "FR_001_AuthRequired": "PASS"
+          },
+          "score": 1.0
+        }
+      }
+    }
+  }
+}

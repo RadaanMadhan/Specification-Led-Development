@@ -1,0 +1,121 @@
+{
+  "feature_id": "C-L3",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess"
+  ],
+  "feature_specific_predicates": [
+    "FR_002_OneRolePerUser",
+    "FR_003_PatientRecordAssignment",
+    "FR_004_CareTeamGating",
+    "FR_006_PatientSelfAccess",
+    "FR_007_ComplianceOfficerRestriction",
+    "FR_012_AppendOnlyNotes",
+    "FR_013_OneAuditPerAccess",
+    "FR_014_AuditRoleSnapshot",
+    "FR_015_AuditImmutability"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_OneRolePerUser"
+    ],
+    "FR-003": [
+      "FR_003_PatientRecordAssignment",
+      "OwnershipExclusivity"
+    ],
+    "FR-004": [
+      "LeastPrivilege",
+      "FR_004_CareTeamGating"
+    ],
+    "FR-006": [
+      "OwnershipBasedAccess",
+      "FR_006_PatientSelfAccess"
+    ],
+    "FR-007": [
+      "FR_007_ComplianceOfficerRestriction"
+    ],
+    "FR-012": [
+      "AppendOnly",
+      "FR_012_AppendOnlyNotes"
+    ],
+    "FR-013": [
+      "AuditCompleteness",
+      "FR_013_OneAuditPerAccess"
+    ],
+    "FR-014": [
+      "AttributionCorrectness",
+      "FR_014_AuditRoleSnapshot"
+    ],
+    "FR-015": [
+      "AppendOnly",
+      "FR_015_AuditImmutability"
+    ],
+    "FR-017": [
+      "AppendOnly"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_ClinicianAccessGating",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_004_CareTeamGating"
+      ],
+      "rationale": "removing this fact allows the model to create audit entries where a clinician has permitted access to a record they are not on the active care team for, which violates the core access-control invariant that clinician access requires care-team membership.",
+      "inject_violation": "some a: AuditEntry, u: User | a.accessor = u and u.role = ClinicianRole and a.outcome = PermittedOutcome and (no m: CareTeamMembership | m.clinician = u and m.record = a.record and m.status = ActiveStatus)"
+    },
+    {
+      "fact_name": "F_AppendOnlyAuditEntries",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_015_AuditImmutability"
+      ],
+      "rationale": "removing this fact lets the model create two distinct audit entries with identical accessor, record, operation, and outcome, violating the immutability invariant that each audit entry is unique and cannot be modified.",
+      "inject_violation": "some disj a1, a2: AuditEntry | a1.accessor = a2.accessor and a1.record = a2.record and a1.operation = a2.operation and a1.outcome = a2.outcome"
+    },
+    {
+      "fact_name": "F_AuditCompleteness",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_013_OneAuditPerAccess"
+      ],
+      "rationale": "removing this fact allows the model to create a clinical note without a corresponding permitted append audit entry, violating the completeness invariant that every note creation is audited.",
+      "inject_violation": "some cn: ClinicalNote | no a: AuditEntry | a.accessor = cn.author and a.record = cn.record and a.operation = AppendOp and a.outcome = PermittedOutcome"
+    },
+    {
+      "fact_name": "F_PatientAccessGating",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_006_PatientSelfAccess"
+      ],
+      "rationale": "removing this fact lets the model create a patient with permitted access to a record that is not their assigned_record_id, violating the ownership-based access control invariant that patients can only access their own record.",
+      "inject_violation": "some a: AuditEntry | a.accessor.role = PatientRole and a.outcome = PermittedOutcome and a.record != a.accessor.assigned_record_id"
+    },
+    {
+      "fact_name": "F_AuditRoleSnapshot",
+      "asserts_violated": [
+        "AttributionCorrectness",
+        "FR_014_AuditRoleSnapshot"
+      ],
+      "rationale": "removing this fact lets the model create an audit entry whose accessor_role field differs from the accessor's actual role, violating the attribution correctness invariant that audit entries must record the correct role at the time of access.",
+      "inject_violation": "some a: AuditEntry | a.accessor_role != a.accessor.role"
+    },
+    {
+      "fact_name": "F_ComplianceOfficerRestriction",
+      "asserts_violated": [
+        "FR_007_ComplianceOfficerRestriction"
+      ],
+      "rationale": "removing this fact allows compliance officers to perform operations other than list (e.g., read or append), violating the content-blindness invariant that compliance officers must only access audit logs and never read clinical content.",
+      "inject_violation": "some a: AuditEntry | a.accessor.role = ComplianceOfficerRole and a.operation != ListOp"
+    }
+  ]
+}

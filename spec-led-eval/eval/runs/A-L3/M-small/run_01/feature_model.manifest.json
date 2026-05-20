@@ -1,0 +1,149 @@
+{
+  "feature_id": "A-L3",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoSelfMutation"
+  ],
+  "feature_specific_predicates": [
+    "FR_002_RoleMultiplicity",
+    "FR_003_ApplicantCanSubmit",
+    "FR_004_OfficerCanViewAssigned",
+    "FR_005_AuditorReadOnly",
+    "FR_007_AmountAndPurposeLimits",
+    "FR_008_OneInFlightPerApplicant",
+    "FR_009_AllowedStatusTransitions",
+    "FR_010_AutoAssignmentExcludesApplicant",
+    "FR_012_OnlyAssignedOfficerCanPatch",
+    "FR_013_NoSelfApproval",
+    "FR_016_AuditEntryStructure",
+    "FR_018_AuditImmutableTamperDetectable",
+    "FR_020_ByteEquivalentResponse",
+    "FR_023_AuditEndpointAuditorOnly",
+    "FR_024_ApplicantCannotModifyAfterSubmission"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_RoleMultiplicity"
+    ],
+    "FR-003": [
+      "FR_003_ApplicantCanSubmit"
+    ],
+    "FR-004": [
+      "FR_004_OfficerCanViewAssigned"
+    ],
+    "FR-005": [
+      "FR_005_AuditorReadOnly"
+    ],
+    "FR-006": [
+      "FR_003_ApplicantCanSubmit"
+    ],
+    "FR-007": [
+      "FR_007_AmountAndPurposeLimits"
+    ],
+    "FR-008": [
+      "FR_008_OneInFlightPerApplicant"
+    ],
+    "FR-009": [
+      "FR_009_AllowedStatusTransitions"
+    ],
+    "FR-010": [
+      "FR_010_AutoAssignmentExcludesApplicant"
+    ],
+    "FR-011": [
+      "FR_010_AutoAssignmentExcludesApplicant"
+    ],
+    "FR-012": [
+      "FR_012_OnlyAssignedOfficerCanPatch"
+    ],
+    "FR-013": [
+      "FR_013_NoSelfApproval"
+    ],
+    "FR-016": [
+      "AuditCompleteness",
+      "FR_016_AuditEntryStructure"
+    ],
+    "FR-017": [
+      "AppendOnly"
+    ],
+    "FR-018": [
+      "FR_018_AuditImmutableTamperDetectable"
+    ],
+    "FR-020": [
+      "FR_020_ByteEquivalentResponse"
+    ],
+    "FR-021": [
+      "FR_020_ByteEquivalentResponse"
+    ],
+    "FR-022": [
+      "FR_020_ByteEquivalentResponse"
+    ],
+    "FR-023": [
+      "FR_023_AuditEndpointAuditorOnly"
+    ],
+    "FR-024": [
+      "FR_024_ApplicantCannotModifyAfterSubmission"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_RoleMultiplicity",
+      "asserts_violated": [
+        "FR_002_RoleMultiplicity"
+      ],
+      "rationale": "Removing this fact allows a User to hold both Officer and Auditor roles simultaneously, which violates FR-002 (the roles must be mutually exclusive for bank staff). The assertion checks that no user holds both roles; without the fact, Alloy can construct a counterexample.",
+      "inject_violation": "fact MUTATE_RoleMultiplicityViolation { some u: User | Officer in u.roles and Auditor in u.roles }"
+    },
+    {
+      "fact_name": "F_OneInFlightPerApplicant",
+      "asserts_violated": [
+        "FR_008_OneInFlightPerApplicant"
+      ],
+      "rationale": "Removing this fact allows two applications from the same applicant to both be in Pending or UnderReview status simultaneously, violating FR-008 (one in-flight per applicant). The assertion enforces the mutex.",
+      "inject_violation": "fact MUTATE_MultipleInFlightViolation { some disj app1, app2: LoanApplication | app1.applicant = app2.applicant and (app1.status = Pending or app1.status = UnderReview) and (app2.status = Pending or app2.status = UnderReview) }"
+    },
+    {
+      "fact_name": "F_NoSelfAssignment",
+      "asserts_violated": [
+        "FR_010_AutoAssignmentExcludesApplicant"
+      ],
+      "rationale": "Removing this fact allows an assigned officer to be the same as the applicant, violating FR-010 and FR-011 (no self-assignment). The assertion checks assigned_officer != applicant; without the fact, Alloy can construct a counterexample.",
+      "inject_violation": "fact MUTATE_SelfAssignmentViolation { some app: LoanApplication | app.assigned_officer = app.applicant }"
+    },
+    {
+      "fact_name": "F_AppendOnlyAuditLog",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_018_AuditImmutableTamperDetectable"
+      ],
+      "rationale": "Removing this fact allows two audit entries for the same application to have identical timestamps, violating append-only semantics (FR-018). Without the fact, Alloy can construct two entries with the same timestamp, violating the assertion that timestamps are unique per application.",
+      "inject_violation": "fact MUTATE_AuditNotAppendOnly { some disj ae1, ae2: AuditEntry | ae1.application = ae2.application and ae1.timestamp = ae2.timestamp }"
+    },
+    {
+      "fact_name": "F_NoSelfApprovalStructural",
+      "asserts_violated": [
+        "FR_013_NoSelfApproval",
+        "NoSelfMutation"
+      ],
+      "rationale": "Removing this fact allows an application where applicant == assigned_officer to have a non-Pending status, violating FR-013 (no self-approval). The assertion enforces that self-assigned apps remain at Pending; without the fact, Alloy can construct a counterexample where such an app is in UnderReview or Approved.",
+      "inject_violation": "fact MUTATE_SelfApprovalViolation { some app: LoanApplication | app.applicant = app.assigned_officer and (app.status = UnderReview or app.status = Approved or app.status = Rejected) }"
+    },
+    {
+      "fact_name": "F_AllowedTransitions",
+      "asserts_violated": [
+        "FR_009_AllowedStatusTransitions"
+      ],
+      "rationale": "Removing this fact allows audit entries with invalid status transitions (e.g., Approved \u2192 UnderReview or Pending \u2192 Approved), violating FR-009 (only pending\u2192under_review\u2192{approved,rejected} allowed). The assertion checks only valid transitions; without the fact, Alloy can construct illegal ones.",
+      "inject_violation": "fact MUTATE_InvalidTransition { some ae: AuditEntry | (ae.prev_status = Approved and ae.new_status = Pending) or (ae.prev_status = Pending and ae.new_status = Approved) }"
+    }
+  ]
+}

@@ -1,0 +1,132 @@
+{
+  "feature_id": "A-L1",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "PermissionGrounding",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "ValidationBeforeMutation"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_CustomerCanSubmit",
+    "FR_002_ValidationRequired",
+    "FR_003_AmountAndTermRanges",
+    "FR_004_UniqueReferenceAndInitialStatus",
+    "FR_005_OnePendingPerCustomer",
+    "FR_009_DecisionReasonRequired",
+    "FR_010_DecisionPersistence",
+    "FR_011_ImmutableDecision",
+    "FR_012_ConcurrentDecisions",
+    "FR_013_CustomerPrivacy",
+    "FR_015_DecisionRestriction",
+    "FR_016_AuditTrail"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_CustomerCanSubmit",
+      "LeastPrivilege",
+      "PermissionGrounding"
+    ],
+    "FR-002": [
+      "FR_002_ValidationRequired",
+      "ValidationBeforeMutation"
+    ],
+    "FR-003": [
+      "FR_003_AmountAndTermRanges"
+    ],
+    "FR-004": [
+      "FR_004_UniqueReferenceAndInitialStatus"
+    ],
+    "FR-005": [
+      "FR_005_OnePendingPerCustomer"
+    ],
+    "FR-009": [
+      "FR_009_DecisionReasonRequired",
+      "PermissionGrounding"
+    ],
+    "FR-010": [
+      "FR_010_DecisionPersistence",
+      "AuditCompleteness"
+    ],
+    "FR-011": [
+      "FR_011_ImmutableDecision"
+    ],
+    "FR-012": [
+      "FR_012_ConcurrentDecisions"
+    ],
+    "FR-013": [
+      "FR_013_CustomerPrivacy",
+      "NoInformationLeakage",
+      "OwnershipBasedAccess"
+    ],
+    "FR-015": [
+      "FR_015_DecisionRestriction",
+      "LeastPrivilege"
+    ],
+    "FR-016": [
+      "FR_016_AuditTrail",
+      "AuditCompleteness",
+      "AppendOnly",
+      "AttributionCorrectness"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "PermissionGrounding"
+      ],
+      "rationale": "Removing this fact allows the model to invent arbitrary permission cells, making LeastPrivilege and PermissionGrounding fail to hold. The assertion detects that customers can post decisions or staff can post applications, which the permission matrix should forbid.",
+      "inject_violation": "fact MUTATE_PermissionViolation { (Customer -> PostDecision) in PermissionMatrix.allowed }"
+    },
+    {
+      "fact_name": "F_OnePendingPerCustomer",
+      "asserts_violated": [
+        "FR_005_OnePendingPerCustomer"
+      ],
+      "rationale": "Removing this fact allows a customer to have multiple applications in Pending Review simultaneously. The assertion FR_005_OnePendingPerCustomer checks that at most one pending application exists per customer; without the fact, a counterexample exists.",
+      "inject_violation": "fact MUTATE_MultiplePending { some disj app1, app2: LoanApplication | app1.customer = app2.customer and app1.status = PendingReview and app2.status = PendingReview }"
+    },
+    {
+      "fact_name": "F_AuditCompleteness",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_016_AuditTrail"
+      ],
+      "rationale": "Removing this fact allows approved or rejected applications to lack corresponding audit events. The AuditCompleteness assertion requires one-to-one correspondence between application status and event type; without the fact, an application can be approved with no ApprovedEvent.",
+      "inject_violation": "fact MUTATE_MissingAuditEvent { some app: LoanApplication | app.status = ApprovedStatus and (no ae: ApplicationEvent | ae.application = app and ae.eventType = ApprovedEvent) }"
+    },
+    {
+      "fact_name": "F_AuditEventsAreAppendOnly",
+      "asserts_violated": [
+        "AppendOnly",
+        "AttributionCorrectness"
+      ],
+      "rationale": "Removing this fact allows audit events to be created with wrong actor roles (e.g., a BankStaff member recorded as the actor for a SubmittedEvent). The AppendOnly and AttributionCorrectness assertions catch that only CustomerRole submits and only BankStaff decides.",
+      "inject_violation": "fact MUTATE_WrongActor { some ae: ApplicationEvent | ae.eventType = SubmittedEvent and ae.actor.role = BankStaff }"
+    },
+    {
+      "fact_name": "F_OneDecisionPerApplication",
+      "asserts_violated": [
+        "FR_012_ConcurrentDecisions"
+      ],
+      "rationale": "Removing this fact allows multiple decisions on the same application, violating the no-concurrent-decisions invariant. FR_012_ConcurrentDecisions asserts lone decision per application; without the fact, two Decision atoms can reference the same application.",
+      "inject_violation": "fact MUTATE_MultipleDecisions { some disj d1, d2: Decision | d1.application = d2.application }"
+    },
+    {
+      "fact_name": "F_ReasonRequired",
+      "asserts_violated": [
+        "FR_009_DecisionReasonRequired"
+      ],
+      "rationale": "Removing this fact allows decisions with empty or missing reasons, violating FR-009 (reason is mandatory). The assertion checks that all decisions have a non-empty reason field.",
+      "inject_violation": "fact MUTATE_EmptyReason { some dec: Decision | dec.reason = \"\" }"
+    }
+  ]
+}

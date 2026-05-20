@@ -1,0 +1,159 @@
+{
+  "feature_id": "012-hospital-clinical-records",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "ValidationBeforeMutation"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_OneRolePerUser",
+    "FR_003_NoPatientIdInRoute",
+    "FR_004_CareTeamGating",
+    "FR_005_AdminNoClinicalContent",
+    "FR_006_ByteEquivalentDenial",
+    "FR_007_19_20_RecordShape",
+    "FR_008_PatientSummaryScope",
+    "FR_009_NoteValidation",
+    "FR_010_NoteAuthorSnapshot",
+    "FR_011_NotesAppendOnly",
+    "FR_012_OneAuditPerOp",
+    "FR_013_AuditFieldsMatch",
+    "FR_014_AuditImmutable",
+    "FR_015_AuditOrRollback",
+    "FR_016_AuditRetention",
+    "FR_017_AdminOnlyAuditSearch",
+    "FR_018_NoClinicalLeakToAdmin"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired"
+    ],
+    "FR-002": [
+      "FR_002_OneRolePerUser"
+    ],
+    "FR-003": [
+      "FR_003_NoPatientIdInRoute"
+    ],
+    "FR-004": [
+      "FR_004_CareTeamGating",
+      "OwnershipBasedAccess"
+    ],
+    "FR-005": [
+      "FR_005_AdminNoClinicalContent",
+      "NoInformationLeakage"
+    ],
+    "FR-006": [
+      "FR_006_ByteEquivalentDenial",
+      "NoInformationLeakage"
+    ],
+    "FR-007": [
+      "FR_007_19_20_RecordShape"
+    ],
+    "FR-008": [
+      "FR_008_PatientSummaryScope"
+    ],
+    "FR-009": [
+      "FR_009_NoteValidation",
+      "ValidationBeforeMutation"
+    ],
+    "FR-010": [
+      "FR_010_NoteAuthorSnapshot"
+    ],
+    "FR-011": [
+      "FR_011_NotesAppendOnly",
+      "AppendOnly"
+    ],
+    "FR-012": [
+      "FR_012_OneAuditPerOp",
+      "AuditCompleteness"
+    ],
+    "FR-013": [
+      "FR_013_AuditFieldsMatch",
+      "AttributionCorrectness"
+    ],
+    "FR-014": [
+      "FR_014_AuditImmutable",
+      "AppendOnly"
+    ],
+    "FR-015": [
+      "FR_015_AuditOrRollback"
+    ],
+    "FR-016": [
+      "FR_016_AuditRetention",
+      "AppendOnly"
+    ],
+    "FR-017": [
+      "FR_017_AdminOnlyAuditSearch",
+      "LeastPrivilege"
+    ],
+    "FR-018": [
+      "FR_018_NoClinicalLeakToAdmin",
+      "NoInformationLeakage"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_AppendOnlyNotes",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_011_NotesAppendOnly"
+      ],
+      "rationale": "Clearing F_AppendOnlyNotes drops the structural prohibition against mutating clinical notes; the injected fact then forces a note whose noteModified=BTrue, which the AppendOnly and FR_011 predicates explicitly forbid.",
+      "inject_violation": "fact MUTATE_NotesEdited { some n: ClinicalNote | n.noteModified = BTrue }"
+    },
+    {
+      "fact_name": "F_AppendOnlyAudit",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_014_AuditImmutable",
+        "FR_016_AuditRetention"
+      ],
+      "rationale": "Clearing F_AppendOnlyAudit removes audit-entry immutability; the injection forces an audit entry with aeModified=BTrue, violating the append-only / retention invariants.",
+      "inject_violation": "fact MUTATE_AuditEdited { some ae: AuditEntry | ae.aeModified = BTrue }"
+    },
+    {
+      "fact_name": "F_OneAuditPerOperation",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_012_OneAuditPerOp",
+        "FR_015_AuditOrRollback"
+      ],
+      "rationale": "Clearing F_OneAuditPerOperation lets the model invent an operation without a matching audit entry; the injection forces exactly such an orphan, which AuditCompleteness rejects.",
+      "inject_violation": "fact MUTATE_OrphanOp { some o: Operation | no ae: AuditEntry | ae.aeFor = o }"
+    },
+    {
+      "fact_name": "F_CareTeamGating",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_004_CareTeamGating"
+      ],
+      "rationale": "Clearing F_CareTeamGating removes the requirement that a permitted clinical access be backed by an active care-team membership; the injection forces a Permitted RecordLookup with no such membership, which OwnershipBasedAccess catches.",
+      "inject_violation": "fact MUTATE_NoCareTeam { some o: Operation | o.opKind = RecordLookup and o.opOutcome = Permitted and (no m: CareTeamMembership | m.ctmClinician = o.opCaller and m.ctmPatient = o.opTargetPatient and m.ctmActive = BTrue) }"
+    },
+    {
+      "fact_name": "F_AdminContentBlind",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "FR_005_AdminNoClinicalContent",
+        "FR_018_NoClinicalLeakToAdmin"
+      ],
+      "rationale": "Clearing F_AdminContentBlind removes the rule that admin responses carry no clinical content; the injection forces an operation by a hospital_administrator that returns clinical content, breaking FR-005 and FR-018.",
+      "inject_violation": "fact MUTATE_AdminLeak { some o: Operation | o.opCaller.role = HospitalAdministrator and o.opReturnedClinicalContent = BTrue }"
+    },
+    {
+      "fact_name": "F_AuditFieldsMatch",
+      "asserts_violated": [
+        "AttributionCorrectness",
+        "FR_013_AuditFieldsMatch"
+      ],
+      "rationale": "Clearing F_AuditFieldsMatch allows the audit-entry user/role snapshot to drift from the underlying operation; the injection forces an audit entry whose recorded user differs from the operation's actual caller, which AttributionCorrectness catches.",
+      "inject_violation": "fact MUTATE_BadAttribution { some ae: AuditEntry | ae.aeUserSnap != ae.aeFor.opCaller }"
+    }
+  ]
+}

@@ -1,0 +1,48 @@
+{
+  "F_NotesOnlyFromPermittedAppend": {
+    "targeted_asserts": {
+      "AppendOnly": "VACUOUS_OVERCONSTRAINT",
+      "FR_012_NotesAppendOnly": "VACUOUS_OVERCONSTRAINT",
+      "NoInformationLeakage": "VACUOUS_OVERCONSTRAINT",
+      "FR_008_NoLeakOnDeny": "VACUOUS_OVERCONSTRAINT",
+      "ValidationBeforeMutation": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_RoleBasedAccess": {
+    "targeted_asserts": {
+      "LeastPrivilege": "BIT",
+      "FR_007_ComplianceNoClinicalContent": "BIT",
+      "FR_019_ComplianceContentBlind": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AuditPerOperation": {
+    "targeted_asserts": {
+      "AuditCompleteness": "BIT",
+      "FR_013_OneAuditPerOp": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AuditAttribution": {
+    "targeted_asserts": {
+      "AttributionCorrectness": "BIT",
+      "FR_014_AuditShape": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_ClinicianCareTeamGating": {
+    "targeted_asserts": {
+      "OwnershipBasedAccess": "BIT",
+      "FR_004_ClinicianCareTeamGating": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_PatientOwnRecord": {
+    "targeted_asserts": {
+      "OwnershipBasedAccess": "BIT",
+      "FR_006_PatientSelfAccessOnly": "BIT"
+    },
+    "all_bit": true
+  }
+}

@@ -1,0 +1,180 @@
+{
+  "feature_id": "A-L3",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "NoSelfMutation",
+    "ValidationBeforeMutation"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_RoleMutualExclusion",
+    "FR_003_ApplicantPermissions",
+    "FR_004_OfficerPermissions",
+    "FR_005_AuditorReadOnly",
+    "FR_008_OneInFlightPerApplicant",
+    "FR_009_ValidTransitions",
+    "FR_011_NoSelfAssignment",
+    "FR_012_OnlyAssignedOfficerCanPatch",
+    "FR_013_NoSelfApproval",
+    "FR_015_NoTransitionFromTerminal",
+    "FR_016_AuditEntryFields",
+    "FR_018_AuditImmutable",
+    "FR_019_AuditRetention",
+    "FR_020_ByteEquivalentUnauthorized",
+    "FR_023_AuditEndpointAuditorOnly",
+    "FR_024_ApplicantCannotModifyAfterSubmission"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_RoleMutualExclusion"
+    ],
+    "FR-003": [
+      "FR_003_ApplicantPermissions",
+      "LeastPrivilege"
+    ],
+    "FR-004": [
+      "FR_004_OfficerPermissions",
+      "LeastPrivilege"
+    ],
+    "FR-005": [
+      "FR_005_AuditorReadOnly",
+      "LeastPrivilege"
+    ],
+    "FR-006": [
+      "OwnershipExclusivity"
+    ],
+    "FR-007": [
+      "ValidationBeforeMutation"
+    ],
+    "FR-008": [
+      "FR_008_OneInFlightPerApplicant"
+    ],
+    "FR-009": [
+      "FR_009_ValidTransitions"
+    ],
+    "FR-010": [
+      "FR_011_NoSelfAssignment",
+      "AttributionCorrectness"
+    ],
+    "FR-011": [
+      "FR_011_NoSelfAssignment"
+    ],
+    "FR-012": [
+      "FR_012_OnlyAssignedOfficerCanPatch"
+    ],
+    "FR-013": [
+      "FR_013_NoSelfApproval",
+      "NoSelfMutation"
+    ],
+    "FR-014": [
+      "ValidationBeforeMutation"
+    ],
+    "FR-015": [
+      "FR_015_NoTransitionFromTerminal"
+    ],
+    "FR-016": [
+      "FR_016_AuditEntryFields",
+      "AuditCompleteness",
+      "AttributionCorrectness"
+    ],
+    "FR-017": [
+      "AuditCompleteness",
+      "ValidationBeforeMutation"
+    ],
+    "FR-018": [
+      "FR_018_AuditImmutable",
+      "AppendOnly"
+    ],
+    "FR-019": [
+      "FR_019_AuditRetention",
+      "AppendOnly"
+    ],
+    "FR-020": [
+      "FR_020_ByteEquivalentUnauthorized",
+      "NoInformationLeakage"
+    ],
+    "FR-021": [
+      "FR_020_ByteEquivalentUnauthorized",
+      "NoInformationLeakage"
+    ],
+    "FR-022": [
+      "NoInformationLeakage"
+    ],
+    "FR-023": [
+      "FR_023_AuditEndpointAuditorOnly"
+    ],
+    "FR-024": [
+      "FR_024_ApplicantCannotModifyAfterSubmission"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_NoSelfApproval",
+      "asserts_violated": [
+        "NoSelfMutation",
+        "FR_013_NoSelfApproval"
+      ],
+      "rationale": "Removing F_NoSelfApproval allows the model to construct an AuditEntry whose entryActor equals the application's appApplicant on a non-initial transition, directly violating the no-self-approval invariant. The injected fact forces exactly such a counterexample to exist.",
+      "inject_violation": "fact MUTATE_SelfApprovalViolation { some ae : AuditEntry | some ae.prevStatus and ae.entryActor = ae.forApp.appApplicant }"
+    },
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "PermissionCompleteness",
+        "FR_005_AuditorReadOnly",
+        "FR_004_OfficerPermissions"
+      ],
+      "rationale": "Clearing F_PermissionMatrix allows PermMatrix.Allowed to take any value, so a pure-officer user could appear to have unconditional POST permission and an auditor could have PATCH permission, breaking LeastPrivilege. The injection forces an officer\u2192OpPost cell into PermMatrix.Allowed, which is exactly the cell that must be absent.",
+      "inject_violation": "fact MUTATE_PermMatrixViolation { ROfficer -> OpPost in PermMatrix.Allowed }"
+    },
+    {
+      "fact_name": "F_OneInFlightPerApplicant",
+      "asserts_violated": [
+        "FR_008_OneInFlightPerApplicant"
+      ],
+      "rationale": "Removing F_OneInFlightPerApplicant allows two LoanApplication atoms to share the same appApplicant while both are in Pending or UnderReview status. The injection creates exactly that scenario.",
+      "inject_violation": "fact MUTATE_TwoInFlightViolation { some disj a1, a2 : LoanApplication | a1.appApplicant = a2.appApplicant and a1.appStatus = Pending and a2.appStatus = Pending }"
+    },
+    {
+      "fact_name": "F_UniqueInitialAuditEntry",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_018_AuditImmutable",
+        "AppendOnly"
+      ],
+      "rationale": "Removing F_UniqueInitialAuditEntry allows either zero or two initial (none\u2192pending) audit entries for a single application. The injection forces two distinct AuditEntry atoms to both be initial entries for the same application, violating uniqueness and the append-only deduplication invariant.",
+      "inject_violation": "fact MUTATE_DuplicateInitialEntry { some disj ae1, ae2 : AuditEntry | ae1.forApp = ae2.forApp and no ae1.prevStatus and no ae2.prevStatus }"
+    },
+    {
+      "fact_name": "F_ValidAuditTransitions",
+      "asserts_violated": [
+        "FR_009_ValidTransitions",
+        "FR_015_NoTransitionFromTerminal"
+      ],
+      "rationale": "Clearing F_ValidAuditTransitions allows an AuditEntry to record a forbidden transition such as Approved\u2192UnderReview or Pending\u2192Rejected. The injection forces a Rejected\u2192Pending audit entry, violating both the valid-transitions invariant and terminal-status immutability.",
+      "inject_violation": "fact MUTATE_InvalidTransitionViolation { some ae : AuditEntry | ae.prevStatus = Rejected and ae.newStatus = Pending }"
+    },
+    {
+      "fact_name": "F_AuditEndpointAuditorOnly",
+      "asserts_violated": [
+        "FR_023_AuditEndpointAuditorOnly",
+        "LeastPrivilege"
+      ],
+      "rationale": "Removing F_AuditEndpointAuditorOnly permits a non-auditor (e.g., a pure applicant) to have a successful OpAudit operation, breaking the auditor-only gate on the audit endpoint. The injection forces such a successful non-auditor audit call to exist.",
+      "inject_violation": "fact MUTATE_NonAuditorAuditAccess { some op : Operation | op.opKind = OpAudit and op.opSucceeded = BTrue and RAuditor not in op.opCaller.userRoles }"
+    }
+  ]
+}

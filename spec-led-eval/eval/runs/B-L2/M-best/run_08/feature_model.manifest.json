@@ -1,0 +1,138 @@
+{
+  "feature_id": "B-L2",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_003_TeamContextRequired",
+    "FR_004_CallerIsMember",
+    "FR_007_OneRolePerUserPerTeam",
+    "FR_009_NonOwnerNonAdminCannotMutate",
+    "FR_011_CrossTeamIsolation",
+    "FR_012_AssigneeSameTeam",
+    "FR_015_AuditAttribution",
+    "FR_016_AuditAppendOnly",
+    "FR_017_AuditReadableByMembers"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "AuthRequiredEverywhere",
+      "FR_001_AuthRequired"
+    ],
+    "FR-003": [
+      "FR_003_TeamContextRequired"
+    ],
+    "FR-004": [
+      "FR_004_CallerIsMember",
+      "LeastPrivilege"
+    ],
+    "FR-005": [
+      "OwnershipExclusivity"
+    ],
+    "FR-006": [
+      "OwnershipExclusivity"
+    ],
+    "FR-007": [
+      "FR_007_OneRolePerUserPerTeam",
+      "OwnershipExclusivity"
+    ],
+    "FR-008": [
+      "OwnershipBasedAccess"
+    ],
+    "FR-009": [
+      "FR_009_NonOwnerNonAdminCannotMutate",
+      "OwnershipBasedAccess"
+    ],
+    "FR-010": [
+      "OwnershipBasedAccess"
+    ],
+    "FR-011": [
+      "FR_011_CrossTeamIsolation",
+      "NoInformationLeakage"
+    ],
+    "FR-012": [
+      "FR_012_AssigneeSameTeam"
+    ],
+    "FR-014": [
+      "NoInformationLeakage",
+      "FR_011_CrossTeamIsolation"
+    ],
+    "FR-015": [
+      "AttributionCorrectness",
+      "FR_015_AuditAttribution",
+      "AuditCompleteness"
+    ],
+    "FR-016": [
+      "AppendOnly",
+      "FR_016_AuditAppendOnly"
+    ],
+    "FR-017": [
+      "FR_017_AuditReadableByMembers"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_AuthRequired",
+      "asserts_violated": [
+        "AuthRequiredEverywhere",
+        "FR_001_AuthRequired"
+      ],
+      "rationale": "Clearing F_AuthRequired removes the only constraint forcing unauthenticated requests to the Unauthenticated outcome; the injection then constructs an Operation with no caller but Success outcome, which directly violates the AuthRequired predicates.",
+      "inject_violation": "fact MUTATE_AuthBypass { some op: Operation | no op.opCaller and op.opOutcome = Success }"
+    },
+    {
+      "fact_name": "F_NonMemberIsNotFound",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_004_CallerIsMember"
+      ],
+      "rationale": "Clearing F_NonMemberIsNotFound lets a caller succeed on an op against a team they are not a member of; the injection asserts such an instance exists, breaking LeastPrivilege and FR_004_CallerIsMember which require every successful op to come from a real team member.",
+      "inject_violation": "fact MUTATE_NonMemberSuccess { some op: Operation | op.opOutcome = Success and (no m: Membership | m.mUser = op.opCaller and m.mTeam = op.opTeam) }"
+    },
+    {
+      "fact_name": "F_CrossTeamIsolation",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "FR_011_CrossTeamIsolation"
+      ],
+      "rationale": "Clearing F_CrossTeamIsolation removes the rule that cross-team task access must return NotFound; the injection forces an Operation whose task belongs to a different team than the caller's X-Team-Id yet still succeeds, which is exactly the FR-014 leakage we want to forbid.",
+      "inject_violation": "fact MUTATE_CrossTeam { some op: Operation | some op.opTask and some op.opTeam and op.opTask.tTeam != op.opTeam and op.opOutcome = Success }"
+    },
+    {
+      "fact_name": "F_OwnerOrAdminForMutation",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_009_NonOwnerNonAdminCannotMutate"
+      ],
+      "rationale": "Clearing F_OwnerOrAdminForMutation removes the only constraint that ties successful PATCH/DELETE to ownership-or-admin; the injection constructs a non-owner non-admin member successfully editing a task, the canonical FR-009 violation.",
+      "inject_violation": "fact MUTATE_NonOwnerEdit { some op: Operation | op.opKind = EditTask and op.opOutcome = Success and some op.opTask and op.opCaller != op.opTask.tOwner and (no m: Membership | m.mUser = op.opCaller and m.mTeam = op.opTeam and m.mRole = AdminRole) }"
+    },
+    {
+      "fact_name": "F_AppendOnlyOneSource",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_016_AuditAppendOnly"
+      ],
+      "rationale": "Clearing F_AppendOnlyOneSource removes the structural one-producer-per-entry constraint; the injection forces two distinct operations to share a single AuditEntry, which is exactly the rewrite/duplicate scenario FR-016's append-only invariant forbids.",
+      "inject_violation": "fact MUTATE_DupAuditSource { some disj op1, op2: Operation | some ae: AuditEntry | op1.opAudit = ae and op2.opAudit = ae }"
+    },
+    {
+      "fact_name": "F_AttributionCorrectness",
+      "asserts_violated": [
+        "AttributionCorrectness",
+        "FR_015_AuditAttribution"
+      ],
+      "rationale": "Clearing F_AttributionCorrectness lets the audit entry's recorded actor diverge from the operation's actual caller; the injection forces such a misattribution, the canonical FR-015 violation.",
+      "inject_violation": "fact MUTATE_Misattribution { some op: Operation | some op.opAudit and op.opAudit.aActor != op.opCaller }"
+    }
+  ]
+}

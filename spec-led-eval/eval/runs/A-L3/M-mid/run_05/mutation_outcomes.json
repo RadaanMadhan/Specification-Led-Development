@@ -1,0 +1,41 @@
+{
+  "F_AppendOnlyAuditEntries": {
+    "targeted_asserts": {
+      "AppendOnly": "BIT",
+      "FR_018_AuditImmutability": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_NoSelfDecision": {
+    "targeted_asserts": {
+      "NoSelfMutation": "BIT",
+      "FR_013_NoSelfApproval": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_NoSelfAssignment": {
+    "targeted_asserts": {
+      "FR_011_NoSelfAssignment": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AuditEndpointAuditorOnly": {
+    "targeted_asserts": {
+      "NoInformationLeakage": "BIT",
+      "FR_023_AuditEndpointAuditorOnly": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_RoleMutualExclusion": {
+    "targeted_asserts": {
+      "FR_002_RoleMutualExclusion": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_OneInFlightPerApplicant": {
+    "targeted_asserts": {
+      "FR_008_OneInFlightPerApplicant": "BIT"
+    },
+    "all_bit": true
+  }
+}

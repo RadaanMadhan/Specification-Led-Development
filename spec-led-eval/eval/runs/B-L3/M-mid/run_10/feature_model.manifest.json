@@ -1,0 +1,173 @@
+{
+  "feature_id": "B-L3",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "PrivilegeMonotonicity"
+  ],
+  "feature_specific_predicates": [
+    "FR_002_OneTeamOneRolePerUser",
+    "FR_003_MemberAccessBoundedByOwnershipAndSharing",
+    "FR_005_AdminCanActOnAnyTeamTask",
+    "FR_005_AdminCannotChangeShareList",
+    "FR_006_CrossTeamIsolationAbsolute",
+    "FR_009_ImmutableOwnership",
+    "FR_010_OwnerOnlyShareControl",
+    "FR_011_ShareePermissions",
+    "FR_012_ShareeTeamMembership",
+    "FR_013_ShareEventAudited",
+    "FR_014_ByteEquivalentDenial",
+    "FR_015_AuditPerEvent",
+    "FR_015_NoDeniedOpAudit",
+    "FR_016_AuditAttribution",
+    "FR_017_AuditAppendOnly",
+    "FR_018_NoStateChangeWithoutAudit",
+    "FR_019_AuditAccessMatchesReadAccess",
+    "SC_011_OnlyOwnerChangesShareList"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_OneTeamOneRolePerUser"
+    ],
+    "FR-003": [
+      "FR_003_MemberAccessBoundedByOwnershipAndSharing",
+      "OwnershipBasedAccess"
+    ],
+    "FR-004": [
+      "FR_003_MemberAccessBoundedByOwnershipAndSharing",
+      "NoInformationLeakage"
+    ],
+    "FR-005": [
+      "FR_005_AdminCanActOnAnyTeamTask",
+      "FR_005_AdminCannotChangeShareList",
+      "PrivilegeMonotonicity"
+    ],
+    "FR-006": [
+      "FR_006_CrossTeamIsolationAbsolute",
+      "NoInformationLeakage"
+    ],
+    "FR-007": [
+      "FR_009_ImmutableOwnership"
+    ],
+    "FR-008": [
+      "FR_005_AdminCanActOnAnyTeamTask"
+    ],
+    "FR-009": [
+      "FR_009_ImmutableOwnership",
+      "OwnershipExclusivity"
+    ],
+    "FR-010": [
+      "FR_010_OwnerOnlyShareControl",
+      "SC_011_OnlyOwnerChangesShareList"
+    ],
+    "FR-011": [
+      "FR_011_ShareePermissions",
+      "OwnershipBasedAccess"
+    ],
+    "FR-012": [
+      "FR_012_ShareeTeamMembership"
+    ],
+    "FR-013": [
+      "FR_013_ShareEventAudited",
+      "AuditCompleteness"
+    ],
+    "FR-014": [
+      "FR_014_ByteEquivalentDenial",
+      "NoInformationLeakage"
+    ],
+    "FR-015": [
+      "FR_015_AuditPerEvent",
+      "FR_015_NoDeniedOpAudit",
+      "AuditCompleteness",
+      "FR_018_NoStateChangeWithoutAudit"
+    ],
+    "FR-016": [
+      "FR_016_AuditAttribution",
+      "AttributionCorrectness"
+    ],
+    "FR-017": [
+      "FR_017_AuditAppendOnly",
+      "AppendOnly"
+    ],
+    "FR-018": [
+      "FR_018_NoStateChangeWithoutAudit"
+    ],
+    "FR-019": [
+      "FR_019_AuditAccessMatchesReadAccess"
+    ],
+    "FR-020": [
+      "FR_017_AuditAppendOnly"
+    ],
+    "FR-021": []
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_CrossTeamIsolation",
+      "asserts_violated": [
+        "FR_006_CrossTeamIsolationAbsolute",
+        "NoInformationLeakage",
+        "FR_014_ByteEquivalentDenial"
+      ],
+      "rationale": "Clearing F_CrossTeamIsolation removes the rule that outsider operations are always denied. The injection forces an Operation where the caller's team differs from the task's team yet opOutcome = POAllowed, which is exactly the cross-team leakage the assertion forbids.",
+      "inject_violation": "fact MUTATE_CrossTeamViolation { some op: Operation | op.opCaller.userTeam != op.opTask.taskTeam and op.opOutcome = POAllowed }"
+    },
+    {
+      "fact_name": "F_OwnerOnlyShareControl",
+      "asserts_violated": [
+        "FR_010_OwnerOnlyShareControl",
+        "SC_011_OnlyOwnerChangesShareList",
+        "LeastPrivilege"
+      ],
+      "rationale": "Clearing F_OwnerOnlyShareControl removes the constraint that only RelOwner may successfully invoke KChangeSharedWith. The injection forces a non-owner (RelTeamAdmin) to achieve POAllowed on KChangeSharedWith, violating FR-010 and SC-011.",
+      "inject_violation": "fact MUTATE_ShareControlViolation { some op: Operation | op.opKind = KChangeSharedWith and op.opRel = RelTeamAdmin and op.opOutcome = POAllowed }"
+    },
+    {
+      "fact_name": "F_AppendOnlyAuditEntries",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_017_AuditAppendOnly"
+      ],
+      "rationale": "Clearing F_AppendOnlyAuditEntries removes the one-to-one ownership constraint on AuditEntries. The injection places the same AuditEntry into two distinct Operations' opAuditEntries, simulating a re-attributed (mutated) entry \u2014 exactly the invariant AppendOnly is meant to prevent.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some disj op1, op2: Operation | some ae: AuditEntry | ae in op1.opAuditEntries and ae in op2.opAuditEntries }"
+    },
+    {
+      "fact_name": "F_AuditCompleteness",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_015_AuditPerEvent",
+        "FR_018_NoStateChangeWithoutAudit"
+      ],
+      "rationale": "Clearing F_AuditCompleteness removes the requirement that every allowed mutation produce an audit entry. The injection forces an allowed CreateTask operation with an empty opAuditEntries set, which is exactly the missing-audit-entry scenario FR-015 and SC-007 prohibit.",
+      "inject_violation": "fact MUTATE_AuditCompletenessViolation { some op: Operation | op.opKind = KCreateTask and op.opOutcome = POAllowed and no op.opAuditEntries }"
+    },
+    {
+      "fact_name": "F_ShareeCannotDelete",
+      "asserts_violated": [
+        "FR_011_ShareePermissions",
+        "OwnershipBasedAccess",
+        "NoInformationLeakage"
+      ],
+      "rationale": "Clearing F_ShareeCannotDelete removes the rule that a sharee's DELETE attempt is denied. The injection forces a RelSharee-KDeleteTask operation to succeed (POAllowed), violating Q3=B and the byte-equivalent 404 contract for sharee deletes.",
+      "inject_violation": "fact MUTATE_ShareeDeleteViolation { some op: Operation | op.opRel = RelSharee and op.opKind = KDeleteTask and op.opOutcome = POAllowed }"
+    },
+    {
+      "fact_name": "F_AuditActorRoleSnapshot",
+      "asserts_violated": [
+        "AttributionCorrectness",
+        "FR_016_AuditAttribution"
+      ],
+      "rationale": "Clearing F_AuditActorRoleSnapshot removes the constraint that the recorded actor_role in an audit entry matches the actor's actual role. The injection forces an AuditEntry where auditActorRole disagrees with auditActor.userRole, simulating a misattributed role snapshot that FR-016 forbids.",
+      "inject_violation": "fact MUTATE_AttributionViolation { some ae: AuditEntry | ae.auditActorRole != ae.auditActor.userRole }"
+    }
+  ]
+}

@@ -1,0 +1,278 @@
+{
+  "run_id": "A-L2/M-small/run_04",
+  "cell": "A-L2",
+  "model": "M-small",
+  "rep": 4,
+  "D1": 0.0,
+  "D2": 0.95,
+  "D3": 0.0,
+  "D4": 0.34782608695652173,
+  "aqs_partial": 0.3244565217391304,
+  "scored_at": "2026-05-20T04:29:04.089308+00:00",
+  "details": {
+    "D1": {
+      "n_assertions": 14,
+      "n_verdicts": 0
+    },
+    "D2": {
+      "patterns_applied": [
+        "AuthRequiredEverywhere",
+        "LeastPrivilege",
+        "PermissionCompleteness",
+        "PermissionGrounding",
+        "AuditCompleteness",
+        "AppendOnly",
+        "AttributionCorrectness",
+        "OwnershipExclusivity",
+        "OwnershipBasedAccess",
+        "NoInformationLeakage"
+      ],
+      "per_pattern": {
+        "AuthRequiredEverywhere": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "LeastPrivilege": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "PermissionCompleteness": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "PermissionGrounding": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "AuditCompleteness": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "AppendOnly": {
+          "in_catalog": true,
+          "has_pred": false,
+          "score": 0.5
+        },
+        "AttributionCorrectness": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "OwnershipExclusivity": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "OwnershipBasedAccess": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "NoInformationLeakage": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        }
+      }
+    },
+    "D3": {
+      "per_target": {},
+      "skipped": [],
+      "note": "no scoreable mutation targets"
+    },
+    "D4": {
+      "per_fr": {
+        "FR-001": {
+          "covers": [
+            "AuthRequiredEverywhere"
+          ],
+          "verdicts": {
+            "AuthRequiredEverywhere": "MISSING"
+          },
+          "score": 0.5
+        },
+        "FR-002": {
+          "covers": [
+            "LeastPrivilege"
+          ],
+          "verdicts": {
+            "LeastPrivilege": "MISSING"
+          },
+          "score": 0.5
+        },
+        "FR-003": {
+          "covers": [
+            "LeastPrivilege"
+          ],
+          "verdicts": {
+            "LeastPrivilege": "MISSING"
+          },
+          "score": 0.5
+        },
+        "FR-004": {
+          "covers": [
+            "LeastPrivilege"
+          ],
+          "verdicts": {
+            "LeastPrivilege": "MISSING"
+          },
+          "score": 0.5
+        },
+        "FR-005": {
+          "covers": [
+            "PermissionGrounding"
+          ],
+          "verdicts": {
+            "PermissionGrounding": "MISSING"
+          },
+          "score": 0.5
+        },
+        "FR-006": {
+          "covers": [],
+          "verdicts": {},
+          "score": 0.0
+        },
+        "FR-007": {
+          "covers": [],
+          "verdicts": {},
+          "score": 0.0
+        },
+        "FR-008": {
+          "covers": [
+            "FR_008_OneInFlightPerCustomer"
+          ],
+          "verdicts": {
+            "FR_008_OneInFlightPerCustomer": "MISSING"
+          },
+          "score": 0.5
+        },
+        "FR-009": {
+          "covers": [
+            "PermissionGrounding"
+          ],
+          "verdicts": {
+            "PermissionGrounding": "MISSING"
+          },
+          "score": 0.5
+        },
+        "FR-010": {
+          "covers": [
+            "PermissionGrounding"
+          ],
+          "verdicts": {
+            "PermissionGrounding": "MISSING"
+          },
+          "score": 0.5
+        },
+        "FR-011": {
+          "covers": [
+            "OwnershipExclusivity"
+          ],
+          "verdicts": {
+            "OwnershipExclusivity": "MISSING"
+          },
+          "score": 0.5
+        },
+        "FR-012": {
+          "covers": [],
+          "verdicts": {},
+          "score": 0.0
+        },
+        "FR-013": {
+          "covers": [
+            "FR_013_OnlyAssignedOfficerDecides"
+          ],
+          "verdicts": {
+            "FR_013_OnlyAssignedOfficerDecides": "MISSING"
+          },
+          "score": 0.5
+        },
+        "FR-014": {
+          "covers": [],
+          "verdicts": {},
+          "score": 0.0
+        },
+        "FR-015": {
+          "covers": [],
+          "verdicts": {},
+          "score": 0.0
+        },
+        "FR-016": {
+          "covers": [
+            "FR_016_ImmutabilityOfDecidedApplications"
+          ],
+          "verdicts": {
+            "FR_016_ImmutabilityOfDecidedApplications": "MISSING"
+          },
+          "score": 0.5
+        },
+        "FR-017": {
+          "covers": [
+            "AttributionCorrectness",
+            "AuditCompleteness"
+          ],
+          "verdicts": {
+            "AttributionCorrectness": "MISSING",
+            "AuditCompleteness": "MISSING"
+          },
+          "score": 0.5
+        },
+        "FR-018": {
+          "covers": [
+            "AppendOnly"
+          ],
+          "verdicts": {
+            "AppendOnly": "MISSING"
+          },
+          "score": 0.5
+        },
+        "FR-019": {
+          "covers": [
+            "AuditCompleteness"
+          ],
+          "verdicts": {
+            "AuditCompleteness": "MISSING"
+          },
+          "score": 0.5
+        },
+        "FR-020": {
+          "covers": [
+            "OwnershipBasedAccess",
+            "FR_020_CustomerCannotSeeOthersApplications"
+          ],
+          "verdicts": {
+            "OwnershipBasedAccess": "MISSING",
+            "FR_020_CustomerCannotSeeOthersApplications": "MISSING"
+          },
+          "score": 0.5
+        },
+        "FR-021": {
+          "covers": [],
+          "verdicts": {},
+          "score": 0.0
+        },
+        "FR-022": {
+          "covers": [],
+          "verdicts": {},
+          "score": 0.0
+        },
+        "FR-023": {
+          "covers": [
+            "LeastPrivilege",
+            "PermissionGrounding"
+          ],
+          "verdicts": {
+            "LeastPrivilege": "MISSING",
+            "PermissionGrounding": "MISSING"
+          },
+          "score": 0.5
+        }
+      }
+    }
+  }
+}

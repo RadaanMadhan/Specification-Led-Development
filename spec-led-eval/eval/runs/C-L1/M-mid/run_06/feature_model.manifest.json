@@ -1,0 +1,137 @@
+{
+  "feature_id": "C-L1",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_OneRolePerUser",
+    "FR_006_CareTeamGating",
+    "FR_007_ByteEquivalentRefusal",
+    "FR_008_AlwaysOnAudit",
+    "FR_009_AuditEntryShape",
+    "FR_010_AuditAppendOnly",
+    "FR_011_IGEndpointHiddenFromClinicians",
+    "FR_013_AuditBeforeRecordServed"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_OneRolePerUser"
+    ],
+    "FR-003": [
+      "AuditCompleteness",
+      "AppendOnly"
+    ],
+    "FR-004": [
+      "LeastPrivilege"
+    ],
+    "FR-005": [
+      "LeastPrivilege",
+      "PermissionCompleteness"
+    ],
+    "FR-006": [
+      "FR_006_CareTeamGating",
+      "OwnershipBasedAccess"
+    ],
+    "FR-007": [
+      "FR_007_ByteEquivalentRefusal",
+      "NoInformationLeakage"
+    ],
+    "FR-008": [
+      "FR_008_AlwaysOnAudit",
+      "AuditCompleteness"
+    ],
+    "FR-009": [
+      "FR_009_AuditEntryShape",
+      "AttributionCorrectness"
+    ],
+    "FR-010": [
+      "FR_010_AuditAppendOnly",
+      "AppendOnly"
+    ],
+    "FR-011": [
+      "FR_011_IGEndpointHiddenFromClinicians",
+      "NoInformationLeakage"
+    ],
+    "FR-012": [
+      "AppendOnly",
+      "FR_010_AuditAppendOnly"
+    ],
+    "FR-013": [
+      "FR_013_AuditBeforeRecordServed"
+    ],
+    "FR-014": [
+      "FR_009_AuditEntryShape"
+    ],
+    "FR-015": [
+      "FR_009_AuditEntryShape"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_AppendOnlyAuditEntries",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_010_AuditAppendOnly"
+      ],
+      "rationale": "Removing this fact allows two distinct AccessRequests to reference the same AuditEntry, which models an audit record being 'overwritten' rather than a fresh entry appended. The injection forces exactly that sharing.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some disj req1, req2: AccessRequest | one req1.reqAuditEntry and req1.reqAuditEntry = req2.reqAuditEntry }"
+    },
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "PermissionCompleteness"
+      ],
+      "rationale": "Clearing the permission matrix removes the closed-world constraint. The injection adds AuditOfficer -> PostRecordsLookup to the allowed set, which directly violates LeastPrivilege (AuditOfficer is not a clinical role and must not access patient records) and PermissionCompleteness (that cell must be denied).",
+      "inject_violation": "fact MUTATE_PermissionMatrixViolation { AuditOfficer -> PostRecordsLookup in PermMatrix.Allowed }"
+    },
+    {
+      "fact_name": "F_CareTeamMembershipGating",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_006_CareTeamGating"
+      ],
+      "rationale": "Clearing this fact removes the rule that Permitted requires an active care-team membership. The injection forces a Permitted outcome on PostRecordsLookup for a caller who has no active membership, which is exactly the SC-010 violation.",
+      "inject_violation": "fact MUTATE_CareTeamGatingViolation { some req: AccessRequest | req.reqAuthStatus = Authenticated and req.reqKind = PostRecordsLookup and req.reqOutcome = Permitted and (no m: CareTeamMembership | m.ctmClinician = req.reqCaller and m.ctmStatus = Active) }"
+    },
+    {
+      "fact_name": "F_UnauthenticatedProducesNoAuditEntry",
+      "asserts_violated": [
+        "AuthRequiredEverywhere",
+        "FR_001_AuthRequired"
+      ],
+      "rationale": "Removing this fact allows an unauthenticated request to carry an AuditEntry, violating the rule that the auth boundary is crossed before any patient identifier is dereferenced and before any audit record is written.",
+      "inject_violation": "fact MUTATE_UnauthAuditViolation { some req: AccessRequest | req.reqAuthStatus = Unauthenticated and one req.reqAuditEntry }"
+    },
+    {
+      "fact_name": "F_ByteEquivalentRefusal",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "FR_007_ByteEquivalentRefusal"
+      ],
+      "rationale": "Removing this fact allows a Denied request to return RecordContent instead of NotFoundResponse, leaking to the caller that the patient exists but access was refused \u2014 the exact information-leakage FR-007 forbids.",
+      "inject_violation": "fact MUTATE_ByteEquivViolation { some req: AccessRequest | req.reqAuthStatus = Authenticated and req.reqOutcome = Denied and req.reqResponse = RecordContent }"
+    },
+    {
+      "fact_name": "F_IGEndpointHiddenFromClinicalRoles",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "FR_011_IGEndpointHiddenFromClinicians"
+      ],
+      "rationale": "Removing this fact allows a Doctor-role caller to obtain a non-NotFoundResponse from PostAuditSearch, leaking the existence of the IG audit endpoint to clinical users in violation of SC-011.",
+      "inject_violation": "fact MUTATE_IGLeakageViolation { some req: AccessRequest | req.reqAuthStatus = Authenticated and req.reqKind = PostAuditSearch and req.reqCaller.userRole = Doctor and req.reqResponse = RecordContent }"
+    }
+  ]
+}

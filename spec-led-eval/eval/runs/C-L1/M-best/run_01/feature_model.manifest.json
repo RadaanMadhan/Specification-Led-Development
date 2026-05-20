@@ -1,0 +1,150 @@
+{
+  "feature_id": "009-clinician-record-access",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "PermissionGrounding",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage"
+  ],
+  "feature_specific_predicates": [
+    "FR_002_OneRolePerUser",
+    "FR_003_NhsRegulatoryShape",
+    "FR_004_PatientIdInBody",
+    "FR_005_ReadOnlyScope",
+    "FR_006_CareTeamGating",
+    "FR_007_NoLeakage",
+    "FR_008_AuditOnEveryAccess",
+    "FR_009_AuditAttribution",
+    "FR_010_AuditAppendOnly",
+    "FR_011_IGOnlyAuditAccess",
+    "FR_012_NoAuditDeletion",
+    "FR_013_AuditBeforeRecord",
+    "FR_014_PatientResolvedForSafety",
+    "FR_015_PatientResolvedForVerification"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_OneRolePerUser"
+    ],
+    "FR-003": [
+      "FR_003_NhsRegulatoryShape"
+    ],
+    "FR-004": [
+      "FR_004_PatientIdInBody"
+    ],
+    "FR-005": [
+      "FR_005_ReadOnlyScope"
+    ],
+    "FR-006": [
+      "FR_006_CareTeamGating",
+      "OwnershipBasedAccess"
+    ],
+    "FR-007": [
+      "FR_007_NoLeakage",
+      "NoInformationLeakage"
+    ],
+    "FR-008": [
+      "FR_008_AuditOnEveryAccess",
+      "AuditCompleteness"
+    ],
+    "FR-009": [
+      "FR_009_AuditAttribution",
+      "AttributionCorrectness"
+    ],
+    "FR-010": [
+      "FR_010_AuditAppendOnly",
+      "AppendOnly"
+    ],
+    "FR-011": [
+      "FR_011_IGOnlyAuditAccess",
+      "PermissionGrounding"
+    ],
+    "FR-012": [
+      "FR_012_NoAuditDeletion"
+    ],
+    "FR-013": [
+      "FR_013_AuditBeforeRecord"
+    ],
+    "FR-014": [
+      "FR_014_PatientResolvedForSafety"
+    ],
+    "FR-015": [
+      "FR_015_PatientResolvedForVerification"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_AppendOnlyAuditEntries",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_010_AuditAppendOnly",
+        "FR_012_NoAuditDeletion"
+      ],
+      "rationale": "Removing the append-only fact lets two distinct AuditEntry atoms share the same Operation, which is exactly the duplication/overwrite scenario the AppendOnly pattern is meant to forbid.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some disj a1, a2: AuditEntry | a1.op = a2.op }"
+    },
+    {
+      "fact_name": "F_AuthRequired",
+      "asserts_violated": [
+        "FR_001_AuthRequired",
+        "AuthRequiredEverywhere"
+      ],
+      "rationale": "Clearing the auth-boundary fact allows an unauthenticated Operation to still return a record, which is the precise FR-001 / SC-004 violation the assertion is supposed to catch.",
+      "inject_violation": "fact MUTATE_UnauthRecordReturn { some op: Operation | op.authenticated = BFalse and op.recordReturned = BTrue }"
+    },
+    {
+      "fact_name": "F_CareTeamGating",
+      "asserts_violated": [
+        "FR_006_CareTeamGating",
+        "OwnershipBasedAccess"
+      ],
+      "rationale": "Removing care-team gating permits a clinician without an Active CareTeamMembership to receive a Permitted LookupRecord outcome \u2014 exactly the FR-006 / SC-010 breach.",
+      "inject_violation": "fact MUTATE_NoCareTeamPermitted { some op: Operation | op.kind = LookupRecord and op.outcome = Permitted and (no m: CareTeamMembership | m.clinician = op.caller and m.patient = op.presentedPatient and m.status = Active) }"
+    },
+    {
+      "fact_name": "F_NoLeakage",
+      "asserts_violated": [
+        "FR_007_NoLeakage",
+        "NoInformationLeakage"
+      ],
+      "rationale": "Clearing the no-leakage fact lets a Denied operation still return record content, distinguishing 'denied' from 'not found' to the caller \u2014 the SC-003 / FR-007 byte-equivalence violation.",
+      "inject_violation": "fact MUTATE_LeakOnDenied { some op: Operation | op.outcome = Denied and op.recordReturned = BTrue }"
+    },
+    {
+      "fact_name": "F_AuditOneToOne",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_008_AuditOnEveryAccess",
+        "FR_013_AuditBeforeRecord"
+      ],
+      "rationale": "Without the audit-existence fact, an authenticated LookupRecord operation can run without producing any AuditEntry, breaking FR-008 always-on auditing and the FR-013 'no record without audit' invariant.",
+      "inject_violation": "fact MUTATE_LookupWithoutAudit { some op: Operation | op.authenticated = BTrue and op.kind = LookupRecord and (no ae: AuditEntry | ae.op = op) }"
+    },
+    {
+      "fact_name": "F_AuditAttribution",
+      "asserts_violated": [
+        "AttributionCorrectness",
+        "FR_009_AuditAttribution"
+      ],
+      "rationale": "Clearing the attribution fact allows an AuditEntry whose snapshotted role disagrees with the operation's actual caller-role \u2014 direct FR-009 misattribution.",
+      "inject_violation": "fact MUTATE_MisattributedAudit { some ae: AuditEntry | ae.roleSnapshot != ae.op.caller.role }"
+    },
+    {
+      "fact_name": "F_LeastPrivilege",
+      "asserts_violated": [
+        "LeastPrivilege"
+      ],
+      "rationale": "Removing the least-privilege fact lets an Operation with a (role, kind) pair outside the permission matrix still yield a Permitted outcome \u2014 e.g., an AuditOfficer successfully reading a patient record.",
+      "inject_violation": "fact MUTATE_LeastPrivilegeBreach { some op: Operation | op.outcome = Permitted and op.caller.role -> op.kind not in PermMatrix.Allowed }"
+    }
+  ]
+}

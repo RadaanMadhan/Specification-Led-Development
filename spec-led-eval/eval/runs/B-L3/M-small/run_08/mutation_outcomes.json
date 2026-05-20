@@ -1,0 +1,34 @@
+{
+  "F_CrossTeamIsolation": {
+    "targeted_asserts": {
+      "CrossTeamIsolation": "VACUOUS_OVERCONSTRAINT",
+      "FR_014_ByteEquivalentIsolation": "VACUOUS_OVERCONSTRAINT",
+      "NoInformationLeakage": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_OwnerControlsSharing": {
+    "targeted_asserts": {
+      "OwnerControlsSharing": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_TaskCreationAudit": {
+    "targeted_asserts": {
+      "TaskCreationAudit": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AttributionCorrectness": {
+    "targeted_asserts": {
+      "AttributionCorrectness": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_ShareUnshareAuditEntries": {
+    "targeted_asserts": {
+      "ShareUnshareAuditEntries": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  }
+}

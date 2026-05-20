@@ -1,0 +1,290 @@
+{
+  "run_id": "A-L1/M-best/run_09",
+  "cell": "A-L1",
+  "model": "M-best",
+  "rep": 9,
+  "D1": 1.0,
+  "D2": 1.0,
+  "D3": 1.0,
+  "D4": 0.9705882352941176,
+  "aqs_partial": 0.9926470588235294,
+  "scored_at": "2026-05-20T04:29:03.876633+00:00",
+  "details": {
+    "D1": {
+      "n_assertions": 21,
+      "n_verdicts": 21
+    },
+    "D2": {
+      "patterns_applied": [
+        "LeastPrivilege",
+        "PermissionCompleteness",
+        "PermissionGrounding",
+        "AuditCompleteness",
+        "AppendOnly",
+        "AttributionCorrectness",
+        "OwnershipExclusivity",
+        "OwnershipBasedAccess"
+      ],
+      "per_pattern": {
+        "LeastPrivilege": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "PermissionCompleteness": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "PermissionGrounding": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "AuditCompleteness": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "AppendOnly": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "AttributionCorrectness": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "OwnershipExclusivity": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "OwnershipBasedAccess": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        }
+      }
+    },
+    "D3": {
+      "per_target": {
+        "F_LeastPrivilege": {
+          "targeted_asserts": {
+            "LeastPrivilege": "BIT",
+            "FR_015_OnlyStaffDecides": "BIT"
+          },
+          "score": 1.0
+        },
+        "F_OnePendingPerCustomer": {
+          "targeted_asserts": {
+            "FR_005_OnePendingPerCustomer": "BIT"
+          },
+          "score": 1.0
+        },
+        "F_OneSubmittedEventPerApp": {
+          "targeted_asserts": {
+            "AuditCompleteness": "BIT",
+            "FR_016_AuditTrail": "BIT",
+            "AppendOnly": "BIT"
+          },
+          "score": 1.0
+        },
+        "F_OwnershipBasedAccess": {
+          "targeted_asserts": {
+            "OwnershipBasedAccess": "BIT",
+            "FR_013_CustomerOwnAccess": "BIT"
+          },
+          "score": 1.0
+        },
+        "F_SubmittedEventAttribution": {
+          "targeted_asserts": {
+            "AttributionCorrectness": "BIT"
+          },
+          "score": 1.0
+        },
+        "F_DecisionReasonNonEmpty": {
+          "targeted_asserts": {
+            "FR_009_DecisionReasonRequired": "BIT"
+          },
+          "score": 1.0
+        }
+      },
+      "skipped": []
+    },
+    "D4": {
+      "per_fr": {
+        "FR-001": {
+          "covers": [
+            "FR_001_AuthRequired",
+            "LeastPrivilege"
+          ],
+          "verdicts": {
+            "FR_001_AuthRequired": "PASS",
+            "LeastPrivilege": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-002": {
+          "covers": [
+            "FR_002_StructuralFieldsPresent"
+          ],
+          "verdicts": {
+            "FR_002_StructuralFieldsPresent": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-003": {
+          "covers": [
+            "FR_002_StructuralFieldsPresent"
+          ],
+          "verdicts": {
+            "FR_002_StructuralFieldsPresent": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-004": {
+          "covers": [
+            "FR_004_SubmissionRecorded"
+          ],
+          "verdicts": {
+            "FR_004_SubmissionRecorded": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-005": {
+          "covers": [
+            "FR_005_OnePendingPerCustomer"
+          ],
+          "verdicts": {
+            "FR_005_OnePendingPerCustomer": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-006": {
+          "covers": [
+            "FR_004_SubmissionRecorded"
+          ],
+          "verdicts": {
+            "FR_004_SubmissionRecorded": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-007": {
+          "covers": [
+            "LeastPrivilege",
+            "PermissionCompleteness"
+          ],
+          "verdicts": {
+            "LeastPrivilege": "PASS",
+            "PermissionCompleteness": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-008": {
+          "covers": [
+            "LeastPrivilege"
+          ],
+          "verdicts": {
+            "LeastPrivilege": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-009": {
+          "covers": [
+            "FR_009_DecisionReasonRequired"
+          ],
+          "verdicts": {
+            "FR_009_DecisionReasonRequired": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-010": {
+          "covers": [
+            "FR_010_DecisionPersisted"
+          ],
+          "verdicts": {
+            "FR_010_DecisionPersisted": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-011": {
+          "covers": [
+            "FR_011_DecidedImmutable"
+          ],
+          "verdicts": {
+            "FR_011_DecidedImmutable": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-012": {
+          "covers": [
+            "FR_012_NoTwoDecisions"
+          ],
+          "verdicts": {
+            "FR_012_NoTwoDecisions": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-013": {
+          "covers": [
+            "FR_013_CustomerOwnAccess",
+            "OwnershipBasedAccess"
+          ],
+          "verdicts": {
+            "FR_013_CustomerOwnAccess": "PASS",
+            "OwnershipBasedAccess": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-014": {
+          "covers": [
+            "FR_014_StatusChangeObservable"
+          ],
+          "verdicts": {
+            "FR_014_StatusChangeObservable": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-015": {
+          "covers": [
+            "FR_015_OnlyStaffDecides",
+            "LeastPrivilege",
+            "PermissionGrounding"
+          ],
+          "verdicts": {
+            "FR_015_OnlyStaffDecides": "PASS",
+            "LeastPrivilege": "PASS",
+            "PermissionGrounding": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-016": {
+          "covers": [
+            "FR_016_AuditTrail",
+            "AuditCompleteness",
+            "AppendOnly",
+            "AttributionCorrectness"
+          ],
+          "verdicts": {
+            "FR_016_AuditTrail": "PASS",
+            "AuditCompleteness": "PASS",
+            "AppendOnly": "FAIL",
+            "AttributionCorrectness": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-017": {
+          "covers": [
+            "FR_017_RetentionOrphanFreedom"
+          ],
+          "verdicts": {
+            "FR_017_RetentionOrphanFreedom": "FAIL"
+          },
+          "score": 0.5
+        }
+      }
+    }
+  }
+}

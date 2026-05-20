@@ -1,0 +1,178 @@
+{
+  "feature_id": "A-L3",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "NoSelfMutation"
+  ],
+  "feature_specific_predicates": [
+    "FR_002_RoleExclusivity",
+    "FR_002_SystemRoleOnlyInAuditEntries",
+    "FR_003_ApplicantPermissions",
+    "FR_004_OfficerPermissions",
+    "FR_005_AuditorReadOnly",
+    "FR_008_OneInFlightPerApplicant",
+    "FR_009_ValidStatusTransitions",
+    "FR_011_NoSelfAssignment",
+    "FR_012_OnlyAssignedOfficerTransitions",
+    "FR_013_NoSelfDecision",
+    "FR_015_TerminalStatusImmutable",
+    "FR_016_AuditEntryPerTransition",
+    "FR_018_AuditImmutableUniqueness",
+    "FR_020_ByteEquivalentUnauthorisedResponse",
+    "FR_023_AuditEndpointAuditorOnly",
+    "FR_024_ApplicantCannotModifyAfterSubmission"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_RoleExclusivity",
+      "FR_002_SystemRoleOnlyInAuditEntries"
+    ],
+    "FR-003": [
+      "FR_003_ApplicantPermissions",
+      "LeastPrivilege",
+      "OwnershipBasedAccess"
+    ],
+    "FR-004": [
+      "FR_004_OfficerPermissions",
+      "LeastPrivilege"
+    ],
+    "FR-005": [
+      "FR_005_AuditorReadOnly",
+      "LeastPrivilege"
+    ],
+    "FR-006": [
+      "OwnershipExclusivity"
+    ],
+    "FR-007": [
+      "OwnershipExclusivity"
+    ],
+    "FR-008": [
+      "FR_008_OneInFlightPerApplicant"
+    ],
+    "FR-009": [
+      "FR_009_ValidStatusTransitions"
+    ],
+    "FR-010": [
+      "FR_016_AuditEntryPerTransition",
+      "OwnershipExclusivity"
+    ],
+    "FR-011": [
+      "FR_011_NoSelfAssignment",
+      "NoSelfMutation"
+    ],
+    "FR-012": [
+      "FR_012_OnlyAssignedOfficerTransitions"
+    ],
+    "FR-013": [
+      "FR_013_NoSelfDecision",
+      "NoSelfMutation"
+    ],
+    "FR-014": [
+      "FR_024_ApplicantCannotModifyAfterSubmission"
+    ],
+    "FR-015": [
+      "FR_015_TerminalStatusImmutable"
+    ],
+    "FR-016": [
+      "FR_016_AuditEntryPerTransition",
+      "AuditCompleteness",
+      "AttributionCorrectness"
+    ],
+    "FR-017": [
+      "AuditCompleteness",
+      "FR_016_AuditEntryPerTransition"
+    ],
+    "FR-018": [
+      "FR_018_AuditImmutableUniqueness",
+      "AppendOnly"
+    ],
+    "FR-019": [
+      "AppendOnly"
+    ],
+    "FR-020": [
+      "FR_020_ByteEquivalentUnauthorisedResponse",
+      "NoInformationLeakage"
+    ],
+    "FR-021": [
+      "FR_020_ByteEquivalentUnauthorisedResponse",
+      "NoInformationLeakage"
+    ],
+    "FR-022": [
+      "NoInformationLeakage"
+    ],
+    "FR-023": [
+      "FR_023_AuditEndpointAuditorOnly",
+      "LeastPrivilege"
+    ],
+    "FR-024": [
+      "FR_024_ApplicantCannotModifyAfterSubmission"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_NoSelfDecision",
+      "asserts_violated": [
+        "FR_013_NoSelfDecision",
+        "NoSelfMutation"
+      ],
+      "rationale": "Removing F_NoSelfDecision allows Alloy to construct an AuditEntry whose actor equals the application's applicant for a non-initial transition \u2014 exactly the self-approval scenario FR-013 forbids. The injection forces such an instance to exist.",
+      "inject_violation": "fact MUTATE_SelfDecisionViolation { some ae : AuditEntry | some ae.prevStatus and ae.actor = ae.app.applicant }"
+    },
+    {
+      "fact_name": "F_AppendOnlyAuditEntries",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_018_AuditImmutableUniqueness"
+      ],
+      "rationale": "Removing F_AppendOnlyAuditEntries lets Alloy produce two distinct AuditEntries for the same application with identical (prevStatus, newStatus) \u2014 a structural duplicate that models an overwritten or re-written audit record, violating the append-only guarantee of FR-018.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some disj ae1, ae2 : AuditEntry | ae1.app = ae2.app and ae1.prevStatus = ae2.prevStatus and ae1.newStatus = ae2.newStatus }"
+    },
+    {
+      "fact_name": "F_OnlyAssignedOfficerCreatesTransitionAudit",
+      "asserts_violated": [
+        "FR_012_OnlyAssignedOfficerTransitions",
+        "AttributionCorrectness"
+      ],
+      "rationale": "Removing F_OnlyAssignedOfficerCreatesTransitionAudit allows a non-assigned actor (e.g., a different officer or an auditor) to appear as the author of a status-transition audit entry, violating FR-012's requirement that only the assigned officer may change application status.",
+      "inject_violation": "fact MUTATE_WrongOfficerTransition { some ae : AuditEntry | some ae.prevStatus and ae.actor != ae.app.assigned_officer }"
+    },
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_005_AuditorReadOnly",
+        "FR_024_ApplicantCannotModifyAfterSubmission"
+      ],
+      "rationale": "Clearing F_PermissionMatrix removes all permission constraints, allowing the Allowed relation to be anything. The injection grants auditors the PATCH permission, which directly violates the LeastPrivilege assertion (auditor must not be allowed to patch) and FR_005_AuditorReadOnly.",
+      "inject_violation": "fact MUTATE_AuditorCanPatch { RoleAuditor -> OpPatchStatus in PermMatrix.Allowed }"
+    },
+    {
+      "fact_name": "F_OneInFlightPerApplicant",
+      "asserts_violated": [
+        "FR_008_OneInFlightPerApplicant"
+      ],
+      "rationale": "Removing F_OneInFlightPerApplicant allows an applicant to simultaneously hold two in-flight applications, violating the FR-008 uniqueness invariant. The injection forces exactly this state.",
+      "inject_violation": "fact MUTATE_TwoInFlightApplications { some disj a1, a2 : LoanApplication | a1.applicant = a2.applicant and a1.status in (Pending + UnderReview) and a2.status in (Pending + UnderReview) }"
+    },
+    {
+      "fact_name": "F_NoSelfAssignment",
+      "asserts_violated": [
+        "FR_011_NoSelfAssignment",
+        "NoSelfMutation"
+      ],
+      "rationale": "Removing F_NoSelfAssignment allows an application to be assigned to its own applicant, violating the conflict-of-interest control encoded in FR-011 and the data-model CHECK constraint. The injection forces such a self-assignment to exist.",
+      "inject_violation": "fact MUTATE_SelfAssignment { some la : LoanApplication | la.assigned_officer = la.applicant }"
+    }
+  ]
+}

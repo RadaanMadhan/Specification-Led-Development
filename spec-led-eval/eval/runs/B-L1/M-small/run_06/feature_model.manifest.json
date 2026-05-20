@@ -1,0 +1,112 @@
+{
+  "feature_id": "B-L1",
+  "patterns_applied": [
+    "AuthRequiredEverywhere",
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness"
+  ],
+  "feature_specific_predicates": [
+    "FR_005_TitleRequired",
+    "FR_006_DescriptionAllowed",
+    "FR_008_AssigneeExists",
+    "FR_009_CreatorImmutable",
+    "FR_010_StatusEnumeration",
+    "FR_012_DeletionRecorded",
+    "FR_017_TimestampSemantics",
+    "FR_018_DeletionLogging"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "AuthRequiredEverywhere"
+    ],
+    "FR-003": [
+      "LeastPrivilege",
+      "PermissionCompleteness"
+    ],
+    "FR-004": [
+      "LeastPrivilege",
+      "PermissionCompleteness"
+    ],
+    "FR-005": [
+      "FR_005_TitleRequired"
+    ],
+    "FR-006": [
+      "FR_006_DescriptionAllowed"
+    ],
+    "FR-008": [
+      "FR_008_AssigneeExists"
+    ],
+    "FR-009": [
+      "FR_009_CreatorImmutable",
+      "AttributionCorrectness"
+    ],
+    "FR-010": [
+      "FR_010_StatusEnumeration"
+    ],
+    "FR-012": [
+      "FR_012_DeletionRecorded"
+    ],
+    "FR-017": [
+      "FR_017_TimestampSemantics"
+    ],
+    "FR-018": [
+      "FR_018_DeletionLogging",
+      "AppendOnly"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_AuthenticationRequired",
+      "asserts_violated": [
+        "AuthRequiredEverywhere",
+        "FR_009_CreatorImmutable"
+      ],
+      "rationale": "Removing this fact allows tasks to be created without a creator, violating the core authentication requirement (FR-001). The injection forces a task with no creator to exist.",
+      "inject_violation": "fact MUTATE_UnauthenticatedTask { some t: Task | no t.created_by }"
+    },
+    {
+      "fact_name": "F_FlatPermissionsMatrix",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "PermissionCompleteness"
+      ],
+      "rationale": "Removing this fact leaves the permission matrix unconstrained. The injection forces it to be empty, breaking the invariant that authenticated members have access to all operations (FR-003, FR-004).",
+      "inject_violation": "fact MUTATE_NoPermissions { PermissionMatrix.Allowed = none }"
+    },
+    {
+      "fact_name": "F_TimestampsPresent",
+      "asserts_violated": [
+        "FR_017_TimestampSemantics"
+      ],
+      "rationale": "Removing this fact allows tasks to exist without creation or update timestamps, violating the requirement that all tasks track these timestamps (FR-017).",
+      "inject_violation": "fact MUTATE_MissingTimestamp { some t: Task | no t.created_at }"
+    },
+    {
+      "fact_name": "F_DeletionLogsComplete",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_018_DeletionLogging"
+      ],
+      "rationale": "Removing this fact allows deletion logs to have incomplete information (missing deleter, timestamp, etc.), violating the requirement that all deletion events are fully recorded (FR-018).",
+      "inject_violation": "fact MUTATE_IncompleteDeleteLog { some td: TaskDeletion | no td.deleted_by }"
+    },
+    {
+      "fact_name": "F_StatusIsValid",
+      "asserts_violated": [
+        "FR_010_StatusEnumeration"
+      ],
+      "rationale": "Removing this fact allows tasks to have invalid status values. While Alloy's type system limits status to valid values, this fact explicitly enforces the constraint for clarity.",
+      "inject_violation": "fact MUTATE_InvalidStatus { some t: Task | t.status != none and t.status not in (Todo + InProgress + Done) }"
+    },
+    {
+      "fact_name": "F_CreatorExists",
+      "asserts_violated": [
+        "AttributionCorrectness"
+      ],
+      "rationale": "Removing this fact allows a task's creator field to reference a non-existent member, violating the invariant that all attribution must resolve to actual workspace members.",
+      "inject_violation": "fact MUTATE_InvalidCreator { some t: Task | t.created_by != none and t.created_by not in Member }"
+    }
+  ]
+}

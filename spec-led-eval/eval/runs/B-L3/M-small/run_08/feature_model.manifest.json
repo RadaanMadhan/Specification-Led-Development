@@ -1,0 +1,104 @@
+{
+  "feature_id": "B-L3",
+  "patterns_applied": [
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "AuthRequiredEverywhere",
+    "NoInformationLeakage"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_TokenDerivedTeamRole",
+    "FR_003_MemberCanCreate",
+    "FR_009_ImmutableOwnerTeam",
+    "FR_014_ByteEquivalentIsolation"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "AuthRequiredEverywhere",
+      "FR_001_AuthRequired"
+    ],
+    "FR-002": [
+      "FR_002_TokenDerivedTeamRole"
+    ],
+    "FR-003": [
+      "FR_003_MemberCanCreate"
+    ],
+    "FR-006": [
+      "CrossTeamIsolation"
+    ],
+    "FR-009": [
+      "OwnershipExclusivity",
+      "FR_009_ImmutableOwnerTeam"
+    ],
+    "FR-010": [
+      "OwnerControlsSharing"
+    ],
+    "FR-012": [
+      "SameTeamSharing"
+    ],
+    "FR-013": [
+      "ShareUnshareAuditEntries"
+    ],
+    "FR-014": [
+      "NoInformationLeakage",
+      "FR_014_ByteEquivalentIsolation"
+    ],
+    "FR-015": [
+      "OneAuditPerCreation"
+    ],
+    "FR-016": [
+      "AttributionCorrectness"
+    ],
+    "FR-017": [
+      "AppendOnlyAuditEntries"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_CrossTeamIsolation",
+      "asserts_violated": [
+        "CrossTeamIsolation",
+        "FR_014_ByteEquivalentIsolation",
+        "NoInformationLeakage"
+      ],
+      "rationale": "Removing this fact permits users in team A to be sharees on tasks in team B, violating the fundamental cross-team isolation guarantee. The injection creates a cross-team sharee entry, which all three isolation assertions must reject. Tests whether cross-team barrier is enforced only here.",
+      "inject_violation": "fact MUTATE_CrossTeamSharing { some u: User, t: Task | u.team != t.team and u in t.shared_with }"
+    },
+    {
+      "fact_name": "F_OwnerControlsSharing",
+      "asserts_violated": [
+        "OwnerControlsSharing"
+      ],
+      "rationale": "Removing this fact allows audit entries to record share operations performed by non-owners. The injection creates a scenario where a sharee was added by someone other than the task owner, violating the ownership-based access control invariant. Tests that only the owner can modify the shared_with list.",
+      "inject_violation": "fact MUTATE_NonOwnerShare { some t: Task, u: User, ae: AuditEntry | u in t.shared_with and ae.task = t and ae.operation = Shared and ae.actor != t.owner }"
+    },
+    {
+      "fact_name": "F_TaskCreationAudit",
+      "asserts_violated": [
+        "TaskCreationAudit"
+      ],
+      "rationale": "Removing this fact allows tasks to exist without a corresponding creation audit entry, violating the audit completeness guarantee. The injection creates a task with no Created entry in the audit log, which the assertion must catch. Tests that all tasks produce a creation entry.",
+      "inject_violation": "fact MUTATE_NoCreationAudit { some t: Task | no ae: AuditEntry | ae.task = t and ae.operation = Created }"
+    },
+    {
+      "fact_name": "F_AttributionCorrectness",
+      "asserts_violated": [
+        "AttributionCorrectness"
+      ],
+      "rationale": "Removing this fact allows audit entries to be attributed to actors in different teams than the task itself, violating the invariant that only in-team actors can modify in-team tasks. The injection creates a cross-team attribution, which the assertion must reject. Tests that audit log actors are always legitimate members of the task's team.",
+      "inject_violation": "fact MUTATE_MisattributedAudit { some ae: AuditEntry | ae.actor.team != ae.task.team }"
+    },
+    {
+      "fact_name": "F_ShareUnshareAuditEntries",
+      "asserts_violated": [
+        "ShareUnshareAuditEntries"
+      ],
+      "rationale": "Removing this fact allows users to be added to shared_with without generating a corresponding Shared audit entry, breaking the one-to-one mapping between state changes and audit events. The injection creates a sharee with no Shared entry in the audit trail, violating completeness. Tests that share operations are always logged.",
+      "inject_violation": "fact MUTATE_NoShareAudit { some t: Task, u: User | u in t.shared_with and no ae: AuditEntry | ae.task = t and ae.operation = Shared }"
+    }
+  ]
+}

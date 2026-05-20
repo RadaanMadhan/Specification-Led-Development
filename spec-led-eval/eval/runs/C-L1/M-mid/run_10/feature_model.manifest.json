@@ -1,0 +1,140 @@
+{
+  "feature_id": "C-L1",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "PermissionGrounding",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_OneRolePerUser",
+    "FR_005_ReadOnlyScope",
+    "FR_006_CareTeamGating",
+    "FR_007_ByteEquivalentDenied",
+    "FR_008_AlwaysOnAudit",
+    "FR_009_SnapshotAttribution",
+    "FR_010_AuditImmutability",
+    "FR_011_AuditIGOnly",
+    "FR_013_AuditSyncWithAccess",
+    "FR_DeniedNoCareTeamImpliesNoRecord",
+    "FR_NoCareTeamImpliesNoPermit",
+    "FR_ClinicalRoleDeniedAuditSearch",
+    "FR_RoleCatalogueComplete"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_OneRolePerUser"
+    ],
+    "FR-003": [],
+    "FR-004": [],
+    "FR-005": [
+      "FR_005_ReadOnlyScope"
+    ],
+    "FR-006": [
+      "FR_006_CareTeamGating",
+      "OwnershipBasedAccess",
+      "FR_NoCareTeamImpliesNoPermit"
+    ],
+    "FR-007": [
+      "FR_007_ByteEquivalentDenied",
+      "NoInformationLeakage",
+      "FR_DeniedNoCareTeamImpliesNoRecord"
+    ],
+    "FR-008": [
+      "FR_008_AlwaysOnAudit",
+      "AuditCompleteness"
+    ],
+    "FR-009": [
+      "FR_009_SnapshotAttribution",
+      "AttributionCorrectness"
+    ],
+    "FR-010": [
+      "FR_010_AuditImmutability",
+      "AppendOnly"
+    ],
+    "FR-011": [
+      "FR_011_AuditIGOnly",
+      "FR_ClinicalRoleDeniedAuditSearch",
+      "LeastPrivilege"
+    ],
+    "FR-012": [
+      "FR_010_AuditImmutability",
+      "AppendOnly"
+    ],
+    "FR-013": [
+      "FR_013_AuditSyncWithAccess"
+    ],
+    "FR-014": [],
+    "FR-015": []
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_AppendOnlyAuditEntries",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_010_AuditImmutability"
+      ],
+      "rationale": "Clearing F_AppendOnlyAuditEntries removes the injectivity constraint on AuditEntry.forOperation. The injection forces two distinct AuditEntry atoms to share the same forOperation, which represents an overwrite of an audit record \u2014 exactly the scenario FR-010 and AppendOnly are intended to catch.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some disj ae1, ae2: AuditEntry | ae1.forOperation = ae2.forOperation }"
+    },
+    {
+      "fact_name": "F_CareTeamGating",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_006_CareTeamGating",
+        "FR_NoCareTeamImpliesNoPermit"
+      ],
+      "rationale": "Clearing F_CareTeamGating removes the requirement that a Permitted outcome implies an active CareTeamMembership. The injection forces a Permitted operation with no active membership, directly violating FR-006 (care-team-only access rule).",
+      "inject_violation": "fact MUTATE_CareTeamViolation { some op: Operation | op.opKind = PostRecordsLookup and op.outcome = Permitted and (no m: CareTeamMembership | m.clinician = op.caller and m.patient = op.targetPatient and m.status = Active) }"
+    },
+    {
+      "fact_name": "F_AlwaysOnAudit",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_008_AlwaysOnAudit",
+        "FR_013_AuditSyncWithAccess"
+      ],
+      "rationale": "Clearing F_AlwaysOnAudit removes the guarantee that every Operation has an AuditEntry. The injection places an Operation with no corresponding AuditEntry, directly violating FR-008 always-on audit and SC-001 (100% of accesses audited).",
+      "inject_violation": "fact MUTATE_AlwaysOnAuditViolation { some op: Operation | no ae: AuditEntry | ae.forOperation = op }"
+    },
+    {
+      "fact_name": "F_AttributionCorrectness",
+      "asserts_violated": [
+        "AttributionCorrectness",
+        "FR_009_SnapshotAttribution"
+      ],
+      "rationale": "Clearing F_AttributionCorrectness removes the snapshot-role consistency rule. The injection forces an AuditEntry whose snapshotRole differs from the actual caller's role, violating FR-009's requirement that the role is faithfully snapshotted at the time of access.",
+      "inject_violation": "fact MUTATE_AttributionViolation { some ae: AuditEntry | ae.snapshotRole != ae.forOperation.caller.role }"
+    },
+    {
+      "fact_name": "F_ByteEquivalentDenied",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "FR_007_ByteEquivalentDenied",
+        "FR_DeniedNoCareTeamImpliesNoRecord"
+      ],
+      "rationale": "Clearing F_ByteEquivalentDenied removes the constraint that Denied outcomes map to DeniedOrNotFoundResponse. The injection forces a Denied-outcome operation to produce a PermittedResponse, leaking the distinction between 'patient exists but caller not on team' and 'patient not found', violating FR-007 and SC-003.",
+      "inject_violation": "fact MUTATE_ByteEquivViolation { some r: OperationResponse | r.forOp.outcome = Denied and r.respClass = PermittedResponse }"
+    },
+    {
+      "fact_name": "F_AuditIGOnly",
+      "asserts_violated": [
+        "FR_011_AuditIGOnly",
+        "FR_ClinicalRoleDeniedAuditSearch",
+        "LeastPrivilege"
+      ],
+      "rationale": "Clearing F_AuditIGOnly removes the constraint that only AuditOfficer may invoke PostAuditSearch. The injection places a Doctor-role caller on a PostAuditSearch operation, violating FR-011 (IG-only audit access) and SC-011 (audit endpoint existence must not leak to clinical roles).",
+      "inject_violation": "fact MUTATE_AuditIGOnlyViolation { some op: Operation | op.opKind = PostAuditSearch and op.caller.role = Doctor }"
+    }
+  ]
+}

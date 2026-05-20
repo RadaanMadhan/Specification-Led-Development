@@ -1,0 +1,93 @@
+{
+  "feature_id": "C-L1",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionGrounding",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthenticationRequired",
+    "FR_006_CareTeamMembershipGating",
+    "FR_008_AlwaysOnAudit",
+    "FR_010_AuditImmutability",
+    "FR_011_IGAuditAccess"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthenticationRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-006": [
+      "FR_006_CareTeamMembershipGating",
+      "OwnershipBasedAccess"
+    ],
+    "FR-007": [
+      "NoInformationLeakage"
+    ],
+    "FR-008": [
+      "FR_008_AlwaysOnAudit",
+      "AuditCompleteness"
+    ],
+    "FR-009": [
+      "AttributionCorrectness"
+    ],
+    "FR-010": [
+      "FR_010_AuditImmutability",
+      "AppendOnly"
+    ],
+    "FR-011": [
+      "FR_011_IGAuditAccess"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_LeastPrivilege",
+      "asserts_violated": [
+        "LeastPrivilege"
+      ],
+      "rationale": "Removing this fact allows the model to assign Permitted outcome to operations where the caller's role is not allowed to perform the operation, directly violating least privilege.",
+      "inject_violation": "fact MUTATE_DisallowedRoleOp { some op: AccessOperation | not (op.caller.role -> op.operationKind in PermMatrix.allowed) and op.auditEntry.outcome = Permitted }"
+    },
+    {
+      "fact_name": "F_CareTeamAuthorization",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_006_CareTeamMembershipGating"
+      ],
+      "rationale": "Removing this fact allows RecordsLookup operations to succeed for clinicians not on the patient's care team, violating the core ownership-based access control rule.",
+      "inject_violation": "fact MUTATE_UnauthorizedLookup { some op: AccessOperation | op.operationKind = RecordsLookup and op.auditEntry.outcome = Permitted and no m: CareTeamMembership | m.clinician = op.caller and m.patient = op.patient and m.status = Active }"
+    },
+    {
+      "fact_name": "F_AuditCompleteness",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_008_AlwaysOnAudit",
+        "AttributionCorrectness"
+      ],
+      "rationale": "Removing this fact allows operations to exist with audit entries that do not correctly attribute the operation to the actual caller or patient, breaking auditability.",
+      "inject_violation": "fact MUTATE_MisattributedAudit { some op: AccessOperation | op.auditEntry.clinician != op.caller or op.auditEntry.patient != op.patient }"
+    },
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "PermissionGrounding"
+      ],
+      "rationale": "Removing this fact allows the permission matrix to be redefined with incorrect role-operation assignments, such as granting AuditOfficer access to RecordsLookup or Doctor access to AuditSearch.",
+      "inject_violation": "fact MUTATE_WrongPermissions { PermMatrix.allowed = (AuditOfficer -> RecordsLookup) + (Doctor -> AuditSearch) }"
+    },
+    {
+      "fact_name": "F_IGRoleRestriction",
+      "asserts_violated": [
+        "FR_011_IGAuditAccess"
+      ],
+      "rationale": "Removing this fact allows clinical roles (doctor, nurse, etc.) to perform AuditSearch operations, leaking audit data to non-IG users and violating role-based authorization.",
+      "inject_violation": "fact MUTATE_ClinicianAuditAccess { some op: AccessOperation | op.operationKind = AuditSearch and op.caller.role != AuditOfficer }"
+    }
+  ]
+}

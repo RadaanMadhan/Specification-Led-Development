@@ -1,0 +1,168 @@
+$ /Users/leonhausmann/opt/anaconda3/bin/python3 -m speceval.cli verify-design --no-cache --model M-mid --java-bin /Users/leonhausmann/opt/anaconda3/lib/python3.9/site-packages/jdk4py/java-runtime/bin/java /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/eval/specs/C-L2
+
+[parse]   feature 'C-L2', 20 FRs, 3 user stories
+[lift]    calling LLM (anthropic: tier=M-mid, model=claude-sonnet-4-6)...
+[lift]    fresh lift (sha=91e017c324dd)
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/C-L2/feature_model.als
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/C-L2/cost_log.json
+[alloy]   running alloy.jar on feature_model.als...
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/C-L2/alloy_verdicts.json
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/C-L2/mutation_outcomes.json
+
+==============================================================================
+  Design Compliance Report  (Phase 3 — feature_model.als)
+  feature       : C-L2
+  spec source   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/eval/specs/C-L2
+  alloy model   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/C-L2/feature_model.als
+  patterns      : LeastPrivilege, PermissionCompleteness, PermissionGrounding, AuthRequiredEverywhere, AuditCompleteness, AppendOnly, AttributionCorrectness, OwnershipBasedAccess, NoInformationLeakage, ValidationBeforeMutation
+  fr count      : 20 declared in spec.md
+  assertions    : 27 total (20/27 PASS via Alloy)
+==============================================================================
+
+  Compliance matrix
+  ----------------------------------------------------------------------------
+  Assertion                          Verdict   Anchor
+  -----------------------------------------------------------------------
+  LeastPrivilege                     PASS      PATTERN LeastPrivilege: contracts/http-api.md authorisation sections; spec.md FR-004, FR-005, FR-017
+  PermissionCompleteness             PASS      PATTERN PermissionCompleteness: contracts/http-api.md permission matrix; spec.md FR-004, FR-005, FR-017
+  PermissionGrounding                PASS      PATTERN PermissionGrounding: spec.md FR-004, FR-005, FR-017; contracts/http-api.md
+  AuthRequiredEverywhere             PASS      PATTERN AuthRequiredEverywhere: spec.md FR-001; contracts/http-api.md Authentication section
+  AuditCompleteness                  PASS      PATTERN AuditCompleteness: spec.md FR-012, FR-013; data-model.md AuditEntry; SC-001, SC-002
+  AppendOnly                         PASS      PATTERN AppendOnly: spec.md FR-011, FR-014; data-model.md append-only enforcement; SC-007, SC-008
+  AttributionCorrectness             PASS      PATTERN AttributionCorrectness: spec.md FR-013; data-model.md AuditEntry snapshot fields
+  OwnershipBasedAccess               PASS      PATTERN OwnershipBasedAccess: spec.md FR-004; data-model.md CareTeamMembership
+  NoInformationLeakage               FAIL      PATTERN NoInformationLeakage: spec.md FR-006; contracts/http-api.md byte-equivalent not-found; SC-003
+  ValidationBeforeMutation           FAIL      PATTERN ValidationBeforeMutation: spec.md FR-009, FR-015; contracts/http-api.md POST /records/notes
+  FR_001_AuthRequired                PASS      FEATURE-SPECIFIC: FR-001
+  FR_002_OneRolePerUser              PASS      FEATURE-SPECIFIC: FR-002
+  FR_004_CareTeamGating              PASS      FEATURE-SPECIFIC: FR-004
+  FR_005_AdminNoClinicalContent      FAIL      FEATURE-SPECIFIC: FR-005
+  FR_006_ByteEquivalentUnauthorised  FAIL      FEATURE-SPECIFIC: FR-006; SC-003
+  FR_009_NoteValidation              PASS      FEATURE-SPECIFIC: FR-009; FR-010
+  FR_011_NotesAppendOnly             FAIL      FEATURE-SPECIFIC: FR-011; SC-007
+  FR_012_AlwaysOnAudit               PASS      FEATURE-SPECIFIC: FR-012; SC-001; SC-002
+  FR_013_AuditNoteIdRule             PASS      FEATURE-SPECIFIC: FR-013; data-model.md AuditEntry structural CHECK
+  FR_014_AuditImmutability           PASS      FEATURE-SPECIFIC: FR-014; SC-008
+  FR_017_AdminOnlyAuditSearch        FAIL      FEATURE-SPECIFIC: FR-017; contracts/http-api.md POST /audit/search
+  FR_018_AdminContentBlindness       FAIL      FEATURE-SPECIFIC: FR-018; spec.md FR-005; SC-006
+  FR_010_NoteAuthorClinicalRole      PASS      FEATURE-SPECIFIC: FR-010; data-model.md ClinicalNote author_role CHECK
+  FR_015_AuditAtomicWithOperation    PASS      FEATURE-SPECIFIC: FR-015; SC-009; contracts/http-api.md 503 behaviour
+  FR_002_UserHasExactlyOneRole       PASS      FEATURE-SPECIFIC: spec.md FR-002; data-model.md User
+  NoCareTeamOverride                 PASS      FEATURE-SPECIFIC: spec.md assumptions (no break-glass); FR-004
+  CareTeamMembersAreClinical         PASS      FEATURE-SPECIFIC: spec.md FR-004; data-model.md CareTeamMembership
+
+  Counterexamples (Alloy SAT)
+  ----------------------------------------------------------------------------
+  NoInformationLeakage  [PATTERN NoInformationLeakage: spec.md FR-006; contracts/http-api.md byte-equivalent not-found; SC-003]
+    Alloy: 08. check NoInformationLeakage     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  ValidationBeforeMutation  [PATTERN ValidationBeforeMutation: spec.md FR-009, FR-015; contracts/http-api.md POST /records/notes]
+    Alloy: 09. check ValidationBeforeMutation     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR_005_AdminNoClinicalContent  [FEATURE-SPECIFIC: FR-005]
+    Alloy: 13. check FR_005_AdminNoClinicalContent     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR_006_ByteEquivalentUnauthorised  [FEATURE-SPECIFIC: FR-006; SC-003]
+    Alloy: 14. check FR_006_ByteEquivalentUnauthorised     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR_011_NotesAppendOnly  [FEATURE-SPECIFIC: FR-011; SC-007]
+    Alloy: 16. check FR_011_NotesAppendOnly     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR_017_AdminOnlyAuditSearch  [FEATURE-SPECIFIC: FR-017; contracts/http-api.md POST /audit/search]
+    Alloy: 20. check FR_017_AdminOnlyAuditSearch     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR_018_AdminContentBlindness  [FEATURE-SPECIFIC: FR-018; spec.md FR-005; SC-006]
+    Alloy: 21. check FR_018_AdminContentBlindness     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR coverage
+  ----------------------------------------------------------------------------
+  FR-001  →  FR_001_AuthRequired=PASS, AuthRequiredEverywhere=PASS
+  FR-002  →  FR_002_OneRolePerUser=PASS, FR_002_UserHasExactlyOneRole=PASS
+  FR-003  →  FR_001_AuthRequired=PASS
+  FR-004  →  FR_004_CareTeamGating=PASS, OwnershipBasedAccess=PASS, NoCareTeamOverride=PASS
+  FR-005  →  FR_005_AdminNoClinicalContent=FAIL, LeastPrivilege=PASS, FR_018_AdminContentBlindness=FAIL
+  FR-006  →  FR_006_ByteEquivalentUnauthorised=FAIL, NoInformationLeakage=FAIL
+  FR-007  →  FR_009_NoteValidation=PASS
+  FR-008  →  FR_018_AdminContentBlindness=FAIL
+  FR-009  →  FR_009_NoteValidation=PASS, ValidationBeforeMutation=FAIL
+  FR-010  →  FR_010_NoteAuthorClinicalRole=PASS, FR_009_NoteValidation=PASS
+  FR-011  →  FR_011_NotesAppendOnly=FAIL, AppendOnly=PASS
+  FR-012  →  FR_012_AlwaysOnAudit=PASS, AuditCompleteness=PASS, FR_015_AuditAtomicWithOperation=PASS
+  FR-013  →  FR_013_AuditNoteIdRule=PASS, AttributionCorrectness=PASS
+  FR-014  →  FR_014_AuditImmutability=PASS, AppendOnly=PASS
+  FR-015  →  FR_015_AuditAtomicWithOperation=PASS, AuditCompleteness=PASS
+  FR-016  →  FR_014_AuditImmutability=PASS
+  FR-017  →  FR_017_AdminOnlyAuditSearch=FAIL, LeastPrivilege=PASS
+  FR-018  →  FR_018_AdminContentBlindness=FAIL
+  FR-019  →  FR_009_NoteValidation=PASS
+  FR-020  →  FR_012_AlwaysOnAudit=PASS
+
+  All FRs have at least one matching assertion.
+
+==============================================================================
+  Mutation tests  (assertion-strength validation)
+==============================================================================
+
+  Strategy: replace each named fact's body with `{}` (no constraint),
+  then re-run Alloy. Each listed assertion should now FAIL on the
+  mutated model. If it still PASSes, the assertion is vacuous and
+  must be strengthened.
+
+  - MUTATE F_CareTeamGating  → runs/C-L2/mutated_F_CareTeamGating.als
+    rationale: Removing this fact allows a permitted clinical operation to exist with no care-team membership row linking the caller to the patient, violating the central access-control invariant of FR-004.
+    expected to FAIL: OwnershipBasedAccess, FR_004_CareTeamGating, NoCareTeamOverride
+      - OwnershipBasedAccess: FAIL (expected)
+      - FR_004_CareTeamGating: FAIL (expected)
+      - NoCareTeamOverride: FAIL (expected)
+
+  - MUTATE F_AdminCannotAccessClinical  → runs/C-L2/mutated_F_AdminCannotAccessClinical.als
+    rationale: Removing this fact allows a HospitalAdministrator to have a permitted operation on RecordsLookup or RecordsNotes, violating the role-segregation invariant in FR-005 and the permission matrix in F_PermissionMatrix.
+    expected to FAIL: LeastPrivilege, FR_005_AdminNoClinicalContent, PermissionGrounding
+      - LeastPrivilege: PASS (vacuous?)
+      - FR_005_AdminNoClinicalContent: PASS (vacuous?)
+      - PermissionGrounding: PASS (vacuous?)
+
+  - MUTATE F_AuditCorrespondence  → runs/C-L2/mutated_F_AuditCorrespondence.als
+    rationale: Removing this fact allows an Operation to exist whose linked AuditEntry does not correctly record the caller or patient — or allows an AuditEntry to be shared by two Operations — violating the always-on, one-to-one audit invariant of FR-012 and FR-013.
+    expected to FAIL: AuditCompleteness, FR_012_AlwaysOnAudit, AttributionCorrectness, FR_015_AuditAtomicWithOperation
+      - AuditCompleteness: FAIL (expected)
+      - FR_012_AlwaysOnAudit: FAIL (expected)
+      - AttributionCorrectness: FAIL (expected)
+      - FR_015_AuditAtomicWithOperation: FAIL (expected)
+
+  - MUTATE F_AppendOnlyNotes  → runs/C-L2/mutated_F_AppendOnlyNotes.als
+    rationale: Removing this fact allows a ClinicalNote to exist in the system without any corresponding add_note + permitted audit entry, breaking the append-only creation trail and the FR-011 invariant.
+    expected to FAIL: AppendOnly, FR_011_NotesAppendOnly, FR_009_NoteValidation
+      - AppendOnly: FAIL (expected)
+      - FR_011_NotesAppendOnly: FAIL (expected)
+      - FR_009_NoteValidation: FAIL (expected)
+
+  - MUTATE F_AuditNoteIdRule  → runs/C-L2/mutated_F_AuditNoteIdRule.als
+    rationale: Removing this fact allows aeNoteRef to be set on a non-add_note or non-permitted audit entry, violating the structural CHECK constraint from data-model.md and FR-013.
+    expected to FAIL: FR_013_AuditNoteIdRule
+      - FR_013_AuditNoteIdRule: FAIL (expected)
+
+  - MUTATE F_NoteAuthorRole  → runs/C-L2/mutated_F_NoteAuthorRole.als
+    rationale: Removing this fact allows a HospitalAdministrator to be recorded as the author of a ClinicalNote, violating the structural author_role CHECK in data-model.md and FR-005/FR-010.
+    expected to FAIL: FR_010_NoteAuthorClinicalRole, FR_009_NoteValidation
+      - FR_010_NoteAuthorClinicalRole: FAIL (expected)
+      - FR_009_NoteValidation: FAIL (expected)
+
+  Mutation summary
+  ----------------------------------------------------------------------------
+  - F_CareTeamGating: ASSERTIONS BIT (OwnershipBasedAccess, FR_004_CareTeamGating, NoCareTeamOverride)
+  - F_AdminCannotAccessClinical: ASSERTION VACUOUS (LeastPrivilege, FR_005_AdminNoClinicalContent, PermissionGrounding)
+  - F_AuditCorrespondence: ASSERTIONS BIT (AuditCompleteness, FR_012_AlwaysOnAudit, AttributionCorrectness, FR_015_AuditAtomicWithOperation)
+  - F_AppendOnlyNotes: ASSERTIONS BIT (AppendOnly, FR_011_NotesAppendOnly, FR_009_NoteValidation)
+  - F_AuditNoteIdRule: ASSERTIONS BIT (FR_013_AuditNoteIdRule)
+  - F_NoteAuthorRole: ASSERTIONS BIT (FR_010_NoteAuthorClinicalRole, FR_009_NoteValidation)
+
+
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/C-L2/report.txt

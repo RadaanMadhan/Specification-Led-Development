@@ -1,0 +1,48 @@
+{
+  "F_CareTeamGating": {
+    "targeted_asserts": {
+      "OwnershipBasedAccess": "BIT",
+      "FR_004_CareTeamGating": "BIT",
+      "NoCareTeamOverride": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AdminCannotAccessClinical": {
+    "targeted_asserts": {
+      "LeastPrivilege": "VACUOUS_OVERCONSTRAINT",
+      "FR_005_AdminNoClinicalContent": "VACUOUS_OVERCONSTRAINT",
+      "PermissionGrounding": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_AuditCorrespondence": {
+    "targeted_asserts": {
+      "AuditCompleteness": "BIT",
+      "FR_012_AlwaysOnAudit": "BIT",
+      "AttributionCorrectness": "BIT",
+      "FR_015_AuditAtomicWithOperation": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AppendOnlyNotes": {
+    "targeted_asserts": {
+      "AppendOnly": "BIT",
+      "FR_011_NotesAppendOnly": "BIT",
+      "FR_009_NoteValidation": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AuditNoteIdRule": {
+    "targeted_asserts": {
+      "FR_013_AuditNoteIdRule": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_NoteAuthorRole": {
+    "targeted_asserts": {
+      "FR_010_NoteAuthorClinicalRole": "BIT",
+      "FR_009_NoteValidation": "BIT"
+    },
+    "all_bit": true
+  }
+}

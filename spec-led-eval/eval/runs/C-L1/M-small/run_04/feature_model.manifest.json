@@ -1,0 +1,123 @@
+{
+  "feature_id": "C-L1",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "NoInformationLeakage",
+    "OwnershipBasedAccess"
+  ],
+  "feature_specific_predicates": [
+    "ClinicalRoleOnlyForRecordLookup",
+    "AuditOfficerOnlyForAuditSearch",
+    "AuditEntryFieldsComplete",
+    "AuthorisationBasisCorrectness",
+    "FR_001_AuthenticationRequired",
+    "FR_002_ClinicianIdentityResolution",
+    "FR_005_ReadOnlyScope",
+    "FR_006_CareTeamMembershipGating",
+    "FR_007_ByteEquivalentDeniedNotFound",
+    "FR_008_AlwaysOnAudit",
+    "FR_010_AuditImmutability",
+    "FR_011_AuditReadableByIGOnly",
+    "FR_014_AllergiesAndWarningsAtTop",
+    "FR_015_PatientIdAndDoBAtTop"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthenticationRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_ClinicianIdentityResolution"
+    ],
+    "FR-005": [
+      "FR_005_ReadOnlyScope"
+    ],
+    "FR-006": [
+      "FR_006_CareTeamMembershipGating",
+      "OwnershipBasedAccess"
+    ],
+    "FR-007": [
+      "FR_007_ByteEquivalentDeniedNotFound",
+      "NoInformationLeakage"
+    ],
+    "FR-008": [
+      "FR_008_AlwaysOnAudit",
+      "AuditCompleteness"
+    ],
+    "FR-010": [
+      "FR_010_AuditImmutability",
+      "AppendOnly"
+    ],
+    "FR-011": [
+      "FR_011_AuditReadableByIGOnly"
+    ],
+    "FR-014": [
+      "FR_014_AllergiesAndWarningsAtTop"
+    ],
+    "FR-015": [
+      "FR_015_PatientIdAndDoBAtTop"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "ClinicalRoleOnlyForRecordLookup",
+        "AuditOfficerOnlyForAuditSearch",
+        "PermissionCompleteness"
+      ],
+      "rationale": "The permission matrix is the authoritative definition of which (role, operation) pairs are allowed. Removing it allows any role to perform any operation, directly violating the least-privilege and role-operation separation constraints. When cleared and an unauthorised operation is injected, LeastPrivilege should fail.",
+      "inject_violation": "fact MUTATE_PermissionMatrixViolation { some op: AccessOperation | op.outcome = Permitted and not (op.clinician.role -> op.operation in PermMatrix.Allowed) }"
+    },
+    {
+      "fact_name": "F_NonEmptyUniverse",
+      "asserts_violated": [
+        "AuthRequiredEverywhere",
+        "AuditCompleteness",
+        "FR_006_CareTeamMembershipGating"
+      ],
+      "rationale": "The non-empty universe fact ensures that dynamic sigs contain at least one atom. Without it, Alloy can explore empty universes where all quantified universals vacuously pass. This makes any assertion that quantifies over clinicians, operations, or audit entries non-vacuous. When cleared, assertions that quantify over these sigs become trivially satisfied, losing their asserting power.",
+      "inject_violation": "fact MUTATE_NonEmptyViolation { some cli: Clinician, op: AccessOperation | cli = cli }"
+    },
+    {
+      "fact_name": "F_CareTeamMembershipGating",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_006_CareTeamMembershipGating"
+      ],
+      "rationale": "This fact encodes the core authorisation rule: access is permitted iff the clinician has active care-team membership. Removing it allows operations to succeed without care-team validation. When cleared and an operation is injected that violates the membership rule (permitted but no membership), OwnershipBasedAccess should fail.",
+      "inject_violation": "fact MUTATE_OwnershipViolation { some op: AccessOperation, cli: Clinician, pat_id: String | op.clinician = cli and op.patient_id = pat_id and op.operation = LookupRecord and op.outcome = Permitted and no m: Membership | m.clinician = cli and m.patient.id = pat_id and m.status = Active }"
+    },
+    {
+      "fact_name": "F_AuditCompleteness",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_008_AlwaysOnAudit"
+      ],
+      "rationale": "This fact ensures that every access operation produces exactly one matching audit entry. Removing it breaks the one-to-one correspondence. When cleared and an operation without a matching audit entry is injected, AuditCompleteness should fail.",
+      "inject_violation": "fact MUTATE_AuditCompletenessViolation { some op: AccessOperation | no ae: AuditEntry | ae.clinician_id = op.clinician.id and ae.patient_id = op.patient_id and ae.outcome = op.outcome }"
+    },
+    {
+      "fact_name": "F_AuthorisationBasisConsistency",
+      "asserts_violated": [
+        "AuthorisationBasisCorrectness"
+      ],
+      "rationale": "This fact ensures that audit entry outcomes and authorisation bases are semantically consistent (Permitted\u2192CareTeamMember, Denied\u2192NotCareTeamMember, NotFoundOrDenied\u2192PatientNotFound). Removing it allows mismatched pairs. When cleared and an inconsistent pair is injected, AuthorisationBasisCorrectness should fail.",
+      "inject_violation": "fact MUTATE_AuthBasisViolation { some ae: AuditEntry | (ae.outcome = Permitted and ae.authorisation_basis != CareTeamMember) or (ae.outcome = Denied and ae.authorisation_basis != NotCareTeamMember) or (ae.outcome = NotFoundOrDenied and ae.authorisation_basis != PatientNotFound) }"
+    },
+    {
+      "fact_name": "F_RoleOperationAssociation",
+      "asserts_violated": [
+        "ClinicalRoleOnlyForRecordLookup",
+        "AuditOfficerOnlyForAuditSearch"
+      ],
+      "rationale": "This fact enforces the role-operation type constraints: clinical roles for LookupRecord, only AuditOfficer for SearchAudit. Removing it allows any role to attempt any operation. When cleared and a clinical role attempts SearchAudit (or AuditOfficer attempts LookupRecord) is injected, the role-specific assertions should fail.",
+      "inject_violation": "fact MUTATE_RoleOpViolation { some op: AccessOperation | (op.operation = SearchAudit and op.clinician.role != AuditOfficer) }"
+    }
+  ]
+}

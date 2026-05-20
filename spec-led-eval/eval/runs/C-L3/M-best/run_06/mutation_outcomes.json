@@ -1,0 +1,46 @@
+{
+  "F_AuthorizationLogic": {
+    "targeted_asserts": {
+      "LeastPrivilege": "BIT",
+      "FR_007_ComplianceNoClinical": "BIT",
+      "FR_019_ComplianceContentBlind": "BIT",
+      "NoInformationLeakage": "BIT",
+      "FR_008_ByteEquivalentDenied": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_OneAuditPerAuthenticatedOp": {
+    "targeted_asserts": {
+      "AuditCompleteness": "BIT",
+      "FR_013_OneAuditPerAccess": "BIT",
+      "FR_017_AuditRetained": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_NoteAuthorIsClinician": {
+    "targeted_asserts": {
+      "FR_011_NoteAttribution": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AuditAttribution": {
+    "targeted_asserts": {
+      "AttributionCorrectness": "BIT",
+      "FR_014_AuditFields": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_PatientAssignment": {
+    "targeted_asserts": {
+      "FR_003_PatientAssigned": "BIT",
+      "OwnershipExclusivity": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_PermissionMatrix": {
+    "targeted_asserts": {
+      "PermissionCompleteness": "BIT"
+    },
+    "all_bit": true
+  }
+}

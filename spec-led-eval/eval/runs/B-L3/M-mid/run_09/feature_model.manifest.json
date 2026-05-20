@@ -1,0 +1,171 @@
+{
+  "feature_id": "B-L3",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "PrivilegeMonotonicity"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_OneTeamPerUser",
+    "FR_004_MemberCannotSeeUnrelatedTasks",
+    "FR_005_AdminFullAccessInTeam",
+    "FR_006_CrossTeamIsolation",
+    "FR_006_AdminPrivilegeDoesNotCrossTeams",
+    "FR_009_ImmutableOwnerAndTeam",
+    "FR_010_OnlyOwnerChangesSharedWith",
+    "FR_011_ShareeCannotDelete",
+    "FR_012_NoSameTeamSharing",
+    "FR_013_ShareAuditEntries",
+    "FR_015_MutationAuditBijection",
+    "FR_017_AuditOutlivesTask",
+    "FR_019_AuditAccessMirrorsReadAccess"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_OneTeamPerUser"
+    ],
+    "FR-002a": [
+      "FR_002_OneTeamPerUser",
+      "FR_001_AuthRequired"
+    ],
+    "FR-003": [
+      "OwnershipBasedAccess",
+      "LeastPrivilege"
+    ],
+    "FR-004": [
+      "FR_004_MemberCannotSeeUnrelatedTasks",
+      "LeastPrivilege"
+    ],
+    "FR-005": [
+      "FR_005_AdminFullAccessInTeam",
+      "PrivilegeMonotonicity"
+    ],
+    "FR-006": [
+      "FR_006_CrossTeamIsolation",
+      "FR_006_AdminPrivilegeDoesNotCrossTeams",
+      "NoInformationLeakage"
+    ],
+    "FR-007": [
+      "FR_001_AuthRequired"
+    ],
+    "FR-008": [
+      "OwnershipBasedAccess"
+    ],
+    "FR-009": [
+      "FR_009_ImmutableOwnerAndTeam",
+      "OwnershipExclusivity"
+    ],
+    "FR-010": [
+      "FR_010_OnlyOwnerChangesSharedWith",
+      "LeastPrivilege"
+    ],
+    "FR-011": [
+      "FR_011_ShareeCannotDelete",
+      "LeastPrivilege"
+    ],
+    "FR-012": [
+      "FR_012_NoSameTeamSharing"
+    ],
+    "FR-013": [
+      "FR_013_ShareAuditEntries",
+      "AuditCompleteness"
+    ],
+    "FR-014": [
+      "NoInformationLeakage",
+      "FR_006_CrossTeamIsolation"
+    ],
+    "FR-015": [
+      "FR_015_MutationAuditBijection",
+      "AuditCompleteness"
+    ],
+    "FR-016": [
+      "AttributionCorrectness",
+      "FR_013_ShareAuditEntries"
+    ],
+    "FR-017": [
+      "FR_017_AuditOutlivesTask",
+      "AppendOnly"
+    ],
+    "FR-018": [
+      "FR_015_MutationAuditBijection"
+    ],
+    "FR-019": [
+      "FR_019_AuditAccessMirrorsReadAccess"
+    ],
+    "FR-020": [
+      "AppendOnly",
+      "FR_017_AuditOutlivesTask"
+    ],
+    "FR-021": []
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "NoInformationLeakage",
+        "FR_006_CrossTeamIsolation",
+        "PermissionCompleteness"
+      ],
+      "rationale": "Clearing the permission matrix fact removes the closed-world assignment of PermMatrix.Allowed. Injecting a row that grants Outsider access to GetTask forces a world in which a cross-team caller can read a task, directly violating LeastPrivilege and NoInformationLeakage.",
+      "inject_violation": "fact MUTATE_PermMatrixViolation { Outsider -> GetTask in PermMatrix.Allowed }"
+    },
+    {
+      "fact_name": "F_AppendOnlyAuditEntries",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_017_AuditOutlivesTask"
+      ],
+      "rationale": "Clearing F_AppendOnlyAuditEntries removes the uniqueness constraint on (aeTask, aeActor, aeOp, aeActorRole) tuples. Injecting two AuditEntries with identical (task, actor, operation, actorRole) forces a duplicate that models an 'edit' of an existing entry, violating append-only immutability.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some disj ae1, ae2: AuditEntry | ae1.aeTask = ae2.aeTask and ae1.aeActor = ae2.aeActor and ae1.aeOp = ae2.aeOp and ae1.aeActorRole = ae2.aeActorRole }"
+    },
+    {
+      "fact_name": "F_AttributionCorrectness",
+      "asserts_violated": [
+        "AttributionCorrectness"
+      ],
+      "rationale": "Clearing F_AttributionCorrectness allows an AuditEntry's aeActorRole to differ from the actor's actual userRole. Injecting an entry where a Member actor has aeActorRole = TeamAdmin forces a misattribution counterexample.",
+      "inject_violation": "fact MUTATE_AttributionViolation { some ae: AuditEntry | ae.aeActor.userRole = Member and ae.aeActorRole = TeamAdmin }"
+    },
+    {
+      "fact_name": "F_ShareesSameTeam",
+      "asserts_violated": [
+        "FR_012_NoSameTeamSharing",
+        "OwnershipBasedAccess"
+      ],
+      "rationale": "Clearing F_ShareesSameTeam removes the constraint that sharedWith users must be in the task's team. Injecting a task where a user from a different team appears in sharedWith forces a cross-team share, violating FR-012.",
+      "inject_violation": "fact MUTATE_CrossTeamShareViolation { some t: Task | some u: User | u in t.sharedWith and u.userTeam != t.taskTeam }"
+    },
+    {
+      "fact_name": "F_TaskOwnerSameTeam",
+      "asserts_violated": [
+        "OwnershipExclusivity",
+        "FR_009_ImmutableOwnerAndTeam",
+        "FR_006_CrossTeamIsolation"
+      ],
+      "rationale": "Clearing F_TaskOwnerSameTeam allows a task owner to be in a different team than the task. Injecting such a task violates the ownership-team consistency invariant that cross-team isolation depends on.",
+      "inject_violation": "fact MUTATE_OwnerTeamMismatch { some t: Task | t.taskOwner.userTeam != t.taskTeam }"
+    },
+    {
+      "fact_name": "F_DeletedTaskHasDeletedEntry",
+      "asserts_violated": [
+        "FR_017_AuditOutlivesTask",
+        "AppendOnly"
+      ],
+      "rationale": "Clearing F_DeletedTaskHasDeletedEntry allows a DeletedTask to exist without any OpDeleted AuditEntry, breaking the invariant that task deletion is always recorded in the audit log.",
+      "inject_violation": "fact MUTATE_DeletedTaskNoAudit { some t: DeletedTask | no ae: AuditEntry | ae.aeTask = t and ae.aeOp = OpDeleted }"
+    }
+  ]
+}

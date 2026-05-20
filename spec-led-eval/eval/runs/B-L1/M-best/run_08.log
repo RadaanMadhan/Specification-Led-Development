@@ -1,0 +1,120 @@
+$ /Users/leonhausmann/opt/anaconda3/bin/python3 -m speceval.cli verify-design --no-cache --model M-best --java-bin /Users/leonhausmann/opt/anaconda3/lib/python3.9/site-packages/jdk4py/java-runtime/bin/java /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/eval/specs/B-L1
+
+[parse]   feature 'B-L1', 18 FRs, 4 user stories
+[lift]    calling LLM (anthropic: tier=M-best, model=claude-opus-4-7)...
+[lift]    fresh lift (sha=30ea4f60657c)
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/B-L1/feature_model.als
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/B-L1/cost_log.json
+[alloy]   running alloy.jar on feature_model.als...
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/B-L1/alloy_verdicts.json
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/B-L1/mutation_outcomes.json
+
+==============================================================================
+  Design Compliance Report  (Phase 3 — feature_model.als)
+  feature       : B-L1
+  spec source   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/eval/specs/B-L1
+  alloy model   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/B-L1/feature_model.als
+  patterns      : AuthRequiredEverywhere, LeastPrivilege, PermissionCompleteness, AuditCompleteness, AppendOnly, AttributionCorrectness
+  fr count      : 18 declared in spec.md
+  assertions    : 17 total (17/17 PASS via Alloy)
+==============================================================================
+
+  Compliance matrix
+  ----------------------------------------------------------------------------
+  Assertion                       Verdict   Anchor
+  --------------------------------------------------------------------
+  AuthRequiredEverywhere          PASS      PATTERN AuthRequiredEverywhere: spec.md FR-001; contracts/http-api.md auth section
+  LeastPrivilege                  PASS      PATTERN LeastPrivilege: spec.md FR-004; contracts/http-api.md (no 403 path)
+  PermissionMatrixComplete        PASS      PATTERN PermissionCompleteness: contracts/http-api.md permission table
+  AuditCompleteness               PASS      PATTERN AuditCompleteness: spec.md FR-018; data-model.md task_deletions
+  AppendOnly                      PASS      PATTERN AppendOnly: spec.md FR-018; data-model.md "no UPDATE/DELETE on task_deletions"
+  AttributionCorrectness          PASS      PATTERN AttributionCorrectness: spec.md FR-018; data-model.md deleted_by_user_id / task_title_at_delete
+  FR_001_AuthRequired             PASS      FEATURE-SPECIFIC: FR-001
+  FR_002_IdentityFromAuth         PASS      FEATURE-SPECIFIC: FR-002
+  FR_003_SingleImplicitWorkspace  PASS      FEATURE-SPECIFIC: FR-003
+  FR_004_FlatPermissions          PASS      FEATURE-SPECIFIC: FR-004
+  FR_008_AssigneeIsMember         PASS      FEATURE-SPECIFIC: FR-008
+  FR_009_CreatorAlwaysSet         PASS      FEATURE-SPECIFIC: FR-009
+  FR_010_StatusEnum               PASS      FEATURE-SPECIFIC: FR-010
+  FR_011_ClosedTaskEdit           PASS      FEATURE-SPECIFIC: FR-011
+  FR_012_DeletionRecorded         PASS      FEATURE-SPECIFIC: FR-012
+  FR_013_OnlyCoreOps              PASS      FEATURE-SPECIFIC: FR-013
+  FR_018_DeletionLogged           PASS      FEATURE-SPECIFIC: FR-018
+
+  FR coverage
+  ----------------------------------------------------------------------------
+  FR-001  →  AuthRequiredEverywhere=PASS, FR_001_AuthRequired=PASS
+  FR-002  →  FR_002_IdentityFromAuth=PASS
+  FR-003  →  FR_003_SingleImplicitWorkspace=PASS
+  FR-004  →  LeastPrivilege=PASS, PermissionMatrixComplete=PASS, FR_004_FlatPermissions=PASS
+  FR-005  [uncovered]
+  FR-006  [uncovered]
+  FR-007  [uncovered]
+  FR-008  →  FR_008_AssigneeIsMember=PASS
+  FR-009  →  FR_009_CreatorAlwaysSet=PASS
+  FR-010  →  FR_010_StatusEnum=PASS
+  FR-011  →  FR_011_ClosedTaskEdit=PASS
+  FR-012  →  FR_012_DeletionRecorded=PASS, AuditCompleteness=PASS
+  FR-013  →  FR_013_OnlyCoreOps=PASS
+  FR-014  [uncovered]
+  FR-015  [uncovered]
+  FR-016  [uncovered]
+  FR-017  [uncovered]
+  FR-018  →  AuditCompleteness=PASS, AppendOnly=PASS, AttributionCorrectness=PASS, FR_018_DeletionLogged=PASS
+
+  WARNING: 7 FR(s) without any matching assertion: FR-005, FR-006, FR-007, FR-014, FR-015, FR-016, FR-017
+
+==============================================================================
+  Mutation tests  (assertion-strength validation)
+==============================================================================
+
+  Strategy: replace each named fact's body with `{}` (no constraint),
+  then re-run Alloy. Each listed assertion should now FAIL on the
+  mutated model. If it still PASSes, the assertion is vacuous and
+  must be strengthened.
+
+  - MUTATE F_AuthRequired  → runs/B-L1/mutated_F_AuthRequired.als
+    rationale: F_AuthRequired is the only fact directly forbidding a successful op with no caller (F_CallerIsTokenResolved is intentionally weakened to fire only when a caller exists). Removing it and forcing such an op makes the auth-required invariant fail.
+    expected to FAIL: AuthRequiredEverywhere, FR_001_AuthRequired
+      - AuthRequiredEverywhere: FAIL (expected)
+      - FR_001_AuthRequired: FAIL (expected)
+
+  - MUTATE F_LeastPrivilege  → runs/B-L1/mutated_F_LeastPrivilege.als
+    rationale: F_LeastPrivilege is the only fact tying Operation success to a matrix cell. Clearing it and forcing a successful Anonymous-role op produces an instance where (role -> kind) is not in PermMatrix.Allowed, which the LeastPrivilege predicate must reject.
+    expected to FAIL: LeastPrivilege
+      - LeastPrivilege: FAIL (expected)
+
+  - MUTATE F_DeletionLogCompleteness  → runs/B-L1/mutated_F_DeletionLogCompleteness.als
+    rationale: F_DeletionLogCompleteness is the only fact requiring every successful delete to spawn a log entry. Clearing it and injecting a successful delete with no log directly contradicts the completeness predicate.
+    expected to FAIL: AuditCompleteness, FR_012_DeletionRecorded, FR_018_DeletionLogged
+      - AuditCompleteness: FAIL (expected)
+      - FR_012_DeletionRecorded: FAIL (expected)
+      - FR_018_DeletionLogged: FAIL (expected)
+
+  - MUTATE F_DeletionLogAttribution  → runs/B-L1/mutated_F_DeletionLogAttribution.als
+    rationale: F_DeletionLogAttribution is the only fact aligning a log entry's deleter/taskRef with the operation's caller/targetTask. Clearing it lets a delete op record a deleter different from its caller, which the AttributionCorrectness predicate explicitly rejects.
+    expected to FAIL: AttributionCorrectness, FR_018_DeletionLogged
+      - AttributionCorrectness: FAIL (expected)
+      - FR_018_DeletionLogged: FAIL (expected)
+
+  - MUTATE F_AppendOnlyDeletionLog  → runs/B-L1/mutated_F_AppendOnlyDeletionLog.als
+    rationale: F_AppendOnlyDeletionLog is the only fact enforcing a 1-to-1 mapping between log entries and successful delete operations. Removing it and forcing two distinct operations to share a single DeletionLogEntry constructs an instance the AppendOnly predicate must flag.
+    expected to FAIL: AppendOnly
+      - AppendOnly: FAIL (expected)
+
+  - MUTATE F_ClosedTaskEditRule  → runs/B-L1/mutated_F_ClosedTaskEditRule.als
+    rationale: F_ClosedTaskEditRule is the only fact blocking a successful edit of a Done task that doesn't transition it out of Done. Clearing it and injecting such an edit (preStatus = newStatus = Done with outcome Success) violates the closed-task edit predicate directly.
+    expected to FAIL: FR_011_ClosedTaskEdit
+      - FR_011_ClosedTaskEdit: FAIL (expected)
+
+  Mutation summary
+  ----------------------------------------------------------------------------
+  - F_AuthRequired: ASSERTIONS BIT (AuthRequiredEverywhere, FR_001_AuthRequired)
+  - F_LeastPrivilege: ASSERTIONS BIT (LeastPrivilege)
+  - F_DeletionLogCompleteness: ASSERTIONS BIT (AuditCompleteness, FR_012_DeletionRecorded, FR_018_DeletionLogged)
+  - F_DeletionLogAttribution: ASSERTIONS BIT (AttributionCorrectness, FR_018_DeletionLogged)
+  - F_AppendOnlyDeletionLog: ASSERTIONS BIT (AppendOnly)
+  - F_ClosedTaskEditRule: ASSERTIONS BIT (FR_011_ClosedTaskEdit)
+
+
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/B-L1/report.txt

@@ -1,0 +1,132 @@
+==============================================================================
+  Design Compliance Report  (Phase 3 — feature_model.als)
+  feature       : B-L1
+  spec source   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/eval/specs/B-L1
+  alloy model   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/B-L1/feature_model.als
+  patterns      : AuthRequiredEverywhere, AuditCompleteness, AppendOnly, AttributionCorrectness, OwnershipExclusivity
+  fr count      : 18 declared in spec.md
+  assertions    : 23 total (20/23 PASS via Alloy)
+==============================================================================
+
+  Compliance matrix
+  ----------------------------------------------------------------------------
+  Assertion                     Verdict   Anchor
+  ------------------------------------------------------------------
+  AuthRequiredEverywhere        PASS      PATTERN AuthRequiredEverywhere: spec.md FR-001; contracts/http-api.md "401 unauthenticated before any handler runs"
+  FR_001_AuthRequired           PASS      FEATURE-SPECIFIC: FR-001
+  FR_002_IdentityFromAuth       PASS      FEATURE-SPECIFIC: FR-002 identity taken from auth context, not payload
+  FR_003_SingleWorkspace        PASS      FEATURE-SPECIFIC: FR-003 single implicit workspace, no Team entity
+  FR_004_FlatPermissions        PASS      FEATURE-SPECIFIC: FR-004 flat permissions — outcome independent of caller identity
+  FR_005_TaskHasTitleAndStatus  PASS      FEATURE-SPECIFIC: FR-005 task has a title (structural: every Task atom carries a title field at the data layer)
+  FR_006_DescriptionStructural  PASS      FEATURE-SPECIFIC: FR-006 description is a fixed field on Task (0-4000 chars, never NULL at the DB layer)
+  FR_007_DueDateOptional        PASS      FEATURE-SPECIFIC: FR-007 due date optional, past dates allowed
+  FR_008_AssigneeMember         PASS      FEATURE-SPECIFIC: FR-008 at most one assignee, and assignee is a member
+  OwnershipExclusivity          PASS      PATTERN OwnershipExclusivity: data-model.md tasks.created_by FK; spec.md FR-009
+  FR_009_CreatorRecorded        PASS      FEATURE-SPECIFIC: FR-009 creator and created_at recorded at creation and immutable
+  FR_010_StatusEnum             PASS      FEATURE-SPECIFIC: FR-010 status enum {todo, in_progress, done}
+  FR_011_ClosedTaskEditRule     PASS      FEATURE-SPECIFIC: FR-011 closed-task PATCH rule (US2 #5/#6, contracts 409 task_closed)
+  FR_012_DeletionLogged         PASS      FEATURE-SPECIFIC: FR-012 deletion produces an operational log entry
+  FR_013_OperationScope         PASS      FEATURE-SPECIFIC: FR-013 v1 manage scope = exactly the five OperationKinds
+  FR_014_UniversalVisibility    FAIL      FEATURE-SPECIFIC: FR-014 every authenticated member can list every task (no per-member visibility filter)
+  FR_015_FilterCombination      FAIL      FEATURE-SPECIFIC: FR-015 filter combinator (status AND assignee AND title-substr)
+  FR_016_ClearFilters           FAIL      FEATURE-SPECIFIC: FR-016 clearing filters returns to the default view (same ListOp kind, no extra endpoint)
+  FR_017_Timestamps             PASS      FEATURE-SPECIFIC: FR-017 every task has created_at and updated_at
+  AuditCompleteness             PASS      PATTERN AuditCompleteness: spec.md FR-018; data-model.md task_deletions table
+  AttributionCorrectness        PASS      PATTERN AttributionCorrectness: spec.md FR-018; data-model.md task_deletions.deleted_by_user_id
+  AppendOnly                    PASS      PATTERN AppendOnly: spec.md FR-018; data-model.md "No UPDATE/DELETE code path targets task_deletions"
+  FR_018_DeletionLog            PASS      FEATURE-SPECIFIC: FR-018 deletion log: timestamp, deleter identity, task identifier
+
+  Counterexamples (Alloy SAT)
+  ----------------------------------------------------------------------------
+  FR_014_UniversalVisibility  [FEATURE-SPECIFIC: FR-014 every authenticated member can list every task (no per-member visibility filter)]
+    Alloy: 15. check FR_014_UniversalVisibility     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR_015_FilterCombination  [FEATURE-SPECIFIC: FR-015 filter combinator (status AND assignee AND title-substr)]
+    Alloy: 16. check FR_015_FilterCombination     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR_016_ClearFilters  [FEATURE-SPECIFIC: FR-016 clearing filters returns to the default view (same ListOp kind, no extra endpoint)]
+    Alloy: 17. check FR_016_ClearFilters      0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR coverage
+  ----------------------------------------------------------------------------
+  FR-001  →  AuthRequiredEverywhere=PASS, FR_001_AuthRequired=PASS
+  FR-002  →  FR_002_IdentityFromAuth=PASS
+  FR-003  →  FR_003_SingleWorkspace=PASS
+  FR-004  →  FR_004_FlatPermissions=PASS
+  FR-005  →  FR_005_TaskHasTitleAndStatus=PASS
+  FR-006  →  FR_006_DescriptionStructural=PASS
+  FR-007  →  FR_007_DueDateOptional=PASS
+  FR-008  →  FR_008_AssigneeMember=PASS
+  FR-009  →  FR_009_CreatorRecorded=PASS, OwnershipExclusivity=PASS
+  FR-010  →  FR_010_StatusEnum=PASS
+  FR-011  →  FR_011_ClosedTaskEditRule=PASS
+  FR-012  →  FR_012_DeletionLogged=PASS
+  FR-013  →  FR_013_OperationScope=PASS
+  FR-014  →  FR_014_UniversalVisibility=FAIL
+  FR-015  →  FR_015_FilterCombination=FAIL
+  FR-016  →  FR_016_ClearFilters=FAIL
+  FR-017  →  FR_017_Timestamps=PASS
+  FR-018  →  FR_018_DeletionLog=PASS, AuditCompleteness=PASS, AttributionCorrectness=PASS, AppendOnly=PASS
+
+  All FRs have at least one matching assertion.
+
+==============================================================================
+  Mutation tests  (assertion-strength validation)
+==============================================================================
+
+  Strategy: replace each named fact's body with `{}` (no constraint),
+  then re-run Alloy. Each listed assertion should now FAIL on the
+  mutated model. If it still PASSes, the assertion is vacuous and
+  must be strengthened.
+
+  - MUTATE F_AuthRequired  → runs/B-L1/mutated_F_AuthRequired.als
+    rationale: F_AuthRequired is the sole fact that forbids a successful Operation from having no presented token. Removing it lets Alloy invent an Operation that succeeds with no auth, which the injection forces to exist; both auth predicates then find that counterexample.
+    expected to FAIL: AuthRequiredEverywhere, FR_001_AuthRequired
+      - AuthRequiredEverywhere: FAIL (expected)
+      - FR_001_AuthRequired: FAIL (expected)
+
+  - MUTATE F_TokenBinding  → runs/B-L1/mutated_F_TokenBinding.als
+    rationale: F_TokenBinding is the only fact pinning caller to presentedToken.owner. With it removed, the injection forces an Operation whose caller is someone other than the token owner, violating FR-002's payload-vs-context rule.
+    expected to FAIL: FR_002_IdentityFromAuth
+      - FR_002_IdentityFromAuth: FAIL (expected)
+
+  - MUTATE F_ClosedTaskEditRule  → runs/B-L1/mutated_F_ClosedTaskEditRule.als
+    rationale: F_ClosedTaskEditRule is the sole encoder of the 409 task_closed contract. Removing it lets Alloy find a successful EditOp on a Done task whose request neither reopens it nor changes status — the injection forces exactly that shape.
+    expected to FAIL: FR_011_ClosedTaskEditRule
+      - FR_011_ClosedTaskEditRule: FAIL (expected)
+
+  - MUTATE F_DeletionLog  → runs/B-L1/mutated_F_DeletionLog.als
+    rationale: F_DeletionLog is the sole link between successful DeleteOps and TaskDeletion log entries. Removing it lets Alloy invent a successful delete with no corresponding log row; the injection forces that orphaned delete.
+    expected to FAIL: AuditCompleteness, FR_012_DeletionLogged
+      - AuditCompleteness: FAIL (expected)
+      - FR_012_DeletionLogged: FAIL (expected)
+
+  - MUTATE F_DeletionAttribution  → runs/B-L1/mutated_F_DeletionAttribution.als
+    rationale: F_DeletionAttribution is the sole fact tying td.deleter to the recording op's caller. Removing it allows misattribution; the injection forces a log entry whose recorded deleter differs from the actual operation caller.
+    expected to FAIL: AttributionCorrectness, FR_018_DeletionLog
+      - AttributionCorrectness: FAIL (expected)
+      - FR_018_DeletionLog: FAIL (expected)
+
+  - MUTATE F_DeletionLogAppendOnly  → runs/B-L1/mutated_F_DeletionLogAppendOnly.als
+    rationale: F_DeletionLogAppendOnly is the only fact that forbids two distinct TaskDeletion rows for the same delete event (duplicate / overwrite). The injection forces two log entries sharing a single source operation, which append-only must rule out.
+    expected to FAIL: AppendOnly
+      - AppendOnly: FAIL (expected)
+
+  - MUTATE F_FlatPermissions  → runs/B-L1/mutated_F_FlatPermissions.als
+    rationale: F_FlatPermissions is the only fact stating that outcome is invariant under caller identity (given same kind/target/args). Removing it lets two authenticated callers with identical requests reach different outcomes; the injection forces that role-discrimination shape.
+    expected to FAIL: FR_004_FlatPermissions
+      - FR_004_FlatPermissions: FAIL (expected)
+
+  Mutation summary
+  ----------------------------------------------------------------------------
+  - F_AuthRequired: ASSERTIONS BIT (AuthRequiredEverywhere, FR_001_AuthRequired)
+  - F_TokenBinding: ASSERTIONS BIT (FR_002_IdentityFromAuth)
+  - F_ClosedTaskEditRule: ASSERTIONS BIT (FR_011_ClosedTaskEditRule)
+  - F_DeletionLog: ASSERTIONS BIT (AuditCompleteness, FR_012_DeletionLogged)
+  - F_DeletionAttribution: ASSERTIONS BIT (AttributionCorrectness, FR_018_DeletionLog)
+  - F_DeletionLogAppendOnly: ASSERTIONS BIT (AppendOnly)
+  - F_FlatPermissions: ASSERTIONS BIT (FR_004_FlatPermissions)
+

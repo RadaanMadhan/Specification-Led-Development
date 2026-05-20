@@ -1,0 +1,142 @@
+{
+  "feature_id": "B-L1",
+  "patterns_applied": [
+    "AuthRequiredEverywhere",
+    "AppendOnly",
+    "AuditCompleteness",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "ValidationBeforeMutation"
+  ],
+  "feature_specific_predicates": [
+    "FR_003_004_FlatPeerAccess",
+    "FR_001_AuthRequired",
+    "FR_008_AssigneeIsMember",
+    "FR_009_CreatorIsAlwaysMember",
+    "FR_010_ValidStatus",
+    "FR_011_ClosedTaskEditRule",
+    "FR_012_PermanentDeletion",
+    "FR_017_EditorIsMember",
+    "FR_018_DeletionLogComplete",
+    "FR_002_AuthContextIdentity",
+    "FR_004_NoPermissionDenial",
+    "FR_003_SingleWorkspace"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_AuthContextIdentity"
+    ],
+    "FR-003": [
+      "FR_003_004_FlatPeerAccess",
+      "FR_003_SingleWorkspace"
+    ],
+    "FR-004": [
+      "FR_003_004_FlatPeerAccess",
+      "FR_004_NoPermissionDenial"
+    ],
+    "FR-005": [
+      "ValidationBeforeMutation"
+    ],
+    "FR-006": [
+      "ValidationBeforeMutation"
+    ],
+    "FR-007": [
+      "ValidationBeforeMutation"
+    ],
+    "FR-008": [
+      "FR_008_AssigneeIsMember",
+      "OwnershipExclusivity"
+    ],
+    "FR-009": [
+      "FR_009_CreatorIsAlwaysMember"
+    ],
+    "FR-010": [
+      "FR_010_ValidStatus"
+    ],
+    "FR-011": [
+      "FR_011_ClosedTaskEditRule",
+      "ValidationBeforeMutation"
+    ],
+    "FR-012": [
+      "FR_012_PermanentDeletion"
+    ],
+    "FR-013": [
+      "FR_003_004_FlatPeerAccess"
+    ],
+    "FR-014": [
+      "FR_003_SingleWorkspace"
+    ],
+    "FR-015": [
+      "FR_003_SingleWorkspace"
+    ],
+    "FR-016": [
+      "FR_003_SingleWorkspace"
+    ],
+    "FR-017": [
+      "FR_017_EditorIsMember"
+    ],
+    "FR-018": [
+      "FR_018_DeletionLogComplete",
+      "AppendOnly",
+      "AuditCompleteness",
+      "AttributionCorrectness"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_AuthBoundary",
+      "asserts_violated": [
+        "AuthRequiredEverywhere",
+        "FR_001_AuthRequired"
+      ],
+      "rationale": "Clearing F_AuthBoundary allows Operations whose caller is Unauthenticated to exist in the model, directly violating FR-001 and the AuthRequiredEverywhere pattern predicate.",
+      "inject_violation": "fact MUTATE_AuthBoundaryViolation { some op: Operation | op.caller = Unauthenticated }"
+    },
+    {
+      "fact_name": "F_AppendOnlyDeletionLog",
+      "asserts_violated": [
+        "AppendOnly"
+      ],
+      "rationale": "Clearing F_AppendOnlyDeletionLog lets two distinct TaskDeletion atoms share the same loggedRef, meaning the same task appears twice in the deletion log \u2014 exactly the duplication the AppendOnly predicate is supposed to prevent.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some disj d1, d2: TaskDeletion | d1.loggedRef = d2.loggedRef }"
+    },
+    {
+      "fact_name": "F_ClosedTaskEditRule",
+      "asserts_violated": [
+        "FR_011_ClosedTaskEditRule",
+        "ValidationBeforeMutation"
+      ],
+      "rationale": "Clearing F_ClosedTaskEditRule allows an EditOp to target a Done task without supplying a non-Done newStatus (i.e., newStatus is empty or Done), which is exactly the closed-task violation FR-011 prohibits.",
+      "inject_violation": "fact MUTATE_ClosedTaskViolation { some e: EditOp | e.targetTask.status = Done and no e.newStatus }"
+    },
+    {
+      "fact_name": "F_PermanentDeletion",
+      "asserts_violated": [
+        "FR_012_PermanentDeletion"
+      ],
+      "rationale": "Clearing F_PermanentDeletion allows a LiveTask to share its taskRef with a TaskDeletion loggedRef, meaning a 'deleted' task still appears as a live task \u2014 violating the permanent-deletion invariant.",
+      "inject_violation": "fact MUTATE_PermanentDeletionViolation { some t: LiveTask, d: TaskDeletion | t.taskRef = d.loggedRef }"
+    },
+    {
+      "fact_name": "F_AuditCompleteness",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_018_DeletionLogComplete"
+      ],
+      "rationale": "Clearing F_AuditCompleteness allows a TaskDeletion to exist with no corresponding DeleteOperation, meaning a deletion was logged but no operation ever triggered it \u2014 breaking the completeness invariant.",
+      "inject_violation": "fact MUTATE_AuditCompletenessViolation { some d: TaskDeletion | no dop: DeleteOperation | dop.auditEntry = d }"
+    },
+    {
+      "fact_name": "F_DeleteOpAttribution",
+      "asserts_violated": [
+        "AttributionCorrectness"
+      ],
+      "rationale": "Clearing F_DeleteOpAttribution allows a DeleteOperation whose auditEntry.deleter differs from its own caller, or whose auditEntry.loggedRef differs from deletedRef \u2014 a mis-attribution in the deletion log that AttributionCorrectness is designed to catch.",
+      "inject_violation": "fact MUTATE_AttributionViolation { some dop: DeleteOperation | dop.auditEntry.deleter != dop.caller }"
+    }
+  ]
+}

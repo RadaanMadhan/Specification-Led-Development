@@ -1,0 +1,136 @@
+{
+  "feature_id": "A-L1",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "PermissionGrounding",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "AttributionCorrectness",
+    "ConcurrencySafety"
+  ],
+  "feature_specific_predicates": [
+    "FR_003_AmountRange",
+    "FR_003_TermOptions",
+    "FR_004_UniqueReference",
+    "FR_005_OnePendingPerCustomer",
+    "FR_009_DecisionReasonRequired",
+    "FR_010_AtomicDecision",
+    "FR_011_ImmutableDecision",
+    "FR_012_ConcurrentDecisionSafety",
+    "FR_013_CustomerOwnershipFilter",
+    "FR_015_RoleBasedAuthorization",
+    "FR_016_AuditTrail"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "LeastPrivilege"
+    ],
+    "FR-002": [],
+    "FR-003": [
+      "FR_003_AmountRange",
+      "FR_003_TermOptions"
+    ],
+    "FR-004": [
+      "FR_004_UniqueReference"
+    ],
+    "FR-005": [
+      "FR_005_OnePendingPerCustomer"
+    ],
+    "FR-006": [],
+    "FR-007": [
+      "PermissionGrounding"
+    ],
+    "FR-008": [
+      "PermissionGrounding"
+    ],
+    "FR-009": [
+      "FR_009_DecisionReasonRequired"
+    ],
+    "FR-010": [
+      "FR_010_AtomicDecision"
+    ],
+    "FR-011": [
+      "FR_011_ImmutableDecision"
+    ],
+    "FR-012": [
+      "FR_012_ConcurrentDecisionSafety",
+      "ConcurrencySafety"
+    ],
+    "FR-013": [
+      "FR_013_CustomerOwnershipFilter",
+      "OwnershipBasedAccess",
+      "NoInformationLeakage"
+    ],
+    "FR-014": [],
+    "FR-015": [
+      "FR_015_RoleBasedAuthorization",
+      "LeastPrivilege"
+    ],
+    "FR-016": [
+      "FR_016_AuditTrail",
+      "AuditCompleteness",
+      "AppendOnly",
+      "AttributionCorrectness"
+    ],
+    "FR-017": []
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_015_RoleBasedAuthorization"
+      ],
+      "rationale": "Removing this fact allows the model to construct permission matrices that violate the least-privilege principle, e.g., allowing customers to post decisions or bank staff to submit applications. This is exactly what LeastPrivilege and FR_015 are supposed to catch.",
+      "inject_violation": "fact MUTATE_PermissionViolation { some c: Customer | c -> PostDecision in PermMatrix.Allowed }"
+    },
+    {
+      "fact_name": "F_OnePendingApplicationPerCustomer",
+      "asserts_violated": [
+        "FR_005_OnePendingPerCustomer"
+      ],
+      "rationale": "Removing this fact allows a customer to have multiple applications in Pending Review status simultaneously, which violates FR-005. The assertion should catch this by failing when multiple pending apps exist for one customer.",
+      "inject_violation": "fact MUTATE_PendingViolation { some disj a1, a2: LoanApplication, c: Customer | a1.customer = c and a1.status = PendingReview and a2.customer = c and a2.status = PendingReview }"
+    },
+    {
+      "fact_name": "F_AtMostOneDecisionPerApplication",
+      "asserts_violated": [
+        "FR_012_ConcurrentDecisionSafety",
+        "ConcurrencySafety"
+      ],
+      "rationale": "Removing this fact permits multiple decisions on the same application, violating the atomic decision constraint and concurrent decision safety. The assertion must fail when two distinct decisions are recorded for one application.",
+      "inject_violation": "fact MUTATE_DecisionViolation { some disj d1, d2: Decision, app: LoanApplication | d1.application = app and d2.application = app }"
+    },
+    {
+      "fact_name": "F_AppendOnlyAuditLog",
+      "asserts_violated": [
+        "AppendOnly"
+      ],
+      "rationale": "Removing this fact allows duplicate submitted events for the same application, violating the append-only immutability invariant. The assertion checks that each application has exactly one submitted event and should fail when duplicates exist.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some disj e1, e2: ApplicationEvent, app: LoanApplication | e1.application = app and e1.event_type = SubmittedEvent and e2.application = app and e2.event_type = SubmittedEvent }"
+    },
+    {
+      "fact_name": "F_SubmittedEventRequired",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "AppendOnly",
+        "FR_016_AuditTrail"
+      ],
+      "rationale": "Removing this fact allows applications to exist without a submitted audit event, breaking the audit completeness guarantee. The assertion checks that every application has a corresponding submitted event and should fail when an application lacks this.",
+      "inject_violation": "fact MUTATE_AuditViolation { some app: LoanApplication | no e: ApplicationEvent | e.application = app and e.event_type = SubmittedEvent }"
+    },
+    {
+      "fact_name": "F_UniqueReferences",
+      "asserts_violated": [
+        "FR_004_UniqueReference"
+      ],
+      "rationale": "Removing this fact allows two applications to have identical reference numbers, violating the uniqueness constraint. The assertion must fail when duplicate references are detected.",
+      "inject_violation": "fact MUTATE_ReferenceViolation { some disj a1, a2: LoanApplication | a1.reference = a2.reference }"
+    }
+  ]
+}

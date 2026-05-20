@@ -1,0 +1,160 @@
+{
+  "feature_id": "004-loan-application-rbac",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AppendOnly",
+    "AuditCompleteness",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "AuthRequiredEverywhere"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_CustomerScope",
+    "FR_003_OfficerScope",
+    "FR_004_ComplianceReadOnly",
+    "FR_005_CustomerIdentityFromAuth",
+    "FR_008_OneInFlight",
+    "FR_009_SubmissionAudited",
+    "FR_011_ClaimSetsOfficer",
+    "FR_012_OneAssignedOfficer",
+    "FR_013_AssignedOfficerDecides",
+    "FR_015_DecisionAtomic",
+    "FR_016_TerminalImmutability",
+    "FR_017_AuditMandatory",
+    "FR_018_AppendOnly",
+    "FR_019_OnePerTransition",
+    "FR_020_CustomerOwnOnly",
+    "FR_023_ComplianceNoWrite"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_CustomerScope",
+      "LeastPrivilege"
+    ],
+    "FR-003": [
+      "FR_003_OfficerScope",
+      "LeastPrivilege"
+    ],
+    "FR-004": [
+      "FR_004_ComplianceReadOnly",
+      "LeastPrivilege"
+    ],
+    "FR-005": [
+      "FR_005_CustomerIdentityFromAuth"
+    ],
+    "FR-008": [
+      "FR_008_OneInFlight"
+    ],
+    "FR-009": [
+      "FR_009_SubmissionAudited",
+      "AuditCompleteness",
+      "AttributionCorrectness"
+    ],
+    "FR-011": [
+      "FR_011_ClaimSetsOfficer"
+    ],
+    "FR-012": [
+      "FR_012_OneAssignedOfficer"
+    ],
+    "FR-013": [
+      "FR_013_AssignedOfficerDecides"
+    ],
+    "FR-015": [
+      "FR_015_DecisionAtomic"
+    ],
+    "FR-016": [
+      "FR_016_TerminalImmutability"
+    ],
+    "FR-017": [
+      "FR_017_AuditMandatory",
+      "AuditCompleteness",
+      "AttributionCorrectness"
+    ],
+    "FR-018": [
+      "FR_018_AppendOnly",
+      "AppendOnly"
+    ],
+    "FR-019": [
+      "FR_019_OnePerTransition",
+      "AuditCompleteness"
+    ],
+    "FR-020": [
+      "FR_020_CustomerOwnOnly",
+      "OwnershipBasedAccess"
+    ],
+    "FR-023": [
+      "FR_023_ComplianceNoWrite",
+      "LeastPrivilege"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_LeastPrivilegeOperations",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_001_AuthRequired",
+        "FR_002_CustomerScope",
+        "FR_003_OfficerScope",
+        "FR_004_ComplianceReadOnly",
+        "FR_023_ComplianceNoWrite",
+        "AuthRequiredEverywhere"
+      ],
+      "rationale": "Clearing F_LeastPrivilegeOperations removes the structural constraint that every Operation's (role, kind) lies in the permission matrix. The injection forces an Operation whose (role, kind) is NOT in PermMatrix.Allowed \u2014 a direct counterexample to LeastPrivilege and every role-scope FR derived from the matrix.",
+      "inject_violation": "fact MUTATE_LeastPrivilegeViolation { some op: Operation | not (op.caller.role -> op.kind in PermMatrix.Allowed) }"
+    },
+    {
+      "fact_name": "F_AuditAppendOnlyNoDup",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_018_AppendOnly",
+        "FR_019_OnePerTransition",
+        "AuditCompleteness"
+      ],
+      "rationale": "Clearing F_AuditAppendOnlyNoDup permits duplicate audit entries for the same (application, newStatus) transition. The injection forces two distinct AuditEntries to cover the same applied transition \u2014 exactly what AppendOnly forbids.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some disj e1, e2: AuditEntry | e1.application = e2.application and e1.newStatus = e2.newStatus }"
+    },
+    {
+      "fact_name": "F_AuditCompleteness",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_017_AuditMandatory",
+        "FR_019_OnePerTransition",
+        "FR_009_SubmissionAudited"
+      ],
+      "rationale": "Clearing F_AuditCompleteness allows applications to exist without their mandatory submission audit entry. The injection forces a LoanApplication with no Submitted-newStatus AuditEntry, breaking the 'every applied transition has exactly one audit entry' invariant.",
+      "inject_violation": "fact MUTATE_AuditCompletenessViolation { some a: LoanApplication | no e: AuditEntry | e.application = a and e.newStatus = Submitted }"
+    },
+    {
+      "fact_name": "F_OwnershipBasedAccess",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_020_CustomerOwnOnly"
+      ],
+      "rationale": "Clearing F_OwnershipBasedAccess removes the cross-tenant check that constrains customer-role Operations to applications they own. The injection forces a customer Operation whose target is owned by a different customer \u2014 exactly the FR-020 'no other-customer access' violation.",
+      "inject_violation": "fact MUTATE_OwnershipViolation { some op: Operation | op.caller.role = Customer and some op.target and op.target.customer != op.caller }"
+    },
+    {
+      "fact_name": "F_DecisionPostConditions",
+      "asserts_violated": [
+        "FR_013_AssignedOfficerDecides"
+      ],
+      "rationale": "Clearing F_DecisionPostConditions removes the rule that decidedBy must equal the application's assignedOfficer. The injection forces a Decision whose decider is not the assigned officer \u2014 the canonical FR-013 violation that the conditional UPDATE in service.py is built to prevent.",
+      "inject_violation": "fact MUTATE_AssignedOfficerViolation { some d: Decision | d.decidedBy != d.application.assignedOfficer }"
+    },
+    {
+      "fact_name": "F_OneInFlightPerCustomer",
+      "asserts_violated": [
+        "FR_008_OneInFlight"
+      ],
+      "rationale": "Clearing F_OneInFlightPerCustomer disables the partial unique index that prevents two simultaneous in-flight applications per customer. The injection constructs two distinct applications for the same customer, both in Submitted/Under Review \u2014 exactly the FR-008 violation that triggers 409 has_in_flight_application in service.py.",
+      "inject_violation": "fact MUTATE_OneInFlightViolation { some disj a1, a2: LoanApplication | a1.customer = a2.customer and a1.status in (Submitted + UnderReview) and a2.status in (Submitted + UnderReview) }"
+    }
+  ]
+}

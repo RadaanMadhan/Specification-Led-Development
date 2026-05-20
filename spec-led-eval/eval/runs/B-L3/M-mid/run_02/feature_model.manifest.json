@@ -1,0 +1,176 @@
+{
+  "feature_id": "B-L3",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "PrivilegeMonotonicity",
+    "ValidationBeforeMutation"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_UserExactlyOneTeam",
+    "FR_002a_IdentityFromToken",
+    "FR_003_MemberAccessControl",
+    "FR_005_AdminTeamAccess",
+    "FR_006_CrossTeamIsolation",
+    "FR_009_ImmutableOwnerAndTeam",
+    "FR_010_OwnerOnlyShareControl",
+    "FR_011_ShareeCannotDelete",
+    "FR_012_NoChrossTeamSharing",
+    "FR_013_ShareAuditEntries",
+    "FR_014_ByteEquivalentIsolation",
+    "FR_015_PerEventAuditEntries",
+    "FR_016_AuditAttributionAccurate",
+    "FR_017_AuditImmutableOutlivesTask",
+    "FR_019_AuditVisibility"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_UserExactlyOneTeam"
+    ],
+    "FR-002a": [
+      "FR_002a_IdentityFromToken"
+    ],
+    "FR-003": [
+      "FR_003_MemberAccessControl",
+      "OwnershipBasedAccess"
+    ],
+    "FR-004": [
+      "FR_003_MemberAccessControl",
+      "LeastPrivilege"
+    ],
+    "FR-005": [
+      "FR_005_AdminTeamAccess",
+      "PrivilegeMonotonicity"
+    ],
+    "FR-006": [
+      "FR_006_CrossTeamIsolation",
+      "LeastPrivilege",
+      "NoInformationLeakage"
+    ],
+    "FR-007": [
+      "ValidationBeforeMutation"
+    ],
+    "FR-008": [
+      "ValidationBeforeMutation"
+    ],
+    "FR-009": [
+      "FR_009_ImmutableOwnerAndTeam",
+      "OwnershipExclusivity"
+    ],
+    "FR-010": [
+      "FR_010_OwnerOnlyShareControl",
+      "OwnershipBasedAccess"
+    ],
+    "FR-011": [
+      "FR_011_ShareeCannotDelete"
+    ],
+    "FR-012": [
+      "FR_012_NoChrossTeamSharing",
+      "FR_006_CrossTeamIsolation"
+    ],
+    "FR-013": [
+      "FR_013_ShareAuditEntries"
+    ],
+    "FR-014": [
+      "FR_014_ByteEquivalentIsolation",
+      "NoInformationLeakage"
+    ],
+    "FR-015": [
+      "FR_015_PerEventAuditEntries",
+      "AuditCompleteness",
+      "ValidationBeforeMutation"
+    ],
+    "FR-016": [
+      "FR_016_AuditAttributionAccurate",
+      "AttributionCorrectness"
+    ],
+    "FR-017": [
+      "FR_017_AuditImmutableOutlivesTask",
+      "AppendOnly"
+    ],
+    "FR-018": [
+      "ValidationBeforeMutation",
+      "AuditCompleteness"
+    ],
+    "FR-019": [
+      "FR_019_AuditVisibility"
+    ],
+    "FR-020": [
+      "AppendOnly",
+      "FR_017_AuditImmutableOutlivesTask"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_AppendOnlyAuditEntries",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_017_AuditImmutableOutlivesTask"
+      ],
+      "rationale": "Removing this fact permits two AuditEntry atoms with identical (task, actor, role, op) \u2014 a 'replacement' pattern that violates immutability. The injection forces exactly such a pair to exist, so AppendOnly and FR_017_AuditImmutableOutlivesTask both find counterexamples.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some disj ae1, ae2: AuditEntry | ae1.entryTask = ae2.entryTask and ae1.entryActor = ae2.entryActor and ae1.entryActorRole = ae2.entryActorRole and ae1.entryOp = ae2.entryOp }"
+    },
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "NoInformationLeakage",
+        "FR_014_ByteEquivalentIsolation",
+        "PermissionCompleteness"
+      ],
+      "rationale": "Clearing the permission matrix fact removes all constraints on PermMatrix.Allowed, so the solver can place RelOutsider -> GetTaskById in the allowed set, violating LeastPrivilege and NoInformationLeakage. The injection forces that exact cell to be present.",
+      "inject_violation": "fact MUTATE_PermMatrixViolation { RelOutsider -> GetTaskById in PermMatrix.Allowed }"
+    },
+    {
+      "fact_name": "F_ShareeSameTeam",
+      "asserts_violated": [
+        "FR_006_CrossTeamIsolation",
+        "FR_012_NoChrossTeamSharing",
+        "OwnershipBasedAccess"
+      ],
+      "rationale": "Removing this fact allows a user from a different team to appear in taskSharees, violating the cross-team-sharing prohibition. The injection forces a Task whose sharedWith includes a user from a different team.",
+      "inject_violation": "fact MUTATE_CrossTeamShareViolation { some t: Task, s: t.taskSharees | s.userTeam != t.taskTeam }"
+    },
+    {
+      "fact_name": "F_AuditCreatedExists",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_015_PerEventAuditEntries",
+        "ValidationBeforeMutation"
+      ],
+      "rationale": "Removing this fact allows a Task to exist without any OpCreated audit entry, breaking AuditCompleteness and ValidationBeforeMutation. The injection forces a Task with no Created entry.",
+      "inject_violation": "fact MUTATE_MissingCreatedAudit { some t: Task | no ae: AuditEntry | ae.entryTask = t and ae.entryOp = OpCreated }"
+    },
+    {
+      "fact_name": "F_AuditActorRoleSnapshot",
+      "asserts_violated": [
+        "AttributionCorrectness",
+        "FR_016_AuditAttributionAccurate"
+      ],
+      "rationale": "Removing this fact lets the stored actorRole in an AuditEntry differ from the actor's actual role, producing a misattributed audit record. The injection forces an entry where entryActorRole = RoleMember but the actor's userRole = RoleTeamAdmin.",
+      "inject_violation": "fact MUTATE_MisattributedRole { some ae: AuditEntry | ae.entryActorRole = RoleMember and ae.entryActor.userRole = RoleTeamAdmin }"
+    },
+    {
+      "fact_name": "F_OwnerInTaskTeam",
+      "asserts_violated": [
+        "OwnershipExclusivity",
+        "FR_009_ImmutableOwnerAndTeam",
+        "FR_006_CrossTeamIsolation"
+      ],
+      "rationale": "Removing this fact allows a Task whose owner is in a different team than the task's team_id, breaking the denormalization invariant that underpins cross-team isolation queries. The injection forces exactly that mismatch.",
+      "inject_violation": "fact MUTATE_OwnerTeamMismatch { some t: Task | t.taskOwner.userTeam != t.taskTeam }"
+    }
+  ]
+}

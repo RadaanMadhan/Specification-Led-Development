@@ -1,0 +1,110 @@
+==============================================================================
+  Design Compliance Report  (Phase 3 — feature_model.als)
+  feature       : B-L1
+  spec source   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/eval/specs/B-L1
+  alloy model   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/B-L1/feature_model.als
+  patterns      : LeastPrivilege, PermissionCompleteness, AuthRequiredEverywhere, AppendOnly, AuditCompleteness, AttributionCorrectness, OwnershipExclusivity
+  fr count      : 18 declared in spec.md
+  assertions    : 17 total (17/17 PASS via Alloy)
+==============================================================================
+
+  Compliance matrix
+  ----------------------------------------------------------------------------
+  Assertion                         Verdict   Anchor
+  ----------------------------------------------------------------------
+  LeastPrivilege                    PASS      PATTERN LeastPrivilege: contracts/http-api.md permission section; spec.md FR-004
+  PermissionCompleteness            PASS      PATTERN PermissionCompleteness: contracts/http-api.md; spec.md FR-003, FR-004
+  AuthRequiredEverywhere            PASS      PATTERN AuthRequiredEverywhere: spec.md FR-001; contracts/http-api.md "401 unauthenticated"
+  AppendOnly                        PASS      PATTERN AppendOnly: spec.md FR-018; data-model.md "No UPDATE/DELETE … task_deletions"
+  AuditCompleteness                 PASS      PATTERN AuditCompleteness: spec.md FR-018; data-model.md task_deletions INSERT
+  AttributionCorrectness            PASS      PATTERN AttributionCorrectness: spec.md FR-018; data-model.md deleted_by_user_id
+  OwnershipExclusivity              PASS      PATTERN OwnershipExclusivity: spec.md FR-008; data-model.md assignee_id (lone FK)
+  FR_001_AuthRequired               PASS      FEATURE-SPECIFIC: FR-001
+  FR_002_CreatorFromAuthContext     PASS      FEATURE-SPECIFIC: FR-002
+  FR_003_SingleWorkspaceAllVisible  PASS      FEATURE-SPECIFIC: FR-003
+  FR_004_FlatPeerPermissions        PASS      FEATURE-SPECIFIC: FR-004
+  FR_008_AssigneeMustBeMember       PASS      FEATURE-SPECIFIC: FR-008
+  FR_009_CreatorRecorded            PASS      FEATURE-SPECIFIC: FR-009
+  FR_010_ValidStatusSet             PASS      FEATURE-SPECIFIC: FR-010
+  FR_011_ClosedTaskEditRule         PASS      FEATURE-SPECIFIC: FR-011; contracts/http-api.md "409 task_closed"
+  FR_012_DeletionIsPermanent        PASS      FEATURE-SPECIFIC: FR-012; spec.md "Deletion is permanent"
+  FR_018_DeletionLogged             PASS      FEATURE-SPECIFIC: FR-018; data-model.md task_deletions
+
+  FR coverage
+  ----------------------------------------------------------------------------
+  FR-001  →  FR_001_AuthRequired=PASS, AuthRequiredEverywhere=PASS
+  FR-002  →  FR_002_CreatorFromAuthContext=PASS
+  FR-003  →  FR_003_SingleWorkspaceAllVisible=PASS, PermissionCompleteness=PASS
+  FR-004  →  FR_004_FlatPeerPermissions=PASS, LeastPrivilege=PASS, PermissionCompleteness=PASS
+  FR-005  →  FR_009_CreatorRecorded=PASS
+  FR-006  →  FR_010_ValidStatusSet=PASS
+  FR-007  →  FR_010_ValidStatusSet=PASS
+  FR-008  →  FR_008_AssigneeMustBeMember=PASS, OwnershipExclusivity=PASS
+  FR-009  →  FR_009_CreatorRecorded=PASS, FR_002_CreatorFromAuthContext=PASS
+  FR-010  →  FR_010_ValidStatusSet=PASS
+  FR-011  →  FR_011_ClosedTaskEditRule=PASS
+  FR-012  →  FR_012_DeletionIsPermanent=PASS
+  FR-013  →  FR_004_FlatPeerPermissions=PASS
+  FR-014  →  FR_003_SingleWorkspaceAllVisible=PASS
+  FR-015  →  FR_003_SingleWorkspaceAllVisible=PASS
+  FR-016  →  FR_003_SingleWorkspaceAllVisible=PASS
+  FR-017  →  FR_009_CreatorRecorded=PASS
+  FR-018  →  FR_018_DeletionLogged=PASS, AppendOnly=PASS, AuditCompleteness=PASS, AttributionCorrectness=PASS
+
+  All FRs have at least one matching assertion.
+
+==============================================================================
+  Mutation tests  (assertion-strength validation)
+==============================================================================
+
+  Strategy: replace each named fact's body with `{}` (no constraint),
+  then re-run Alloy. Each listed assertion should now FAIL on the
+  mutated model. If it still PASSes, the assertion is vacuous and
+  must be strengthened.
+
+  - MUTATE F_AppendOnlyDeletionLog  → runs/B-L1/mutated_F_AppendOnlyDeletionLog.als
+    rationale: Clearing this fact allows TaskDeletion atoms to exist with no corresponding DeleteOperation, breaking the append-only invariant. The injection then forces a free-floating (unanchored) TaskDeletion to exist, which AppendOnly and FR_018_DeletionLogged should catch.
+    expected to FAIL: AppendOnly, FR_018_DeletionLogged
+      - AppendOnly: FAIL (expected)
+      - FR_018_DeletionLogged: PASS (vacuous?)
+
+  - MUTATE F_ClosedTaskEditRule  → runs/B-L1/mutated_F_ClosedTaskEditRule.als
+    rationale: Clearing this fact removes the constraint that editing a Done task requires a simultaneous status transition. The injection then forces an EditOperation targeting a Done task with no newStatus change, exactly the violation FR-011 prohibits.
+    expected to FAIL: FR_011_ClosedTaskEditRule
+      - FR_011_ClosedTaskEditRule: FAIL (expected)
+
+  - MUTATE F_DeletionAlwaysLogged  → runs/B-L1/mutated_F_DeletionAlwaysLogged.als
+    rationale: Clearing this fact removes the requirement that a DeleteOperation's log entry is attributed to its caller. The injection forces a mismatch between deleter and caller, violating attribution correctness and audit completeness.
+    expected to FAIL: AuditCompleteness, AttributionCorrectness, FR_018_DeletionLogged
+      - AuditCompleteness: PASS (vacuous?)
+      - AttributionCorrectness: FAIL (expected)
+      - FR_018_DeletionLogged: FAIL (expected)
+
+  - MUTATE F_FlatPermissions  → runs/B-L1/mutated_F_FlatPermissions.als
+    rationale: Clearing this fact allows the PermMatrix.Allowed relation to be any subset of Member × OperationKind, including one where some member is denied some operation. The injection then forces a missing cell, directly violating the flat peer invariant.
+    expected to FAIL: LeastPrivilege, PermissionCompleteness, FR_004_FlatPeerPermissions
+      - LeastPrivilege: FAIL (expected)
+      - PermissionCompleteness: FAIL (expected)
+      - FR_004_FlatPeerPermissions: FAIL (expected)
+
+  - MUTATE F_AssigneeIsMember  → runs/B-L1/mutated_F_AssigneeIsMember.als
+    rationale: Clearing this fact allows a Task's assignee to be any atom, not necessarily a Member. The injection then forces a Task to have an assignee outside the Member sig, violating both the membership constraint and the exclusivity invariant.
+    expected to FAIL: FR_008_AssigneeMustBeMember, OwnershipExclusivity
+      - FR_008_AssigneeMustBeMember: PASS (vacuous?)
+      - OwnershipExclusivity: PASS (vacuous?)
+
+  - MUTATE F_CreatorRecorded  → runs/B-L1/mutated_F_CreatorRecorded.als
+    rationale: Clearing this fact removes the guarantee that every Task has a creator. The injection then forces a Task whose creator is not a Member (i.e., the creator field references a non-member atom), violating FR-009's requirement that the creator always records the authenticated identity.
+    expected to FAIL: FR_009_CreatorRecorded, FR_002_CreatorFromAuthContext
+      - FR_009_CreatorRecorded: PASS (vacuous?)
+      - FR_002_CreatorFromAuthContext: PASS (vacuous?)
+
+  Mutation summary
+  ----------------------------------------------------------------------------
+  - F_AppendOnlyDeletionLog: ASSERTION VACUOUS (AppendOnly, FR_018_DeletionLogged)
+  - F_ClosedTaskEditRule: ASSERTIONS BIT (FR_011_ClosedTaskEditRule)
+  - F_DeletionAlwaysLogged: ASSERTION VACUOUS (AuditCompleteness, AttributionCorrectness, FR_018_DeletionLogged)
+  - F_FlatPermissions: ASSERTIONS BIT (LeastPrivilege, PermissionCompleteness, FR_004_FlatPeerPermissions)
+  - F_AssigneeIsMember: ASSERTION VACUOUS (FR_008_AssigneeMustBeMember, OwnershipExclusivity)
+  - F_CreatorRecorded: ASSERTION VACUOUS (FR_009_CreatorRecorded, FR_002_CreatorFromAuthContext)
+

@@ -1,0 +1,147 @@
+{
+  "feature_id": "C-L1",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "PermissionGrounding",
+    "AuthRequiredEverywhere",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_RoleCatalogue",
+    "FR_003_AuditPerPatientQueryable",
+    "FR_004_NoIdInPath",
+    "FR_005_ReadOnly",
+    "FR_006_CareTeamGating",
+    "FR_007_ByteEquivalentRefusal",
+    "FR_008_AlwaysAudited",
+    "FR_009_AuditShape",
+    "FR_010_AuditAppendOnly",
+    "FR_011_IGOnlyAuditSearch",
+    "FR_012_RetentionFloor",
+    "FR_013_NoUnauditedAccess",
+    "FR_014_SafetyContentSurfaced",
+    "FR_015_VerificationBlockPresent"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_RoleCatalogue"
+    ],
+    "FR-003": [
+      "FR_003_AuditPerPatientQueryable"
+    ],
+    "FR-004": [
+      "FR_004_NoIdInPath"
+    ],
+    "FR-005": [
+      "FR_005_ReadOnly"
+    ],
+    "FR-006": [
+      "FR_006_CareTeamGating",
+      "OwnershipBasedAccess",
+      "LeastPrivilege"
+    ],
+    "FR-007": [
+      "FR_007_ByteEquivalentRefusal",
+      "NoInformationLeakage"
+    ],
+    "FR-008": [
+      "FR_008_AlwaysAudited",
+      "AuditCompleteness"
+    ],
+    "FR-009": [
+      "FR_009_AuditShape",
+      "AttributionCorrectness"
+    ],
+    "FR-010": [
+      "FR_010_AuditAppendOnly",
+      "AppendOnly"
+    ],
+    "FR-011": [
+      "FR_011_IGOnlyAuditSearch",
+      "LeastPrivilege"
+    ],
+    "FR-012": [
+      "FR_012_RetentionFloor",
+      "AppendOnly"
+    ],
+    "FR-013": [
+      "FR_013_NoUnauditedAccess",
+      "AuditCompleteness"
+    ],
+    "FR-014": [
+      "FR_014_SafetyContentSurfaced"
+    ],
+    "FR-015": [
+      "FR_015_VerificationBlockPresent"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_AppendOnlyAuditEntries",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_010_AuditAppendOnly",
+        "FR_012_RetentionFloor"
+      ],
+      "rationale": "Removing this fact allows two distinct AuditEntry atoms to record the same Access \u2014 the canonical violation of append-only / immutability. The injection forces such a duplicate to exist, so AppendOnly (and FR-010, FR-012) must fail.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some disj e1, e2: AuditEntry | e1.forAccess = e2.forAccess }"
+    },
+    {
+      "fact_name": "F_AuditExists",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_008_AlwaysAudited",
+        "FR_013_NoUnauditedAccess"
+      ],
+      "rationale": "Removing the every-access-has-an-audit fact lets Alloy invent an Access with no matching AuditEntry. The injection forces this case, breaking AuditCompleteness, FR-008 and FR-013.",
+      "inject_violation": "fact MUTATE_AuditCompletenessViolation { some a: Access | a.outcome = Permitted and (no e: AuditEntry | e.forAccess = a) }"
+    },
+    {
+      "fact_name": "F_AccessAuthorisationRule",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "OwnershipBasedAccess",
+        "FR_006_CareTeamGating"
+      ],
+      "rationale": "This fact links Permitted outcomes to (a) an allowed role-endpoint cell and (b) an active care-team membership. Clearing it severs both. The injection produces an AuditOfficer with a Permitted RecordsLookup outcome \u2014 denied by the permission matrix and certainly not on the patient's care team \u2014 which violates LeastPrivilege, OwnershipBasedAccess and FR-006.",
+      "inject_violation": "fact MUTATE_AuthorisationViolation { some a: Access | a.caller.role = AuditOfficer and a.outcome = Permitted }"
+    },
+    {
+      "fact_name": "F_ByteEquivalentResponse",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "FR_007_ByteEquivalentRefusal"
+      ],
+      "rationale": "Removing the response-shape rule lets Alloy assign a RecordSummary response to a Denied outcome, or a different shape to NotFoundOrDenied than to Denied. The injection forces a Denied access and a NotFoundOrDenied access whose response shapes differ \u2014 the canonical information-leakage counterexample.",
+      "inject_violation": "fact MUTATE_LeakageViolation { some disj a1, a2: Access | a1.outcome = Denied and a2.outcome = NotFoundOrDenied and a1.response != a2.response }"
+    },
+    {
+      "fact_name": "F_AuditAttribution",
+      "asserts_violated": [
+        "AttributionCorrectness",
+        "FR_009_AuditShape"
+      ],
+      "rationale": "This fact pins each audit entry's snapshot fields to the underlying access. Clearing it lets an AuditEntry record a different clinician than the one who actually performed the access. The injection forces that misattribution.",
+      "inject_violation": "fact MUTATE_AttributionViolation { some e: AuditEntry | e.clinicianSnapshot != e.forAccess.caller }"
+    },
+    {
+      "fact_name": "F_AuditSearchAuthorisation",
+      "asserts_violated": [
+        "FR_011_IGOnlyAuditSearch",
+        "LeastPrivilege"
+      ],
+      "rationale": "Removing the IG-only rule lets a non-AuditOfficer caller obtain a Permitted outcome on /audit/search. The injection produces such an attempt, violating FR-011 and the LeastPrivilege clause covering AuditSearch.",
+      "inject_violation": "fact MUTATE_AuditSearchViolation { some s: AuditSearchAttempt | s.caller.role != AuditOfficer and s.outcome = Permitted }"
+    }
+  ]
+}

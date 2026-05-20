@@ -1,0 +1,51 @@
+{
+  "F_AuthRequired": {
+    "targeted_asserts": {
+      "FR_001_AuthRequired": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AccessControl": {
+    "targeted_asserts": {
+      "LeastPrivilege": "BIT",
+      "FR_010_OwnerOnlyShares": "BIT",
+      "FR_011_ShareeCannotDelete": "BIT",
+      "OwnershipBasedAccess": "BIT",
+      "FR_003_MemberOwnedOrShared": "BIT",
+      "FR_005_AdminInTeamOnly": "BIT",
+      "FR_006_CrossTeamIsolation": "BIT",
+      "NoInformationLeakage": "BIT",
+      "FR_014_ByteEquivIsolation": "BIT",
+      "FR_019_AuditVisibility": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AppendOnly": {
+    "targeted_asserts": {
+      "AppendOnly": "BIT",
+      "FR_017_AuditImmutable": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AuditCompleteness": {
+    "targeted_asserts": {
+      "AuditCompleteness": "VACUOUS_OVERCONSTRAINT",
+      "FR_015_AuditPerEvent": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_AuditAttribution": {
+    "targeted_asserts": {
+      "AttributionCorrectness": "BIT",
+      "FR_002_RoleFromToken": "BIT",
+      "FR_016_AuditFields": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_SharedWithSameTeam": {
+    "targeted_asserts": {
+      "FR_012_NoCrossTeamShare": "BIT"
+    },
+    "all_bit": true
+  }
+}

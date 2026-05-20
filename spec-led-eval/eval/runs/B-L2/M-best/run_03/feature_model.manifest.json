@@ -1,0 +1,173 @@
+{
+  "feature_id": "007-team-tasks",
+  "patterns_applied": [
+    "AuthRequiredEverywhere",
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "PrivilegeMonotonicity",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_ActorFromAuthContext",
+    "FR_003_TeamContextRequired",
+    "FR_004_CallerIsTeamMember",
+    "FR_005_TaskTeamConsistent",
+    "FR_006_OwnerImmutableAndExclusive",
+    "FR_007_OneRolePerUserPerTeam",
+    "FR_008_OwnerOrAdminMayMutate",
+    "FR_009_MemberCannotMutateOthers",
+    "FR_010_AdminCanMutateAny",
+    "FR_011_NoCrossTeamAccess",
+    "FR_012_TaskFieldsValid",
+    "FR_013_StatusSet",
+    "FR_014_CrossTeamIsolation",
+    "FR_015_AuditPerSave",
+    "FR_016_AuditAppendOnly",
+    "FR_017_AuditReadableByMember",
+    "FR_018_AuditRetainedViaAppendOnly",
+    "FR_019_020_ListScopedToTeam"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_ActorFromAuthContext",
+      "AttributionCorrectness"
+    ],
+    "FR-003": [
+      "FR_003_TeamContextRequired"
+    ],
+    "FR-004": [
+      "FR_004_CallerIsTeamMember"
+    ],
+    "FR-005": [
+      "FR_005_TaskTeamConsistent"
+    ],
+    "FR-006": [
+      "FR_006_OwnerImmutableAndExclusive",
+      "OwnershipExclusivity"
+    ],
+    "FR-007": [
+      "FR_007_OneRolePerUserPerTeam"
+    ],
+    "FR-008": [
+      "FR_008_OwnerOrAdminMayMutate",
+      "OwnershipBasedAccess",
+      "LeastPrivilege"
+    ],
+    "FR-009": [
+      "FR_009_MemberCannotMutateOthers",
+      "OwnershipBasedAccess"
+    ],
+    "FR-010": [
+      "FR_010_AdminCanMutateAny",
+      "PrivilegeMonotonicity"
+    ],
+    "FR-011": [
+      "FR_011_NoCrossTeamAccess",
+      "NoInformationLeakage"
+    ],
+    "FR-012": [
+      "FR_012_TaskFieldsValid"
+    ],
+    "FR-013": [
+      "FR_013_StatusSet"
+    ],
+    "FR-014": [
+      "FR_014_CrossTeamIsolation",
+      "NoInformationLeakage"
+    ],
+    "FR-015": [
+      "FR_015_AuditPerSave",
+      "AuditCompleteness",
+      "AttributionCorrectness"
+    ],
+    "FR-016": [
+      "FR_016_AuditAppendOnly",
+      "AppendOnly"
+    ],
+    "FR-017": [
+      "FR_017_AuditReadableByMember"
+    ],
+    "FR-018": [
+      "FR_018_AuditRetainedViaAppendOnly",
+      "AppendOnly"
+    ],
+    "FR-019": [
+      "FR_019_020_ListScopedToTeam"
+    ],
+    "FR-020": [
+      "FR_019_020_ListScopedToTeam"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_PermissionGate",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "OwnershipBasedAccess",
+        "FR_008_OwnerOrAdminMayMutate",
+        "FR_009_MemberCannotMutateOthers"
+      ],
+      "rationale": "F_PermissionGate is the load-bearing constraint that ties op.succeeded to the (role,kind) matrix plus ownership. Removing it lets a non-owner non-admin member succeed at DeleteTask; the injection forces such an op into the universe, which LeastPrivilege/OwnershipBasedAccess are supposed to catch.",
+      "inject_violation": "fact MUTATE_LeastPrivilege { some op: Operation, m: TeamMembership | some op.succeeded and m.user = op.caller and m.team = op.teamCtx and m.role = MemberRole and op.kind = DeleteTask and some op.target and op.target.owner != op.caller }"
+    },
+    {
+      "fact_name": "F_CrossTeamIsolation",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "FR_011_NoCrossTeamAccess",
+        "FR_014_CrossTeamIsolation"
+      ],
+      "rationale": "F_CrossTeamIsolation is what forbids a successful operation from reaching a task whose team differs from the caller's X-Team-Id. Clearing it allows cross-tenant access; the injection forces a successful GetTaskById whose target lives in a different team than teamCtx \u2014 exactly the leak NoInformationLeakage should flag. GetTaskById is used (not PATCH/DELETE) so no audit-task team chain re-enforces isolation.",
+      "inject_violation": "fact MUTATE_CrossTeam { some op: Operation | some op.succeeded and op.kind = GetTaskById and some op.target and op.target.team != op.teamCtx }"
+    },
+    {
+      "fact_name": "F_StateChangingOpsProduceAudit",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_015_AuditPerSave"
+      ],
+      "rationale": "F_StateChangingOpsProduceAudit forces every successful POST/PATCH/DELETE to emit exactly one audit entry. Clearing it lets a mutation slip through unaudited; the injection forces a successful PostTasks with no producedAudit, which AuditCompleteness/FR-015 is supposed to catch.",
+      "inject_violation": "fact MUTATE_AuditMissing { some op: Operation | some op.succeeded and op.kind = PostTasks and no op.producedAudit }"
+    },
+    {
+      "fact_name": "F_AppendOnlyAuditEntries",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_016_AuditAppendOnly",
+        "FR_018_AuditRetainedViaAppendOnly"
+      ],
+      "rationale": "F_AppendOnlyAuditEntries says every audit row must be tied to exactly one originating operation \u2014 there are no orphans, no double-attribution. Removing it allows audit entries to appear without a producing op (i.e., 'injected' rows). The injection forces such an orphan, which AppendOnly should catch.",
+      "inject_violation": "fact MUTATE_AppendOnly { some ae: AuditEntry | no op: Operation | op.producedAudit = ae }"
+    },
+    {
+      "fact_name": "F_AuditAttribution",
+      "asserts_violated": [
+        "AttributionCorrectness",
+        "FR_002_ActorFromAuthContext",
+        "FR_015_AuditPerSave"
+      ],
+      "rationale": "F_AuditAttribution binds the audit entry's actor and team to the operation's caller and teamCtx. Clearing it permits an audit row whose actor differs from the operation's caller \u2014 a misattribution. The injection forces such a mismatch, which AttributionCorrectness/FR-002 is supposed to catch.",
+      "inject_violation": "fact MUTATE_Attribution { some op: Operation, ae: AuditEntry | ae = op.producedAudit and ae.actor != op.caller }"
+    },
+    {
+      "fact_name": "F_TaskOwnerIsTeamMember",
+      "asserts_violated": [
+        "OwnershipExclusivity",
+        "FR_006_OwnerImmutableAndExclusive",
+        "FR_012_TaskFieldsValid"
+      ],
+      "rationale": "F_TaskOwnerIsTeamMember anchors a task's owner to a real membership in the task's team. Removing it lets a task carry an owner who has no membership row. The injection forces such a task \u2014 exactly what OwnershipExclusivity/FR-006 is supposed to catch.",
+      "inject_violation": "fact MUTATE_OwnerNotMember { some t: Task | no m: TeamMembership | m.user = t.owner and m.team = t.team }"
+    }
+  ]
+}

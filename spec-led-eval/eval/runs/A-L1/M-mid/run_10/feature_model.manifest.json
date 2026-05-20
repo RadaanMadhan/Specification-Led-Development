@@ -1,0 +1,152 @@
+{
+  "feature_id": "A-L1",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "PermissionGrounding",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "ConcurrencySafety"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthenticatedSubmission",
+    "FR_004_UniqueReferenceAndInitialStatus",
+    "FR_005_OnePendingPerCustomer",
+    "FR_009_DecisionReasonAndStaffOnly",
+    "FR_010_DecisionPersisted",
+    "FR_011_DecisionImmutability",
+    "FR_012_NoConcurrentDecisions",
+    "FR_013_CustomerIsolation",
+    "FR_014_NotificationOnDecision",
+    "FR_015_RoleBasedAccess",
+    "FR_016_AuditTrailComplete",
+    "FR_017_RetentionNoDeletion"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthenticatedSubmission",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_001_AuthenticatedSubmission"
+    ],
+    "FR-003": [
+      "FR_001_AuthenticatedSubmission"
+    ],
+    "FR-004": [
+      "FR_004_UniqueReferenceAndInitialStatus"
+    ],
+    "FR-005": [
+      "FR_005_OnePendingPerCustomer"
+    ],
+    "FR-006": [
+      "FR_004_UniqueReferenceAndInitialStatus"
+    ],
+    "FR-007": [
+      "LeastPrivilege",
+      "FR_015_RoleBasedAccess"
+    ],
+    "FR-008": [
+      "LeastPrivilege",
+      "FR_015_RoleBasedAccess"
+    ],
+    "FR-009": [
+      "FR_009_DecisionReasonAndStaffOnly"
+    ],
+    "FR-010": [
+      "FR_010_DecisionPersisted"
+    ],
+    "FR-011": [
+      "FR_011_DecisionImmutability"
+    ],
+    "FR-012": [
+      "FR_012_NoConcurrentDecisions",
+      "ConcurrencySafety"
+    ],
+    "FR-013": [
+      "FR_013_CustomerIsolation",
+      "NoInformationLeakage",
+      "OwnershipBasedAccess"
+    ],
+    "FR-014": [
+      "FR_014_NotificationOnDecision"
+    ],
+    "FR-015": [
+      "FR_015_RoleBasedAccess",
+      "LeastPrivilege"
+    ],
+    "FR-016": [
+      "FR_016_AuditTrailComplete",
+      "AuditCompleteness",
+      "AppendOnly",
+      "AttributionCorrectness"
+    ],
+    "FR-017": [
+      "FR_017_RetentionNoDeletion"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_AppendOnlyAuditEntries",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_016_AuditTrailComplete",
+        "AuditCompleteness"
+      ],
+      "rationale": "Removing F_AppendOnlyAuditEntries allows the model to generate two AuditEntries with the same (auditApp, eventType) pair. The injected violation forces exactly that state, so AppendOnly and the audit completeness assertions find a counterexample: the 'one ae' cardinality in AuditCompleteness becomes false when there are two submitted-event entries for the same application.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some disj ae1, ae2: AuditEntry | ae1.auditApp = ae2.auditApp and ae1.eventType = ae2.eventType }"
+    },
+    {
+      "fact_name": "F_OnePendingPerCustomer",
+      "asserts_violated": [
+        "FR_005_OnePendingPerCustomer"
+      ],
+      "rationale": "Removing F_OnePendingPerCustomer allows two distinct LoanApplications for the same customer both to have status PendingReview. The injected violation forces this instance to exist, directly violating FR_005_OnePendingPerCustomer.",
+      "inject_violation": "fact MUTATE_OnePendingViolation { some disj a1, a2: LoanApplication | a1.appCustomer = a2.appCustomer and a1.status = PendingReview and a2.status = PendingReview }"
+    },
+    {
+      "fact_name": "F_DeciderIsStaff",
+      "asserts_violated": [
+        "FR_009_DecisionReasonAndStaffOnly",
+        "LeastPrivilege",
+        "FR_015_RoleBasedAccess"
+      ],
+      "rationale": "Removing F_DeciderIsStaff permits a Decision whose decidedBy user has CustomerRole. The injected violation forces a Decision made by a customer-role user, directly falsifying FR_009_DecisionReasonAndStaffOnly (which requires all deciders to be BankStaffRole) and exposing the LeastPrivilege violation that customers should not be able to post decisions.",
+      "inject_violation": "fact MUTATE_CustomerDecides { some d: Decision | d.decidedBy.role = CustomerRole }"
+    },
+    {
+      "fact_name": "F_AtMostOneDecisionPerApplication",
+      "asserts_violated": [
+        "ConcurrencySafety",
+        "FR_011_DecisionImmutability",
+        "FR_012_NoConcurrentDecisions"
+      ],
+      "rationale": "Removing F_AtMostOneDecisionPerApplication allows two Decision atoms to point at the same LoanApplication, modelling a double-decision race. The injected violation forces this state, which is exactly what ConcurrencySafety and FR_011_DecisionImmutability are meant to exclude.",
+      "inject_violation": "fact MUTATE_DoubleDecision { some disj d1, d2: Decision | d1.forApplication = d2.forApplication }"
+    },
+    {
+      "fact_name": "F_AuditActorAttribution",
+      "asserts_violated": [
+        "AttributionCorrectness",
+        "FR_016_AuditTrailComplete"
+      ],
+      "rationale": "Removing F_AuditActorAttribution allows audit entries to record an actor whose role does not match the event type \u2014 e.g., a bank staff member as actor on a SubmittedEvt, or a customer as actor on an ApprovedEvt. The injected violation creates a SubmittedEvt entry whose actor is a BankStaffRole user, falsifying AttributionCorrectness.",
+      "inject_violation": "fact MUTATE_MisattributedActor { some ae: AuditEntry | ae.eventType = SubmittedEvt and ae.actor.role = BankStaffRole }"
+    },
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "PermissionCompleteness",
+        "PermissionGrounding",
+        "FR_015_RoleBasedAccess"
+      ],
+      "rationale": "Clearing F_PermissionMatrix leaves the Allowed relation unconstrained. The injected violation adds the forbidden cell CustomerRole->PostDecision, directly falsifying LeastPrivilege and FR_015_RoleBasedAccess, and also breaks PermissionCompleteness (cardinality check fails) and PermissionGrounding (extra ungrounded cell present).",
+      "inject_violation": "fact MUTATE_CustomerCanDecide { CustomerRole -> PostDecision in PermMatrix.Allowed }"
+    }
+  ]
+}

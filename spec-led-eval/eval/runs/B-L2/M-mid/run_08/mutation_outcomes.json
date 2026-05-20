@@ -1,0 +1,50 @@
+{
+  "F_AppendOnlyAuditEntries": {
+    "targeted_asserts": {
+      "AppendOnly": "VACUOUS_OVERCONSTRAINT",
+      "FR_016_AuditImmutable": "VACUOUS_OVERCONSTRAINT",
+      "AuditCompleteness": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_PermissionMatrix": {
+    "targeted_asserts": {
+      "OwnershipBasedAccess": "BIT",
+      "FR_009_NonOwnerMemberCantEditDelete": "BIT",
+      "LeastPrivilege": "BIT",
+      "PermissionGrounding": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AuditCreatedEntryExists": {
+    "targeted_asserts": {
+      "AuditCompleteness": "BIT",
+      "FR_015_AuditPerEditEvent": "BIT",
+      "ValidationBeforeMutation": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AuditTeamMatchesTask": {
+    "targeted_asserts": {
+      "NoInformationLeakage": "BIT",
+      "FR_011_CrossTeamIsolation": "BIT",
+      "AttributionCorrectness": "BIT",
+      "FR_005_TaskTeamImmutable": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AssigneeIsMember": {
+    "targeted_asserts": {
+      "FR_012_AssigneeInSameTeam": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AuditDeletedEntryOnDeletedTask": {
+    "targeted_asserts": {
+      "AuditCompleteness": "BIT",
+      "FR_015_AuditPerEditEvent": "BIT",
+      "FR_016_AuditImmutable": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  }
+}

@@ -1,0 +1,154 @@
+{
+  "feature_id": "C-L2",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "ValidationBeforeMutation"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_RoleFromCatalogue",
+    "FR_004_CareTeamGating",
+    "FR_005_AdminNoClinicAccess",
+    "FR_006_ByteEquivalentDenial",
+    "FR_009_ValidationBeforeMutation",
+    "FR_010_NoteAttribution",
+    "FR_011_NotesAppendOnly",
+    "FR_012_AlwaysOnAudit",
+    "FR_013_AuditNoteIdField",
+    "FR_014_AuditImmutability",
+    "FR_017_AdminOnlyAuditEndpoint",
+    "FR_018_AdminContentBlindness",
+    "FR_013_AuditRoleSnapshotValid"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_RoleFromCatalogue",
+      "FR_013_AuditRoleSnapshotValid"
+    ],
+    "FR-003": [],
+    "FR-004": [
+      "FR_004_CareTeamGating",
+      "OwnershipBasedAccess"
+    ],
+    "FR-005": [
+      "FR_005_AdminNoClinicAccess",
+      "LeastPrivilege",
+      "FR_018_AdminContentBlindness"
+    ],
+    "FR-006": [
+      "FR_006_ByteEquivalentDenial",
+      "NoInformationLeakage"
+    ],
+    "FR-007": [],
+    "FR-008": [
+      "FR_018_AdminContentBlindness"
+    ],
+    "FR-009": [
+      "FR_009_ValidationBeforeMutation"
+    ],
+    "FR-010": [
+      "FR_010_NoteAttribution",
+      "AttributionCorrectness"
+    ],
+    "FR-011": [
+      "FR_011_NotesAppendOnly",
+      "AppendOnly"
+    ],
+    "FR-012": [
+      "FR_012_AlwaysOnAudit",
+      "AuditCompleteness"
+    ],
+    "FR-013": [
+      "FR_013_AuditNoteIdField",
+      "FR_013_AuditRoleSnapshotValid",
+      "AttributionCorrectness"
+    ],
+    "FR-014": [
+      "FR_014_AuditImmutability",
+      "AppendOnly"
+    ],
+    "FR-015": [],
+    "FR-016": [
+      "AppendOnly",
+      "FR_014_AuditImmutability"
+    ],
+    "FR-017": [
+      "FR_017_AdminOnlyAuditEndpoint",
+      "LeastPrivilege"
+    ],
+    "FR-018": [
+      "FR_018_AdminContentBlindness"
+    ],
+    "FR-019": [],
+    "FR-020": []
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_AdminCannotAccessClinicalContent",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_005_AdminNoClinicAccess",
+        "FR_018_AdminContentBlindness"
+      ],
+      "rationale": "Removing this fact allows Alloy to construct a world where a HospitalAdministrator AccessAttempt has outcome=Permitted on RecordLookup or AddNote. LeastPrivilege requires all Permitted outcomes to respect the matrix (which excludes HospitalAdministrator from clinical ops), and FR_005_AdminNoClinicAccess directly asserts this cannot happen.",
+      "inject_violation": "fact MUTATE_AdminCannotAccessClinicalContent { some aa: AccessAttempt | aa.aaCaller.userRole = HospitalAdministrator and aa.aaOperation = RecordLookup and aa.aaOutcome = Permitted }"
+    },
+    {
+      "fact_name": "F_CareTeamGating",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_004_CareTeamGating"
+      ],
+      "rationale": "Removing this fact lets Alloy construct an AccessAttempt with outcome=Permitted on a clinical endpoint without any CareTeamMembership linking the caller to the patient. OwnershipBasedAccess and FR_004_CareTeamGating both assert this is impossible; the injection forces exactly that structure.",
+      "inject_violation": "fact MUTATE_CareTeamGating { some aa: AccessAttempt | aa.aaOperation = RecordLookup and aa.aaOutcome = Permitted and no m: CareTeamMembership | m.ctmClinician = aa.aaCaller and m.ctmPatient = aa.aaPatient }"
+    },
+    {
+      "fact_name": "F_AuditEntryBelongsToOneAttempt",
+      "asserts_violated": [
+        "AppendOnly",
+        "AuditCompleteness",
+        "FR_014_AuditImmutability"
+      ],
+      "rationale": "Removing this fact allows a single AuditEntry to be shared by two distinct AccessAttempts, simulating a mutated or overwritten audit row. FR_014_AuditImmutability requires every AuditEntry to have exactly one parent attempt; the injection makes two attempts share one entry.",
+      "inject_violation": "fact MUTATE_AuditEntryBelongsToOneAttempt { some disj aa1, aa2: AccessAttempt | aa1.aaAuditEntry = aa2.aaAuditEntry }"
+    },
+    {
+      "fact_name": "F_NoteCreatedByOneAttempt",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_011_NotesAppendOnly"
+      ],
+      "rationale": "Removing this fact allows a ClinicalNote to appear as the aaCreatedNote of two distinct AccessAttempts, simulating an update/edit of an existing note. AppendOnly and FR_011_NotesAppendOnly assert each note is produced by at most one attempt.",
+      "inject_violation": "fact MUTATE_NoteCreatedByOneAttempt { some disj aa1, aa2: AccessAttempt | some n: ClinicalNote | aa1.aaCreatedNote = n and aa2.aaCreatedNote = n }"
+    },
+    {
+      "fact_name": "F_AuditRoleSnapshotMatchesCaller",
+      "asserts_violated": [
+        "AttributionCorrectness",
+        "FR_013_AuditRoleSnapshotValid"
+      ],
+      "rationale": "Removing this fact allows an AuditEntry to carry a role snapshot that does not match the accessor's actual role, simulating misattribution. AttributionCorrectness asserts the snapshot must equal the accessor's userRole.",
+      "inject_violation": "fact MUTATE_AuditRoleSnapshotMatchesCaller { some ae: AuditEntry | ae.aeRoleSnapshot != ae.aeAccessor.userRole }"
+    },
+    {
+      "fact_name": "F_AdminOnlyListAudit",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_017_AdminOnlyAuditEndpoint"
+      ],
+      "rationale": "Removing this fact allows a clinical-role AccessAttempt to obtain Permitted on ListAudit, violating the administrator-only gate. FR_017_AdminOnlyAuditEndpoint asserts clinical roles never receive Permitted on this endpoint; the injection forces exactly that.",
+      "inject_violation": "fact MUTATE_AdminOnlyListAudit { some aa: AccessAttempt | aa.aaCaller.userRole = Doctor and aa.aaOperation = ListAudit and aa.aaOutcome = Permitted }"
+    }
+  ]
+}

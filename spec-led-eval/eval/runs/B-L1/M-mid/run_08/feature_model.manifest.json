@@ -1,0 +1,143 @@
+{
+  "feature_id": "B-L1",
+  "patterns_applied": [
+    "AuthRequiredEverywhere",
+    "PermissionCompleteness",
+    "AppendOnly",
+    "AuditCompleteness",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "ValidationBeforeMutation"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_IdentityFromAuthContext",
+    "FR_003_004_FlatPeerPermissions",
+    "FR_008_AssigneeAtMostOneMember",
+    "FR_009_CreatorRecordedImmutable",
+    "FR_010_InitialStatusTodo",
+    "FR_011_ClosedTaskEditRule",
+    "FR_012_018_DeletionLogged",
+    "FR_017_CreatorSetOnce"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_IdentityFromAuthContext",
+      "AttributionCorrectness"
+    ],
+    "FR-003": [
+      "FR_003_004_FlatPeerPermissions"
+    ],
+    "FR-004": [
+      "FR_003_004_FlatPeerPermissions",
+      "PermissionCompleteness"
+    ],
+    "FR-005": [
+      "ValidationBeforeMutation"
+    ],
+    "FR-006": [
+      "ValidationBeforeMutation"
+    ],
+    "FR-007": [
+      "ValidationBeforeMutation"
+    ],
+    "FR-008": [
+      "FR_008_AssigneeAtMostOneMember",
+      "OwnershipExclusivity"
+    ],
+    "FR-009": [
+      "FR_009_CreatorRecordedImmutable",
+      "AttributionCorrectness",
+      "FR_017_CreatorSetOnce"
+    ],
+    "FR-010": [
+      "FR_010_InitialStatusTodo"
+    ],
+    "FR-011": [
+      "FR_011_ClosedTaskEditRule"
+    ],
+    "FR-012": [
+      "FR_012_018_DeletionLogged"
+    ],
+    "FR-013": [
+      "PermissionCompleteness"
+    ],
+    "FR-014": [
+      "FR_003_004_FlatPeerPermissions"
+    ],
+    "FR-015": [
+      "FR_003_004_FlatPeerPermissions"
+    ],
+    "FR-016": [
+      "FR_003_004_FlatPeerPermissions"
+    ],
+    "FR-017": [
+      "FR_017_CreatorSetOnce",
+      "FR_009_CreatorRecordedImmutable"
+    ],
+    "FR-018": [
+      "FR_012_018_DeletionLogged",
+      "AppendOnly",
+      "AuditCompleteness"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_AuthRequiredEverywhere",
+      "asserts_violated": [
+        "AuthRequiredEverywhere",
+        "FR_001_AuthRequired"
+      ],
+      "rationale": "Removing F_AuthRequiredEverywhere allows Alloy to construct an EditOperation, DeleteOperation, or CreateOperation with no caller (unauthenticated). The injected violation forces such a callerless DeleteOperation to exist, which the AuthRequiredEverywhere and FR_001_AuthRequired assertions should catch.",
+      "inject_violation": "fact MUTATE_AuthViolation { some op : DeleteOperation | no op.caller }"
+    },
+    {
+      "fact_name": "F_AppendOnlyDeletionLog",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_012_018_DeletionLogged"
+      ],
+      "rationale": "Removing F_AppendOnlyDeletionLog allows two distinct DeleteOperations to share the same TaskDeletion log entry, violating the one-entry-per-deletion invariant. The injected violation forces two DeleteOperations to share a log entry.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some disj op1, op2 : DeleteOperation | op1.logEntry = op2.logEntry }"
+    },
+    {
+      "fact_name": "F_AttributionCorrectness",
+      "asserts_violated": [
+        "AttributionCorrectness",
+        "FR_002_IdentityFromAuthContext",
+        "FR_009_CreatorRecordedImmutable"
+      ],
+      "rationale": "Removing F_AttributionCorrectness lets a CreateOperation produce a Task whose creator is a different Member than the operation's authenticated caller. The injection forces this mismatch, directly violating FR-002 and FR-009.",
+      "inject_violation": "fact MUTATE_AttributionViolation { some op : CreateOperation | some m : Member | m != op.caller and op.produced.creator = m }"
+    },
+    {
+      "fact_name": "F_ClosedTaskEditRule",
+      "asserts_violated": [
+        "FR_011_ClosedTaskEditRule"
+      ],
+      "rationale": "Removing F_ClosedTaskEditRule allows an EditOperation targeting a Done task to carry no newStatus (or to set newStatus = Done), representing an illegal in-place edit of a closed task. The injection forces such an operation to exist.",
+      "inject_violation": "fact MUTATE_ClosedTaskViolation { some op : EditOperation | op.target.status = Done and no op.newStatus }"
+    },
+    {
+      "fact_name": "F_DeletionLogged",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_012_018_DeletionLogged"
+      ],
+      "rationale": "Removing F_DeletionLogged allows a DeleteOperation whose logEntry.deletedBy differs from its caller, breaking the attribution invariant in the deletion audit trail. The injection forces this misattribution.",
+      "inject_violation": "fact MUTATE_DeletionLogViolation { some op : DeleteOperation | some m : Member | m != op.caller and op.logEntry.deletedBy = m }"
+    },
+    {
+      "fact_name": "F_InitialStatusTodo",
+      "asserts_violated": [
+        "FR_010_InitialStatusTodo"
+      ],
+      "rationale": "Removing F_InitialStatusTodo allows a CreateOperation to produce a Task whose initial status is InProgress or Done rather than Todo. The injection forces a newly produced Task to have status Done.",
+      "inject_violation": "fact MUTATE_InitialStatusViolation { some op : CreateOperation | op.produced.status = Done }"
+    }
+  ]
+}

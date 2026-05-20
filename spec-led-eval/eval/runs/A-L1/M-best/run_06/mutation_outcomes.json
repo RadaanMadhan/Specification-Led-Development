@@ -1,0 +1,46 @@
+{
+  "F_OnePendingPerCustomer": {
+    "targeted_asserts": {
+      "FR_005_OnePendingPerCustomer": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_DecisionByBankStaff": {
+    "targeted_asserts": {
+      "FR_015_StaffOnlyDecisions": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_PermissionMatrix": {
+    "targeted_asserts": {
+      "LeastPrivilege": "BIT",
+      "FR_015_StaffOnlyDecisions": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_DecisionEventIffDecided": {
+    "targeted_asserts": {
+      "AppendOnly": "BIT",
+      "AuditCompleteness": "BIT",
+      "FR_016_AuditTrailComplete": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AtMostOneDecisionPerApp": {
+    "targeted_asserts": {
+      "FR_011_DecisionImmutable": "BIT",
+      "FR_012_NoTwoDecisions": "BIT",
+      "ConcurrencySafety": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_ApplicationCustomerIsCustomerRole": {
+    "targeted_asserts": {
+      "OwnershipExclusivity": "BIT",
+      "FR_001_CustomerSubmits": "BIT",
+      "FR_013_CustomerCannotSeeOthers": "BIT",
+      "NoInformationLeakage": "BIT"
+    },
+    "all_bit": true
+  }
+}

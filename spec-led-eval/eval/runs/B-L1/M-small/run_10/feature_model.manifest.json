@@ -1,0 +1,133 @@
+{
+  "feature_id": "B-L1",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "AuthRequiredEverywhere",
+    "AppendOnly",
+    "ValidationBeforeMutation"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_ActorFromContext",
+    "FR_003_SingleWorkspace",
+    "FR_004_FlatPermissions",
+    "FR_005_TitleConstraint",
+    "FR_006_DescriptionConstraint",
+    "FR_007_DueDateConstraint",
+    "FR_008_AssigneeConstraint",
+    "FR_009_CreationMetadataImmutable",
+    "FR_010_StatusConstraint",
+    "FR_011_ClosedTaskRule",
+    "FR_012_PermanentDeletion",
+    "FR_017_TimestampSemantics",
+    "FR_018_DeletionLogging"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "AuthRequiredEverywhere",
+      "FR_001_AuthRequired"
+    ],
+    "FR-002": [
+      "FR_002_ActorFromContext"
+    ],
+    "FR-003": [
+      "FR_003_SingleWorkspace"
+    ],
+    "FR-004": [
+      "LeastPrivilege",
+      "FR_004_FlatPermissions"
+    ],
+    "FR-005": [
+      "ValidationBeforeMutation",
+      "FR_005_TitleConstraint"
+    ],
+    "FR-006": [
+      "ValidationBeforeMutation",
+      "FR_006_DescriptionConstraint"
+    ],
+    "FR-007": [
+      "ValidationBeforeMutation",
+      "FR_007_DueDateConstraint"
+    ],
+    "FR-008": [
+      "ValidationBeforeMutation",
+      "FR_008_AssigneeConstraint"
+    ],
+    "FR-009": [
+      "FR_009_CreationMetadataImmutable"
+    ],
+    "FR-010": [
+      "ValidationBeforeMutation",
+      "FR_010_StatusConstraint"
+    ],
+    "FR-011": [
+      "FR_011_ClosedTaskRule"
+    ],
+    "FR-012": [
+      "FR_012_PermanentDeletion"
+    ],
+    "FR-017": [
+      "FR_017_TimestampSemantics"
+    ],
+    "FR-018": [
+      "AppendOnly",
+      "FR_018_DeletionLogging"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_004_FlatPermissions"
+      ],
+      "rationale": "Removing the permission matrix fact allows arbitrary role-to-operation assignments, which violates the flat peer model where all authenticated members must have equal permissions.",
+      "inject_violation": "fact MUTATE_ArbitraryPermissions { some r: Role, op: OperationKind | (r -> op) not in PermMatrix.Allowed }"
+    },
+    {
+      "fact_name": "F_AuthenticationRequired",
+      "asserts_violated": [
+        "AuthRequiredEverywhere",
+        "FR_001_AuthRequired"
+      ],
+      "rationale": "Removing the authentication requirement fact allows tasks to exist without a creator, which violates FR-001 that every request must be authenticated.",
+      "inject_violation": "fact MUTATE_NoAuthRequired { some t: Task | no t.creator }"
+    },
+    {
+      "fact_name": "F_AssigneeConstraint",
+      "asserts_violated": [
+        "ValidationBeforeMutation",
+        "FR_008_AssigneeConstraint"
+      ],
+      "rationale": "Removing the assignee constraint allows tasks to be assigned to non-existent members, violating FR-008 that assignees must be current workspace members.",
+      "inject_violation": "fact MUTATE_InvalidAssignee { some t: Task, m: Member | (t.assignee = m and m not in Member) }"
+    },
+    {
+      "fact_name": "F_StatusConstraint",
+      "asserts_violated": [
+        "ValidationBeforeMutation",
+        "FR_010_StatusConstraint"
+      ],
+      "rationale": "Removing the status constraint allows tasks to have invalid status values outside {todo, in_progress, done}, violating FR-010.",
+      "inject_violation": "fact MUTATE_InvalidStatus { some t: Task | t.status not in (TODO + IN_PROGRESS + DONE) }"
+    },
+    {
+      "fact_name": "F_TitleConstraint",
+      "asserts_violated": [
+        "ValidationBeforeMutation",
+        "FR_005_TitleConstraint"
+      ],
+      "rationale": "Removing the title constraint allows tasks to exist without a title, violating FR-005 that requires a non-empty title.",
+      "inject_violation": "fact MUTATE_NoTitle { some t: Task | no t.title }"
+    },
+    {
+      "fact_name": "F_AppendOnlyLog",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_018_DeletionLogging"
+      ],
+      "rationale": "Removing the append-only constraint on TaskDeletion allows deletion log entries to be mutated or corrupted, violating the immutability guarantee for operational logs in FR-018.",
+      "inject_violation": "fact MUTATE_MutableLog { some td: TaskDeletion | no td.task_title_at_delete }"
+    }
+  ]
+}

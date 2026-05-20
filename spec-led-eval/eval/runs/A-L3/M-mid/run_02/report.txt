@@ -1,0 +1,121 @@
+==============================================================================
+  Design Compliance Report  (Phase 3 — feature_model.als)
+  feature       : A-L3
+  spec source   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/eval/specs/A-L3
+  alloy model   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/A-L3/feature_model.als
+  patterns      : LeastPrivilege, PermissionCompleteness, AuthRequiredEverywhere, AuditCompleteness, AppendOnly, AttributionCorrectness, OwnershipExclusivity, OwnershipBasedAccess, NoInformationLeakage, NoSelfMutation, ValidationBeforeMutation
+  fr count      : 24 declared in spec.md
+  assertions    : 27 total (27/27 PASS via Alloy)
+==============================================================================
+
+  Compliance matrix
+  ----------------------------------------------------------------------------
+  Assertion                                    Verdict   Anchor
+  ---------------------------------------------------------------------------------
+  LeastPrivilege                               PASS      PATTERN LeastPrivilege: contracts/http-api.md permission matrix; spec.md FR-003, FR-004, FR-005
+  PermissionCompleteness                       PASS      PATTERN PermissionCompleteness: contracts/http-api.md permission matrix
+  AuthRequiredEverywhere                       PASS      PATTERN AuthRequiredEverywhere: spec.md FR-001; contracts/http-api.md authentication section
+  AuditCompleteness                            PASS      PATTERN AuditCompleteness: spec.md FR-016, FR-017; data-model.md AuditEntry
+  AppendOnly                                   PASS      PATTERN AppendOnly: spec.md FR-018, FR-019; data-model.md "no UPDATE/DELETE" notes
+  AttributionCorrectness                       PASS      PATTERN AttributionCorrectness: spec.md FR-016; data-model.md AuditEntry fields
+  OwnershipExclusivity                         PASS      PATTERN OwnershipExclusivity: data-model.md LoanApplication.applicant_id (NOT NULL)
+  OwnershipBasedAccess                         PASS      PATTERN OwnershipBasedAccess: spec.md FR-003, FR-004, FR-012; contracts/http-api.md access table
+  NoInformationLeakage                         PASS      PATTERN NoInformationLeakage: spec.md FR-020, FR-021, FR-022, FR-023; contracts/http-api.md byte-equivalent not-found
+  NoSelfMutation                               PASS      PATTERN NoSelfMutation: spec.md FR-013, FR-011; data-model.md CHECK assigned_officer_id != applicant_id
+  ValidationBeforeMutation                     PASS      PATTERN ValidationBeforeMutation: spec.md FR-017; data-model.md atomicity contract
+  FR_001_AuthRequired                          PASS      FEATURE-SPECIFIC: FR-001 — unauthenticated requests rejected before business logic
+  FR_002_RoleMutualExclusivity                 PASS      FEATURE-SPECIFIC: FR-002 — officer and auditor mutually exclusive; system not on human users
+  FR_003_ApplicantCannotPatch                  PASS      FEATURE-SPECIFIC: FR-003 — applicant cannot PATCH status
+  FR_005_AuditorReadOnly                       PASS      FEATURE-SPECIFIC: FR-005 — auditor cannot POST or PATCH
+  FR_008_OneInFlightPerApplicant               PASS      FEATURE-SPECIFIC: FR-008 — one in-flight application per applicant
+  FR_009_ValidTransitions                      PASS      FEATURE-SPECIFIC: FR-009 — only allowed state-machine transitions exist in audit log
+  FR_011_NoSelfAssignment                      PASS      FEATURE-SPECIFIC: FR-011 — no self-assignment; assigned officer != applicant
+  FR_012_OnlyAssignedOfficerCanPatch           PASS      FEATURE-SPECIFIC: FR-012 — only the assigned officer can change status
+  FR_013_NoSelfApproval                        PASS      FEATURE-SPECIFIC: FR-013 — no self-approval (officer cannot decide own application)
+  FR_015_TerminalStatusImmutable               PASS      FEATURE-SPECIFIC: FR-015 — terminal statuses (Approved/Rejected) cannot be transitioned further
+  FR_016_AuditEntryPerTransition               PASS      FEATURE-SPECIFIC: FR-016/FR-017 — every state transition has exactly one audit entry
+  FR_018_AuditImmutable                        PASS      FEATURE-SPECIFIC: FR-018 — audit log is immutable; no duplicate (app×prevStat×newStat) triples
+  FR_020_ByteEquivalentUnauthorisedGet         PASS      FEATURE-SPECIFIC: FR-020/FR-021 — byte-equivalent unauthorised GET response
+  FR_023_AuditEndpointAuditorOnly              PASS      FEATURE-SPECIFIC: FR-023 — GET /applications/{id}/audit is auditor-only
+  FR_024_ApplicantCannotModifyAfterSubmission  PASS      FEATURE-SPECIFIC: FR-024 — applicant cannot modify application fields post-submission
+  FR_022_PostNoLeakage                         PASS      FEATURE-SPECIFIC: FR-022 — POST response never leaks other applicants' data
+
+  FR coverage
+  ----------------------------------------------------------------------------
+  FR-001  →  FR_001_AuthRequired=PASS, AuthRequiredEverywhere=PASS
+  FR-002  →  FR_002_RoleMutualExclusivity=PASS
+  FR-003  →  FR_003_ApplicantCannotPatch=PASS, LeastPrivilege=PASS, FR_024_ApplicantCannotModifyAfterSubmission=PASS
+  FR-004  →  LeastPrivilege=PASS, OwnershipBasedAccess=PASS
+  FR-005  →  FR_005_AuditorReadOnly=PASS, LeastPrivilege=PASS
+  FR-006  →  FR_022_PostNoLeakage=PASS
+  FR-007  →  PermissionCompleteness=PASS
+  FR-008  →  FR_008_OneInFlightPerApplicant=PASS, OwnershipExclusivity=PASS
+  FR-009  →  FR_009_ValidTransitions=PASS, FR_015_TerminalStatusImmutable=PASS
+  FR-010  →  FR_011_NoSelfAssignment=PASS
+  FR-011  →  FR_011_NoSelfAssignment=PASS, NoSelfMutation=PASS
+  FR-012  →  FR_012_OnlyAssignedOfficerCanPatch=PASS, OwnershipBasedAccess=PASS
+  FR-013  →  FR_013_NoSelfApproval=PASS, NoSelfMutation=PASS
+  FR-014  →  ValidationBeforeMutation=PASS
+  FR-015  →  FR_015_TerminalStatusImmutable=PASS
+  FR-016  →  FR_016_AuditEntryPerTransition=PASS, AuditCompleteness=PASS, AttributionCorrectness=PASS
+  FR-017  →  AuditCompleteness=PASS, ValidationBeforeMutation=PASS
+  FR-018  →  FR_018_AuditImmutable=PASS, AppendOnly=PASS
+  FR-019  →  AppendOnly=PASS, FR_018_AuditImmutable=PASS
+  FR-020  →  FR_020_ByteEquivalentUnauthorisedGet=PASS, NoInformationLeakage=PASS
+  FR-021  →  FR_020_ByteEquivalentUnauthorisedGet=PASS, NoInformationLeakage=PASS
+  FR-022  →  FR_022_PostNoLeakage=PASS
+  FR-023  →  FR_023_AuditEndpointAuditorOnly=PASS
+  FR-024  →  FR_024_ApplicantCannotModifyAfterSubmission=PASS
+
+  All FRs have at least one matching assertion.
+
+==============================================================================
+  Mutation tests  (assertion-strength validation)
+==============================================================================
+
+  Strategy: replace each named fact's body with `{}` (no constraint),
+  then re-run Alloy. Each listed assertion should now FAIL on the
+  mutated model. If it still PASSes, the assertion is vacuous and
+  must be strengthened.
+
+  - MUTATE F_AppendOnlyAuditEntries  → runs/A-L3/mutated_F_AppendOnlyAuditEntries.als
+    rationale: Removing this fact allows two distinct AuditEntry atoms for the same application to share identical (prevStat, newStat) values, modelling an in-place mutation or replay of an existing audit row. The injection forces exactly such a duplicate pair to exist, which both AppendOnly and FR_018_AuditImmutable must catch.
+    expected to FAIL: AppendOnly, FR_018_AuditImmutable
+      - AppendOnly: PASS (vacuous?)
+      - FR_018_AuditImmutable: PASS (vacuous?)
+
+  - MUTATE F_NoSelfApproval  → runs/A-L3/mutated_F_NoSelfApproval.als
+    rationale: Removing this fact permits an AuditEntry where the officer who performed the transition is also the applicant of that application. The injection forces a state where a non-initial audit entry exists whose actorUser equals the application's own applicant and actorRole is ROfficer, directly violating FR-013.
+    expected to FAIL: NoSelfMutation, FR_013_NoSelfApproval
+      - NoSelfMutation: PASS (vacuous?)
+      - FR_013_NoSelfApproval: PASS (vacuous?)
+
+  - MUTATE F_PermissionMatrix  → runs/A-L3/mutated_F_PermissionMatrix.als
+    rationale: Removing this fact allows arbitrary cells in PermMatrix.Allowed, including RAuditor → OpPost and RAuditor → OpPatch. The injection adds the auditor-to-post cell, which directly violates both LeastPrivilege (a denied cell is now allowed) and PermissionCompleteness (the matrix no longer matches the spec).
+    expected to FAIL: LeastPrivilege, PermissionCompleteness
+      - LeastPrivilege: PASS (vacuous?)
+      - PermissionCompleteness: PASS (vacuous?)
+
+  - MUTATE F_AuditCountMatchesStatus: ERROR — mutation target fact `F_AuditCountMatchesStatus` not found in feature_model.als
+
+  - MUTATE F_PatchOwnershipAndNonSelf  → runs/A-L3/mutated_F_PatchOwnershipAndNonSelf.als
+    rationale: Removing this fact allows a successful OpPatch by a caller who is not the application's assigned officer, violating the core access-control invariant that only the assigned officer may transition status. The injection forces a successful PATCH by a user who is demonstrably not the assigned officer.
+    expected to FAIL: OwnershipBasedAccess, FR_012_OnlyAssignedOfficerCanPatch
+      - OwnershipBasedAccess: PASS (vacuous?)
+      - FR_012_OnlyAssignedOfficerCanPatch: PASS (vacuous?)
+
+  - MUTATE F_NoInformationLeakageOnRead  → runs/A-L3/mutated_F_NoInformationLeakageOnRead.als
+    rationale: Removing this fact allows a denied GET operation to carry a non-null targetApp reference, meaning the response distinguishes 'exists but caller cannot access' from 'does not exist' — breaking the byte-equivalence guarantee. The injection forces a denied GET to reference an existing application.
+    expected to FAIL: NoInformationLeakage, FR_020_ByteEquivalentUnauthorisedGet
+      - NoInformationLeakage: PASS (vacuous?)
+      - FR_020_ByteEquivalentUnauthorisedGet: PASS (vacuous?)
+
+  Mutation summary
+  ----------------------------------------------------------------------------
+  - F_AppendOnlyAuditEntries: ASSERTION VACUOUS (AppendOnly, FR_018_AuditImmutable)
+  - F_NoSelfApproval: ASSERTION VACUOUS (NoSelfMutation, FR_013_NoSelfApproval)
+  - F_PermissionMatrix: ASSERTION VACUOUS (LeastPrivilege, PermissionCompleteness)
+  - MUTATE F_AuditCountMatchesStatus: skipped (fact not found)
+  - F_PatchOwnershipAndNonSelf: ASSERTION VACUOUS (OwnershipBasedAccess, FR_012_OnlyAssignedOfficerCanPatch)
+  - F_NoInformationLeakageOnRead: ASSERTION VACUOUS (NoInformationLeakage, FR_020_ByteEquivalentUnauthorisedGet)
+

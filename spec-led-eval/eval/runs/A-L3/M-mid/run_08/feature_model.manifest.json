@@ -1,0 +1,175 @@
+{
+  "feature_id": "A-L3",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "NoSelfMutation",
+    "ValidationBeforeMutation"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_RoleMultiplicity",
+    "FR_003_ApplicantCannotPatch",
+    "FR_004_OfficerCannotPost",
+    "FR_005_AuditorReadOnly",
+    "FR_008_OneInFlight",
+    "FR_009_ValidTransitions",
+    "FR_011_NoSelfAssignment",
+    "FR_012_OnlyAssignedOfficerCanPatch",
+    "FR_013_NoSelfApproval",
+    "FR_015_TerminalStateFinal",
+    "FR_016_AuditAttribution",
+    "FR_018_AuditImmutable",
+    "FR_020_ByteEquivalentUnauthorized",
+    "FR_023_AuditEndpointAuditorOnly",
+    "FR_024_ApplicantNoPostSubmissionMutation"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_RoleMultiplicity"
+    ],
+    "FR-003": [
+      "FR_003_ApplicantCannotPatch",
+      "LeastPrivilege"
+    ],
+    "FR-004": [
+      "FR_004_OfficerCannotPost",
+      "LeastPrivilege"
+    ],
+    "FR-005": [
+      "FR_005_AuditorReadOnly",
+      "LeastPrivilege"
+    ],
+    "FR-006": [
+      "FR_001_AuthRequired"
+    ],
+    "FR-007": [
+      "FR_009_ValidTransitions"
+    ],
+    "FR-008": [
+      "FR_008_OneInFlight"
+    ],
+    "FR-009": [
+      "FR_009_ValidTransitions"
+    ],
+    "FR-010": [
+      "FR_011_NoSelfAssignment"
+    ],
+    "FR-011": [
+      "FR_011_NoSelfAssignment",
+      "NoSelfMutation"
+    ],
+    "FR-012": [
+      "FR_012_OnlyAssignedOfficerCanPatch"
+    ],
+    "FR-013": [
+      "FR_013_NoSelfApproval",
+      "NoSelfMutation"
+    ],
+    "FR-014": [
+      "ValidationBeforeMutation"
+    ],
+    "FR-015": [
+      "FR_015_TerminalStateFinal"
+    ],
+    "FR-016": [
+      "FR_016_AuditAttribution",
+      "AuditCompleteness",
+      "AttributionCorrectness"
+    ],
+    "FR-017": [
+      "AuditCompleteness",
+      "ValidationBeforeMutation"
+    ],
+    "FR-018": [
+      "FR_018_AuditImmutable",
+      "AppendOnly"
+    ],
+    "FR-019": [
+      "AppendOnly",
+      "FR_018_AuditImmutable"
+    ],
+    "FR-020": [
+      "FR_020_ByteEquivalentUnauthorized",
+      "NoInformationLeakage"
+    ],
+    "FR-021": [
+      "FR_020_ByteEquivalentUnauthorized",
+      "NoInformationLeakage"
+    ],
+    "FR-022": [
+      "NoInformationLeakage"
+    ],
+    "FR-023": [
+      "FR_023_AuditEndpointAuditorOnly"
+    ],
+    "FR-024": [
+      "FR_024_ApplicantNoPostSubmissionMutation"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_AppendOnlyAuditEntries",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_018_AuditImmutable"
+      ],
+      "rationale": "Clearing this fact removes the uniqueness constraint on (eApp, ePrev, eNew) tuples. The injected violation forces two distinct AuditEntry atoms with identical (app, prev, new) values to co-exist, representing a 'duplicate' (i.e., mutated/overwritten) audit record. Both AppendOnly and FR_018_AuditImmutable assert this cannot happen.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some disj e1, e2: AuditEntry | e1.eApp = e2.eApp and e1.ePrev = e2.ePrev and e1.eNew = e2.eNew }"
+    },
+    {
+      "fact_name": "F_NoSelfApproval",
+      "asserts_violated": [
+        "NoSelfMutation",
+        "FR_013_NoSelfApproval"
+      ],
+      "rationale": "Clearing this fact removes the guard preventing an applicant from being the actor on a non-initial audit entry for their own application. The injection forces exactly this situation: an audit entry with a non-null prev where the actor equals the application's applicant.",
+      "inject_violation": "fact MUTATE_SelfApprovalViolation { some e: AuditEntry | some e.ePrev and e.eActor = e.eApp.lApplicant }"
+    },
+    {
+      "fact_name": "F_NoInfoLeakageOnFailedRead",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "FR_020_ByteEquivalentUnauthorized"
+      ],
+      "rationale": "Clearing this fact allows a failed GET operation to carry a non-null oApp link, meaning the system reveals the existence of the application even in a denied response. The injection forces a failed GET to reference an existing application, which is exactly what the byte-equivalence invariant prohibits.",
+      "inject_violation": "fact MUTATE_InfoLeakageViolation { some op: Operation | op.oKind = GetApplicationById and op.oResult = Failed and some op.oApp }"
+    },
+    {
+      "fact_name": "F_AuditEndpointAuditorOnly",
+      "asserts_violated": [
+        "FR_023_AuditEndpointAuditorOnly"
+      ],
+      "rationale": "Clearing this fact removes the constraint that only RAuditor callers may succeed at GetApplicationAudit. The injection forces a succeeded GetApplicationAudit operation by an ROfficer caller, violating the auditor-only access rule for the audit endpoint.",
+      "inject_violation": "fact MUTATE_AuditEndpointViolation { some op: Operation | op.oKind = GetApplicationAudit and op.oResult = Succeeded and op.oCallerRole = ROfficer }"
+    },
+    {
+      "fact_name": "F_OneInFlightPerApplicant",
+      "asserts_violated": [
+        "FR_008_OneInFlight"
+      ],
+      "rationale": "Clearing this fact removes the partial-unique-index equivalent on (applicant, in-flight status). The injection forces two distinct applications sharing the same applicant, both in Pending status, violating the one-in-flight invariant.",
+      "inject_violation": "fact MUTATE_OneInFlightViolation { some disj a1, a2: LoanApplication | a1.lApplicant = a2.lApplicant and a1.lStatus = Pending and a2.lStatus = Pending }"
+    },
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "PermissionCompleteness",
+        "FR_005_AuditorReadOnly"
+      ],
+      "rationale": "Clearing this fact lets Alloy choose an arbitrary Allowed relation. The injection adds the (RAuditor, PostApplications) cell that the spec explicitly denies, causing LeastPrivilege and FR_005_AuditorReadOnly to find a world where an auditor-role caller succeeds at PostApplications.",
+      "inject_violation": "fact MUTATE_PermMatrixViolation { (RAuditor -> PostApplications) in PermMatrix.Allowed }"
+    }
+  ]
+}

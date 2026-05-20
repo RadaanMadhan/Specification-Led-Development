@@ -1,0 +1,164 @@
+{
+  "feature_id": "C-L3",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_003_RoleAndAssignment",
+    "FR_004_CareTeamGating",
+    "FR_005_ClinicianNoAccessLog",
+    "FR_006_PatientSelfAccess",
+    "FR_007_ComplianceContentBlindness",
+    "FR_011_012_NotesAppendOnly",
+    "FR_013_AuditAlwaysOn",
+    "FR_014_AuditNoteIdConstraint",
+    "FR_015_AuditImmutable",
+    "FR_018_AccessLogComplianceOnly",
+    "FR_020_RecordTargetRequiredForRecordOps"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_003_RoleAndAssignment"
+    ],
+    "FR-003": [
+      "FR_002_003_RoleAndAssignment",
+      "OwnershipExclusivity"
+    ],
+    "FR-004": [
+      "FR_004_CareTeamGating",
+      "LeastPrivilege"
+    ],
+    "FR-005": [
+      "FR_005_ClinicianNoAccessLog",
+      "LeastPrivilege"
+    ],
+    "FR-006": [
+      "FR_006_PatientSelfAccess",
+      "OwnershipBasedAccess",
+      "LeastPrivilege"
+    ],
+    "FR-007": [
+      "FR_007_ComplianceContentBlindness",
+      "LeastPrivilege"
+    ],
+    "FR-008": [
+      "NoInformationLeakage"
+    ],
+    "FR-009": [
+      "FR_004_CareTeamGating"
+    ],
+    "FR-010": [
+      "FR_011_012_NotesAppendOnly"
+    ],
+    "FR-011": [
+      "FR_011_012_NotesAppendOnly",
+      "FR_014_AuditNoteIdConstraint"
+    ],
+    "FR-012": [
+      "FR_011_012_NotesAppendOnly",
+      "AppendOnly"
+    ],
+    "FR-013": [
+      "FR_013_AuditAlwaysOn",
+      "AuditCompleteness"
+    ],
+    "FR-014": [
+      "FR_014_AuditNoteIdConstraint",
+      "AttributionCorrectness"
+    ],
+    "FR-015": [
+      "FR_015_AuditImmutable",
+      "AppendOnly"
+    ],
+    "FR-016": [
+      "FR_013_AuditAlwaysOn",
+      "AuditCompleteness"
+    ],
+    "FR-017": [
+      "FR_015_AuditImmutable"
+    ],
+    "FR-018": [
+      "FR_018_AccessLogComplianceOnly",
+      "LeastPrivilege"
+    ],
+    "FR-019": [
+      "FR_007_ComplianceContentBlindness"
+    ],
+    "FR-020": [
+      "FR_020_RecordTargetRequiredForRecordOps"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_ComplianceNeverClinicalContent",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_007_ComplianceContentBlindness"
+      ],
+      "rationale": "Removing this fact allows a ComplianceOfficer to receive Permitted on GetRecord (clinical content) or PostNote, which is an explicit HIPAA invariant. The injection forces an instance where a ComplianceOfficer is Permitted on GetRecord, directly violating FR-007 and the LeastPrivilege assertion.",
+      "inject_violation": "fact MUTATE_ComplianceCanReadRecord { some a: Access | a.asCaller.role = ComplianceOfficer and a.asOp = GetRecord and a.asOutcome = Permitted }"
+    },
+    {
+      "fact_name": "F_OneAuditEntryPerAccess",
+      "asserts_violated": [
+        "AppendOnly",
+        "AuditCompleteness",
+        "FR_013_AuditAlwaysOn",
+        "FR_015_AuditImmutable"
+      ],
+      "rationale": "Removing this fact allows two distinct Access events to share a single AuditEntry, which models an audit overwrite (mutation) and breaks the one-audit-per-access invariant required by FR-013 and FR-015. The injection forces exactly this scenario.",
+      "inject_violation": "fact MUTATE_SharedAuditEntry { some disj a1, a2: Access | a1.asAudit = a2.asAudit }"
+    },
+    {
+      "fact_name": "F_CareTeamGating",
+      "asserts_violated": [
+        "FR_004_CareTeamGating",
+        "FR_011_012_NotesAppendOnly",
+        "LeastPrivilege"
+      ],
+      "rationale": "Removing this fact allows a Clinician who is NOT in the care team to receive Permitted on GetRecord or PostNote, violating the fundamental HIPAA access-control gate. The injection forces a Clinician to receive Permitted on GetRecord despite having no CareTeamMembership entry for that record.",
+      "inject_violation": "fact MUTATE_CareTeamBypass { some a: Access | a.asCaller.role = Clinician and a.asOp = GetRecord and a.asOutcome = Permitted and (no m: CareTeamMembership | m.ctClinician = a.asCaller and m.ctRecord = a.asTarget) }"
+    },
+    {
+      "fact_name": "F_PatientOwnRecordGating",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_006_PatientSelfAccess"
+      ],
+      "rationale": "Removing this fact allows a Patient to receive Permitted on GetRecord for a record that is NOT their assignedRecord, violating the ownership-based access invariant. The injection forces a Patient to successfully read a record that is not theirs.",
+      "inject_violation": "fact MUTATE_PatientCrossRecordAccess { some a: Access | a.asCaller.role = Patient and a.asOp = GetRecord and a.asOutcome = Permitted and a.asTarget != a.asCaller.assignedRecord }"
+    },
+    {
+      "fact_name": "F_AttributionCorrectness",
+      "asserts_violated": [
+        "AttributionCorrectness",
+        "FR_013_AuditAlwaysOn"
+      ],
+      "rationale": "Removing this fact allows an AuditEntry to record a role (aeRole) that differs from the actual role of the accessor (aeAccessor.role), which is the misattribution invariant the attribution pattern is designed to prevent. The injection forces a concrete misattribution.",
+      "inject_violation": "fact MUTATE_RoleMisattribution { some ae: AuditEntry | ae.aeRole != ae.aeAccessor.role }"
+    },
+    {
+      "fact_name": "F_PatientAssignedRecord",
+      "asserts_violated": [
+        "OwnershipExclusivity",
+        "FR_002_003_RoleAndAssignment",
+        "OwnershipBasedAccess"
+      ],
+      "rationale": "Removing this fact allows a non-Patient user to have an assignedRecord (breaking OwnershipExclusivity) or a Patient to have no assignedRecord (breaking FR-003). The injection forces a Clinician to have a non-empty assignedRecord, violating the pairing constraint.",
+      "inject_violation": "fact MUTATE_NonPatientHasAssignedRecord { some u: User | u.role = Clinician and one u.assignedRecord }"
+    }
+  ]
+}

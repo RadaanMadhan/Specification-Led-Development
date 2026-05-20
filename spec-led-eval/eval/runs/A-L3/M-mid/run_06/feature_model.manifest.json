@@ -1,0 +1,180 @@
+{
+  "feature_id": "A-L3",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "PermissionGrounding",
+    "PrivilegeMonotonicity",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "NoSelfMutation",
+    "ValidationBeforeMutation"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_RoleMutualExclusivity",
+    "FR_002_NullPrevIffInitial",
+    "FR_003_ApplicantCannotPatch",
+    "FR_004_OfficerCannotPost",
+    "FR_005_AuditorReadOnly",
+    "FR_008_OneInFlightPerApplicant",
+    "FR_009_ValidTransitions",
+    "FR_010_AssignmentExcludesApplicant",
+    "FR_011_NoSelfAssignment",
+    "FR_012_OnlyAssignedOfficerPatches",
+    "FR_013_NoSelfApproval",
+    "FR_015_TerminalStateImmutable",
+    "FR_016_InitialAuditEntry",
+    "FR_018_AuditImmutable",
+    "FR_023_AuditEndpointAuditorOnly",
+    "FR_024_ApplicantCannotModifyPostSubmission"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_RoleMutualExclusivity",
+      "FR_002_NullPrevIffInitial"
+    ],
+    "FR-003": [
+      "FR_003_ApplicantCannotPatch",
+      "LeastPrivilege"
+    ],
+    "FR-004": [
+      "FR_004_OfficerCannotPost",
+      "LeastPrivilege"
+    ],
+    "FR-005": [
+      "FR_005_AuditorReadOnly",
+      "LeastPrivilege"
+    ],
+    "FR-006": [
+      "FR_001_AuthRequired"
+    ],
+    "FR-007": [
+      "FR_009_ValidTransitions"
+    ],
+    "FR-008": [
+      "FR_008_OneInFlightPerApplicant"
+    ],
+    "FR-009": [
+      "FR_009_ValidTransitions"
+    ],
+    "FR-010": [
+      "FR_010_AssignmentExcludesApplicant"
+    ],
+    "FR-011": [
+      "FR_011_NoSelfAssignment",
+      "NoSelfMutation"
+    ],
+    "FR-012": [
+      "FR_012_OnlyAssignedOfficerPatches"
+    ],
+    "FR-013": [
+      "FR_013_NoSelfApproval",
+      "NoSelfMutation"
+    ],
+    "FR-014": [
+      "ValidationBeforeMutation"
+    ],
+    "FR-015": [
+      "FR_015_TerminalStateImmutable"
+    ],
+    "FR-016": [
+      "AuditCompleteness",
+      "FR_016_InitialAuditEntry",
+      "AttributionCorrectness"
+    ],
+    "FR-017": [
+      "AuditCompleteness",
+      "ValidationBeforeMutation"
+    ],
+    "FR-018": [
+      "AppendOnly",
+      "FR_018_AuditImmutable"
+    ],
+    "FR-019": [
+      "AppendOnly"
+    ],
+    "FR-020": [
+      "NoInformationLeakage"
+    ],
+    "FR-021": [
+      "NoInformationLeakage",
+      "OwnershipBasedAccess"
+    ],
+    "FR-022": [
+      "NoInformationLeakage"
+    ],
+    "FR-023": [
+      "FR_023_AuditEndpointAuditorOnly"
+    ],
+    "FR-024": [
+      "FR_024_ApplicantCannotModifyPostSubmission"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_NoSelfApproval",
+      "asserts_violated": [
+        "NoSelfMutation",
+        "FR_013_NoSelfApproval"
+      ],
+      "rationale": "Removing F_NoSelfApproval allows Alloy to construct a world where a PatchStatus operation succeeds even though the caller is the same user as the application's applicant \u2014 the self-approval conflict-of-interest violation that FCA framing requires cannot happen.",
+      "inject_violation": "fact MUTATE_SelfApprovalViolation { some op : Operation, a : LoanApplication | op.opKind = PatchStatus and op.opOutcome = Success and op.opTarget = a and op.opCaller = a.appApplicant }"
+    },
+    {
+      "fact_name": "F_AppendOnlyAuditEntries",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_018_AuditImmutable"
+      ],
+      "rationale": "Removing F_AppendOnlyAuditEntries lets Alloy invent two distinct AuditEntries for the same application that share an identical (prevStatus, newStatus) pair \u2014 the hallmark of an in-place update or duplicated replay that the append-only invariant is designed to catch.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some disj ae1, ae2 : AuditEntry | ae1.auditApp = ae2.auditApp and ae1.auditPrevStatus = ae2.auditPrevStatus and ae1.auditNewStatus = ae2.auditNewStatus }"
+    },
+    {
+      "fact_name": "F_AuditCompleteness",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_016_InitialAuditEntry"
+      ],
+      "rationale": "Removing F_AuditCompleteness allows a LoanApplication to exist with no AuditEntry at all \u2014 violating the invariant that every observable state change must have a corresponding audit record (SC-002, SC-008).",
+      "inject_violation": "fact MUTATE_AuditMissingViolation { some a : LoanApplication | no ae : AuditEntry | ae.auditApp = a }"
+    },
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "PermissionCompleteness",
+        "PermissionGrounding",
+        "FR_005_AuditorReadOnly",
+        "FR_023_AuditEndpointAuditorOnly"
+      ],
+      "rationale": "Removing F_PermissionMatrix lets Alloy assign arbitrary allow-cells to the PermMatrix, including granting Auditor access to PatchStatus or Applicant access to GetAudit, breaking every LeastPrivilege and role-isolation assertion.",
+      "inject_violation": "fact MUTATE_PermMatrixViolation { RAuditor -> PatchStatus in PermMatrix.Allowed }"
+    },
+    {
+      "fact_name": "F_RoleMutualExclusivity",
+      "asserts_violated": [
+        "FR_002_RoleMutualExclusivity"
+      ],
+      "rationale": "Removing F_RoleMutualExclusivity allows Alloy to construct a User who simultaneously holds both Officer and Auditor roles, violating the data-model constraint that these two bank-staff roles are mutually exclusive.",
+      "inject_violation": "fact MUTATE_RoleMutexViolation { some u : User | ROfficer in u.userRoles and RAuditor in u.userRoles }"
+    },
+    {
+      "fact_name": "F_NoInformationLeakage",
+      "asserts_violated": [
+        "NoInformationLeakage"
+      ],
+      "rationale": "Removing F_NoInformationLeakage allows a non-owner applicant's GET to succeed on an application they don't own, meaning the system distinguishes 'exists but not yours' from 'does not exist' \u2014 precisely the privacy invariant FR-020/FR-021 forbids.",
+      "inject_violation": "fact MUTATE_LeakageViolation { some op : Operation, a : LoanApplication | op.opKind = GetAppById and op.opCallerRole = RApplicant and op.opTarget = a and op.opCaller != a.appApplicant and op.opOutcome = Success }"
+    }
+  ]
+}

@@ -1,0 +1,160 @@
+{
+  "feature_id": "C-L3",
+  "patterns_applied": [
+    "AuthRequiredEverywhere",
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuditCompleteness",
+    "AttributionCorrectness",
+    "AppendOnly",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage"
+  ],
+  "feature_specific_predicates": [
+    "FR_002_OneRolePerUser",
+    "FR_003_PatientAssignedRecord",
+    "FR_004_ClinicianCareTeamGating",
+    "FR_005_ClinicianAuditAccess",
+    "FR_006_PatientSelfAccess",
+    "FR_007_ComplianceContentForbidden",
+    "FR_008_ByteEquivalentDenied",
+    "FR_011_NoteFieldsSnapshot",
+    "FR_012_NotesAppendOnly",
+    "FR_013_OneAuditPerOperation",
+    "FR_014_AuditFieldsCorrect",
+    "FR_015_AuditImmutable",
+    "FR_018_AccessLogComplianceOnly",
+    "FR_019_ComplianceContentBlindness",
+    "FR_020_RecordIdHandle"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_OneRolePerUser"
+    ],
+    "FR-003": [
+      "FR_003_PatientAssignedRecord"
+    ],
+    "FR-004": [
+      "FR_004_ClinicianCareTeamGating",
+      "OwnershipBasedAccess",
+      "LeastPrivilege"
+    ],
+    "FR-005": [
+      "FR_005_ClinicianAuditAccess"
+    ],
+    "FR-006": [
+      "FR_006_PatientSelfAccess",
+      "OwnershipBasedAccess"
+    ],
+    "FR-007": [
+      "FR_007_ComplianceContentForbidden",
+      "LeastPrivilege"
+    ],
+    "FR-008": [
+      "FR_008_ByteEquivalentDenied",
+      "NoInformationLeakage"
+    ],
+    "FR-009": [
+      "FR_004_ClinicianCareTeamGating"
+    ],
+    "FR-010": [
+      "FR_011_NoteFieldsSnapshot"
+    ],
+    "FR-011": [
+      "FR_011_NoteFieldsSnapshot"
+    ],
+    "FR-012": [
+      "FR_012_NotesAppendOnly",
+      "AppendOnly"
+    ],
+    "FR-013": [
+      "FR_013_OneAuditPerOperation",
+      "AuditCompleteness"
+    ],
+    "FR-014": [
+      "FR_014_AuditFieldsCorrect",
+      "AttributionCorrectness"
+    ],
+    "FR-015": [
+      "FR_015_AuditImmutable",
+      "AppendOnly"
+    ],
+    "FR-016": [
+      "FR_013_OneAuditPerOperation"
+    ],
+    "FR-017": [
+      "FR_015_AuditImmutable"
+    ],
+    "FR-018": [
+      "FR_018_AccessLogComplianceOnly",
+      "LeastPrivilege"
+    ],
+    "FR-019": [
+      "FR_019_ComplianceContentBlindness"
+    ],
+    "FR-020": [
+      "FR_020_RecordIdHandle"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_PermissionRule",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_007_ComplianceContentForbidden",
+        "FR_019_ComplianceContentBlindness"
+      ],
+      "rationale": "Clearing F_PermissionRule decouples Operation.outcome from IsPermitted. The injection then asks Alloy to find a Permitted Operation whose (role, opKind) cell (ComplianceOfficer, ReadRecord) is explicitly denied by the matrix \u2014 a direct counterexample to LeastPrivilege and the compliance-content-forbidden assertions.",
+      "inject_violation": "fact MUTATE_LeastPrivilegeViolation { some o: Operation | o.outcome = Permitted and o.actor.role = ComplianceOfficer and o.opKind = ReadRecord }"
+    },
+    {
+      "fact_name": "F_OneAuditPerOperation",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_013_OneAuditPerOperation"
+      ],
+      "rationale": "Clearing this fact removes the one-audit-per-operation constraint. The injection forces an Operation that has no associated AuditEntry, directly contradicting the audit-completeness assertions.",
+      "inject_violation": "fact MUTATE_AuditCompletenessViolation { some o: Operation | no a: AuditEntry | a.op = o }"
+    },
+    {
+      "fact_name": "F_AuditAttribution",
+      "asserts_violated": [
+        "AttributionCorrectness",
+        "FR_014_AuditFieldsCorrect"
+      ],
+      "rationale": "Clearing the attribution fact lets the AuditEntry's accessor field drift from the underlying Operation's actor. The injection forces such a misattributed audit entry into the instance.",
+      "inject_violation": "fact MUTATE_AttributionViolation { some a: AuditEntry | a.accessor != a.op.actor }"
+    },
+    {
+      "fact_name": "F_NoteOpLink",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_012_NotesAppendOnly",
+        "FR_011_NoteFieldsSnapshot"
+      ],
+      "rationale": "F_NoteOpLink is the bijection between ClinicalNote and permitted-append Operations. Clearing it lets a 'phantom' note exist with no creating operation \u2014 exactly the append-only / provenance violation the AppendOnly assertion is meant to catch.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some n: ClinicalNote | no o: Operation | o.createdNote = n }"
+    },
+    {
+      "fact_name": "F_PermissionRule",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_004_ClinicianCareTeamGating"
+      ],
+      "rationale": "Clearing the permission rule severs the link between Permitted outcomes and the care-team membership precondition. The injection forces a clinician to be granted a Permitted ReadRecord on a record they are NOT on the care team for \u2014 the canonical ownership/care-team violation.",
+      "inject_violation": "fact MUTATE_OwnershipViolation { some o: Operation | o.outcome = Permitted and o.actor.role = Clinician and o.opKind = ReadRecord and (o.actor -> o.target) not in CareTeam.members }"
+    },
+    {
+      "fact_name": "F_NoteOpLink",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "FR_008_ByteEquivalentDenied"
+      ],
+      "rationale": "Clearing F_NoteOpLink decouples a Denied operation from its (forbidden) side effects. The injection forces a Denied operation that nonetheless produced a clinical note \u2014 a state change leaking through the byte-equivalent 403 envelope.",
+      "inject_violation": "fact MUTATE_LeakageViolation { some o: Operation | o.outcome = Denied and some o.createdNote }"
+    }
+  ]
+}

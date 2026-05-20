@@ -1,0 +1,258 @@
+{
+  "run_id": "B-L1/M-mid/run_09",
+  "cell": "B-L1",
+  "model": "M-mid",
+  "rep": 9,
+  "D1": 1.0,
+  "D2": 1.0,
+  "D3": 0.5833333333333334,
+  "D4": 0.5,
+  "aqs_partial": 0.7708333333333334,
+  "scored_at": "2026-05-20T04:29:04.349730+00:00",
+  "details": {
+    "D1": {
+      "n_assertions": 16,
+      "n_verdicts": 16
+    },
+    "D2": {
+      "patterns_applied": [
+        "AuthRequiredEverywhere",
+        "AppendOnly",
+        "AuditCompleteness",
+        "AttributionCorrectness",
+        "OwnershipExclusivity",
+        "ValidationBeforeMutation"
+      ],
+      "per_pattern": {
+        "AuthRequiredEverywhere": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "AppendOnly": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "AuditCompleteness": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "AttributionCorrectness": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "OwnershipExclusivity": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        },
+        "ValidationBeforeMutation": {
+          "in_catalog": true,
+          "has_pred": true,
+          "score": 1.0
+        }
+      }
+    },
+    "D3": {
+      "per_target": {
+        "F_AllCallsAuthenticated": {
+          "targeted_asserts": {
+            "AuthRequiredEverywhere": "BIT",
+            "FR_001_AuthRequired": "BIT"
+          },
+          "score": 1.0
+        },
+        "F_AppendOnlyDeletionLog": {
+          "targeted_asserts": {
+            "AppendOnly": "VACUOUS_OVERCONSTRAINT",
+            "FR_012_PermanentDeletion": "VACUOUS_OVERCONSTRAINT",
+            "FR_018_DeletionLogCorrectness": "VACUOUS_OVERCONSTRAINT"
+          },
+          "score": 0.5
+        },
+        "F_ClosedTaskRule": {
+          "targeted_asserts": {
+            "FR_011_ClosedTaskRule": "BIT"
+          },
+          "score": 1.0
+        },
+        "F_AuditCompletenessOnDeletion": {
+          "targeted_asserts": {
+            "AuditCompleteness": "VACUOUS_OVERCONSTRAINT",
+            "FR_018_DeletionLogCorrectness": "VACUOUS_OVERCONSTRAINT"
+          },
+          "score": 0.5
+        },
+        "F_CreatorExactlyOne": {
+          "targeted_asserts": {
+            "OwnershipExclusivity": "VACUOUS_OVERCONSTRAINT",
+            "FR_009_CreatorRecordedImmutably": "VACUOUS_OVERCONSTRAINT",
+            "FR_017_CreatorNeverOverwritten": "VACUOUS_OVERCONSTRAINT"
+          },
+          "score": 0.5
+        },
+        "F_AssigneeIsMember": {
+          "targeted_asserts": {
+            "FR_008_AssigneeIsMember": "VACUOUS_TAUTOLOGY",
+            "ValidationBeforeMutation": "VACUOUS_TAUTOLOGY"
+          },
+          "score": 0.0
+        }
+      },
+      "skipped": []
+    },
+    "D4": {
+      "per_fr": {
+        "FR-001": {
+          "covers": [
+            "FR_001_AuthRequired",
+            "AuthRequiredEverywhere"
+          ],
+          "verdicts": {
+            "FR_001_AuthRequired": "PASS",
+            "AuthRequiredEverywhere": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-002": {
+          "covers": [],
+          "verdicts": {},
+          "score": 0.0
+        },
+        "FR-003": {
+          "covers": [
+            "FR_003_SingleWorkspaceFlatPermissions"
+          ],
+          "verdicts": {
+            "FR_003_SingleWorkspaceFlatPermissions": "FAIL"
+          },
+          "score": 0.5
+        },
+        "FR-004": {
+          "covers": [
+            "FR_003_SingleWorkspaceFlatPermissions"
+          ],
+          "verdicts": {
+            "FR_003_SingleWorkspaceFlatPermissions": "FAIL"
+          },
+          "score": 0.5
+        },
+        "FR-005": {
+          "covers": [],
+          "verdicts": {},
+          "score": 0.0
+        },
+        "FR-006": {
+          "covers": [],
+          "verdicts": {},
+          "score": 0.0
+        },
+        "FR-007": {
+          "covers": [],
+          "verdicts": {},
+          "score": 0.0
+        },
+        "FR-008": {
+          "covers": [
+            "FR_008_AssigneeIsMember",
+            "ValidationBeforeMutation"
+          ],
+          "verdicts": {
+            "FR_008_AssigneeIsMember": "PASS",
+            "ValidationBeforeMutation": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-009": {
+          "covers": [
+            "FR_009_CreatorRecordedImmutably",
+            "OwnershipExclusivity"
+          ],
+          "verdicts": {
+            "FR_009_CreatorRecordedImmutably": "PASS",
+            "OwnershipExclusivity": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-010": {
+          "covers": [
+            "FR_010_ValidStatus"
+          ],
+          "verdicts": {
+            "FR_010_ValidStatus": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-011": {
+          "covers": [
+            "FR_011_ClosedTaskRule"
+          ],
+          "verdicts": {
+            "FR_011_ClosedTaskRule": "FAIL"
+          },
+          "score": 0.5
+        },
+        "FR-012": {
+          "covers": [
+            "FR_012_PermanentDeletion"
+          ],
+          "verdicts": {
+            "FR_012_PermanentDeletion": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-013": {
+          "covers": [],
+          "verdicts": {},
+          "score": 0.0
+        },
+        "FR-014": {
+          "covers": [
+            "FR_014_UniversalTaskVisibility"
+          ],
+          "verdicts": {
+            "FR_014_UniversalTaskVisibility": "FAIL"
+          },
+          "score": 0.5
+        },
+        "FR-015": {
+          "covers": [],
+          "verdicts": {},
+          "score": 0.0
+        },
+        "FR-016": {
+          "covers": [],
+          "verdicts": {},
+          "score": 0.0
+        },
+        "FR-017": {
+          "covers": [
+            "FR_017_CreatorNeverOverwritten"
+          ],
+          "verdicts": {
+            "FR_017_CreatorNeverOverwritten": "PASS"
+          },
+          "score": 1.0
+        },
+        "FR-018": {
+          "covers": [
+            "FR_018_DeletionLogCorrectness",
+            "AppendOnly",
+            "AuditCompleteness",
+            "AttributionCorrectness"
+          ],
+          "verdicts": {
+            "FR_018_DeletionLogCorrectness": "PASS",
+            "AppendOnly": "PASS",
+            "AuditCompleteness": "PASS",
+            "AttributionCorrectness": "PASS"
+          },
+          "score": 1.0
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,6 @@
+$ /Users/leonhausmann/opt/anaconda3/bin/python3 -m speceval.cli verify-design --no-cache --model M-small --java-bin /Users/leonhausmann/opt/anaconda3/lib/python3.9/site-packages/jdk4py/java-runtime/bin/java /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/eval/specs/A-L1
+
+[parse]   feature 'A-L1', 17 FRs, 3 user stories
+[lift]    calling LLM (anthropic: tier=M-small, model=claude-haiku-4-5)...
+Error: LLM response contained a JSON block that did not parse: Expecting ',' delimiter: line 32 column 3 (char 1077)
+Raw start: '{\n  "feature_id": "A-L1",\n  "patterns_applied": [\n    "LeastPrivilege",\n    "PermissionCompleteness",\n    "AuthRequiredEverywhere",\n    "OwnershipExclusivity",\n    "AuditCompleteness",\n    "AppendOnly",\n    "AttributionCorrectness",\n    "ValidationBeforeMutation"\n  ],\n  "feature_specific_predicates"'

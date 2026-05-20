@@ -1,0 +1,168 @@
+{
+  "feature_id": "B-L3",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "PermissionGrounding",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_OneTeamPerUser",
+    "FR_003_004_MemberAccessControl",
+    "FR_005_TeamAdminAccess",
+    "FR_006_CrossTeamIsolation",
+    "FR_009_ImmutableOwnership",
+    "FR_010_OwnerOnlyShareControl",
+    "FR_011_ShareePermissions",
+    "FR_012_SameTeamSharing",
+    "FR_013_ShareAuditEntries",
+    "FR_014_ByteEquivalentNotFound",
+    "FR_015_PerEventAuditEntries",
+    "FR_016_AuditEntryContents",
+    "FR_017_AuditImmutableAndPersists",
+    "FR_019_AuditAccessControl"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_OneTeamPerUser"
+    ],
+    "FR-002a": [
+      "FR_002_OneTeamPerUser"
+    ],
+    "FR-003": [
+      "FR_003_004_MemberAccessControl",
+      "OwnershipBasedAccess"
+    ],
+    "FR-004": [
+      "FR_003_004_MemberAccessControl",
+      "LeastPrivilege"
+    ],
+    "FR-005": [
+      "FR_005_TeamAdminAccess",
+      "LeastPrivilege"
+    ],
+    "FR-006": [
+      "FR_006_CrossTeamIsolation",
+      "NoInformationLeakage"
+    ],
+    "FR-007": [
+      "FR_001_AuthRequired"
+    ],
+    "FR-008": [
+      "FR_003_004_MemberAccessControl"
+    ],
+    "FR-009": [
+      "FR_009_ImmutableOwnership",
+      "OwnershipExclusivity"
+    ],
+    "FR-010": [
+      "FR_010_OwnerOnlyShareControl",
+      "OwnershipBasedAccess"
+    ],
+    "FR-011": [
+      "FR_011_ShareePermissions",
+      "LeastPrivilege"
+    ],
+    "FR-012": [
+      "FR_012_SameTeamSharing"
+    ],
+    "FR-013": [
+      "FR_013_ShareAuditEntries"
+    ],
+    "FR-014": [
+      "FR_014_ByteEquivalentNotFound",
+      "NoInformationLeakage"
+    ],
+    "FR-015": [
+      "FR_015_PerEventAuditEntries",
+      "AuditCompleteness"
+    ],
+    "FR-016": [
+      "FR_016_AuditEntryContents",
+      "AttributionCorrectness"
+    ],
+    "FR-017": [
+      "FR_017_AuditImmutableAndPersists",
+      "AppendOnly"
+    ],
+    "FR-018": [
+      "AuditCompleteness",
+      "FR_015_PerEventAuditEntries"
+    ],
+    "FR-019": [
+      "FR_019_AuditAccessControl"
+    ],
+    "FR-020": [
+      "AppendOnly"
+    ],
+    "FR-021": []
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_AppendOnlyAuditEntries",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_017_AuditImmutableAndPersists"
+      ],
+      "rationale": "Removing this fact allows the model to produce a state where two audit entries for the same task share identical (task, op, actor, actorRole, team) tuples \u2014 exactly the fingerprint of an in-place mutation or duplicate-overwrite. The injection forces two structurally identical entries to exist, which both assertions should catch.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some disj ae1, ae2: AuditEntry | ae1.auditTask = ae2.auditTask and ae1.auditOp = ae2.auditOp and ae1.auditActor = ae2.auditActor and ae1.auditActorRole = ae2.auditActorRole and ae1.auditTeam = ae2.auditTeam }"
+    },
+    {
+      "fact_name": "F_OnlyOwnerCanChangeSharedWith",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_010_OwnerOnlyShareControl"
+      ],
+      "rationale": "Removing this fact allows a Mutation with opKind=PatchSharedWith whose caller is not the task owner. The injection forces exactly this situation \u2014 a non-owner mutation against shared_with \u2014 which both assertions should catch as a violation of the owner-only share-control invariant.",
+      "inject_violation": "fact MUTATE_NonOwnerShareControl { some m: Mutation | m.mutOpKind = PatchSharedWith and m.mutCaller != m.mutTask.taskOwner }"
+    },
+    {
+      "fact_name": "F_ShareesSameTeam",
+      "asserts_violated": [
+        "FR_012_SameTeamSharing",
+        "FR_006_CrossTeamIsolation"
+      ],
+      "rationale": "Removing this fact allows a task's sharedWith set to contain a user from a different team, violating the cross-team isolation invariant. The injection forces a sharee from a foreign team to appear in a task's share list.",
+      "inject_violation": "fact MUTATE_CrossTeamSharee { some t: Task | some s: t.sharedWith | s.userTeam != t.taskTeam }"
+    },
+    {
+      "fact_name": "F_MutationLinkedToAuditEntries",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_015_PerEventAuditEntries"
+      ],
+      "rationale": "Removing this fact allows a Mutation with an empty mutAuditEntries set, meaning a successful state change produced no audit record. The injection forces a mutation with no audit entries, which both audit-completeness assertions should catch.",
+      "inject_violation": "fact MUTATE_MissingAuditEntry { some m: Mutation | no m.mutAuditEntries }"
+    },
+    {
+      "fact_name": "F_AuditActorRoleSnapshot",
+      "asserts_violated": [
+        "AttributionCorrectness",
+        "FR_016_AuditEntryContents"
+      ],
+      "rationale": "Removing this fact allows an audit entry whose snapshotted actorRole differs from the actor user's actual role \u2014 a misattribution. The injection forces a mismatch between the recorded role and the actor's real role.",
+      "inject_violation": "fact MUTATE_RoleMismatch { some ae: AuditEntry | ae.auditActorRole != ae.auditActor.userRole }"
+    },
+    {
+      "fact_name": "F_OutsiderDeniedAll",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "FR_014_ByteEquivalentNotFound",
+        "LeastPrivilege"
+      ],
+      "rationale": "Removing this fact allows the permission matrix to grant an Outsider access to GetTask (or any task-level operation), violating the cross-team byte-equivalent isolation contract. The injection directly inserts an Outsider \u2192 GetTask allow cell into the matrix.",
+      "inject_violation": "fact MUTATE_OutsiderLeak { Outsider -> GetTask in PermMatrix.Allowed }"
+    }
+  ]
+}

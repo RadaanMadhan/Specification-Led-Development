@@ -1,0 +1,115 @@
+{
+  "feature_id": "A-L2",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "PermissionGrounding",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage"
+  ],
+  "feature_specific_predicates": [
+    "FR_008_OneInFlightPerCustomer",
+    "FR_011_ClaimTransition",
+    "FR_013_OnlyAssignedOfficerDecides",
+    "FR_016_DecidedApplicationsImmutable"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_CustomerPermissions"
+    ],
+    "FR-003": [
+      "FR_003_LoanOfficerPermissions"
+    ],
+    "FR-004": [
+      "FR_004_ComplianceReviewerPermissions"
+    ],
+    "FR-008": [
+      "FR_008_OneInFlightPerCustomer"
+    ],
+    "FR-011": [
+      "FR_011_ClaimTransition"
+    ],
+    "FR-013": [
+      "FR_013_OnlyAssignedOfficerDecides"
+    ],
+    "FR-016": [
+      "FR_016_DecidedApplicationsImmutable"
+    ],
+    "FR-017": [
+      "FR_017_AuditCompleteness"
+    ],
+    "FR-018": [
+      "AppendOnly"
+    ],
+    "FR-020": [
+      "FR_020_OwnershipBasedCustomerAccess"
+    ],
+    "FR-021": [
+      "NoInformationLeakage"
+    ],
+    "FR-023": [
+      "FR_004_ComplianceReviewerPermissions"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_PermissionMatrixDefined",
+      "asserts_violated": [
+        "FR_002_CustomerPermissions",
+        "FR_003_LoanOfficerPermissions",
+        "FR_004_ComplianceReviewerPermissions"
+      ],
+      "rationale": "Removing the permission matrix definition would cause role-permission assertions to fail, exposing that the matrix is the foundation of all access control",
+      "inject_violation": "fact MUTATE_BadPermissions { Customer -> DecideApplication in PermissionMatrix.Allowed }"
+    },
+    {
+      "fact_name": "F_AuditTrailComplete",
+      "asserts_violated": [
+        "FR_017_AuditCompleteness"
+      ],
+      "rationale": "Removing the requirement that every application has an initial audit entry causes the completeness check to fail when the model creates an application without recording its submission",
+      "inject_violation": "fact MUTATE_MissingAuditEntry { some app: LoanApplication | no e: AuditEvent | e.application = app and e.previous_status = none }"
+    },
+    {
+      "fact_name": "F_AppendOnlyAuditTrail",
+      "asserts_violated": [
+        "AppendOnly"
+      ],
+      "rationale": "Removing the uniqueness constraint on audit events allows duplicate transition records to exist, violating the append-only invariant",
+      "inject_violation": "fact MUTATE_DuplicateAuditEvent { some disj e1, e2: AuditEvent | e1.application = e2.application and e1.previous_status = e2.previous_status and e1.new_status = e2.new_status }"
+    },
+    {
+      "fact_name": "F_NonEmptyUniverse",
+      "asserts_violated": [
+        "FR_008_OneInFlightPerCustomer",
+        "FR_011_ClaimTransition",
+        "FR_013_OnlyAssignedOfficerDecides"
+      ],
+      "rationale": "Removing the non-empty universe constraint allows Alloy to check assertions against empty models, making them vacuously true; the injection forces concrete atoms to exist",
+      "inject_violation": "fact MUTATE_NonEmpty { some User some LoanApplication some AuditEvent some Decision }"
+    },
+    {
+      "fact_name": "FR_013_OnlyAssignedOfficerDecides",
+      "asserts_violated": [
+        "FR_013_OnlyAssignedOfficerDecides"
+      ],
+      "rationale": "Removing the predicate body causes the assertion to pass vacuously (no Decision exists to violate it); the injection creates a decision by a non-assigned officer",
+      "inject_violation": "fact MUTATE_WrongOfficerDecides { some app: LoanApplication | some d: Decision | d.application = app and d.decided_by != app.assigned_officer }"
+    },
+    {
+      "fact_name": "FR_008_OneInFlightPerCustomer",
+      "asserts_violated": [
+        "FR_008_OneInFlightPerCustomer"
+      ],
+      "rationale": "Removing the predicate causes the assertion to pass vacuously; the injection creates a customer with two simultaneous in-flight applications",
+      "inject_violation": "fact MUTATE_MultipleInFlight { some c: User | some disj a1, a2: LoanApplication | a1.customer = c and a2.customer = c and (a1.status = Submitted or a1.status = UnderReview) and (a2.status = Submitted or a2.status = UnderReview) }"
+    }
+  ]
+}

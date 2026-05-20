@@ -1,0 +1,162 @@
+{
+  "feature_id": "B-L3",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "PrivilegeMonotonicity",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_OneTeamPerUser",
+    "FR_003_MemberCanCreateAndEditOwned",
+    "FR_004_NonShareeCannotAccessTask",
+    "FR_005_AdminFullTeamAccess",
+    "FR_006_CrossTeamAbsoluteIsolation",
+    "FR_009_ImmutableOwnerAndTeam",
+    "FR_010_OwnerOnlyShareControl",
+    "FR_011_ShareeCannotDelete",
+    "FR_012_CrossTeamSharingForbidden",
+    "FR_015_MutationImpliesAudit",
+    "FR_016_AuditEntryAttribution",
+    "FR_017_AuditEntriesOutliveTask",
+    "FR_019_AuditAccessControlMirrorsTaskAccess"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_OneTeamPerUser"
+    ],
+    "FR-003": [
+      "FR_003_MemberCanCreateAndEditOwned",
+      "OwnershipBasedAccess"
+    ],
+    "FR-004": [
+      "FR_004_NonShareeCannotAccessTask",
+      "LeastPrivilege"
+    ],
+    "FR-005": [
+      "FR_005_AdminFullTeamAccess",
+      "PrivilegeMonotonicity"
+    ],
+    "FR-006": [
+      "FR_006_CrossTeamAbsoluteIsolation",
+      "NoInformationLeakage"
+    ],
+    "FR-009": [
+      "FR_009_ImmutableOwnerAndTeam",
+      "OwnershipExclusivity"
+    ],
+    "FR-010": [
+      "FR_010_OwnerOnlyShareControl",
+      "OwnershipBasedAccess"
+    ],
+    "FR-011": [
+      "FR_011_ShareeCannotDelete",
+      "LeastPrivilege"
+    ],
+    "FR-012": [
+      "FR_012_CrossTeamSharingForbidden",
+      "NoInformationLeakage"
+    ],
+    "FR-013": [
+      "FR_010_OwnerOnlyShareControl",
+      "AuditCompleteness"
+    ],
+    "FR-014": [
+      "NoInformationLeakage",
+      "FR_006_CrossTeamAbsoluteIsolation"
+    ],
+    "FR-015": [
+      "FR_015_MutationImpliesAudit",
+      "AuditCompleteness"
+    ],
+    "FR-016": [
+      "FR_016_AuditEntryAttribution",
+      "AttributionCorrectness"
+    ],
+    "FR-017": [
+      "FR_017_AuditEntriesOutliveTask",
+      "AppendOnly"
+    ],
+    "FR-018": [
+      "FR_015_MutationImpliesAudit"
+    ],
+    "FR-019": [
+      "FR_019_AuditAccessControlMirrorsTaskAccess"
+    ],
+    "FR-020": [
+      "AppendOnly",
+      "FR_017_AuditEntriesOutliveTask"
+    ],
+    "FR-021": []
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_ShareeInSameTeam",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "FR_006_CrossTeamAbsoluteIsolation",
+        "FR_012_CrossTeamSharingForbidden"
+      ],
+      "rationale": "Clearing F_ShareeInSameTeam removes the constraint that sharedWith users must be in the same team as the task. The injected violation forces a cross-team user into sharedWith, which both NoInformationLeakage and FR_012_CrossTeamSharingForbidden assert must be impossible.",
+      "inject_violation": "fact MUTATE_CrossTeamShareViolation { some t: Task | some u: User | u.userTeam != t.taskTeam and u in t.sharedWith }"
+    },
+    {
+      "fact_name": "F_OwnerOnlyShareControl",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_010_OwnerOnlyShareControl"
+      ],
+      "rationale": "Clearing F_OwnerOnlyShareControl removes the restriction that only task owners may author shared/unshared audit events. The injected violation forces a non-owner actor to author an OpShared entry, which FR_010_OwnerOnlyShareControl and OwnershipBasedAccess must catch.",
+      "inject_violation": "fact MUTATE_NonOwnerShareAuditViolation { some e: AuditEntry | e.entryOp = OpShared and e.entryActor != e.entryTask.taskOwner }"
+    },
+    {
+      "fact_name": "F_AppendOnlyAuditEntries",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_017_AuditEntriesOutliveTask"
+      ],
+      "rationale": "Clearing F_AppendOnlyAuditEntries removes the constraint that OpDeleted is terminal and unique. The injected violation forces two distinct OpDeleted entries for the same task, representing a re-written audit record \u2014 exactly what AppendOnly is supposed to prevent.",
+      "inject_violation": "fact MUTATE_DuplicateDeletedViolation { some disj e1, e2: AuditEntry | e1.entryTask = e2.entryTask and e1.entryOp = OpDeleted and e2.entryOp = OpDeleted }"
+    },
+    {
+      "fact_name": "F_AuditActorRoleSnapshot",
+      "asserts_violated": [
+        "AttributionCorrectness",
+        "FR_016_AuditEntryAttribution"
+      ],
+      "rationale": "Clearing F_AuditActorRoleSnapshot allows an audit entry to record a role that does not match the actor's actual role. The injected violation forces a mismatch, which AttributionCorrectness asserts must not occur.",
+      "inject_violation": "fact MUTATE_RoleMismatchViolation { some e: AuditEntry | e.entryActor.userRole = Member and e.entryActorRole = TeamAdmin }"
+    },
+    {
+      "fact_name": "F_CrossTeamIsolation",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "FR_006_CrossTeamAbsoluteIsolation",
+        "FR_004_NonShareeCannotAccessTask"
+      ],
+      "rationale": "Clearing F_CrossTeamIsolation removes the constraint that audit actors must be in the same team as the task. The injected violation forces a cross-team actor to appear in an audit entry, which NoInformationLeakage and FR_006_CrossTeamAbsoluteIsolation both assert is impossible.",
+      "inject_violation": "fact MUTATE_CrossTeamActorViolation { some e: AuditEntry | e.entryActor.userTeam != e.entryTask.taskTeam }"
+    },
+    {
+      "fact_name": "F_ShareeCannotDelete",
+      "asserts_violated": [
+        "FR_011_ShareeCannotDelete",
+        "LeastPrivilege",
+        "OwnershipBasedAccess"
+      ],
+      "rationale": "Clearing F_ShareeCannotDelete removes the restriction that only owners and admins may author OpDeleted audit events. The injected violation forces a sharee (non-owner, non-admin, in-team member present in sharedWith) to author a deleted event, which FR_011_ShareeCannotDelete must catch.",
+      "inject_violation": "fact MUTATE_ShareeDeleteViolation { some e: AuditEntry | some t: Task | e.entryTask = t and e.entryOp = OpDeleted and e.entryActor != t.taskOwner and e.entryActor.userRole = Member and e.entryActor in t.sharedWith }"
+    }
+  ]
+}

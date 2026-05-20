@@ -1,0 +1,125 @@
+==============================================================================
+  Design Compliance Report  (Phase 3 — feature_model.als)
+  feature       : A-L2
+  spec source   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/eval/specs/A-L2
+  alloy model   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/A-L2/feature_model.als
+  patterns      : LeastPrivilege, AuthRequiredEverywhere, OwnershipExclusivity, OwnershipBasedAccess, AuditCompleteness, AppendOnly, AttributionCorrectness
+  fr count      : 23 declared in spec.md
+  assertions    : 13 total (9/13 PASS via Alloy)
+==============================================================================
+
+  Compliance matrix
+  ----------------------------------------------------------------------------
+  Assertion                                 Verdict   Anchor
+  ------------------------------------------------------------------------------
+  LeastPrivilege                            PASS      PATTERN LeastPrivilege: contracts/http-api.md; spec.md FR-002, FR-003, FR-004
+  AuthRequiredEverywhere                    PASS      PATTERN AuthRequiredEverywhere: spec.md FR-001
+  OwnershipExclusivity                      PASS      PATTERN OwnershipExclusivity: spec.md FR-005
+  OwnershipBasedAccessCheck                 PASS      PATTERN OwnershipBasedAccess: spec.md FR-020
+  AuditCompleteness                         FAIL      PATTERN AuditCompleteness: spec.md FR-017, FR-019
+  AppendOnly                                PASS      PATTERN AppendOnly: spec.md FR-018
+  AttributionCorrectness                    PASS      PATTERN AttributionCorrectness: spec.md FR-017
+  FR_008_OneInFlightPerCustomer             FAIL      FEATURE-SPECIFIC: FR-008 - one in-flight per customer
+  FR_012_AssignmentConsistency              PASS      FEATURE-SPECIFIC: FR-012 - assignment consistency
+  FR_013_OnlyAssignedOfficerDecides         FAIL      FEATURE-SPECIFIC: FR-013 - only assigned officer decides
+  FR_016_ImmutabilityOfDecidedApplications  PASS      FEATURE-SPECIFIC: FR-016 - immutability of decided applications
+  FR_004_ComplianceReviewerReadOnly         PASS      FEATURE-SPECIFIC: FR-004, FR-023 - compliance reviewer read-only
+  FR_002_CustomerOperations                 FAIL      FEATURE-SPECIFIC: FR-002 - customer limited operations
+
+  Counterexamples (Alloy SAT)
+  ----------------------------------------------------------------------------
+  AuditCompleteness  [PATTERN AuditCompleteness: spec.md FR-017, FR-019]
+    Alloy: 04. check AuditCompleteness        0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR_008_OneInFlightPerCustomer  [FEATURE-SPECIFIC: FR-008 - one in-flight per customer]
+    Alloy: 07. check FR_008_OneInFlightPerCustomer     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR_013_OnlyAssignedOfficerDecides  [FEATURE-SPECIFIC: FR-013 - only assigned officer decides]
+    Alloy: 09. check FR_013_OnlyAssignedOfficerDecides     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR_002_CustomerOperations  [FEATURE-SPECIFIC: FR-002 - customer limited operations]
+    Alloy: 12. check FR_002_CustomerOperations     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR coverage
+  ----------------------------------------------------------------------------
+  FR-001  →  AuthRequiredEverywhere=PASS
+  FR-002  →  FR_002_CustomerOperations=FAIL, LeastPrivilege=PASS
+  FR-003  →  LeastPrivilege=PASS
+  FR-004  →  FR_004_ComplianceReviewerReadOnly=PASS
+  FR-005  →  OwnershipExclusivity=PASS
+  FR-006  [uncovered]
+  FR-007  [uncovered]
+  FR-008  →  FR_008_OneInFlightPerCustomer=FAIL
+  FR-009  →  AuditCompleteness=FAIL
+  FR-010  [uncovered]
+  FR-011  →  AuditCompleteness=FAIL
+  FR-012  →  FR_012_AssignmentConsistency=PASS
+  FR-013  →  FR_013_OnlyAssignedOfficerDecides=FAIL
+  FR-014  [uncovered]
+  FR-015  →  FR_016_ImmutabilityOfDecidedApplications=PASS, AuditCompleteness=FAIL
+  FR-016  →  FR_016_ImmutabilityOfDecidedApplications=PASS
+  FR-017  →  AuditCompleteness=FAIL, AttributionCorrectness=PASS
+  FR-018  →  AppendOnly=PASS
+  FR-019  →  AuditCompleteness=FAIL
+  FR-020  →  OwnershipBasedAccessCheck=PASS
+  FR-021  [uncovered]
+  FR-022  [uncovered]
+  FR-023  →  FR_004_ComplianceReviewerReadOnly=PASS
+
+  WARNING: 6 FR(s) without any matching assertion: FR-006, FR-007, FR-010, FR-014, FR-021, FR-022
+
+==============================================================================
+  Mutation tests  (assertion-strength validation)
+==============================================================================
+
+  Strategy: replace each named fact's body with `{}` (no constraint),
+  then re-run Alloy. Each listed assertion should now FAIL on the
+  mutated model. If it still PASSes, the assertion is vacuous and
+  must be strengthened.
+
+  - MUTATE F_PermissionMatrix  → runs/A-L2/mutated_F_PermissionMatrix.als
+    rationale: Removing this fact allows the permission matrix Allowed set to be empty or contain incorrect mappings. The LeastPrivilege assertion checks that the required role-operation pairs exist; without the fact, these pairs may be missing or incorrect.
+    expected to FAIL: LeastPrivilege, FR_002_CustomerOperations, FR_004_ComplianceReviewerReadOnly
+      - LeastPrivilege: PASS (vacuous?)
+      - FR_002_CustomerOperations: PASS (vacuous?)
+      - FR_004_ComplianceReviewerReadOnly: PASS (vacuous?)
+
+  - MUTATE F_AuditCompleteness  → runs/A-L2/mutated_F_AuditCompleteness.als
+    rationale: Removing this fact allows applications to transition between statuses without corresponding audit entries. The AuditCompleteness assertion checks that every status change produces exactly one audit entry; without the fact, transitions could occur without audit records.
+    expected to FAIL: AuditCompleteness, AttributionCorrectness
+      - AuditCompleteness: FAIL (expected)
+      - AttributionCorrectness: PASS (vacuous?)
+
+  - MUTATE F_OneInFlightPerCustomer  → runs/A-L2/mutated_F_OneInFlightPerCustomer.als
+    rationale: Removing this fact allows a customer to have multiple applications simultaneously in Submitted or Under Review status. The FR_008 assertion checks that at most one in-flight application exists per customer; without the fact, multiple in-flight applications would be permitted.
+    expected to FAIL: FR_008_OneInFlightPerCustomer
+      - FR_008_OneInFlightPerCustomer: FAIL (expected)
+
+  - MUTATE F_AssignmentConsistency  → runs/A-L2/mutated_F_AssignmentConsistency.als
+    rationale: Removing this fact allows applications at Under Review, Approved, or Rejected status to have no assigned officer or an officer with wrong role. The FR_012 assertion checks that applications in decision-phase statuses have exactly one assigned loan officer; without the fact, this invariant is violated.
+    expected to FAIL: FR_012_AssignmentConsistency
+      - FR_012_AssignmentConsistency: FAIL (expected)
+
+  - MUTATE F_OnlyAssignedOfficerDecides  → runs/A-L2/mutated_F_OnlyAssignedOfficerDecides.als
+    rationale: Removing this fact allows decisions to be recorded by any user, not just the assigned loan officer. The FR_013 assertion checks that every decision's recorded actor is the application's assigned officer; without the fact, any user could record a decision.
+    expected to FAIL: FR_013_OnlyAssignedOfficerDecides
+      - FR_013_OnlyAssignedOfficerDecides: FAIL (expected)
+
+  - MUTATE F_ComplianceReviewerReadOnly  → runs/A-L2/mutated_F_ComplianceReviewerReadOnly.als
+    rationale: Removing this fact allows the compliance reviewer role to be granted write operations (submit, claim, decide). The FR_004 assertion checks that compliance reviewers have no write permissions; without the fact, write permissions could be incorrectly granted to the compliance role.
+    expected to FAIL: FR_004_ComplianceReviewerReadOnly
+      - FR_004_ComplianceReviewerReadOnly: PASS (vacuous?)
+
+  Mutation summary
+  ----------------------------------------------------------------------------
+  - F_PermissionMatrix: ASSERTION VACUOUS (LeastPrivilege, FR_002_CustomerOperations, FR_004_ComplianceReviewerReadOnly)
+  - F_AuditCompleteness: ASSERTION VACUOUS (AuditCompleteness, AttributionCorrectness)
+  - F_OneInFlightPerCustomer: ASSERTIONS BIT (FR_008_OneInFlightPerCustomer)
+  - F_AssignmentConsistency: ASSERTIONS BIT (FR_012_AssignmentConsistency)
+  - F_OnlyAssignedOfficerDecides: ASSERTIONS BIT (FR_013_OnlyAssignedOfficerDecides)
+  - F_ComplianceReviewerReadOnly: ASSERTION VACUOUS (FR_004_ComplianceReviewerReadOnly)
+

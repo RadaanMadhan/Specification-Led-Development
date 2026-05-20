@@ -1,0 +1,118 @@
+{
+  "feature_id": "C-L2",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "PermissionGrounding",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "ValidationBeforeMutation"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthenticationRequired",
+    "FR_002_FiveRoles",
+    "FR_004_CareTeamMembershipGating",
+    "FR_005_AdministratorAuditOnlyAccess",
+    "FR_006_ByteEquivalentUnauthorisedResponse",
+    "FR_011_ClinicalNotesAppendOnly",
+    "FR_012_AlwaysOnAuditLogging",
+    "FR_014_AuditEntriesImmutable",
+    "FR_018_AdministratorContentBlindness"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthenticationRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_FiveRoles"
+    ],
+    "FR-004": [
+      "FR_004_CareTeamMembershipGating",
+      "OwnershipBasedAccess"
+    ],
+    "FR-005": [
+      "FR_005_AdministratorAuditOnlyAccess",
+      "PermissionGrounding"
+    ],
+    "FR-006": [
+      "FR_006_ByteEquivalentUnauthorisedResponse",
+      "NoInformationLeakage"
+    ],
+    "FR-011": [
+      "FR_011_ClinicalNotesAppendOnly",
+      "AppendOnly"
+    ],
+    "FR-012": [
+      "FR_012_AlwaysOnAuditLogging",
+      "AuditCompleteness"
+    ],
+    "FR-014": [
+      "FR_014_AuditEntriesImmutable",
+      "AppendOnly"
+    ],
+    "FR-018": [
+      "FR_018_AdministratorContentBlindness"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_CareTeamGatingForClinicalAccess",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_004_CareTeamMembershipGating"
+      ],
+      "rationale": "Removing this fact allows audit entries to exist where a clinical-role user has outcome=Permitted for Read or AddNote without active care-team membership. This directly violates the core access-control invariant that clinical record access requires documented care-team membership.",
+      "inject_violation": "fact MUTATE_CareTeamBypass { some u: User, p: Patient, ae: AuditEntry | u.role in (Doctor + Nurse + Pharmacist + ClinicalAdmin) and ae.user = u and ae.patient = p and ae.access_type in (Read + AddNote) and ae.outcome = Permitted and (no ctm: CareTeamMembership | ctm.clinician = u and ctm.patient = p and ctm.status = ActiveMembership) }"
+    },
+    {
+      "fact_name": "F_AppendOnlyNotes",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_011_ClinicalNotesAppendOnly"
+      ],
+      "rationale": "Removing this fact allows two distinct ClinicalNote instances with the same id to have different authors or content, violating the append-only guarantee that is essential to clinical record immutability and legal defensibility.",
+      "inject_violation": "fact MUTATE_MutableNote { some disj n1, n2: ClinicalNote | n1.id = n2.id and n1.author != n2.author }"
+    },
+    {
+      "fact_name": "F_AppendOnlyAuditEntries",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_014_AuditEntriesImmutable"
+      ],
+      "rationale": "Removing this fact allows two distinct AuditEntry instances (same user, timestamp) to have different outcomes or access_types, violating the immutability guarantee that is essential for audit integrity and compliance with healthcare regulations.",
+      "inject_violation": "fact MUTATE_MutableAuditEntry { some disj ae1, ae2: AuditEntry | ae1.user = ae2.user and ae1.patient = ae2.patient and ae1.outcome != ae2.outcome }"
+    },
+    {
+      "fact_name": "F_AuditAttributionCorrectness",
+      "asserts_violated": [
+        "AttributionCorrectness"
+      ],
+      "rationale": "Removing this fact allows audit entries to record an incorrect user_role snapshot (e.g., recording a doctor as HospitalAdministrator). This breaks the trustworthiness of audit attribution and enables forensic manipulation or misattribution of access events.",
+      "inject_violation": "fact MUTATE_AuditMisattribution { some u: User, ae: AuditEntry | ae.user = u and ae.user_role != u.role }"
+    },
+    {
+      "fact_name": "F_AdminAuditOnlyAccess",
+      "asserts_violated": [
+        "PermissionGrounding",
+        "FR_005_AdministratorAuditOnlyAccess"
+      ],
+      "rationale": "Removing this fact allows HospitalAdministrator users to perform Read or AddNote operations, violating the principle that administrators can only audit the log and must never view clinical content, which is a critical privacy and access-control boundary.",
+      "inject_violation": "fact MUTATE_AdminAccessViolation { some u: User, ae: AuditEntry | u.role = HospitalAdministrator and ae.user = u and ae.access_type in (Read + AddNote) }"
+    },
+    {
+      "fact_name": "F_AuditNoteIdPresenceCorrectness",
+      "asserts_violated": [
+        "FR_018_AdministratorContentBlindness",
+        "AuditCompleteness"
+      ],
+      "rationale": "Removing this fact allows audit entries to record a note_id in contexts where it should not be present (e.g., for a denied AddNote or a Read operation), or to omit it when it should be present. This can enable unintended clinical-content leakage or audit-structural inconsistency.",
+      "inject_violation": "fact MUTATE_NoteIdInconsistency { some ae: AuditEntry | ((ae.access_type = AddNote and ae.outcome = Permitted and no ae.note_id) or (ae.access_type = Read and some ae.note_id)) }"
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "F_ShareeInSameTeam": {
+    "targeted_asserts": {
+      "NoInformationLeakage": "BIT",
+      "FR_006_CrossTeamAbsoluteIsolation": "BIT",
+      "FR_012_CrossTeamSharingForbidden": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_OwnerOnlyShareControl": {
+    "targeted_asserts": {
+      "OwnershipBasedAccess": "BIT",
+      "FR_010_OwnerOnlyShareControl": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AppendOnlyAuditEntries": {
+    "targeted_asserts": {
+      "AppendOnly": "BIT",
+      "FR_017_AuditEntriesOutliveTask": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AuditActorRoleSnapshot": {
+    "targeted_asserts": {
+      "AttributionCorrectness": "BIT",
+      "FR_016_AuditEntryAttribution": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_CrossTeamIsolation": {
+    "targeted_asserts": {
+      "NoInformationLeakage": "VACUOUS_OVERCONSTRAINT",
+      "FR_006_CrossTeamAbsoluteIsolation": "VACUOUS_OVERCONSTRAINT",
+      "FR_004_NonShareeCannotAccessTask": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_ShareeCannotDelete": {
+    "targeted_asserts": {
+      "FR_011_ShareeCannotDelete": "BIT",
+      "OwnershipBasedAccess": "BIT",
+      "LeastPrivilege": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  }
+}

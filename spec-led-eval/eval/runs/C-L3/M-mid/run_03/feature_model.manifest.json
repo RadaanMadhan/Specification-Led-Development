@@ -1,0 +1,162 @@
+{
+  "feature_id": "C-L3",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_ExactlyOneRoleAndPatientRecord",
+    "FR_004_CareTeamGating",
+    "FR_005_ClinicianAccessLogDenied",
+    "FR_006_PatientSelfAccessOnly",
+    "FR_007_ComplianceContentBlindness",
+    "FR_008_ByteEquivalentDenial",
+    "FR_012_NotesAppendOnly",
+    "FR_013_AuditCompletenessOneToOne",
+    "FR_014_AuditNoteIdLinkage",
+    "FR_015_AuditImmutableRetained",
+    "FR_018_AccessLogComplianceOnly",
+    "FR_019_ComplianceNoClinicContent"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_ExactlyOneRoleAndPatientRecord"
+    ],
+    "FR-003": [
+      "FR_002_ExactlyOneRoleAndPatientRecord"
+    ],
+    "FR-004": [
+      "FR_004_CareTeamGating",
+      "LeastPrivilege"
+    ],
+    "FR-005": [
+      "FR_005_ClinicianAccessLogDenied"
+    ],
+    "FR-006": [
+      "FR_006_PatientSelfAccessOnly",
+      "OwnershipBasedAccess"
+    ],
+    "FR-007": [
+      "FR_007_ComplianceContentBlindness",
+      "FR_019_ComplianceNoClinicContent"
+    ],
+    "FR-008": [
+      "FR_008_ByteEquivalentDenial",
+      "NoInformationLeakage"
+    ],
+    "FR-009": [
+      "FR_004_CareTeamGating",
+      "LeastPrivilege"
+    ],
+    "FR-010": [
+      "FR_012_NotesAppendOnly"
+    ],
+    "FR-011": [
+      "FR_012_NotesAppendOnly"
+    ],
+    "FR-012": [
+      "FR_012_NotesAppendOnly",
+      "AppendOnlyNotes"
+    ],
+    "FR-013": [
+      "FR_013_AuditCompletenessOneToOne",
+      "AuditCompletenessCheck"
+    ],
+    "FR-014": [
+      "FR_014_AuditNoteIdLinkage",
+      "AttributionCorrectnessCheck"
+    ],
+    "FR-015": [
+      "FR_015_AuditImmutableRetained",
+      "AppendOnlyAuditEntries"
+    ],
+    "FR-016": [
+      "FR_013_AuditCompletenessOneToOne"
+    ],
+    "FR-017": [
+      "FR_015_AuditImmutableRetained"
+    ],
+    "FR-018": [
+      "FR_018_AccessLogComplianceOnly"
+    ],
+    "FR-019": [
+      "FR_019_ComplianceNoClinicContent",
+      "FR_007_ComplianceContentBlindness"
+    ],
+    "FR-020": [
+      "FR_001_AuthRequired"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_007_ComplianceContentBlindness",
+        "FR_019_ComplianceNoClinicContent",
+        "FR_018_AccessLogComplianceOnly"
+      ],
+      "rationale": "Clearing F_PermissionMatrix removes all (Relationship \u00d7 OperationKind) constraints from PermMatrix.allowed. Combined with F_OutcomeDeterminedByMatrix also cleared (or left consistent with injected violation), Alloy can freely assign any outcome to any access. The injection forces a compliance officer to have a Permitted GetRecord access, directly violating LeastPrivilege, FR_007 and FR_019.",
+      "inject_violation": "fact MUTATE_ComplianceReadsClinicalContent { some a: Access | a.accUser.userRole = RoleComplianceOfficer and a.accOpKind = GetRecord and a.accOutcome = Permitted }"
+    },
+    {
+      "fact_name": "F_CareTeamRelationshipCorrectness",
+      "asserts_violated": [
+        "FR_004_CareTeamGating",
+        "LeastPrivilege",
+        "OwnershipBasedAccess"
+      ],
+      "rationale": "Clearing F_CareTeamRelationshipCorrectness severs the link between CareTeamClinician relationship and actual CareTeamMembership rows. The injection forces a clinician to be classified as CareTeamClinician (and therefore Permitted) on a record for which no membership exists, exactly the care-team gating bypass FR-004 forbids.",
+      "inject_violation": "fact MUTATE_CareTeamBypass { some a: Access, u: User, r: Record | a.accUser = u and a.accRecord = r and u.userRole = RoleClinician and a.accRel = CareTeamClinician and a.accOutcome = Permitted and (no m: CareTeamMembership | m.ctClinician = u and m.ctRecord = r) }"
+    },
+    {
+      "fact_name": "F_NoteAuthorIsClinician",
+      "asserts_violated": [
+        "AppendOnlyNotes",
+        "FR_012_NotesAppendOnly"
+      ],
+      "rationale": "Clearing F_NoteAuthorIsClinician removes the structural constraint that only clinicians can author notes. The injection places a patient as a note author, which is exactly the write-privilege escalation FR-012 and data-model.md's author_role CHECK prevent.",
+      "inject_violation": "fact MUTATE_PatientAuthorsNote { some n: ClinicalNote, u: User | n.noteAuthor = u and u.userRole = RolePatient }"
+    },
+    {
+      "fact_name": "F_AuditCompleteness",
+      "asserts_violated": [
+        "AuditCompletenessCheck",
+        "FR_013_AuditCompletenessOneToOne",
+        "AppendOnlyAuditEntries"
+      ],
+      "rationale": "Clearing F_AuditCompleteness removes the bijection between Access atoms and AuditEntry atoms. The injection forces an Access with no linked audit entry, which is the exact SC-001/SC-002 violation (a record access with no matching audit entry).",
+      "inject_violation": "fact MUTATE_AccessWithoutAudit { some a: Access | no a.accAudit }"
+    },
+    {
+      "fact_name": "F_AttributionCorrectness",
+      "asserts_violated": [
+        "AttributionCorrectnessCheck",
+        "FR_015_AuditImmutableRetained",
+        "AppendOnlyAuditEntries"
+      ],
+      "rationale": "Clearing F_AttributionCorrectness allows audit entries to record a different role or accessor than the actual caller. The injection forces an audit entry whose recorded accessor role differs from the user's actual role, violating FR-014's requirement that accessor_role be snapshotted accurately from the authenticated identity context.",
+      "inject_violation": "fact MUTATE_MisattributedAuditEntry { some a: Access | a.accAudit.aeAccessorRole != a.accUser.userRole }"
+    },
+    {
+      "fact_name": "F_PatientOwnRecordCorrectness",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_006_PatientSelfAccessOnly"
+      ],
+      "rationale": "Clearing F_PatientOwnRecordCorrectness severs the link between PatientOwnRecord relationship and the patient's assigned_record_id. The injection forces a patient to receive Permitted access on a record that is not their assigned record, which is the cross-patient information disclosure FR-006 and SC-010 explicitly prohibit.",
+      "inject_violation": "fact MUTATE_PatientAccessesOtherRecord { some a: Access, u: User, r: Record | a.accUser = u and a.accRecord = r and u.userRole = RolePatient and u.assignedRecord != r and a.accOutcome = Permitted and a.accOpKind = GetRecord }"
+    }
+  ]
+}

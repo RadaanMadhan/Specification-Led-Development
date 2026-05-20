@@ -1,0 +1,177 @@
+{
+  "feature_id": "A-L2",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "PrivilegeMonotonicity",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_CustomerPermissions",
+    "FR_003_LoanOfficerPermissions",
+    "FR_004_ComplianceReviewerReadOnly",
+    "FR_005_CustomerIdentityFromAuth",
+    "FR_008_OneInFlightPerCustomer",
+    "FR_009_ApplicationsDistinct",
+    "FR_011_AssignedOfficerStatusLink",
+    "FR_012_ExactlyOneOfficerPerApplication",
+    "FR_013_OnlyAssignedOfficerDecides",
+    "FR_016_TerminalStateImmutability",
+    "FR_017_OneAuditEntryPerTransition",
+    "FR_018_AuditAppendOnly",
+    "FR_019_NoSpuriousAuditEntry",
+    "FR_020_CustomerOwnershipIsolation",
+    "FR_021_OfficerIdentityHiddenFromCustomer",
+    "FR_022_RetentionNoDelete"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired"
+    ],
+    "FR-002": [
+      "FR_002_CustomerPermissions",
+      "LeastPrivilege"
+    ],
+    "FR-003": [
+      "FR_003_LoanOfficerPermissions",
+      "LeastPrivilege"
+    ],
+    "FR-004": [
+      "FR_004_ComplianceReviewerReadOnly",
+      "LeastPrivilege"
+    ],
+    "FR-005": [
+      "FR_005_CustomerIdentityFromAuth",
+      "OwnershipExclusivity"
+    ],
+    "FR-006": [
+      "FR_009_ApplicationsDistinct"
+    ],
+    "FR-007": [
+      "FR_009_ApplicationsDistinct"
+    ],
+    "FR-008": [
+      "FR_008_OneInFlightPerCustomer"
+    ],
+    "FR-009": [
+      "FR_009_ApplicationsDistinct",
+      "AuditCompleteness"
+    ],
+    "FR-010": [
+      "FR_003_LoanOfficerPermissions",
+      "LeastPrivilege"
+    ],
+    "FR-011": [
+      "FR_011_AssignedOfficerStatusLink",
+      "AuditCompleteness"
+    ],
+    "FR-012": [
+      "FR_012_ExactlyOneOfficerPerApplication"
+    ],
+    "FR-013": [
+      "FR_013_OnlyAssignedOfficerDecides"
+    ],
+    "FR-014": [
+      "FR_013_OnlyAssignedOfficerDecides"
+    ],
+    "FR-015": [
+      "FR_017_OneAuditEntryPerTransition",
+      "AttributionCorrectness"
+    ],
+    "FR-016": [
+      "FR_016_TerminalStateImmutability",
+      "AppendOnly"
+    ],
+    "FR-017": [
+      "FR_017_OneAuditEntryPerTransition",
+      "AttributionCorrectness"
+    ],
+    "FR-018": [
+      "FR_018_AuditAppendOnly",
+      "AppendOnly"
+    ],
+    "FR-019": [
+      "FR_017_OneAuditEntryPerTransition",
+      "FR_019_NoSpuriousAuditEntry"
+    ],
+    "FR-020": [
+      "FR_020_CustomerOwnershipIsolation",
+      "OwnershipBasedAccess",
+      "NoInformationLeakage"
+    ],
+    "FR-021": [
+      "FR_021_OfficerIdentityHiddenFromCustomer"
+    ],
+    "FR-022": [
+      "FR_022_RetentionNoDelete"
+    ],
+    "FR-023": [
+      "FR_004_ComplianceReviewerReadOnly"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_002_CustomerPermissions",
+        "FR_003_LoanOfficerPermissions",
+        "FR_004_ComplianceReviewerReadOnly",
+        "PermissionCompleteness"
+      ],
+      "rationale": "Clearing the permission-matrix fact lets Alloy freely assign any (Role, OperationKind) pair to Allowed, immediately breaking LeastPrivilege (which requires specific denied cells) and PermissionCompleteness (which requires exactly 11 allowed cells).",
+      "inject_violation": "fact MUTATE_PermissionMatrixViolation { Customer -> PostClaim in PermMatrix.Allowed and ComplianceReviewer -> PostDecision in PermMatrix.Allowed }"
+    },
+    {
+      "fact_name": "F_OneInFlightPerCustomer",
+      "asserts_violated": [
+        "FR_008_OneInFlightPerCustomer"
+      ],
+      "rationale": "Clearing this fact removes the constraint that stops a single customer owning two in-flight applications. Injecting two in-flight applications for the same customer forces the FR-008 assertion to find a counterexample.",
+      "inject_violation": "fact MUTATE_OneInFlightViolation { some disj a1, a2: LoanApplication | a1.appCustomer = a2.appCustomer and a1.appStatus = Submitted and a2.appStatus = UnderReview }"
+    },
+    {
+      "fact_name": "F_DecisionByAssignedOfficer",
+      "asserts_violated": [
+        "FR_013_OnlyAssignedOfficerDecides",
+        "AttributionCorrectness"
+      ],
+      "rationale": "Clearing this fact allows a Decision's decidedBy field to reference a User other than the application's assignedOfficer. The injection forces a decided application whose decider differs from the assigned officer, violating FR-013.",
+      "inject_violation": "fact MUTATE_DecisionByWrongOfficer { some a: LoanApplication | some a.appDecision and (some a.assignedOfficer) and a.appDecision.decidedBy != a.assignedOfficer }"
+    },
+    {
+      "fact_name": "F_AuditInitialEvent",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_017_OneAuditEntryPerTransition",
+        "FR_022_RetentionNoDelete"
+      ],
+      "rationale": "Removing the requirement for an initial audit event allows a LoanApplication to exist with zero ApplicationEvent entries. The injection creates an application with no events at all, directly violating AuditCompleteness.",
+      "inject_violation": "fact MUTATE_MissingInitialEvent { some a: LoanApplication | no e: ApplicationEvent | e.evtApp = a }"
+    },
+    {
+      "fact_name": "F_AppendOnlyAuditEntries",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_018_AuditAppendOnly"
+      ],
+      "rationale": "Clearing the uniqueness constraint on (application, prevStatus, newStatus) triples allows two event atoms to represent duplicate transitions \u2014 exactly what append-only forbids. The injection forces two events with the same application and same (prevStatus, newStatus) pair.",
+      "inject_violation": "fact MUTATE_DuplicateAuditEntry { some disj e1, e2: ApplicationEvent | e1.evtApp = e2.evtApp and e1.prevStatus = e2.prevStatus and e1.newStatus = e2.newStatus }"
+    },
+    {
+      "fact_name": "F_AssignedOfficerStatusConsistency",
+      "asserts_violated": [
+        "FR_011_AssignedOfficerStatusLink",
+        "FR_012_ExactlyOneOfficerPerApplication"
+      ],
+      "rationale": "Clearing the status/officer coupling constraint allows a Submitted application to have an assignedOfficer, or an UnderReview application to have none. The injection creates a Submitted application with an assigned officer, violating the biconditional enforced by the data-model CHECK.",
+      "inject_violation": "fact MUTATE_SubmittedWithOfficer { some a: LoanApplication | a.appStatus = Submitted and some a.assignedOfficer }"
+    }
+  ]
+}

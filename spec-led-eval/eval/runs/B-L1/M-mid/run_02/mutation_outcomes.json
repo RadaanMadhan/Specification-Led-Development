@@ -1,0 +1,44 @@
+{
+  "F_AuthRequired": {
+    "targeted_asserts": {
+      "AuthRequiredEverywhere": "BIT",
+      "FR_001_AuthRequired": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_ClosedTaskEditRule": {
+    "targeted_asserts": {
+      "ValidationBeforeMutation": "VACUOUS_OVERCONSTRAINT",
+      "FR_011_ClosedTaskEditRule": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_DeletionLogComplete": {
+    "targeted_asserts": {
+      "AuditCompleteness": "VACUOUS_OVERCONSTRAINT",
+      "FR_018_DeletionLogged": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_FlatPermissions": {
+    "targeted_asserts": {
+      "PermissionCompleteness": "VACUOUS_OVERCONSTRAINT",
+      "FR_004_FlatPermissions": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_AssigneeMustBeMember": {
+    "targeted_asserts": {
+      "OwnershipExclusivity": "VACUOUS_OVERCONSTRAINT",
+      "FR_008_AssigneeMustBeMember": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_AppendOnlyDeletionLog": {
+    "targeted_asserts": {
+      "AppendOnly": "VACUOUS_OVERCONSTRAINT",
+      "AttributionCorrectness": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  }
+}

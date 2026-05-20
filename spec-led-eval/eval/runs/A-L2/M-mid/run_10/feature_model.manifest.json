@@ -1,0 +1,182 @@
+{
+  "feature_id": "A-L2",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "PermissionGrounding",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "ValidationBeforeMutation"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_CustomerPermissions",
+    "FR_003_LoanOfficerPermissions",
+    "FR_004_ComplianceReviewerReadOnly",
+    "FR_005_CustomerIdentityFromContext",
+    "FR_008_OneInFlightPerCustomer",
+    "FR_009_UniqueApplicationPerSubmission",
+    "FR_011_012_ClaimExclusivity",
+    "FR_013_OnlyAssignedOfficerDecides",
+    "FR_015_016_DecisionImmutability",
+    "FR_016_TerminalStateImmutable",
+    "FR_017_018_019_AuditTrailIntegrity",
+    "FR_019_ExactlyOneAuditEntryPerTransition",
+    "FR_020_CustomerSeesOwnAppsOnly",
+    "FR_021_OfficerIdentityHiddenFromCustomer",
+    "FR_StateTransitionValidity",
+    "FR_StatusOfficerInvariant"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_CustomerPermissions",
+      "LeastPrivilege"
+    ],
+    "FR-003": [
+      "FR_003_LoanOfficerPermissions",
+      "LeastPrivilege"
+    ],
+    "FR-004": [
+      "FR_004_ComplianceReviewerReadOnly",
+      "LeastPrivilege"
+    ],
+    "FR-005": [
+      "FR_005_CustomerIdentityFromContext",
+      "OwnershipExclusivity"
+    ],
+    "FR-006": [
+      "ValidationBeforeMutation"
+    ],
+    "FR-007": [
+      "ValidationBeforeMutation"
+    ],
+    "FR-008": [
+      "FR_008_OneInFlightPerCustomer"
+    ],
+    "FR-009": [
+      "FR_009_UniqueApplicationPerSubmission"
+    ],
+    "FR-010": [
+      "FR_003_LoanOfficerPermissions"
+    ],
+    "FR-011": [
+      "FR_011_012_ClaimExclusivity",
+      "AuditCompleteness"
+    ],
+    "FR-012": [
+      "FR_011_012_ClaimExclusivity"
+    ],
+    "FR-013": [
+      "FR_013_OnlyAssignedOfficerDecides"
+    ],
+    "FR-014": [
+      "ValidationBeforeMutation"
+    ],
+    "FR-015": [
+      "FR_015_016_DecisionImmutability",
+      "AuditCompleteness"
+    ],
+    "FR-016": [
+      "FR_016_TerminalStateImmutable",
+      "FR_015_016_DecisionImmutability"
+    ],
+    "FR-017": [
+      "FR_017_018_019_AuditTrailIntegrity",
+      "AttributionCorrectness",
+      "AuditCompleteness"
+    ],
+    "FR-018": [
+      "AppendOnly",
+      "FR_017_018_019_AuditTrailIntegrity"
+    ],
+    "FR-019": [
+      "FR_019_ExactlyOneAuditEntryPerTransition",
+      "AuditCompleteness",
+      "AppendOnly"
+    ],
+    "FR-020": [
+      "FR_020_CustomerSeesOwnAppsOnly",
+      "OwnershipBasedAccess",
+      "NoInformationLeakage"
+    ],
+    "FR-021": [
+      "FR_021_OfficerIdentityHiddenFromCustomer"
+    ],
+    "FR-022": [
+      "AppendOnly"
+    ],
+    "FR-023": [
+      "FR_004_ComplianceReviewerReadOnly",
+      "LeastPrivilege"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "PermissionGrounding",
+        "FR_002_CustomerPermissions",
+        "FR_004_ComplianceReviewerReadOnly"
+      ],
+      "rationale": "Clearing F_PermissionMatrix removes the closed-world assignment of allowed cells, freeing the PermMatrix.Allowed relation to contain any Role->OperationKind pairs. The injection then forces a forbidden cell into the Allowed set, directly violating LeastPrivilege and PermissionGrounding.",
+      "inject_violation": "fact MUTATE_PermMatrixViolation { ComplianceReviewer -> PostDecision in PermMatrix.Allowed }"
+    },
+    {
+      "fact_name": "F_OneInFlightPerCustomer",
+      "asserts_violated": [
+        "FR_008_OneInFlightPerCustomer",
+        "OwnershipBasedAccess"
+      ],
+      "rationale": "Clearing F_OneInFlightPerCustomer removes the constraint that prevents a customer from having two simultaneous in-flight applications. The injection forces two distinct applications with the same customer to both be in-flight, producing the exact counterexample FR-008 was designed to prevent.",
+      "inject_violation": "fact MUTATE_TwoInFlightViolation { some disj a1, a2: LoanApplication | a1.appCustomer = a2.appCustomer and a1.appStatus = Submitted and a2.appStatus = UnderReview }"
+    },
+    {
+      "fact_name": "F_DecisionByAssignedOfficer",
+      "asserts_violated": [
+        "FR_013_OnlyAssignedOfficerDecides",
+        "AttributionCorrectness"
+      ],
+      "rationale": "Clearing F_DecisionByAssignedOfficer removes the structural constraint binding a Decision's decidedBy to the application's assignedOfficer. The injection forces a Decision where the deciding user is different from the assigned officer, directly violating FR-013.",
+      "inject_violation": "fact MUTATE_WrongOfficerDecides { some d: Decision | some u: User | u.userRole = LoanOfficer and u != d.forApp.assignedOfficer and d.decidedBy = u }"
+    },
+    {
+      "fact_name": "F_AuditNoDuplicateTransitions",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_017_018_019_AuditTrailIntegrity",
+        "FR_019_ExactlyOneAuditEntryPerTransition"
+      ],
+      "rationale": "Clearing F_AuditNoDuplicateTransitions removes the append-only guard that prevents duplicate (previousStatus, newStatus) pairs for the same application. The injection forces two audit entries on the same application with identical transition fields, violating the append-only and exactly-one-per-transition invariants.",
+      "inject_violation": "fact MUTATE_DuplicateAuditEntry { some disj e1, e2: AuditEntry | e1.auditApp = e2.auditApp and e1.previousStatus = e2.previousStatus and e1.newStatus = e2.newStatus }"
+    },
+    {
+      "fact_name": "F_AuditValidTransitions",
+      "asserts_violated": [
+        "FR_016_TerminalStateImmutable",
+        "FR_StateTransitionValidity"
+      ],
+      "rationale": "Clearing F_AuditValidTransitions removes the constraint that limits audit entries to the four documented transitions. The injection introduces an audit entry recording a transition out of a terminal state (Approved\u2192Rejected), which represents the exact immutability violation FR-016 forbids.",
+      "inject_violation": "fact MUTATE_InvalidTransition { some e: AuditEntry | e.previousStatus = Approved and e.newStatus = Rejected }"
+    },
+    {
+      "fact_name": "F_AuditSubmitActorIsCustomer",
+      "asserts_violated": [
+        "AttributionCorrectness",
+        "FR_020_CustomerSeesOwnAppsOnly",
+        "NoInformationLeakage"
+      ],
+      "rationale": "Clearing F_AuditSubmitActorIsCustomer allows the initial audit entry's actor to be a non-customer user. The injection forces an initial submission entry (no previousStatus) where the actor is a LoanOfficer, violating attribution correctness and the invariant that only the owning customer can appear as actor on the submission event.",
+      "inject_violation": "fact MUTATE_WrongSubmitActor { some e: AuditEntry | no e.previousStatus and e.auditActor.userRole = LoanOfficer }"
+    }
+  ]
+}

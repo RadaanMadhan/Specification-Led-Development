@@ -1,0 +1,123 @@
+{
+  "feature_id": "003-loan-application",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_004_UniqueReference",
+    "FR_005_OnePendingPerCustomer",
+    "FR_009_DecisionHasReason",
+    "FR_010_DecisionPersistedOnDecided",
+    "FR_011_AtMostOneDecision",
+    "FR_012_NoDualDecision",
+    "FR_013_CustomerScoping",
+    "FR_015_StaffOnlyDecisionAndAudit",
+    "FR_016_AuditAppendOnly"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-004": [
+      "FR_004_UniqueReference"
+    ],
+    "FR-005": [
+      "FR_005_OnePendingPerCustomer"
+    ],
+    "FR-008": [
+      "LeastPrivilege",
+      "PermissionCompleteness"
+    ],
+    "FR-009": [
+      "FR_009_DecisionHasReason"
+    ],
+    "FR-010": [
+      "FR_010_DecisionPersistedOnDecided"
+    ],
+    "FR-011": [
+      "FR_011_AtMostOneDecision"
+    ],
+    "FR-012": [
+      "FR_012_NoDualDecision",
+      "FR_011_AtMostOneDecision"
+    ],
+    "FR-013": [
+      "FR_013_CustomerScoping",
+      "OwnershipBasedAccess",
+      "NoInformationLeakage"
+    ],
+    "FR-015": [
+      "FR_015_StaffOnlyDecisionAndAudit",
+      "LeastPrivilege"
+    ],
+    "FR-016": [
+      "FR_016_AuditAppendOnly",
+      "AppendOnly",
+      "AuditCompleteness",
+      "AttributionCorrectness"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_LeastPrivilege",
+      "asserts_violated": [
+        "LeastPrivilege"
+      ],
+      "rationale": "Clearing F_LeastPrivilege removes the (role, op) \u2194 outcome=Success linkage; the injection forces a successful operation whose (role, kind) cell is NOT in PermMatrix.Allowed \u2014 exactly what LeastPrivilege forbids.",
+      "inject_violation": "fact MUTATE_LeastPrivilegeViolation { some op: Operation | op.outcome = Success and ((op.caller.role -> op.kind) not in PermMatrix.Allowed) }"
+    },
+    {
+      "fact_name": "F_AppendOnlyEvents",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_016_AuditAppendOnly"
+      ],
+      "rationale": "Clearing the append-only fact removes the uniqueness constraint on (app, event_type); the injection forces two distinct events with identical (app, event_type) \u2014 a direct counterexample to append-only.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some disj e1, e2: ApplicationEvent | e1.app = e2.app and e1.eventType = e2.eventType }"
+    },
+    {
+      "fact_name": "F_OnePendingPerCustomer",
+      "asserts_violated": [
+        "FR_005_OnePendingPerCustomer"
+      ],
+      "rationale": "Clearing F_OnePendingPerCustomer lets a customer hold two Pending-Review applications simultaneously; the injection demands exactly that scenario.",
+      "inject_violation": "fact MUTATE_TwoPendingPerCustomer { some disj a1, a2: LoanApplication | a1.customer = a2.customer and a1.status = PendingReview and a2.status = PendingReview }"
+    },
+    {
+      "fact_name": "F_AtMostOneDecisionPerApp",
+      "asserts_violated": [
+        "FR_011_AtMostOneDecision",
+        "FR_012_NoDualDecision"
+      ],
+      "rationale": "Clearing the at-most-one-decision-per-app fact allows two Decision rows pointing at the same LoanApplication; the injection forces two such Decisions to exist, violating FR-011/FR-012.",
+      "inject_violation": "fact MUTATE_TwoDecisionsSameApp { some disj d1, d2: Decision | d1.application = d2.application }"
+    },
+    {
+      "fact_name": "F_OwnershipBasedAccess",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_013_CustomerScoping"
+      ],
+      "rationale": "Clearing F_OwnershipBasedAccess lets a customer's GetApplicationById succeed without a properly-owned target; the injection produces a customer Success on GetApplicationById with NO target, which the predicate insists must have an owned target \u2014 and F_NoInformationLeakage (which requires `some op.target`) does not constrain this case.",
+      "inject_violation": "fact MUTATE_CustomerSuccessNoTarget { some op: Operation | op.caller.role = Customer and op.kind = GetApplicationById and op.outcome = Success and no op.target }"
+    },
+    {
+      "fact_name": "F_AttributionCorrect",
+      "asserts_violated": [
+        "AttributionCorrectness"
+      ],
+      "rationale": "Clearing F_AttributionCorrect removes the rule that a SubmittedEvent's actor must equal the application's customer; the injection forces a SubmittedEvent whose recorded actor differs from the application's customer.",
+      "inject_violation": "fact MUTATE_SubmittedAttributionMismatch { some e: ApplicationEvent | e.eventType = SubmittedEvent and e.actor != e.app.customer }"
+    }
+  ]
+}

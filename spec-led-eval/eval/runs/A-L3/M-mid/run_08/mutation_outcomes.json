@@ -1,0 +1,43 @@
+{
+  "F_AppendOnlyAuditEntries": {
+    "targeted_asserts": {
+      "AppendOnly": "BIT",
+      "FR_018_AuditImmutable": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_NoSelfApproval": {
+    "targeted_asserts": {
+      "NoSelfMutation": "BIT",
+      "FR_013_NoSelfApproval": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_NoInfoLeakageOnFailedRead": {
+    "targeted_asserts": {
+      "NoInformationLeakage": "BIT",
+      "FR_020_ByteEquivalentUnauthorized": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AuditEndpointAuditorOnly": {
+    "targeted_asserts": {
+      "FR_023_AuditEndpointAuditorOnly": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_OneInFlightPerApplicant": {
+    "targeted_asserts": {
+      "FR_008_OneInFlight": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_PermissionMatrix": {
+    "targeted_asserts": {
+      "PermissionCompleteness": "BIT",
+      "FR_005_AuditorReadOnly": "BIT",
+      "LeastPrivilege": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  }
+}

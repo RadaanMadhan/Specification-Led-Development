@@ -1,0 +1,37 @@
+{
+  "F_PermissionMatrix": {
+    "targeted_asserts": {
+      "LeastPrivilege": "VACUOUS_TAUTOLOGY",
+      "PermissionCompleteness": "VACUOUS_TAUTOLOGY"
+    },
+    "all_bit": false
+  },
+  "F_AuditCompleteness": {
+    "targeted_asserts": {
+      "AuditCompleteness": "VACUOUS_OVERCONSTRAINT",
+      "FR_008_AlwaysAudit": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_AppendOnly": {
+    "targeted_asserts": {
+      "AppendOnly": "BIT",
+      "FR_010_AuditImmutable": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_OwnershipBasedAccess": {
+    "targeted_asserts": {
+      "OwnershipBasedAccess": "VACUOUS_OVERCONSTRAINT",
+      "FR_006_CareTeamGating": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_NoInformationLeakage": {
+    "targeted_asserts": {
+      "NoInformationLeakage": "VACUOUS_TAUTOLOGY",
+      "FR_007_ByteEquivalent": "VACUOUS_TAUTOLOGY"
+    },
+    "all_bit": false
+  }
+}

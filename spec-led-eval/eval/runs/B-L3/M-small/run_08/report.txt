@@ -1,0 +1,107 @@
+==============================================================================
+  Design Compliance Report  (Phase 3 — feature_model.als)
+  feature       : B-L3
+  spec source   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/eval/specs/B-L3
+  alloy model   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/B-L3/feature_model.als
+  patterns      : OwnershipExclusivity, OwnershipBasedAccess, AuditCompleteness, AppendOnly, AttributionCorrectness, AuthRequiredEverywhere, NoInformationLeakage
+  fr count      : 21 declared in spec.md
+  assertions    : 16 total (15/16 PASS via Alloy)
+==============================================================================
+
+  Compliance matrix
+  ----------------------------------------------------------------------------
+  Assertion                       Verdict   Anchor
+  --------------------------------------------------------------------
+  OwnershipExclusivity            PASS      PATTERN OwnershipExclusivity: FR-009, data-model.md
+  CrossTeamIsolation              PASS      FEATURE-SPECIFIC: FR-006, FR-014 cross-team isolation
+  SameTeamSharing                 PASS      FEATURE-SPECIFIC: FR-012 sharees must be in same team
+  OwnerControlsSharing            PASS      PATTERN OwnershipBasedAccess: FR-010, contracts/http-api.md
+  TaskCreationAudit               PASS      PATTERN AuditCompleteness: FR-015, data-model.md
+  AttributionCorrectness          PASS      PATTERN AttributionCorrectness: FR-016, contracts/http-api.md
+  FR_001_AuthRequired             PASS      FEATURE-SPECIFIC: FR-001 authentication required
+  FR_002_TokenDerivedTeamRole     PASS      FEATURE-SPECIFIC: FR-002 team and role from token, not payload
+  FR_003_MemberCanCreate          FAIL      FEATURE-SPECIFIC: FR-003 members can create tasks
+  FR_009_ImmutableOwnerTeam       PASS      FEATURE-SPECIFIC: FR-009 immutable owner and team on task
+  AppendOnlyAuditEntries          PASS      PATTERN AppendOnly: FR-017, data-model.md
+  ShareUnshareAuditEntries        PASS      FEATURE-SPECIFIC: FR-013 share operations recorded in audit
+  FR_014_ByteEquivalentIsolation  PASS      FEATURE-SPECIFIC: FR-014 byte-equivalent isolation extends to all endpoints
+  OneAuditPerCreation             PASS      FEATURE-SPECIFIC: FR-015 one audit entry per semantic event
+  NoInformationLeakage            PASS      PATTERN NoInformationLeakage: FR-014, contracts/http-api.md
+  AuthRequiredEverywhere          PASS      PATTERN AuthRequiredEverywhere: FR-001, contracts/http-api.md
+
+  Counterexamples (Alloy SAT)
+  ----------------------------------------------------------------------------
+  FR_003_MemberCanCreate  [FEATURE-SPECIFIC: FR-003 members can create tasks]
+    Alloy: 08. check FR_003_MemberCanCreate     0    1/1     SAT
+    A counterexample exists within the Alloy scope; the encoded invariant is violated by some structurally-valid world. Review the encoding.
+
+  FR coverage
+  ----------------------------------------------------------------------------
+  FR-001  →  AuthRequiredEverywhere=PASS, FR_001_AuthRequired=PASS
+  FR-002  →  FR_002_TokenDerivedTeamRole=PASS
+  FR-003  →  FR_003_MemberCanCreate=FAIL
+  FR-004  [uncovered]
+  FR-005  [uncovered]
+  FR-006  →  CrossTeamIsolation=PASS
+  FR-007  [uncovered]
+  FR-008  [uncovered]
+  FR-009  →  OwnershipExclusivity=PASS, FR_009_ImmutableOwnerTeam=PASS
+  FR-010  →  OwnerControlsSharing=PASS
+  FR-011  [uncovered]
+  FR-012  →  SameTeamSharing=PASS
+  FR-013  →  ShareUnshareAuditEntries=PASS
+  FR-014  →  NoInformationLeakage=PASS, FR_014_ByteEquivalentIsolation=PASS
+  FR-015  →  OneAuditPerCreation=PASS
+  FR-016  →  AttributionCorrectness=PASS
+  FR-017  →  AppendOnlyAuditEntries=PASS
+  FR-018  [uncovered]
+  FR-019  [uncovered]
+  FR-020  [uncovered]
+  FR-021  [uncovered]
+
+  WARNING: 9 FR(s) without any matching assertion: FR-004, FR-005, FR-007, FR-008, FR-011, FR-018, FR-019, FR-020, FR-021
+
+==============================================================================
+  Mutation tests  (assertion-strength validation)
+==============================================================================
+
+  Strategy: replace each named fact's body with `{}` (no constraint),
+  then re-run Alloy. Each listed assertion should now FAIL on the
+  mutated model. If it still PASSes, the assertion is vacuous and
+  must be strengthened.
+
+  - MUTATE F_CrossTeamIsolation  → runs/B-L3/mutated_F_CrossTeamIsolation.als
+    rationale: Removing this fact permits users in team A to be sharees on tasks in team B, violating the fundamental cross-team isolation guarantee. The injection creates a cross-team sharee entry, which all three isolation assertions must reject. Tests whether cross-team barrier is enforced only here.
+    expected to FAIL: CrossTeamIsolation, FR_014_ByteEquivalentIsolation, NoInformationLeakage
+      - CrossTeamIsolation: PASS (vacuous?)
+      - FR_014_ByteEquivalentIsolation: PASS (vacuous?)
+      - NoInformationLeakage: PASS (vacuous?)
+
+  - MUTATE F_OwnerControlsSharing  → runs/B-L3/mutated_F_OwnerControlsSharing.als
+    rationale: Removing this fact allows audit entries to record share operations performed by non-owners. The injection creates a scenario where a sharee was added by someone other than the task owner, violating the ownership-based access control invariant. Tests that only the owner can modify the shared_with list.
+    expected to FAIL: OwnerControlsSharing
+      - OwnerControlsSharing: FAIL (expected)
+
+  - MUTATE F_TaskCreationAudit  → runs/B-L3/mutated_F_TaskCreationAudit.als
+    rationale: Removing this fact allows tasks to exist without a corresponding creation audit entry, violating the audit completeness guarantee. The injection creates a task with no Created entry in the audit log, which the assertion must catch. Tests that all tasks produce a creation entry.
+    expected to FAIL: TaskCreationAudit
+      - TaskCreationAudit: FAIL (expected)
+
+  - MUTATE F_AttributionCorrectness  → runs/B-L3/mutated_F_AttributionCorrectness.als
+    rationale: Removing this fact allows audit entries to be attributed to actors in different teams than the task itself, violating the invariant that only in-team actors can modify in-team tasks. The injection creates a cross-team attribution, which the assertion must reject. Tests that audit log actors are always legitimate members of the task's team.
+    expected to FAIL: AttributionCorrectness
+      - AttributionCorrectness: FAIL (expected)
+
+  - MUTATE F_ShareUnshareAuditEntries  → runs/B-L3/mutated_F_ShareUnshareAuditEntries.als
+    rationale: Removing this fact allows users to be added to shared_with without generating a corresponding Shared audit entry, breaking the one-to-one mapping between state changes and audit events. The injection creates a sharee with no Shared entry in the audit trail, violating completeness. Tests that share operations are always logged.
+    expected to FAIL: ShareUnshareAuditEntries
+      - ShareUnshareAuditEntries: PASS (vacuous?)
+
+  Mutation summary
+  ----------------------------------------------------------------------------
+  - F_CrossTeamIsolation: ASSERTION VACUOUS (CrossTeamIsolation, FR_014_ByteEquivalentIsolation, NoInformationLeakage)
+  - F_OwnerControlsSharing: ASSERTIONS BIT (OwnerControlsSharing)
+  - F_TaskCreationAudit: ASSERTIONS BIT (TaskCreationAudit)
+  - F_AttributionCorrectness: ASSERTIONS BIT (AttributionCorrectness)
+  - F_ShareUnshareAuditEntries: ASSERTION VACUOUS (ShareUnshareAuditEntries)
+

@@ -1,0 +1,182 @@
+{
+  "feature_id": "004-loan-application-rbac",
+  "patterns_applied": [
+    "AuthRequiredEverywhere",
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "PermissionGrounding",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "ConcurrencySafety",
+    "ValidationBeforeMutation"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_CustomerScope",
+    "FR_003_LoanOfficerScope",
+    "FR_004_ComplianceReadOnly",
+    "FR_005_CustomerIdentityFromAuth",
+    "FR_006_ValidationConsistency",
+    "FR_007_StateMachineWellFormed",
+    "FR_008_OneInFlightPerCustomer",
+    "FR_009_InitialSubmissionAudit",
+    "FR_010_UnassignedQueueShape",
+    "FR_011_ClaimCreatesAudit",
+    "FR_012_OneClaimerPerApp",
+    "FR_013_OnlyAssignedOfficerDecides",
+    "FR_014_NonEmptyReason",
+    "FR_015_DecisionPersistedAtomically",
+    "FR_016_NoChangeAfterDecided",
+    "FR_017_AuditFieldsComplete",
+    "FR_018_AppendOnly",
+    "FR_019_OneEntryPerChange",
+    "FR_020_OwnershipAndNoLeak",
+    "FR_021_OfficerIdentityHidden",
+    "FR_022_RetentionAppendOnly",
+    "FR_023_ComplianceNoWrites"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_CustomerScope",
+      "LeastPrivilege"
+    ],
+    "FR-003": [
+      "FR_003_LoanOfficerScope",
+      "LeastPrivilege"
+    ],
+    "FR-004": [
+      "FR_004_ComplianceReadOnly",
+      "LeastPrivilege"
+    ],
+    "FR-005": [
+      "FR_005_CustomerIdentityFromAuth"
+    ],
+    "FR-006": [
+      "FR_006_ValidationConsistency",
+      "ValidationBeforeMutation"
+    ],
+    "FR-007": [
+      "FR_007_StateMachineWellFormed"
+    ],
+    "FR-008": [
+      "FR_008_OneInFlightPerCustomer"
+    ],
+    "FR-009": [
+      "FR_009_InitialSubmissionAudit",
+      "AuditCompleteness"
+    ],
+    "FR-010": [
+      "FR_010_UnassignedQueueShape"
+    ],
+    "FR-011": [
+      "FR_011_ClaimCreatesAudit",
+      "AuditCompleteness"
+    ],
+    "FR-012": [
+      "FR_012_OneClaimerPerApp",
+      "ConcurrencySafety"
+    ],
+    "FR-013": [
+      "FR_013_OnlyAssignedOfficerDecides"
+    ],
+    "FR-014": [
+      "FR_014_NonEmptyReason",
+      "ValidationBeforeMutation"
+    ],
+    "FR-015": [
+      "FR_015_DecisionPersistedAtomically",
+      "AuditCompleteness"
+    ],
+    "FR-016": [
+      "FR_016_NoChangeAfterDecided"
+    ],
+    "FR-017": [
+      "FR_017_AuditFieldsComplete",
+      "AttributionCorrectness"
+    ],
+    "FR-018": [
+      "FR_018_AppendOnly",
+      "AppendOnly"
+    ],
+    "FR-019": [
+      "FR_019_OneEntryPerChange"
+    ],
+    "FR-020": [
+      "FR_020_OwnershipAndNoLeak",
+      "OwnershipBasedAccess",
+      "NoInformationLeakage"
+    ],
+    "FR-021": [
+      "FR_021_OfficerIdentityHidden"
+    ],
+    "FR-022": [
+      "FR_022_RetentionAppendOnly"
+    ],
+    "FR-023": [
+      "FR_023_ComplianceNoWrites",
+      "LeastPrivilege"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_AssignmentMatchesStatus",
+      "asserts_violated": [
+        "FR_010_UnassignedQueueShape"
+      ],
+      "rationale": "Clearing this fact breaks the Submitted-iff-unassigned coupling; injecting an Approved application with no assigned officer produces an instance the queue-shape predicate must reject.",
+      "inject_violation": "fact MUTATE_AssignmentMismatch { some la: LoanApplication | la.status = Submitted and some la.assignedOfficer }"
+    },
+    {
+      "fact_name": "F_DecisionByAssignedOfficer",
+      "asserts_violated": [
+        "FR_013_OnlyAssignedOfficerDecides"
+      ],
+      "rationale": "Clearing this fact lets the model invent a decision whose decider differs from the application's assigned officer, which is exactly the bug FR-013 forbids.",
+      "inject_violation": "fact MUTATE_NonAssignedDecider { some d: Decision | d.decidedBy != d.decisionApp.assignedOfficer }"
+    },
+    {
+      "fact_name": "F_SuccessRequiresPermission",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_002_CustomerScope"
+      ],
+      "rationale": "Clearing this fact disconnects the permission matrix from Operation outcomes; injecting a successful customer claim (which the matrix denies) forces a counterexample that LeastPrivilege must catch.",
+      "inject_violation": "fact MUTATE_CustomerClaimsSucceeds { some op: Operation | op.outcome = Success and op.caller.userRole = Customer and op.kind = PostClaim }"
+    },
+    {
+      "fact_name": "F_DecisionReasonNonEmpty",
+      "asserts_violated": [
+        "FR_014_NonEmptyReason",
+        "ValidationBeforeMutation"
+      ],
+      "rationale": "Clearing this fact allows a Decision row with an empty reason to be persisted, which FR-014 says must never happen even structurally.",
+      "inject_violation": "fact MUTATE_EmptyReasonDecision { some d: Decision | d.reasonNonEmpty = BFalse }"
+    },
+    {
+      "fact_name": "F_InitialSubmissionEvent",
+      "asserts_violated": [
+        "FR_009_InitialSubmissionAudit",
+        "AuditCompleteness"
+      ],
+      "rationale": "Clearing this fact lets the model omit the (none)->Submitted audit entry; injecting a LoanApplication with no initial event manifests the FR-009 / AuditCompleteness violation directly.",
+      "inject_violation": "fact MUTATE_MissingInitialEvent { some la: LoanApplication | (no e: ApplicationEvent | e.eventApp = la and no e.previousStatus and e.newStatus = Submitted) }"
+    },
+    {
+      "fact_name": "F_CustomerNonOwnedReturnsNotFound",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "FR_020_OwnershipAndNoLeak"
+      ],
+      "rationale": "Clearing this fact removes the contract that customer access to a non-owned application masquerades as 404; injecting an operation that responds VPermissionDenied instead of VNotFound surfaces the information leak.",
+      "inject_violation": "fact MUTATE_LeakyDenial { some op: Operation | op.kind = GetApplication and op.caller.userRole = Customer and op.authenticated = BTrue and some op.target and op.target.customer != op.caller and op.visibilityVerdict = VPermissionDenied }"
+    }
+  ]
+}

@@ -1,0 +1,112 @@
+$ /Users/leonhausmann/opt/anaconda3/bin/python3 -m speceval.cli verify-design --no-cache --model M-small --java-bin /Users/leonhausmann/opt/anaconda3/lib/python3.9/site-packages/jdk4py/java-runtime/bin/java /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/eval/specs/B-L2
+
+[parse]   feature 'B-L2', 20 FRs, 7 user stories
+[lift]    calling LLM (anthropic: tier=M-small, model=claude-haiku-4-5)...
+[lift]    fresh lift (sha=5afa48934c06)
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/B-L2/feature_model.als
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/B-L2/cost_log.json
+[alloy]   running alloy.jar on feature_model.als...
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/B-L2/alloy_verdicts.json
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/B-L2/mutation_outcomes.json
+
+==============================================================================
+  Design Compliance Report  (Phase 3 — feature_model.als)
+  feature       : B-L2
+  spec source   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/eval/specs/B-L2
+  alloy model   : /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/B-L2/feature_model.als
+  patterns      : LeastPrivilege, AuthRequiredEverywhere, AuditCompleteness, AppendOnly, AttributionCorrectness, OwnershipExclusivity, OwnershipBasedAccess, NoInformationLeakage
+  fr count      : 20 declared in spec.md
+  assertions    : 10 total (10/10 PASS via Alloy)
+==============================================================================
+
+  Compliance matrix
+  ----------------------------------------------------------------------------
+  Assertion                        Verdict   Anchor
+  ---------------------------------------------------------------------
+  OwnershipBasedAccess             PASS      PATTERN OwnershipBasedAccess: FR-008, FR-009, FR-010; contracts/http-api.md
+  NoInformationLeakage             PASS      PATTERN NoInformationLeakage: FR-014; contracts/http-api.md byte-equivalent response
+  LeastPrivilege                   PASS      PATTERN LeastPrivilege: contracts/http-api.md permission matrix
+  FR_014_CrossTeamIsolation        PASS      FEATURE-SPECIFIC: FR-014 Cross-team isolation invariant
+  FR_017_AuditVisibilityToMembers  PASS      FEATURE-SPECIFIC: FR-017 Audit visibility to all team members
+  AuditCompleteness                PASS      PATTERN AuditCompleteness: FR-015
+  AppendOnly                       PASS      PATTERN AppendOnly: FR-016
+  AttributionCorrectness           PASS      PATTERN AttributionCorrectness: FR-015
+  AuthRequiredEverywhere           PASS      (no anchor comment found)
+  OwnershipExclusivity             PASS      (no anchor comment found)
+
+  FR coverage
+  ----------------------------------------------------------------------------
+  FR-001  →  AuthRequiredEverywhere=PASS
+  FR-002  [uncovered]
+  FR-003  [uncovered]
+  FR-004  [uncovered]
+  FR-005  [uncovered]
+  FR-006  →  OwnershipExclusivity=PASS
+  FR-007  [uncovered]
+  FR-008  →  OwnershipBasedAccess=PASS
+  FR-009  →  OwnershipBasedAccess=PASS
+  FR-010  →  OwnershipBasedAccess=PASS
+  FR-011  [uncovered]
+  FR-012  [uncovered]
+  FR-013  [uncovered]
+  FR-014  →  FR_014_CrossTeamIsolation=PASS, NoInformationLeakage=PASS
+  FR-015  →  AuditCompleteness=PASS, AttributionCorrectness=PASS
+  FR-016  →  AppendOnly=PASS
+  FR-017  →  FR_017_AuditVisibilityToMembers=PASS
+  FR-018  [uncovered]
+  FR-019  [uncovered]
+  FR-020  [uncovered]
+
+  WARNING: 11 FR(s) without any matching assertion: FR-002, FR-003, FR-004, FR-005, FR-007, FR-011, FR-012, FR-013, FR-018, FR-019, FR-020
+
+==============================================================================
+  Mutation tests  (assertion-strength validation)
+==============================================================================
+
+  Strategy: replace each named fact's body with `{}` (no constraint),
+  then re-run Alloy. Each listed assertion should now FAIL on the
+  mutated model. If it still PASSes, the assertion is vacuous and
+  must be strengthened.
+
+  - MUTATE F_AppendOnlyAuditEntries  → runs/B-L2/mutated_F_AppendOnlyAuditEntries.als
+    rationale: Removing this fact eliminates the constraint that audit entries are immutable and complete. The AppendOnly assertion requires at least one audit entry with all required fields; clearing the fact allows Alloy to generate an empty AuditEntry or one with unset fields, violating the assertion.
+    expected to FAIL: AppendOnly
+      - AppendOnly: PASS (vacuous?)
+
+  - MUTATE F_AuditAttributionCorrect  → runs/B-L2/mutated_F_AuditAttributionCorrect.als
+    rationale: Removing this fact allows audit entries to have an actor role that does not match any real team membership. The AttributionCorrectness assertion requires every audit entry's role to be a snapshot of a genuine team membership; without this fact, the role can be arbitrary.
+    expected to FAIL: AttributionCorrectness
+      - AttributionCorrectness: FAIL (expected)
+
+  - MUTATE F_AuditCompleteness  → runs/B-L2/mutated_F_AuditCompleteness.als
+    rationale: Removing this fact allows tasks to exist without any audit entries. The AuditCompleteness assertion requires every task to have at least one audit entry; without the fact, Alloy can create tasks with no corresponding audit entries.
+    expected to FAIL: AuditCompleteness
+      - AuditCompleteness: FAIL (expected)
+
+  - MUTATE F_OwnershipExclusivity  → runs/B-L2/mutated_F_OwnershipExclusivity.als
+    rationale: Removing this fact eliminates the constraint that every task has exactly one owner. The OwnershipExclusivity assertion checks this; without the fact, a task could have zero owners or multiple owners.
+    expected to FAIL: OwnershipExclusivity
+      - OwnershipExclusivity: PASS (vacuous?)
+
+  - MUTATE F_AuthenticationRequired  → runs/B-L2/mutated_F_AuthenticationRequired.als
+    rationale: Removing this fact allows tasks to be created without an authenticated owner and audit entries without an authenticated actor. The assertion requires one owner per task and one actor per audit entry; without the fact, these can be unset.
+    expected to FAIL: AuthRequiredEverywhere
+      - AuthRequiredEverywhere: PASS (vacuous?)
+
+  - MUTATE F_OneRolePerTeamPerUser  → runs/B-L2/mutated_F_OneRolePerTeamPerUser.als
+    rationale: Removing this fact allows a user to have multiple roles in the same team, creating ambiguity in permission evaluation. The permission predicates assume a unique role per (user, team) pair; duplicate memberships would break the determinism of access checks.
+    expected to FAIL: LeastPrivilege, OwnershipBasedAccess
+      - LeastPrivilege: PASS (vacuous?)
+      - OwnershipBasedAccess: PASS (vacuous?)
+
+  Mutation summary
+  ----------------------------------------------------------------------------
+  - F_AppendOnlyAuditEntries: ASSERTION VACUOUS (AppendOnly)
+  - F_AuditAttributionCorrect: ASSERTIONS BIT (AttributionCorrectness)
+  - F_AuditCompleteness: ASSERTIONS BIT (AuditCompleteness)
+  - F_OwnershipExclusivity: ASSERTION VACUOUS (OwnershipExclusivity)
+  - F_AuthenticationRequired: ASSERTION VACUOUS (AuthRequiredEverywhere)
+  - F_OneRolePerTeamPerUser: ASSERTION VACUOUS (LeastPrivilege, OwnershipBasedAccess)
+
+
+[write]   /Users/leonhausmann/Imperial_College/teaching/term3/microsoft_spec_led_dev/testing/speckit_testing/spec-led-eval/runs/B-L2/report.txt

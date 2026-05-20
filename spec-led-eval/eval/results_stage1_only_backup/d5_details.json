@@ -1,0 +1,2943 @@
+{
+  "A-L1/M-best": {
+    "n_runs": 10,
+    "min_appearances": 5,
+    "per_key": {
+      "LeastPrivilege": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 10
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 10,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "PermissionCompleteness": {
+        "appearances": 9,
+        "verdicts": {
+          "PASS": 9
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 9,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "PermissionGrounding": {
+        "appearances": 7,
+        "verdicts": {
+          "PASS": 7
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 7,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "AuthRequiredEverywhere": {
+        "appearances": 9,
+        "verdicts": {
+          "PASS": 9
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 9,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "AuditCompleteness": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 10
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 10,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "AppendOnly": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 9,
+          "FAIL": 1
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 9,
+        "stability": 0.9,
+        "qualifies": true
+      },
+      "AttributionCorrectness": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 10
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 10,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "OwnershipExclusivity": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 10
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 10,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "OwnershipBasedAccess": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 10
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 10,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "NoInformationLeakage": {
+        "appearances": 9,
+        "verdicts": {
+          "PASS": 9
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 9,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "ValidationBeforeMutation": {
+        "appearances": 2,
+        "verdicts": {
+          "PASS": 2
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 2,
+        "stability": 1.0,
+        "qualifies": false
+      },
+      "ConcurrencySafety": {
+        "appearances": 3,
+        "verdicts": {
+          "PASS": 3
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 3,
+        "stability": 1.0,
+        "qualifies": false
+      },
+      "FR-001": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 10
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 10,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-002": {
+        "appearances": 8,
+        "verdicts": {
+          "PASS": 6,
+          "FAIL": 2
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 6,
+        "stability": 0.75,
+        "qualifies": true
+      },
+      "FR-003": {
+        "appearances": 6,
+        "verdicts": {
+          "PASS": 6
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 6,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-004": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 10
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 10,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-005": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 10
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 10,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-006": {
+        "appearances": 5,
+        "verdicts": {
+          "FAIL": 2,
+          "PASS": 3
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 3,
+        "stability": 0.6,
+        "qualifies": true
+      },
+      "FR-007": {
+        "appearances": 5,
+        "verdicts": {
+          "PASS": 5
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 5,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-008": {
+        "appearances": 7,
+        "verdicts": {
+          "PASS": 7
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 7,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-009": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 10
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 10,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-010": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 9,
+          "FAIL": 1
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 9,
+        "stability": 0.9,
+        "qualifies": true
+      },
+      "FR-011": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 10
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 10,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-012": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 10
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 10,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-013": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 10
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 10,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-014": {
+        "appearances": 7,
+        "verdicts": {
+          "PASS": 7
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 7,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-015": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 10
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 10,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-016": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 10
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 10,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-017": {
+        "appearances": 8,
+        "verdicts": {
+          "PASS": 7,
+          "FAIL": 1
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 7,
+        "stability": 0.875,
+        "qualifies": true
+      }
+    },
+    "n_qualifying_keys": 27
+  },
+  "A-L2/M-best": {
+    "n_runs": 10,
+    "min_appearances": 5,
+    "per_key": {
+      "AuthRequiredEverywhere": {
+        "appearances": 8,
+        "verdicts": {
+          "PASS": 8
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 8,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "LeastPrivilege": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 10
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 10,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "PermissionCompleteness": {
+        "appearances": 9,
+        "verdicts": {
+          "PASS": 9
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 9,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "PermissionGrounding": {
+        "appearances": 2,
+        "verdicts": {
+          "PASS": 2
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 2,
+        "stability": 1.0,
+        "qualifies": false
+      },
+      "OwnershipExclusivity": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 10
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 10,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "OwnershipBasedAccess": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 9,
+          "FAIL": 1
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 9,
+        "stability": 0.9,
+        "qualifies": true
+      },
+      "NoInformationLeakage": {
+        "appearances": 7,
+        "verdicts": {
+          "PASS": 7
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 7,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "AuditCompleteness": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 10
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 10,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "AppendOnly": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 10
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 10,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "AttributionCorrectness": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 10
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 10,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "ConcurrencySafety": {
+        "appearances": 2,
+        "verdicts": {
+          "PASS": 1,
+          "FAIL": 1
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 1,
+        "stability": 0.5,
+        "qualifies": false
+      },
+      "ValidationBeforeMutation": {
+        "appearances": 2,
+        "verdicts": {
+          "PASS": 1,
+          "FAIL": 1
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 1,
+        "stability": 0.5,
+        "qualifies": false
+      },
+      "FR-001": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 10
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 10,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-002": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 10
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 10,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-003": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 10
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 10,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-004": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 10
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 10,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-005": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 10
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 10,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-006": {
+        "appearances": 4,
+        "verdicts": {
+          "PASS": 3,
+          "FAIL": 1
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 3,
+        "stability": 0.75,
+        "qualifies": false
+      },
+      "FR-007": {
+        "appearances": 3,
+        "verdicts": {
+          "PASS": 3
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 3,
+        "stability": 1.0,
+        "qualifies": false
+      },
+      "FR-008": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 10
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 10,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-009": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 10
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 10,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-010": {
+        "appearances": 5,
+        "verdicts": {
+          "PASS": 5
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 5,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-011": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 10
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 10,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-012": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 9,
+          "FAIL": 1
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 9,
+        "stability": 0.9,
+        "qualifies": true
+      },
+      "FR-013": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 10
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 10,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-014": {
+        "appearances": 8,
+        "verdicts": {
+          "PASS": 7,
+          "FAIL": 1
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 7,
+        "stability": 0.875,
+        "qualifies": true
+      },
+      "FR-015": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 10
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 10,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-016": {
+        "appearances": 10,
+        "verdicts": {
+          "FAIL": 6,
+          "PASS": 4
+        },
+        "modal_verdict": "FAIL",
+        "modal_count": 6,
+        "stability": 0.6,
+        "qualifies": true
+      },
+      "FR-017": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 10
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 10,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-018": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 10
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 10,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-019": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 10
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 10,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-020": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 8,
+          "FAIL": 2
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 8,
+        "stability": 0.8,
+        "qualifies": true
+      },
+      "FR-021": {
+        "appearances": 9,
+        "verdicts": {
+          "PASS": 9
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 9,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-022": {
+        "appearances": 5,
+        "verdicts": {
+          "PASS": 5
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 5,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-023": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 10
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 10,
+        "stability": 1.0,
+        "qualifies": true
+      }
+    },
+    "n_qualifying_keys": 30
+  },
+  "A-L3/M-best": {
+    "n_runs": 10,
+    "min_appearances": 5,
+    "per_key": {
+      "AuthRequiredEverywhere": {
+        "appearances": 9,
+        "verdicts": {
+          "PASS": 9
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 9,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "LeastPrivilege": {
+        "appearances": 9,
+        "verdicts": {
+          "PASS": 9
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 9,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "PermissionCompleteness": {
+        "appearances": 8,
+        "verdicts": {
+          "PASS": 8
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 8,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "AppendOnly": {
+        "appearances": 9,
+        "verdicts": {
+          "PASS": 9
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 9,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "AuditCompleteness": {
+        "appearances": 9,
+        "verdicts": {
+          "PASS": 6,
+          "FAIL": 3
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 6,
+        "stability": 0.6666666666666666,
+        "qualifies": true
+      },
+      "AttributionCorrectness": {
+        "appearances": 9,
+        "verdicts": {
+          "PASS": 9
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 9,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "OwnershipExclusivity": {
+        "appearances": 9,
+        "verdicts": {
+          "PASS": 9
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 9,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "OwnershipBasedAccess": {
+        "appearances": 9,
+        "verdicts": {
+          "PASS": 9
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 9,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "NoInformationLeakage": {
+        "appearances": 9,
+        "verdicts": {
+          "PASS": 9
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 9,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "NoSelfMutation": {
+        "appearances": 9,
+        "verdicts": {
+          "PASS": 9
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 9,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-001": {
+        "appearances": 9,
+        "verdicts": {
+          "PASS": 9
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 9,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-002": {
+        "appearances": 9,
+        "verdicts": {
+          "PASS": 9
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 9,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-003": {
+        "appearances": 8,
+        "verdicts": {
+          "PASS": 8
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 8,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-004": {
+        "appearances": 8,
+        "verdicts": {
+          "PASS": 8
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 8,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-005": {
+        "appearances": 8,
+        "verdicts": {
+          "PASS": 8
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 8,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-007": {
+        "appearances": 6,
+        "verdicts": {
+          "PASS": 6
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 6,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-008": {
+        "appearances": 9,
+        "verdicts": {
+          "PASS": 9
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 9,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-009": {
+        "appearances": 9,
+        "verdicts": {
+          "PASS": 9
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 9,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-010": {
+        "appearances": 9,
+        "verdicts": {
+          "PASS": 9
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 9,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-011": {
+        "appearances": 9,
+        "verdicts": {
+          "PASS": 9
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 9,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-012": {
+        "appearances": 9,
+        "verdicts": {
+          "PASS": 9
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 9,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-013": {
+        "appearances": 9,
+        "verdicts": {
+          "PASS": 9
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 9,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-014": {
+        "appearances": 7,
+        "verdicts": {
+          "PASS": 6,
+          "FAIL": 1
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 6,
+        "stability": 0.8571428571428571,
+        "qualifies": true
+      },
+      "FR-015": {
+        "appearances": 9,
+        "verdicts": {
+          "PASS": 7,
+          "FAIL": 2
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 7,
+        "stability": 0.7777777777777778,
+        "qualifies": true
+      },
+      "FR-016": {
+        "appearances": 9,
+        "verdicts": {
+          "PASS": 8,
+          "FAIL": 1
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 8,
+        "stability": 0.8888888888888888,
+        "qualifies": true
+      },
+      "FR-018": {
+        "appearances": 9,
+        "verdicts": {
+          "PASS": 7,
+          "FAIL": 2
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 7,
+        "stability": 0.7777777777777778,
+        "qualifies": true
+      },
+      "FR-020": {
+        "appearances": 9,
+        "verdicts": {
+          "PASS": 9
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 9,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-023": {
+        "appearances": 9,
+        "verdicts": {
+          "PASS": 9
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 9,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-024": {
+        "appearances": 9,
+        "verdicts": {
+          "PASS": 9
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 9,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "ValidationBeforeMutation": {
+        "appearances": 7,
+        "verdicts": {
+          "PASS": 7
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 7,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "PermissionGrounding": {
+        "appearances": 4,
+        "verdicts": {
+          "PASS": 4
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 4,
+        "stability": 1.0,
+        "qualifies": false
+      },
+      "FR-022": {
+        "appearances": 6,
+        "verdicts": {
+          "FAIL": 1,
+          "PASS": 5
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 5,
+        "stability": 0.8333333333333334,
+        "qualifies": true
+      },
+      "FR-006": {
+        "appearances": 4,
+        "verdicts": {
+          "PASS": 4
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 4,
+        "stability": 1.0,
+        "qualifies": false
+      },
+      "FR-017": {
+        "appearances": 6,
+        "verdicts": {
+          "PASS": 6
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 6,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-019": {
+        "appearances": 6,
+        "verdicts": {
+          "PASS": 6
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 6,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-021": {
+        "appearances": 5,
+        "verdicts": {
+          "PASS": 5
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 5,
+        "stability": 1.0,
+        "qualifies": true
+      }
+    },
+    "n_qualifying_keys": 34
+  },
+  "B-L1/M-best": {
+    "n_runs": 10,
+    "min_appearances": 5,
+    "per_key": {
+      "AuthRequiredEverywhere": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 9,
+          "FAIL": 1
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 9,
+        "stability": 0.9,
+        "qualifies": true
+      },
+      "PermissionCompleteness": {
+        "appearances": 6,
+        "verdicts": {
+          "PASS": 5,
+          "FAIL": 1
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 5,
+        "stability": 0.8333333333333334,
+        "qualifies": true
+      },
+      "LeastPrivilege": {
+        "appearances": 4,
+        "verdicts": {
+          "PASS": 3,
+          "FAIL": 1
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 3,
+        "stability": 0.75,
+        "qualifies": false
+      },
+      "AppendOnly": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 10
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 10,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "AuditCompleteness": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 10
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 10,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "AttributionCorrectness": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 10
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 10,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "ValidationBeforeMutation": {
+        "appearances": 7,
+        "verdicts": {
+          "PASS": 6,
+          "FAIL": 1
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 6,
+        "stability": 0.8571428571428571,
+        "qualifies": true
+      },
+      "FR-001": {
+        "appearances": 9,
+        "verdicts": {
+          "PASS": 8,
+          "FAIL": 1
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 8,
+        "stability": 0.8888888888888888,
+        "qualifies": true
+      },
+      "FR-002": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 10
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 10,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-003": {
+        "appearances": 10,
+        "verdicts": {
+          "FAIL": 3,
+          "PASS": 7
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 7,
+        "stability": 0.7,
+        "qualifies": true
+      },
+      "FR-004": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 9,
+          "FAIL": 1
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 9,
+        "stability": 0.9,
+        "qualifies": true
+      },
+      "FR-008": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 10
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 10,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-009": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 10
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 10,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-010": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 10
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 10,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-011": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 9,
+          "FAIL": 1
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 9,
+        "stability": 0.9,
+        "qualifies": true
+      },
+      "FR-012": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 10
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 10,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-013": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 10
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 10,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-017": {
+        "appearances": 8,
+        "verdicts": {
+          "PASS": 8
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 8,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-018": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 10
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 10,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-005": {
+        "appearances": 7,
+        "verdicts": {
+          "PASS": 6,
+          "FAIL": 1
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 6,
+        "stability": 0.8571428571428571,
+        "qualifies": true
+      },
+      "FR-006": {
+        "appearances": 7,
+        "verdicts": {
+          "PASS": 7
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 7,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-007": {
+        "appearances": 6,
+        "verdicts": {
+          "PASS": 6
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 6,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "OwnershipExclusivity": {
+        "appearances": 6,
+        "verdicts": {
+          "PASS": 6
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 6,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-014": {
+        "appearances": 7,
+        "verdicts": {
+          "FAIL": 1,
+          "PASS": 6
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 6,
+        "stability": 0.8571428571428571,
+        "qualifies": true
+      },
+      "FR-015": {
+        "appearances": 7,
+        "verdicts": {
+          "FAIL": 1,
+          "PASS": 6
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 6,
+        "stability": 0.8571428571428571,
+        "qualifies": true
+      },
+      "FR-016": {
+        "appearances": 7,
+        "verdicts": {
+          "FAIL": 1,
+          "PASS": 6
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 6,
+        "stability": 0.8571428571428571,
+        "qualifies": true
+      },
+      "PermissionMatrixComplete": {
+        "appearances": 1,
+        "verdicts": {
+          "PASS": 1
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 1,
+        "stability": 1.0,
+        "qualifies": false
+      }
+    },
+    "n_qualifying_keys": 25
+  },
+  "B-L2/M-best": {
+    "n_runs": 10,
+    "min_appearances": 5,
+    "per_key": {
+      "LeastPrivilege": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 10
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 10,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "PrivilegeMonotonicity": {
+        "appearances": 6,
+        "verdicts": {
+          "PASS": 6
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 6,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "AuthRequiredEverywhere": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 10
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 10,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "AuditCompleteness": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 10
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 10,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "AppendOnly": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 10
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 10,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "AttributionCorrectness": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 10
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 10,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "OwnershipExclusivity": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 10
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 10,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "OwnershipBasedAccess": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 10
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 10,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "NoInformationLeakage": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 9,
+          "FAIL": 1
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 9,
+        "stability": 0.9,
+        "qualifies": true
+      },
+      "FR-001": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 10
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 10,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-002": {
+        "appearances": 9,
+        "verdicts": {
+          "PASS": 9
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 9,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-003": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 10
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 10,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-004": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 10
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 10,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-005": {
+        "appearances": 9,
+        "verdicts": {
+          "PASS": 9
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 9,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-006": {
+        "appearances": 9,
+        "verdicts": {
+          "PASS": 9
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 9,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-007": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 10
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 10,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-008": {
+        "appearances": 9,
+        "verdicts": {
+          "PASS": 9
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 9,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-009": {
+        "appearances": 8,
+        "verdicts": {
+          "PASS": 8
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 8,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-010": {
+        "appearances": 7,
+        "verdicts": {
+          "PASS": 6,
+          "FAIL": 1
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 6,
+        "stability": 0.8571428571428571,
+        "qualifies": true
+      },
+      "FR-011": {
+        "appearances": 9,
+        "verdicts": {
+          "PASS": 9
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 9,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-012": {
+        "appearances": 8,
+        "verdicts": {
+          "PASS": 8
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 8,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-013": {
+        "appearances": 8,
+        "verdicts": {
+          "PASS": 8
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 8,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-014": {
+        "appearances": 8,
+        "verdicts": {
+          "PASS": 7,
+          "FAIL": 1
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 7,
+        "stability": 0.875,
+        "qualifies": true
+      },
+      "FR-015": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 10
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 10,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-016": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 10
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 10,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-017": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 10
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 10,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-018": {
+        "appearances": 8,
+        "verdicts": {
+          "PASS": 8
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 8,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-019": {
+        "appearances": 8,
+        "verdicts": {
+          "PASS": 8
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 8,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-020": {
+        "appearances": 5,
+        "verdicts": {
+          "PASS": 5
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 5,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "PermissionCompleteness": {
+        "appearances": 9,
+        "verdicts": {
+          "PASS": 9
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 9,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "PermissionGrounding": {
+        "appearances": 1,
+        "verdicts": {
+          "PASS": 1
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 1,
+        "stability": 1.0,
+        "qualifies": false
+      },
+      "ValidationBeforeMutation": {
+        "appearances": 3,
+        "verdicts": {
+          "PASS": 3
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 3,
+        "stability": 1.0,
+        "qualifies": false
+      }
+    },
+    "n_qualifying_keys": 30
+  },
+  "B-L3/M-best": {
+    "n_runs": 10,
+    "min_appearances": 5,
+    "per_key": {
+      "LeastPrivilege": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 10
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 10,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "AuthRequiredEverywhere": {
+        "appearances": 9,
+        "verdicts": {
+          "PASS": 9
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 9,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "AuditCompleteness": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 10
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 10,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "AppendOnly": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 10
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 10,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "AttributionCorrectness": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 10
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 10,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "OwnershipExclusivity": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 10
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 10,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "OwnershipBasedAccess": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 10
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 10,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "NoInformationLeakage": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 10
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 10,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "ValidationBeforeMutation": {
+        "appearances": 6,
+        "verdicts": {
+          "PASS": 6
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 6,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "PermissionCompleteness": {
+        "appearances": 9,
+        "verdicts": {
+          "PASS": 9
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 9,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-001": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 10
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 10,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-002": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 10
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 10,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-003": {
+        "appearances": 8,
+        "verdicts": {
+          "PASS": 8
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 8,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-004": {
+        "appearances": 9,
+        "verdicts": {
+          "PASS": 8,
+          "FAIL": 1
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 8,
+        "stability": 0.8888888888888888,
+        "qualifies": true
+      },
+      "FR-005": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 10
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 10,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-006": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 10
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 10,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-009": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 10
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 10,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-010": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 10
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 10,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-011": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 9,
+          "FAIL": 1
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 9,
+        "stability": 0.9,
+        "qualifies": true
+      },
+      "FR-012": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 10
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 10,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-013": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 9,
+          "FAIL": 1
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 9,
+        "stability": 0.9,
+        "qualifies": true
+      },
+      "FR-014": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 10
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 10,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-015": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 10
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 10,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-016": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 10
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 10,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-017": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 10
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 10,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-018": {
+        "appearances": 8,
+        "verdicts": {
+          "PASS": 8
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 8,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-019": {
+        "appearances": 10,
+        "verdicts": {
+          "PASS": 10
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 10,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "NoSelfMutation": {
+        "appearances": 1,
+        "verdicts": {
+          "PASS": 1
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 1,
+        "stability": 1.0,
+        "qualifies": false
+      },
+      "FR-007": {
+        "appearances": 4,
+        "verdicts": {
+          "PASS": 4
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 4,
+        "stability": 1.0,
+        "qualifies": false
+      },
+      "FR-008": {
+        "appearances": 4,
+        "verdicts": {
+          "PASS": 4
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 4,
+        "stability": 1.0,
+        "qualifies": false
+      },
+      "FR-020": {
+        "appearances": 5,
+        "verdicts": {
+          "PASS": 5
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 5,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-021": {
+        "appearances": 5,
+        "verdicts": {
+          "PASS": 5
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 5,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "PrivilegeMonotonicity": {
+        "appearances": 1,
+        "verdicts": {
+          "PASS": 1
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 1,
+        "stability": 1.0,
+        "qualifies": false
+      },
+      "PermissionGrounding": {
+        "appearances": 2,
+        "verdicts": {
+          "PASS": 2
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 2,
+        "stability": 1.0,
+        "qualifies": false
+      }
+    },
+    "n_qualifying_keys": 29
+  },
+  "C-L1/M-best": {
+    "n_runs": 10,
+    "min_appearances": 5,
+    "per_key": {
+      "AuthRequiredEverywhere": {
+        "appearances": 5,
+        "verdicts": {
+          "PASS": 4,
+          "FAIL": 1
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 4,
+        "stability": 0.8,
+        "qualifies": true
+      },
+      "LeastPrivilege": {
+        "appearances": 5,
+        "verdicts": {
+          "PASS": 4,
+          "FAIL": 1
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 4,
+        "stability": 0.8,
+        "qualifies": true
+      },
+      "PermissionCompleteness": {
+        "appearances": 5,
+        "verdicts": {
+          "PASS": 5
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 5,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "OwnershipBasedAccess": {
+        "appearances": 5,
+        "verdicts": {
+          "PASS": 4,
+          "FAIL": 1
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 4,
+        "stability": 0.8,
+        "qualifies": true
+      },
+      "NoInformationLeakage": {
+        "appearances": 5,
+        "verdicts": {
+          "PASS": 4,
+          "FAIL": 1
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 4,
+        "stability": 0.8,
+        "qualifies": true
+      },
+      "AuditCompleteness": {
+        "appearances": 5,
+        "verdicts": {
+          "PASS": 4,
+          "FAIL": 1
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 4,
+        "stability": 0.8,
+        "qualifies": true
+      },
+      "AppendOnly": {
+        "appearances": 5,
+        "verdicts": {
+          "PASS": 4,
+          "FAIL": 1
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 4,
+        "stability": 0.8,
+        "qualifies": true
+      },
+      "AttributionCorrectness": {
+        "appearances": 5,
+        "verdicts": {
+          "PASS": 4,
+          "FAIL": 1
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 4,
+        "stability": 0.8,
+        "qualifies": true
+      },
+      "FR-001": {
+        "appearances": 5,
+        "verdicts": {
+          "PASS": 4,
+          "FAIL": 1
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 4,
+        "stability": 0.8,
+        "qualifies": true
+      },
+      "FR-002": {
+        "appearances": 5,
+        "verdicts": {
+          "PASS": 5
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 5,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-003": {
+        "appearances": 5,
+        "verdicts": {
+          "PASS": 4,
+          "FAIL": 1
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 4,
+        "stability": 0.8,
+        "qualifies": true
+      },
+      "FR-004": {
+        "appearances": 5,
+        "verdicts": {
+          "PASS": 5
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 5,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-005": {
+        "appearances": 5,
+        "verdicts": {
+          "PASS": 5
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 5,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-006": {
+        "appearances": 5,
+        "verdicts": {
+          "PASS": 4,
+          "FAIL": 1
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 4,
+        "stability": 0.8,
+        "qualifies": true
+      },
+      "FR-007": {
+        "appearances": 5,
+        "verdicts": {
+          "PASS": 4,
+          "FAIL": 1
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 4,
+        "stability": 0.8,
+        "qualifies": true
+      },
+      "FR-008": {
+        "appearances": 5,
+        "verdicts": {
+          "PASS": 4,
+          "FAIL": 1
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 4,
+        "stability": 0.8,
+        "qualifies": true
+      },
+      "FR-009": {
+        "appearances": 5,
+        "verdicts": {
+          "PASS": 5
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 5,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-010": {
+        "appearances": 5,
+        "verdicts": {
+          "PASS": 4,
+          "FAIL": 1
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 4,
+        "stability": 0.8,
+        "qualifies": true
+      },
+      "FR-011": {
+        "appearances": 5,
+        "verdicts": {
+          "PASS": 4,
+          "FAIL": 1
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 4,
+        "stability": 0.8,
+        "qualifies": true
+      },
+      "FR-012": {
+        "appearances": 5,
+        "verdicts": {
+          "PASS": 4,
+          "FAIL": 1
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 4,
+        "stability": 0.8,
+        "qualifies": true
+      },
+      "FR-013": {
+        "appearances": 5,
+        "verdicts": {
+          "PASS": 4,
+          "FAIL": 1
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 4,
+        "stability": 0.8,
+        "qualifies": true
+      },
+      "FR-014": {
+        "appearances": 5,
+        "verdicts": {
+          "PASS": 5
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 5,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-015": {
+        "appearances": 4,
+        "verdicts": {
+          "PASS": 4
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 4,
+        "stability": 1.0,
+        "qualifies": false
+      },
+      "PermissionGrounding": {
+        "appearances": 2,
+        "verdicts": {
+          "PASS": 2
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 2,
+        "stability": 1.0,
+        "qualifies": false
+      },
+      "ValidationBeforeMutation": {
+        "appearances": 1,
+        "verdicts": {
+          "PASS": 1
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 1,
+        "stability": 1.0,
+        "qualifies": false
+      }
+    },
+    "n_qualifying_keys": 22
+  },
+  "C-L2/M-best": {
+    "n_runs": 10,
+    "min_appearances": 5,
+    "per_key": {
+      "LeastPrivilege": {
+        "appearances": 8,
+        "verdicts": {
+          "PASS": 8
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 8,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "PermissionCompleteness": {
+        "appearances": 6,
+        "verdicts": {
+          "PASS": 6
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 6,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "AuditCompleteness": {
+        "appearances": 8,
+        "verdicts": {
+          "PASS": 8
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 8,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "AppendOnly": {
+        "appearances": 8,
+        "verdicts": {
+          "PASS": 8
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 8,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "AttributionCorrectness": {
+        "appearances": 8,
+        "verdicts": {
+          "PASS": 8
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 8,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "OwnershipBasedAccess": {
+        "appearances": 8,
+        "verdicts": {
+          "PASS": 8
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 8,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "NoInformationLeakage": {
+        "appearances": 8,
+        "verdicts": {
+          "PASS": 7,
+          "FAIL": 1
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 7,
+        "stability": 0.875,
+        "qualifies": true
+      },
+      "ValidationBeforeMutation": {
+        "appearances": 5,
+        "verdicts": {
+          "PASS": 5
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 5,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-001": {
+        "appearances": 8,
+        "verdicts": {
+          "PASS": 8
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 8,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-002": {
+        "appearances": 8,
+        "verdicts": {
+          "PASS": 8
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 8,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-003": {
+        "appearances": 5,
+        "verdicts": {
+          "PASS": 5
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 5,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-004": {
+        "appearances": 8,
+        "verdicts": {
+          "PASS": 8
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 8,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-005": {
+        "appearances": 8,
+        "verdicts": {
+          "PASS": 8
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 8,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-006": {
+        "appearances": 8,
+        "verdicts": {
+          "PASS": 8
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 8,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-007": {
+        "appearances": 5,
+        "verdicts": {
+          "PASS": 4,
+          "FAIL": 1
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 4,
+        "stability": 0.8,
+        "qualifies": true
+      },
+      "FR-008": {
+        "appearances": 4,
+        "verdicts": {
+          "PASS": 4
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 4,
+        "stability": 1.0,
+        "qualifies": false
+      },
+      "FR-009": {
+        "appearances": 7,
+        "verdicts": {
+          "PASS": 7
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 7,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-010": {
+        "appearances": 8,
+        "verdicts": {
+          "PASS": 8
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 8,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-011": {
+        "appearances": 8,
+        "verdicts": {
+          "PASS": 8
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 8,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-012": {
+        "appearances": 8,
+        "verdicts": {
+          "PASS": 8
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 8,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-013": {
+        "appearances": 9,
+        "verdicts": {
+          "PASS": 9
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 9,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-014": {
+        "appearances": 8,
+        "verdicts": {
+          "PASS": 8
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 8,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-015": {
+        "appearances": 7,
+        "verdicts": {
+          "PASS": 5,
+          "FAIL": 2
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 5,
+        "stability": 0.7142857142857143,
+        "qualifies": true
+      },
+      "FR-016": {
+        "appearances": 6,
+        "verdicts": {
+          "PASS": 6
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 6,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-017": {
+        "appearances": 8,
+        "verdicts": {
+          "PASS": 8
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 8,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-018": {
+        "appearances": 8,
+        "verdicts": {
+          "PASS": 8
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 8,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "AuthRequiredEverywhere": {
+        "appearances": 6,
+        "verdicts": {
+          "PASS": 6
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 6,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "OwnershipExclusivity": {
+        "appearances": 1,
+        "verdicts": {
+          "PASS": 1
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 1,
+        "stability": 1.0,
+        "qualifies": false
+      },
+      "PermissionGrounding": {
+        "appearances": 3,
+        "verdicts": {
+          "PASS": 3
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 3,
+        "stability": 1.0,
+        "qualifies": false
+      },
+      "FR-019": {
+        "appearances": 4,
+        "verdicts": {
+          "FAIL": 1,
+          "PASS": 3
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 3,
+        "stability": 0.75,
+        "qualifies": false
+      },
+      "FR-020": {
+        "appearances": 4,
+        "verdicts": {
+          "FAIL": 1,
+          "PASS": 3
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 3,
+        "stability": 0.75,
+        "qualifies": false
+      },
+      "AppendOnlyAudit": {
+        "appearances": 1,
+        "verdicts": {
+          "PASS": 1
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 1,
+        "stability": 1.0,
+        "qualifies": false
+      }
+    },
+    "n_qualifying_keys": 26
+  },
+  "C-L3/M-best": {
+    "n_runs": 10,
+    "min_appearances": 5,
+    "per_key": {
+      "AuthRequiredEverywhere": {
+        "appearances": 8,
+        "verdicts": {
+          "PASS": 8
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 8,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "LeastPrivilege": {
+        "appearances": 9,
+        "verdicts": {
+          "PASS": 9
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 9,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "PermissionCompleteness": {
+        "appearances": 9,
+        "verdicts": {
+          "PASS": 9
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 9,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "AuditCompleteness": {
+        "appearances": 9,
+        "verdicts": {
+          "PASS": 9
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 9,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "AttributionCorrectness": {
+        "appearances": 9,
+        "verdicts": {
+          "PASS": 9
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 9,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "AppendOnly": {
+        "appearances": 9,
+        "verdicts": {
+          "PASS": 9
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 9,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "OwnershipBasedAccess": {
+        "appearances": 9,
+        "verdicts": {
+          "PASS": 9
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 9,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "NoInformationLeakage": {
+        "appearances": 9,
+        "verdicts": {
+          "PASS": 9
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 9,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-002": {
+        "appearances": 9,
+        "verdicts": {
+          "PASS": 9
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 9,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-003": {
+        "appearances": 9,
+        "verdicts": {
+          "PASS": 9
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 9,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-004": {
+        "appearances": 9,
+        "verdicts": {
+          "PASS": 9
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 9,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-005": {
+        "appearances": 9,
+        "verdicts": {
+          "PASS": 9
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 9,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-006": {
+        "appearances": 9,
+        "verdicts": {
+          "PASS": 9
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 9,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-007": {
+        "appearances": 9,
+        "verdicts": {
+          "PASS": 9
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 9,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-008": {
+        "appearances": 9,
+        "verdicts": {
+          "PASS": 9
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 9,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-011": {
+        "appearances": 9,
+        "verdicts": {
+          "PASS": 9
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 9,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-012": {
+        "appearances": 9,
+        "verdicts": {
+          "PASS": 9
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 9,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-013": {
+        "appearances": 9,
+        "verdicts": {
+          "PASS": 9
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 9,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-014": {
+        "appearances": 9,
+        "verdicts": {
+          "PASS": 9
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 9,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-015": {
+        "appearances": 9,
+        "verdicts": {
+          "PASS": 9
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 9,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-018": {
+        "appearances": 9,
+        "verdicts": {
+          "PASS": 9
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 9,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-019": {
+        "appearances": 9,
+        "verdicts": {
+          "PASS": 9
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 9,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-020": {
+        "appearances": 7,
+        "verdicts": {
+          "PASS": 7
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 7,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "PermissionGrounding": {
+        "appearances": 1,
+        "verdicts": {
+          "PASS": 1
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 1,
+        "stability": 1.0,
+        "qualifies": false
+      },
+      "OwnershipExclusivity": {
+        "appearances": 6,
+        "verdicts": {
+          "PASS": 6
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 6,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "NoSelfMutation": {
+        "appearances": 1,
+        "verdicts": {
+          "PASS": 1
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 1,
+        "stability": 1.0,
+        "qualifies": false
+      },
+      "FR-001": {
+        "appearances": 8,
+        "verdicts": {
+          "PASS": 8
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 8,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-009": {
+        "appearances": 5,
+        "verdicts": {
+          "PASS": 5
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 5,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-010": {
+        "appearances": 6,
+        "verdicts": {
+          "PASS": 6
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 6,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-017": {
+        "appearances": 5,
+        "verdicts": {
+          "PASS": 5
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 5,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "ValidationBeforeMutation": {
+        "appearances": 5,
+        "verdicts": {
+          "PASS": 5
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 5,
+        "stability": 1.0,
+        "qualifies": true
+      },
+      "FR-016": {
+        "appearances": 4,
+        "verdicts": {
+          "PASS": 4
+        },
+        "modal_verdict": "PASS",
+        "modal_count": 4,
+        "stability": 1.0,
+        "qualifies": false
+      }
+    },
+    "n_qualifying_keys": 29
+  }
+}

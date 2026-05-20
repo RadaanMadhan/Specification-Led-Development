@@ -1,0 +1,190 @@
+{
+  "feature_id": "004-loan-application-rbac",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_CustomerScope",
+    "FR_003_LoanOfficerScope",
+    "FR_004_ComplianceScope",
+    "FR_005_CustomerIdentityFromAuth",
+    "FR_006_ValidationStructural",
+    "FR_007_DomainsClosed",
+    "FR_008_OneInFlight",
+    "FR_009_InitialState",
+    "FR_010_UnassignedQueue",
+    "FR_011_ClaimTransition",
+    "FR_012_ClaimUnique",
+    "FR_013_OnlyAssignedDecides",
+    "FR_014_DecisionWellFormed",
+    "FR_015_AtomicDecision",
+    "FR_016_NoChangeAfterDecided",
+    "FR_017_AuditEveryChange",
+    "FR_018_AppendOnly",
+    "FR_019_OneAuditPerChange",
+    "FR_020_CustomerSeeOwn",
+    "FR_021_OfficerHidden",
+    "FR_022_AuditRetained",
+    "FR_023_ComplianceReadOnly"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere",
+      "LeastPrivilege"
+    ],
+    "FR-002": [
+      "FR_002_CustomerScope",
+      "LeastPrivilege"
+    ],
+    "FR-003": [
+      "FR_003_LoanOfficerScope",
+      "LeastPrivilege"
+    ],
+    "FR-004": [
+      "FR_004_ComplianceScope",
+      "LeastPrivilege",
+      "FR_023_ComplianceReadOnly"
+    ],
+    "FR-005": [
+      "FR_005_CustomerIdentityFromAuth",
+      "OwnershipExclusivity"
+    ],
+    "FR-006": [
+      "FR_006_ValidationStructural"
+    ],
+    "FR-007": [
+      "FR_007_DomainsClosed"
+    ],
+    "FR-008": [
+      "FR_008_OneInFlight"
+    ],
+    "FR-009": [
+      "FR_009_InitialState",
+      "AttributionCorrectness"
+    ],
+    "FR-010": [
+      "FR_010_UnassignedQueue"
+    ],
+    "FR-011": [
+      "FR_011_ClaimTransition",
+      "AttributionCorrectness"
+    ],
+    "FR-012": [
+      "FR_012_ClaimUnique"
+    ],
+    "FR-013": [
+      "FR_013_OnlyAssignedDecides"
+    ],
+    "FR-014": [
+      "FR_014_DecisionWellFormed"
+    ],
+    "FR-015": [
+      "FR_015_AtomicDecision"
+    ],
+    "FR-016": [
+      "FR_016_NoChangeAfterDecided"
+    ],
+    "FR-017": [
+      "FR_017_AuditEveryChange",
+      "AuditCompleteness"
+    ],
+    "FR-018": [
+      "FR_018_AppendOnly",
+      "AppendOnly"
+    ],
+    "FR-019": [
+      "FR_019_OneAuditPerChange",
+      "AuditCompleteness"
+    ],
+    "FR-020": [
+      "FR_020_CustomerSeeOwn",
+      "OwnershipBasedAccess",
+      "NoInformationLeakage"
+    ],
+    "FR-021": [
+      "FR_021_OfficerHidden"
+    ],
+    "FR-022": [
+      "FR_022_AuditRetained"
+    ],
+    "FR-023": [
+      "FR_023_ComplianceReadOnly",
+      "FR_004_ComplianceScope"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_OperationAuthorized",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_002_CustomerScope"
+      ],
+      "rationale": "Removing the success-implies-allowed fact lets Alloy invent a successful customer DecideApp operation, which directly contradicts the permission matrix in the contract.",
+      "inject_violation": "fact MUTATE_LeastPrivilegeViolation { some op: Operation | op.caller.role = CustomerRole and op.kind = DecideApp and op.outcome = Success }"
+    },
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "PermissionCompleteness",
+        "FR_021_OfficerHidden",
+        "FR_023_ComplianceReadOnly"
+      ],
+      "rationale": "Clearing the matrix closed-world fact lets Allowed contain unauthorised cells; the injection then forces a forbidden customer audit-trail grant, which violates FR-021 and the deny side of the matrix.",
+      "inject_violation": "fact MUTATE_PermissionMatrixViolation { CustomerRole -> ViewAudit in PermMatrix.Allowed and ComplianceReviewerRole -> DecideApp in PermMatrix.Allowed }"
+    },
+    {
+      "fact_name": "F_NoDuplicateEvents",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_018_AppendOnly",
+        "FR_019_OneAuditPerChange"
+      ],
+      "rationale": "Removing the no-duplicate-events fact and injecting two audit entries on the same application with the same newStatus directly demonstrates the append-only / one-per-change invariant breaking.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some a: LoanApplication | some disj e1, e2: a.events | e1.newStatus = e2.newStatus and e1.prevStatus = e2.prevStatus }"
+    },
+    {
+      "fact_name": "F_AuditMatchesJourney",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_017_AuditEveryChange"
+      ],
+      "rationale": "Clearing the journey-match fact lets an Approved application exist without the full chain of audit entries; the injection forces such an under-audited decided application to exist.",
+      "inject_violation": "fact MUTATE_AuditCompletenessViolation { some a: LoanApplication | a.status = Approved and #a.events = 1 }"
+    },
+    {
+      "fact_name": "F_CustomerViewsOwn",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_020_CustomerSeeOwn"
+      ],
+      "rationale": "Removing the customer-views-own constraint and injecting a successful ViewApp by a customer against an application owned by another customer is exactly the breach FR-020 forbids.",
+      "inject_violation": "fact MUTATE_OwnershipBasedAccessViolation { some op: Operation | op.caller.role = CustomerRole and op.kind = ViewApp and op.outcome = Success and some op.target and op.target.customer != op.caller }"
+    },
+    {
+      "fact_name": "F_NoLeakage",
+      "asserts_violated": [
+        "NoInformationLeakage"
+      ],
+      "rationale": "Removing the no-leakage fact lets the system return PermissionDenied to a customer probing a non-owned reference, revealing existence \u2014 exactly what FR-020's 404-not-403 rule forbids.",
+      "inject_violation": "fact MUTATE_NoInformationLeakageViolation { some op: Operation | op.caller.role = CustomerRole and op.kind = ViewApp and some op.target and op.target.customer != op.caller and op.outcome = PermissionDeniedOutcome }"
+    },
+    {
+      "fact_name": "F_AuditAttribution",
+      "asserts_violated": [
+        "AttributionCorrectness"
+      ],
+      "rationale": "Clearing the attribution fact and injecting a decide-event whose actor isn't the assigned officer produces a misattributed audit entry, breaking the FR-017 / attribution-correctness invariant.",
+      "inject_violation": "fact MUTATE_AttributionCorrectnessViolation { some a: LoanApplication, e: a.events | e.prevStatus = UnderReview and e.actor != a.assignedOfficer }"
+    }
+  ]
+}

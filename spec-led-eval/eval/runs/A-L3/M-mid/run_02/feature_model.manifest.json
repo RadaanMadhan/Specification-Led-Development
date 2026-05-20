@@ -1,0 +1,181 @@
+{
+  "feature_id": "A-L3",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "NoSelfMutation",
+    "ValidationBeforeMutation"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_RoleMutualExclusivity",
+    "FR_003_ApplicantCannotPatch",
+    "FR_005_AuditorReadOnly",
+    "FR_008_OneInFlightPerApplicant",
+    "FR_009_ValidTransitions",
+    "FR_011_NoSelfAssignment",
+    "FR_012_OnlyAssignedOfficerCanPatch",
+    "FR_013_NoSelfApproval",
+    "FR_015_TerminalStatusImmutable",
+    "FR_016_AuditEntryPerTransition",
+    "FR_018_AuditImmutable",
+    "FR_020_ByteEquivalentUnauthorisedGet",
+    "FR_023_AuditEndpointAuditorOnly",
+    "FR_024_ApplicantCannotModifyAfterSubmission",
+    "FR_022_PostNoLeakage"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_RoleMutualExclusivity"
+    ],
+    "FR-003": [
+      "FR_003_ApplicantCannotPatch",
+      "LeastPrivilege",
+      "FR_024_ApplicantCannotModifyAfterSubmission"
+    ],
+    "FR-004": [
+      "LeastPrivilege",
+      "OwnershipBasedAccess"
+    ],
+    "FR-005": [
+      "FR_005_AuditorReadOnly",
+      "LeastPrivilege"
+    ],
+    "FR-006": [
+      "FR_022_PostNoLeakage"
+    ],
+    "FR-007": [
+      "PermissionCompleteness"
+    ],
+    "FR-008": [
+      "FR_008_OneInFlightPerApplicant",
+      "OwnershipExclusivity"
+    ],
+    "FR-009": [
+      "FR_009_ValidTransitions",
+      "FR_015_TerminalStatusImmutable"
+    ],
+    "FR-010": [
+      "FR_011_NoSelfAssignment"
+    ],
+    "FR-011": [
+      "FR_011_NoSelfAssignment",
+      "NoSelfMutation"
+    ],
+    "FR-012": [
+      "FR_012_OnlyAssignedOfficerCanPatch",
+      "OwnershipBasedAccess"
+    ],
+    "FR-013": [
+      "FR_013_NoSelfApproval",
+      "NoSelfMutation"
+    ],
+    "FR-014": [
+      "ValidationBeforeMutation"
+    ],
+    "FR-015": [
+      "FR_015_TerminalStatusImmutable"
+    ],
+    "FR-016": [
+      "FR_016_AuditEntryPerTransition",
+      "AuditCompleteness",
+      "AttributionCorrectness"
+    ],
+    "FR-017": [
+      "AuditCompleteness",
+      "ValidationBeforeMutation"
+    ],
+    "FR-018": [
+      "FR_018_AuditImmutable",
+      "AppendOnly"
+    ],
+    "FR-019": [
+      "AppendOnly",
+      "FR_018_AuditImmutable"
+    ],
+    "FR-020": [
+      "FR_020_ByteEquivalentUnauthorisedGet",
+      "NoInformationLeakage"
+    ],
+    "FR-021": [
+      "FR_020_ByteEquivalentUnauthorisedGet",
+      "NoInformationLeakage"
+    ],
+    "FR-022": [
+      "FR_022_PostNoLeakage"
+    ],
+    "FR-023": [
+      "FR_023_AuditEndpointAuditorOnly"
+    ],
+    "FR-024": [
+      "FR_024_ApplicantCannotModifyAfterSubmission"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_AppendOnlyAuditEntries",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_018_AuditImmutable"
+      ],
+      "rationale": "Removing this fact allows two distinct AuditEntry atoms for the same application to share identical (prevStat, newStat) values, modelling an in-place mutation or replay of an existing audit row. The injection forces exactly such a duplicate pair to exist, which both AppendOnly and FR_018_AuditImmutable must catch.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some disj ae1, ae2 : AuditEntry | ae1.forApp = ae2.forApp and ae1.prevStat = ae2.prevStat and ae1.newStat = ae2.newStat }"
+    },
+    {
+      "fact_name": "F_NoSelfApproval",
+      "asserts_violated": [
+        "NoSelfMutation",
+        "FR_013_NoSelfApproval"
+      ],
+      "rationale": "Removing this fact permits an AuditEntry where the officer who performed the transition is also the applicant of that application. The injection forces a state where a non-initial audit entry exists whose actorUser equals the application's own applicant and actorRole is ROfficer, directly violating FR-013.",
+      "inject_violation": "fact MUTATE_NoSelfApprovalViolation { some ae : AuditEntry | some ae.prevStat and ae.actorRole = ROfficer and ae.actorUser = ae.forApp.applicant }"
+    },
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "PermissionCompleteness"
+      ],
+      "rationale": "Removing this fact allows arbitrary cells in PermMatrix.Allowed, including RAuditor \u2192 OpPost and RAuditor \u2192 OpPatch. The injection adds the auditor-to-post cell, which directly violates both LeastPrivilege (a denied cell is now allowed) and PermissionCompleteness (the matrix no longer matches the spec).",
+      "inject_violation": "fact MUTATE_PermissionMatrixViolation { RAuditor -> OpPost in PermMatrix.Allowed }"
+    },
+    {
+      "fact_name": "F_AuditCountMatchesStatus",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_016_AuditEntryPerTransition"
+      ],
+      "rationale": "Removing this fact permits an application at status UnderReview to exist with only one audit entry (the initial submission entry), meaning the Pending\u2192UnderReview transition has no corresponding audit record. The injection forces exactly this situation.",
+      "inject_violation": "fact MUTATE_AuditCountViolation { some app : LoanApplication | app.status = UnderReview and (one ae : AuditEntry | ae.forApp = app) }"
+    },
+    {
+      "fact_name": "F_PatchOwnershipAndNonSelf",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_012_OnlyAssignedOfficerCanPatch"
+      ],
+      "rationale": "Removing this fact allows a successful OpPatch by a caller who is not the application's assigned officer, violating the core access-control invariant that only the assigned officer may transition status. The injection forces a successful PATCH by a user who is demonstrably not the assigned officer.",
+      "inject_violation": "fact MUTATE_OwnershipBasedAccessViolation { some op : Operation | op.kind = OpPatch and op.outcome = OpSuccess and some op.targetApp and op.callerUser != op.targetApp.assignedOfficer }"
+    },
+    {
+      "fact_name": "F_NoInformationLeakageOnRead",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "FR_020_ByteEquivalentUnauthorisedGet"
+      ],
+      "rationale": "Removing this fact allows a denied GET operation to carry a non-null targetApp reference, meaning the response distinguishes 'exists but caller cannot access' from 'does not exist' \u2014 breaking the byte-equivalence guarantee. The injection forces a denied GET to reference an existing application.",
+      "inject_violation": "fact MUTATE_InformationLeakageViolation { some op : Operation | op.kind = OpGet and op.outcome = OpDenied and some op.targetApp }"
+    }
+  ]
+}

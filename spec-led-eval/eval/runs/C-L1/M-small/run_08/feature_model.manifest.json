@@ -1,0 +1,102 @@
+{
+  "feature_id": "C-L1",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "PermissionGrounding",
+    "AuthRequiredEverywhere",
+    "OwnershipBasedAccess",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "NoInformationLeakage"
+  ],
+  "feature_specific_predicates": [
+    "FR_002_RoleResolution",
+    "FR_005_ReadOnlyAccessScope",
+    "FR_008_AllAccessesAudited",
+    "FR_011_ClinicalRolesInAudit"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_RoleResolution"
+    ],
+    "FR-004": [
+      "LeastPrivilege"
+    ],
+    "FR-005": [
+      "FR_005_ReadOnlyAccessScope",
+      "LeastPrivilege"
+    ],
+    "FR-006": [
+      "OwnershipBasedAccess"
+    ],
+    "FR-007": [
+      "NoInformationLeakage"
+    ],
+    "FR-008": [
+      "FR_008_AllAccessesAudited",
+      "AuditCompleteness"
+    ],
+    "FR-009": [
+      "AuditCompleteness",
+      "AttributionCorrectness"
+    ],
+    "FR-010": [
+      "AppendOnly"
+    ],
+    "FR-011": [
+      "FR_011_ClinicalRolesInAudit",
+      "PermissionGrounding"
+    ],
+    "FR-013": [
+      "FR_008_AllAccessesAudited"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_OwnershipBasedAccess",
+      "asserts_violated": [
+        "OwnershipBasedAccess"
+      ],
+      "rationale": "This fact enforces that permitted accesses must have an active care-team membership. Removing it allows the model to construct permitted accesses without the required membership, which is the exact violation OwnershipBasedAccess is designed to catch.",
+      "inject_violation": "fact MUTATE_OwnershipViolation { some ae: AuditEntry, u: User, p: Patient | ae.clinician = u and ae.patient_id = p.id and ae.outcome = Permitted and no ctm: CareTeamMembership | ctm.clinician = u and ctm.patient = p and ctm.status = Active }"
+    },
+    {
+      "fact_name": "F_AuditAppendOnly",
+      "asserts_violated": [
+        "AppendOnly"
+      ],
+      "rationale": "This fact prevents two distinct audit entries from having the same (clinician, patient_id, occurred_at) key but different outcomes. Removing it allows the injection of duplicates with conflicting data, which the AppendOnly assertion should reject.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some disj ae1, ae2: AuditEntry | ae1.clinician = ae2.clinician and ae1.patient_id = ae2.patient_id and ae1.occurred_at = ae2.occurred_at and ae1.outcome != ae2.outcome }"
+    },
+    {
+      "fact_name": "F_AttributionCorrectness",
+      "asserts_violated": [
+        "AttributionCorrectness"
+      ],
+      "rationale": "This fact ensures audit-entry snapshots (clinician_display_name, clinician_role) match the actual user data. Removing it allows mismatches, which the AttributionCorrectness assertion should catch.",
+      "inject_violation": "fact MUTATE_AttributionViolation { some ae: AuditEntry | ae.clinician_display_name != ae.clinician.display_name or ae.clinician_role != ae.clinician.role }"
+    },
+    {
+      "fact_name": "F_NoInformationLeakage",
+      "asserts_violated": [
+        "NoInformationLeakage"
+      ],
+      "rationale": "This fact enforces the internal distinction: Denied outcomes require an existing patient (clinician not on care team), and NotFoundOrDenied requires patient absence. Removing it allows violations where the outcome doesn't match patient existence, which NoInformationLeakage detects.",
+      "inject_violation": "fact MUTATE_InformationLeakageViolation { some ae: AuditEntry | (ae.outcome = Denied and no p: Patient | p.id = ae.patient_id) or (ae.outcome = NotFoundOrDenied and some p: Patient | p.id = ae.patient_id) }"
+    },
+    {
+      "fact_name": "F_RecordsLookupIsForClinicalRoles",
+      "asserts_violated": [
+        "LeastPrivilege",
+        "FR_011_ClinicalRolesInAudit"
+      ],
+      "rationale": "This fact enforces that only clinical roles (not AuditOfficer) appear in the audit log for patient-record accesses. Removing it allows AuditOfficer entries, which violates the role-separation invariant.",
+      "inject_violation": "fact MUTATE_RoleSeparationViolation { some ae: AuditEntry | ae.clinician.role = AuditOfficer }"
+    }
+  ]
+}

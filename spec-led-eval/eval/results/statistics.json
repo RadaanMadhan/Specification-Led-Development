@@ -1,0 +1,926 @@
+{
+  "generated_at": "2026-05-20T04:29:28+00:00",
+  "alpha": 0.05,
+  "n_total_runs": 267,
+  "n_per_richness": {
+    "L1": 89,
+    "L2": 88,
+    "L3": 90
+  },
+  "n_per_domain": {
+    "A": 87,
+    "B": 90,
+    "C": 90
+  },
+  "models_present": [
+    "M-best",
+    "M-mid",
+    "M-small"
+  ],
+  "n_per_model": {
+    "M-best": 90,
+    "M-mid": 90,
+    "M-small": 87
+  },
+  "tests": {
+    "overall_richness": {
+      "test": "kruskal_wallis",
+      "groups": {
+        "L1": {
+          "n": 89,
+          "mean": 0.7311147305314605,
+          "median": 0.8833333333,
+          "stdev": 0.2844622750125379,
+          "min": 0.25,
+          "max": 1.0
+        },
+        "L2": {
+          "n": 88,
+          "mean": 0.760470289071591,
+          "median": 0.90946557975,
+          "stdev": 0.2801393319522019,
+          "min": 0.175,
+          "max": 1.0
+        },
+        "L3": {
+          "n": 90,
+          "mean": 0.7336419753055554,
+          "median": 0.875,
+          "stdev": 0.2812933491615258,
+          "min": 0.2645833333,
+          "max": 1.0
+        }
+      },
+      "h": 0.16372002035538769,
+      "p": 0.9214009364217159,
+      "significant": false,
+      "skipped": false,
+      "skip_reason": null,
+      "metric": "aqs_partial",
+      "hypothesis": "H1"
+    },
+    "per_domain_richness": {
+      "A": {
+        "test": "kruskal_wallis",
+        "groups": {
+          "L1": {
+            "n": 29,
+            "mean": 0.7598920602620689,
+            "median": 0.9154411765,
+            "stdev": 0.29437743132412664,
+            "min": 0.2951680672,
+            "max": 1.0
+          },
+          "L2": {
+            "n": 28,
+            "mean": 0.8329172520428573,
+            "median": 0.9230978261,
+            "stdev": 0.2219089305125873,
+            "min": 0.3097826087,
+            "max": 0.9945652174
+          },
+          "L3": {
+            "n": 30,
+            "mean": 0.7069510581933333,
+            "median": 0.8541666666500001,
+            "stdev": 0.2838154622135668,
+            "min": 0.2645833333,
+            "max": 1.0
+          }
+        },
+        "h": 2.349108350071547,
+        "p": 0.30895668959356765,
+        "significant": false,
+        "skipped": false,
+        "skip_reason": null,
+        "metric": "aqs_partial",
+        "domain": "A",
+        "domain_name": "Banking"
+      },
+      "B": {
+        "test": "kruskal_wallis",
+        "groups": {
+          "L1": {
+            "n": 30,
+            "mean": 0.7206018518499999,
+            "median": 0.875,
+            "stdev": 0.29779237829802396,
+            "min": 0.25,
+            "max": 1.0
+          },
+          "L2": {
+            "n": 30,
+            "mean": 0.7602777777866667,
+            "median": 0.92395833335,
+            "stdev": 0.29311776409889356,
+            "min": 0.2625,
+            "max": 1.0
+          },
+          "L3": {
+            "n": 30,
+            "mean": 0.7886970899399998,
+            "median": 0.93601190475,
+            "stdev": 0.2605743214379765,
+            "min": 0.3174603175,
+            "max": 1.0
+          }
+        },
+        "h": 1.1710017941679942,
+        "p": 0.5568268789871893,
+        "significant": false,
+        "skipped": false,
+        "skip_reason": null,
+        "metric": "aqs_partial",
+        "domain": "B",
+        "domain_name": "SaaS"
+      },
+      "C": {
+        "test": "kruskal_wallis",
+        "groups": {
+          "L1": {
+            "n": 30,
+            "mean": 0.7138095238066668,
+            "median": 0.8333333333,
+            "stdev": 0.2682242239181899,
+            "min": 0.3166666667,
+            "max": 1.0
+          },
+          "L2": {
+            "n": 30,
+            "mean": 0.6930456349166666,
+            "median": 0.8690972222,
+            "stdev": 0.3064281090016118,
+            "min": 0.175,
+            "max": 0.9821428571
+          },
+          "L3": {
+            "n": 30,
+            "mean": 0.7052777777833332,
+            "median": 0.871875,
+            "stdev": 0.29946583657856063,
+            "min": 0.2791666667,
+            "max": 1.0
+          }
+        },
+        "h": 0.8181539821939967,
+        "p": 0.6642630880095723,
+        "significant": false,
+        "skipped": false,
+        "skip_reason": null,
+        "metric": "aqs_partial",
+        "domain": "C",
+        "domain_name": "Healthcare"
+      }
+    },
+    "pairwise_richness_aqs": {
+      "L1-L2": {
+        "test": "mann_whitney_u",
+        "groups": {
+          "L1": {
+            "n": 89,
+            "mean": 0.7311147305314605,
+            "median": 0.8833333333,
+            "stdev": 0.2844622750125379,
+            "min": 0.25,
+            "max": 1.0
+          },
+          "L2": {
+            "n": 88,
+            "mean": 0.760470289071591,
+            "median": 0.90946557975,
+            "stdev": 0.2801393319522019,
+            "min": 0.175,
+            "max": 1.0
+          }
+        },
+        "u": 3767.5,
+        "p_raw": 0.6640333434551202,
+        "p_corrected": 1.0,
+        "cohen_d": -0.1039792079070597,
+        "cohen_d_label": "negligible",
+        "significant": false,
+        "skipped": false,
+        "skip_reason": null
+      },
+      "L1-L3": {
+        "test": "mann_whitney_u",
+        "groups": {
+          "L1": {
+            "n": 89,
+            "mean": 0.7311147305314605,
+            "median": 0.8833333333,
+            "stdev": 0.2844622750125379,
+            "min": 0.25,
+            "max": 1.0
+          },
+          "L3": {
+            "n": 90,
+            "mean": 0.7336419753055554,
+            "median": 0.875,
+            "stdev": 0.2812933491615258,
+            "min": 0.2645833333,
+            "max": 1.0
+          }
+        },
+        "u": 3952.0,
+        "p_raw": 0.8795726814897122,
+        "p_corrected": 1.0,
+        "cohen_d": -0.00893419348585684,
+        "cohen_d_label": "negligible",
+        "significant": false,
+        "skipped": false,
+        "skip_reason": null
+      },
+      "L2-L3": {
+        "test": "mann_whitney_u",
+        "groups": {
+          "L2": {
+            "n": 88,
+            "mean": 0.760470289071591,
+            "median": 0.90946557975,
+            "stdev": 0.2801393319522019,
+            "min": 0.175,
+            "max": 1.0
+          },
+          "L3": {
+            "n": 90,
+            "mean": 0.7336419753055554,
+            "median": 0.875,
+            "stdev": 0.2812933491615258,
+            "min": 0.2645833333,
+            "max": 1.0
+          }
+        },
+        "u": 4025.0,
+        "p_raw": 0.8511115100956692,
+        "p_corrected": 1.0,
+        "cohen_d": 0.09556846749076307,
+        "cohen_d_label": "negligible",
+        "significant": false,
+        "skipped": false,
+        "skip_reason": null
+      },
+      "metric": "aqs_partial",
+      "_meta": {
+        "bonferroni_k": 3,
+        "hypothesis": "H1"
+      }
+    },
+    "d5_stability_richness": {
+      "test": "kruskal_wallis",
+      "groups": {
+        "L1": {
+          "n": 147,
+          "mean": 0.8873015873015867,
+          "median": 0.9,
+          "stdev": 0.1314489573236103,
+          "min": 0.5,
+          "max": 1.0
+        },
+        "L2": {
+          "n": 161,
+          "mean": 0.9121824000705984,
+          "median": 1.0,
+          "stdev": 0.13458766486334112,
+          "min": 0.5,
+          "max": 1.0
+        },
+        "L3": {
+          "n": 168,
+          "mean": 0.9075197124304266,
+          "median": 1.0,
+          "stdev": 0.1469869244840723,
+          "min": 0.5,
+          "max": 1.0
+        }
+      },
+      "h": 7.717753535315164,
+      "p": 0.021091677076703383,
+      "significant": true,
+      "skipped": false,
+      "skip_reason": null,
+      "metric": "d5_per_key_stability",
+      "hypothesis": "H3"
+    },
+    "pairwise_d5_richness": {
+      "L1-L2": {
+        "test": "mann_whitney_u",
+        "groups": {
+          "L1": {
+            "n": 147,
+            "mean": 0.8873015873015867,
+            "median": 0.9,
+            "stdev": 0.1314489573236103,
+            "min": 0.5,
+            "max": 1.0
+          },
+          "L2": {
+            "n": 161,
+            "mean": 0.9121824000705984,
+            "median": 1.0,
+            "stdev": 0.13458766486334112,
+            "min": 0.5,
+            "max": 1.0
+          }
+        },
+        "u": 10118.5,
+        "p_raw": 0.016833717990707896,
+        "p_corrected": 0.05050115397212369,
+        "cohen_d": -0.18693414947368614,
+        "cohen_d_label": "negligible",
+        "significant": false,
+        "skipped": false,
+        "skip_reason": null
+      },
+      "L1-L3": {
+        "test": "mann_whitney_u",
+        "groups": {
+          "L1": {
+            "n": 147,
+            "mean": 0.8873015873015867,
+            "median": 0.9,
+            "stdev": 0.1314489573236103,
+            "min": 0.5,
+            "max": 1.0
+          },
+          "L3": {
+            "n": 168,
+            "mean": 0.9075197124304266,
+            "median": 1.0,
+            "stdev": 0.1469869244840723,
+            "min": 0.5,
+            "max": 1.0
+          }
+        },
+        "u": 10596.0,
+        "p_raw": 0.017148454870096575,
+        "p_corrected": 0.05144536461028973,
+        "cohen_d": -0.14446263673819282,
+        "cohen_d_label": "negligible",
+        "significant": false,
+        "skipped": false,
+        "skip_reason": null
+      },
+      "L2-L3": {
+        "test": "mann_whitney_u",
+        "groups": {
+          "L2": {
+            "n": 161,
+            "mean": 0.9121824000705984,
+            "median": 1.0,
+            "stdev": 0.13458766486334112,
+            "min": 0.5,
+            "max": 1.0
+          },
+          "L3": {
+            "n": 168,
+            "mean": 0.9075197124304266,
+            "median": 1.0,
+            "stdev": 0.1469869244840723,
+            "min": 0.5,
+            "max": 1.0
+          }
+        },
+        "u": 13444.0,
+        "p_raw": 0.9152597107755538,
+        "p_corrected": 1.0,
+        "cohen_d": 0.03305551886324177,
+        "cohen_d_label": "negligible",
+        "significant": false,
+        "skipped": false,
+        "skip_reason": null
+      },
+      "metric": "d5_per_key_stability",
+      "_meta": {
+        "bonferroni_k": 3,
+        "hypothesis": "H3"
+      }
+    },
+    "model_effect_overall": {
+      "test": "kruskal_wallis",
+      "groups": {
+        "M-best": {
+          "n": 90,
+          "mean": 0.9004467457266666,
+          "median": 0.9791666667,
+          "stdev": 0.19270158317044028,
+          "min": 0.3055555556,
+          "max": 1.0
+        },
+        "M-mid": {
+          "n": 90,
+          "mean": 0.8809482762488888,
+          "median": 0.91621376815,
+          "stdev": 0.13478233362551847,
+          "min": 0.359375,
+          "max": 0.99375
+        },
+        "M-small": {
+          "n": 87,
+          "mean": 0.4332508305206897,
+          "median": 0.33125,
+          "stdev": 0.2109046077635462,
+          "min": 0.175,
+          "max": 0.86875
+        }
+      },
+      "h": 168.10196241327915,
+      "p": 3.1413958336057914e-37,
+      "significant": true,
+      "skipped": false,
+      "skip_reason": null,
+      "metric": "aqs_partial",
+      "hypothesis": "H5"
+    },
+    "model_effect_per_richness": {
+      "L1": {
+        "test": "kruskal_wallis",
+        "groups": {
+          "M-best": {
+            "n": 30,
+            "mean": 0.8643199501966665,
+            "median": 0.96834150325,
+            "stdev": 0.22848987282471186,
+            "min": 0.3416666667,
+            "max": 1.0
+          },
+          "M-mid": {
+            "n": 30,
+            "mean": 0.8946595860533333,
+            "median": 0.9160539216,
+            "stdev": 0.11257011805936976,
+            "min": 0.3666666667,
+            "max": 0.9791666667
+          },
+          "M-small": {
+            "n": 29,
+            "mean": 0.4241318941310345,
+            "median": 0.3308823529,
+            "stdev": 0.20456498324223307,
+            "min": 0.25,
+            "max": 0.8333333333
+          }
+        },
+        "h": 54.42533752047225,
+        "p": 1.5194559690497291e-12,
+        "significant": true,
+        "skipped": false,
+        "skip_reason": null,
+        "metric": "aqs_partial",
+        "richness": "L1",
+        "hypothesis": "H5"
+      },
+      "L2": {
+        "test": "kruskal_wallis",
+        "groups": {
+          "M-best": {
+            "n": 30,
+            "mean": 0.9198724695233336,
+            "median": 0.97708333335,
+            "stdev": 0.17054489974861203,
+            "min": 0.3055555556,
+            "max": 1.0
+          },
+          "M-mid": {
+            "n": 30,
+            "mean": 0.9015086553966666,
+            "median": 0.9230978261,
+            "stdev": 0.10966301863955306,
+            "min": 0.375,
+            "max": 0.99375
+          },
+          "M-small": {
+            "n": 28,
+            "mean": 0.4385697032392858,
+            "median": 0.3252717391,
+            "stdev": 0.2256652182648586,
+            "min": 0.175,
+            "max": 0.86875
+          }
+        },
+        "h": 54.04338708256229,
+        "p": 1.839194262037054e-12,
+        "significant": true,
+        "skipped": false,
+        "skip_reason": null,
+        "metric": "aqs_partial",
+        "richness": "L2",
+        "hypothesis": "H5"
+      },
+      "L3": {
+        "test": "kruskal_wallis",
+        "groups": {
+          "M-best": {
+            "n": 30,
+            "mean": 0.91714781746,
+            "median": 0.9806547619,
+            "stdev": 0.17504401982331988,
+            "min": 0.375,
+            "max": 1.0
+          },
+          "M-mid": {
+            "n": 30,
+            "mean": 0.8466765872966664,
+            "median": 0.9043154762000001,
+            "stdev": 0.17090006079579798,
+            "min": 0.359375,
+            "max": 0.9635416667
+          },
+          "M-small": {
+            "n": 30,
+            "mean": 0.43710152115999995,
+            "median": 0.33303571425,
+            "stdev": 0.20968084864715536,
+            "min": 0.2645833333,
+            "max": 0.8489583333
+          }
+        },
+        "h": 61.31142886175509,
+        "p": 4.857271551170671e-14,
+        "significant": true,
+        "skipped": false,
+        "skip_reason": null,
+        "metric": "aqs_partial",
+        "richness": "L3",
+        "hypothesis": "H5"
+      }
+    },
+    "model_effect_per_domain": {
+      "A": {
+        "test": "kruskal_wallis",
+        "groups": {
+          "M-best": {
+            "n": 30,
+            "mean": 0.92410809432,
+            "median": 0.97805059525,
+            "stdev": 0.14126136141468928,
+            "min": 0.375,
+            "max": 1.0
+          },
+          "M-mid": {
+            "n": 30,
+            "mean": 0.9040386118200001,
+            "median": 0.9230978261,
+            "stdev": 0.10767148852090457,
+            "min": 0.375,
+            "max": 0.9791666667
+          },
+          "M-small": {
+            "n": 27,
+            "mean": 0.4341734580148149,
+            "median": 0.3350694444,
+            "stdev": 0.2069597795837364,
+            "min": 0.2645833333,
+            "max": 0.8489583333
+          }
+        },
+        "h": 56.419652267464095,
+        "p": 5.605678350671034e-13,
+        "significant": true,
+        "skipped": false,
+        "skip_reason": null,
+        "metric": "aqs_partial",
+        "domain": "A",
+        "domain_name": "Banking",
+        "hypothesis": "H5"
+      },
+      "B": {
+        "test": "kruskal_wallis",
+        "groups": {
+          "M-best": {
+            "n": 30,
+            "mean": 0.9674537037033332,
+            "median": 0.9791666667,
+            "stdev": 0.03510888908684829,
+            "min": 0.8819444444,
+            "max": 1.0
+          },
+          "M-mid": {
+            "n": 30,
+            "mean": 0.8841997354499999,
+            "median": 0.9300595238,
+            "stdev": 0.14967548605407535,
+            "min": 0.3630952381,
+            "max": 0.99375
+          },
+          "M-small": {
+            "n": 30,
+            "mean": 0.4179232804233333,
+            "median": 0.33199404759999995,
+            "stdev": 0.19947319613734768,
+            "min": 0.25,
+            "max": 0.86875
+          }
+        },
+        "h": 64.4803663619603,
+        "p": 9.960160778944634e-15,
+        "significant": true,
+        "skipped": false,
+        "skip_reason": null,
+        "metric": "aqs_partial",
+        "domain": "B",
+        "domain_name": "SaaS",
+        "hypothesis": "H5"
+      },
+      "C": {
+        "test": "kruskal_wallis",
+        "groups": {
+          "M-best": {
+            "n": 30,
+            "mean": 0.8097784391566666,
+            "median": 0.9739583333499999,
+            "stdev": 0.2811531869276099,
+            "min": 0.3055555556,
+            "max": 1.0
+          },
+          "M-mid": {
+            "n": 30,
+            "mean": 0.8546064814766666,
+            "median": 0.890625,
+            "stdev": 0.14309254363157414,
+            "min": 0.359375,
+            "max": 0.9604166667
+          },
+          "M-small": {
+            "n": 30,
+            "mean": 0.44774801587333335,
+            "median": 0.31875,
+            "stdev": 0.23077310292036637,
+            "min": 0.175,
+            "max": 0.8333333333
+          }
+        },
+        "h": 45.01318234993656,
+        "p": 1.6807829978250568e-10,
+        "significant": true,
+        "skipped": false,
+        "skip_reason": null,
+        "metric": "aqs_partial",
+        "domain": "C",
+        "domain_name": "Healthcare",
+        "hypothesis": "H5"
+      }
+    },
+    "pairwise_model_aqs": {
+      "M-best-M-mid": {
+        "test": "mann_whitney_u",
+        "groups": {
+          "M-best": {
+            "n": 90,
+            "mean": 0.9004467457266666,
+            "median": 0.9791666667,
+            "stdev": 0.19270158317044028,
+            "min": 0.3055555556,
+            "max": 1.0
+          },
+          "M-mid": {
+            "n": 90,
+            "mean": 0.8809482762488888,
+            "median": 0.91621376815,
+            "stdev": 0.13478233362551847,
+            "min": 0.359375,
+            "max": 0.99375
+          }
+        },
+        "u": 6156.0,
+        "p_raw": 1.656343756057265e-09,
+        "p_corrected": 4.9690312681717954e-09,
+        "cohen_d": 0.11726063933035465,
+        "cohen_d_label": "negligible",
+        "significant": true,
+        "skipped": false,
+        "skip_reason": null
+      },
+      "M-best-M-small": {
+        "test": "mann_whitney_u",
+        "groups": {
+          "M-best": {
+            "n": 90,
+            "mean": 0.9004467457266666,
+            "median": 0.9791666667,
+            "stdev": 0.19270158317044028,
+            "min": 0.3055555556,
+            "max": 1.0
+          },
+          "M-small": {
+            "n": 87,
+            "mean": 0.4332508305206897,
+            "median": 0.33125,
+            "stdev": 0.2109046077635462,
+            "min": 0.175,
+            "max": 0.86875
+          }
+        },
+        "u": 7501.5,
+        "p_raw": 6.427013042862413e-26,
+        "p_corrected": 1.928103912858724e-25,
+        "cohen_d": 2.314543351893085,
+        "cohen_d_label": "large",
+        "significant": true,
+        "skipped": false,
+        "skip_reason": null
+      },
+      "M-mid-M-small": {
+        "test": "mann_whitney_u",
+        "groups": {
+          "M-mid": {
+            "n": 90,
+            "mean": 0.8809482762488888,
+            "median": 0.91621376815,
+            "stdev": 0.13478233362551847,
+            "min": 0.359375,
+            "max": 0.99375
+          },
+          "M-small": {
+            "n": 87,
+            "mean": 0.4332508305206897,
+            "median": 0.33125,
+            "stdev": 0.2109046077635462,
+            "min": 0.175,
+            "max": 0.86875
+          }
+        },
+        "u": 7631.5,
+        "p_raw": 1.0943161470224202e-27,
+        "p_corrected": 3.2829484410672605e-27,
+        "cohen_d": 2.5387424583125067,
+        "cohen_d_label": "large",
+        "significant": true,
+        "skipped": false,
+        "skip_reason": null
+      },
+      "metric": "aqs_partial",
+      "_meta": {
+        "bonferroni_k": 3,
+        "hypothesis": "H5"
+      }
+    },
+    "h6_lever_comparison": {
+      "metric": "aqs_partial",
+      "hypothesis": "H6",
+      "model_lever": {
+        "pair": [
+          "M-best",
+          "M-small"
+        ],
+        "at_richness": "L2",
+        "cohen_d": 2.418173641987834,
+        "cohen_d_abs": 2.418173641987834,
+        "cohen_d_label": "large",
+        "n_a": 30,
+        "n_b": 28
+      },
+      "richness_lever": {
+        "pair": [
+          "L1",
+          "L3"
+        ],
+        "at_model": "M-best",
+        "cohen_d": -0.2595595308591048,
+        "cohen_d_abs": 0.2595595308591048,
+        "cohen_d_label": "small",
+        "n_a": 30,
+        "n_b": 30
+      },
+      "winner": "model",
+      "skipped": false,
+      "skip_reason": null,
+      "winner_margin": 2.158614111128729
+    },
+    "d5_stability_model": {
+      "test": "kruskal_wallis",
+      "groups": {
+        "M-best": {
+          "n": 252,
+          "mean": 0.9635707986898472,
+          "median": 1.0,
+          "stdev": 0.07852050969873728,
+          "min": 0.6,
+          "max": 1.0
+        },
+        "M-mid": {
+          "n": 212,
+          "mean": 0.8328844504552045,
+          "median": 0.8888888888888888,
+          "stdev": 0.16023418266388417,
+          "min": 0.5,
+          "max": 1.0
+        },
+        "M-small": {
+          "n": 12,
+          "mean": 0.8638888888888888,
+          "median": 0.8333333333333334,
+          "stdev": 0.10959828699292937,
+          "min": 0.6666666666666666,
+          "max": 1.0
+        }
+      },
+      "h": 112.3277005203258,
+      "p": 4.0583523441845753e-25,
+      "significant": true,
+      "skipped": false,
+      "skip_reason": null,
+      "metric": "d5_per_key_stability",
+      "hypothesis": "H7"
+    },
+    "pairwise_d5_model": {
+      "M-best-M-mid": {
+        "test": "mann_whitney_u",
+        "groups": {
+          "M-best": {
+            "n": 252,
+            "mean": 0.9635707986898472,
+            "median": 1.0,
+            "stdev": 0.07852050969873728,
+            "min": 0.6,
+            "max": 1.0
+          },
+          "M-mid": {
+            "n": 212,
+            "mean": 0.8328844504552045,
+            "median": 0.8888888888888888,
+            "stdev": 0.16023418266388417,
+            "min": 0.5,
+            "max": 1.0
+          }
+        },
+        "u": 40249.5,
+        "p_raw": 9.553665794668095e-26,
+        "p_corrected": 2.8660997384004284e-25,
+        "cohen_d": 1.064368470462541,
+        "cohen_d_label": "large",
+        "significant": true,
+        "skipped": false,
+        "skip_reason": null
+      },
+      "M-best-M-small": {
+        "test": "mann_whitney_u",
+        "groups": {
+          "M-best": {
+            "n": 252,
+            "mean": 0.9635707986898472,
+            "median": 1.0,
+            "stdev": 0.07852050969873728,
+            "min": 0.6,
+            "max": 1.0
+          },
+          "M-small": {
+            "n": 12,
+            "mean": 0.8638888888888888,
+            "median": 0.8333333333333334,
+            "stdev": 0.10959828699292937,
+            "min": 0.6666666666666666,
+            "max": 1.0
+          }
+        },
+        "u": 2264.5,
+        "p_raw": 7.260233345474504e-05,
+        "p_corrected": 0.0002178070003642351,
+        "cohen_d": 1.2449615975526411,
+        "cohen_d_label": "large",
+        "significant": true,
+        "skipped": false,
+        "skip_reason": null
+      },
+      "M-mid-M-small": {
+        "test": "mann_whitney_u",
+        "groups": {
+          "M-mid": {
+            "n": 212,
+            "mean": 0.8328844504552045,
+            "median": 0.8888888888888888,
+            "stdev": 0.16023418266388417,
+            "min": 0.5,
+            "max": 1.0
+          },
+          "M-small": {
+            "n": 12,
+            "mean": 0.8638888888888888,
+            "median": 0.8333333333333334,
+            "stdev": 0.10959828699292937,
+            "min": 0.6666666666666666,
+            "max": 1.0
+          }
+        },
+        "u": 1204.5,
+        "p_raw": 0.7545459437731588,
+        "p_corrected": 1.0,
+        "cohen_d": -0.19609717930288145,
+        "cohen_d_label": "negligible",
+        "significant": false,
+        "skipped": false,
+        "skip_reason": null
+      },
+      "metric": "d5_per_key_stability",
+      "_meta": {
+        "bonferroni_k": 3,
+        "hypothesis": "H7"
+      }
+    }
+  },
+  "stage2_models_present": [
+    "M-best",
+    "M-mid",
+    "M-small"
+  ]
+}

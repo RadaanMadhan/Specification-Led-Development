@@ -1,0 +1,47 @@
+{
+  "F_PermissionMatrix": {
+    "targeted_asserts": {
+      "PermissionCompleteness": "BIT",
+      "FR_015_RoleSeparation": "BIT",
+      "LeastPrivilege": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_AppendOnlyAuditEvents": {
+    "targeted_asserts": {
+      "AppendOnly": "VACUOUS_OVERCONSTRAINT",
+      "FR_016_AuditTrailComplete": "VACUOUS_OVERCONSTRAINT",
+      "FR_017_NoApplicationDeletion": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_AuditCompleteness": {
+    "targeted_asserts": {
+      "AuditCompleteness": "BIT",
+      "FR_016_AuditTrailComplete": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AttributionCorrectness": {
+    "targeted_asserts": {
+      "AttributionCorrectness": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_NoLeakOnNonOwnerAccess": {
+    "targeted_asserts": {
+      "NoInformationLeakage": "VACUOUS_OVERCONSTRAINT",
+      "OwnershipBasedAccess": "VACUOUS_OVERCONSTRAINT",
+      "FR_013_CustomerSeesOwnOnly": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_DecisionPresenceMatchesStatus": {
+    "targeted_asserts": {
+      "FR_010_AtMostOneDecisionPerApp": "BIT",
+      "FR_012_NoDuplicateDecisions": "BIT",
+      "FR_011_DecidedStatusImmutable": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  }
+}

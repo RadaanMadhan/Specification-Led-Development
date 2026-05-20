@@ -1,0 +1,45 @@
+{
+  "F_ComplianceContentBlind": {
+    "targeted_asserts": {
+      "FR_007_ComplianceContentBlind": "VACUOUS_OVERCONSTRAINT",
+      "LeastPrivilege": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_AuthorisationConditional": {
+    "targeted_asserts": {},
+    "all_bit": false,
+    "skipped": true,
+    "skip_reason": "mutation target fact `F_AuthorisationConditional` not found in feature_model.als"
+  },
+  "F_AuditEntriesAppendOnly": {
+    "targeted_asserts": {
+      "AuditCompleteness": "BIT",
+      "FR_015_AuditImmutable": "BIT",
+      "FR_013_OneAuditPerAccess": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_NoteIdAuditConstraint": {
+    "targeted_asserts": {
+      "FR_014_AuditEntryFields": "BIT",
+      "AppendOnly": "VACUOUS_OVERCONSTRAINT"
+    },
+    "all_bit": false
+  },
+  "F_AuditRoleAttribution": {
+    "targeted_asserts": {
+      "AttributionCorrectness": "BIT",
+      "FR_014_AuditEntryFields": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_PatientRecordPairing": {
+    "targeted_asserts": {
+      "OwnershipExclusivity": "BIT",
+      "FR_003_PatientAssignedRecord": "BIT",
+      "FR_006_PatientSelfAccessOnly": "BIT"
+    },
+    "all_bit": true
+  }
+}

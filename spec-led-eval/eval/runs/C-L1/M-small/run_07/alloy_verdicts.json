@@ -1,0 +1,15 @@
+{
+  "LeastPrivilege": "PASS",
+  "PermissionGrounding": "PASS",
+  "AuthRequiredEverywhere": "PASS",
+  "AuditCompleteness": "PASS",
+  "AppendOnly": "PASS",
+  "AttributionCorrectness": "PASS",
+  "OwnershipBasedAccess": "PASS",
+  "NoInformationLeakage": "FAIL",
+  "FR_001_AuthenticationRequired": "PASS",
+  "FR_006_CareTeamMembershipGating": "PASS",
+  "FR_008_AlwaysOnAudit": "PASS",
+  "FR_010_AuditImmutability": "PASS",
+  "FR_011_IGAuditAccess": "PASS"
+}

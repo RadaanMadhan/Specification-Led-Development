@@ -1,0 +1,174 @@
+{
+  "feature_id": "B-L2",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "PermissionGrounding",
+    "PrivilegeMonotonicity",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "ValidationBeforeMutation"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_003_TeamContextRequired",
+    "FR_005_TaskTeamImmutable",
+    "FR_006_OwnerImmutable",
+    "FR_007_PerTeamRole",
+    "FR_009_NonOwnerMemberCantEditDelete",
+    "FR_010_AdminCanEditAny",
+    "FR_011_CrossTeamIsolation",
+    "FR_012_AssigneeInSameTeam",
+    "FR_013_StatusSet",
+    "FR_015_AuditPerEditEvent",
+    "FR_016_AuditImmutable",
+    "FR_017_AuditReadableByTeamMember",
+    "FR_019_ListScopedToTeam"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_001_AuthRequired"
+    ],
+    "FR-003": [
+      "FR_003_TeamContextRequired"
+    ],
+    "FR-004": [
+      "FR_003_TeamContextRequired",
+      "FR_011_CrossTeamIsolation"
+    ],
+    "FR-005": [
+      "FR_005_TaskTeamImmutable",
+      "OwnershipExclusivity"
+    ],
+    "FR-006": [
+      "FR_006_OwnerImmutable",
+      "AttributionCorrectness"
+    ],
+    "FR-007": [
+      "FR_007_PerTeamRole"
+    ],
+    "FR-008": [
+      "OwnershipBasedAccess",
+      "PermissionGrounding",
+      "LeastPrivilege"
+    ],
+    "FR-009": [
+      "FR_009_NonOwnerMemberCantEditDelete",
+      "LeastPrivilege",
+      "OwnershipBasedAccess"
+    ],
+    "FR-010": [
+      "FR_010_AdminCanEditAny",
+      "PrivilegeMonotonicity",
+      "PermissionGrounding"
+    ],
+    "FR-011": [
+      "FR_011_CrossTeamIsolation",
+      "NoInformationLeakage"
+    ],
+    "FR-012": [
+      "FR_012_AssigneeInSameTeam"
+    ],
+    "FR-013": [
+      "FR_013_StatusSet"
+    ],
+    "FR-014": [
+      "FR_011_CrossTeamIsolation",
+      "NoInformationLeakage",
+      "FR_005_TaskTeamImmutable"
+    ],
+    "FR-015": [
+      "FR_015_AuditPerEditEvent",
+      "AuditCompleteness",
+      "AttributionCorrectness"
+    ],
+    "FR-016": [
+      "FR_016_AuditImmutable",
+      "AppendOnly"
+    ],
+    "FR-017": [
+      "FR_017_AuditReadableByTeamMember"
+    ],
+    "FR-018": [
+      "FR_016_AuditImmutable",
+      "AppendOnly"
+    ],
+    "FR-019": [
+      "FR_019_ListScopedToTeam"
+    ],
+    "FR-020": [
+      "FR_019_ListScopedToTeam"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_AppendOnlyAuditEntries",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_016_AuditImmutable",
+        "AuditCompleteness"
+      ],
+      "rationale": "Removing this fact allows the model to place two AuditCreated entries or two AuditDeleted entries on the same task; the injected violation forces exactly that, which AppendOnly and AuditCompleteness are designed to catch.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some t: Task | #{ ae: AuditEntry | ae.ae_task = t and ae.ae_change = AuditCreated } > 1 }"
+    },
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "OwnershipBasedAccess",
+        "FR_009_NonOwnerMemberCantEditDelete",
+        "LeastPrivilege",
+        "PermissionGrounding"
+      ],
+      "rationale": "Removing this fact frees PermMatrix.Allowed to be any relation; the injected violation adds MemberNonOwnerCtx -> PatchTask to Allowed, which directly contradicts FR-009 and the OwnershipBasedAccess / LeastPrivilege assertions.",
+      "inject_violation": "fact MUTATE_PermMatrixViolation { MemberNonOwnerCtx -> PatchTask in PermMatrix.Allowed and MemberNonOwnerCtx -> DeleteTask in PermMatrix.Allowed }"
+    },
+    {
+      "fact_name": "F_AuditCreatedEntryExists",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_015_AuditPerEditEvent",
+        "ValidationBeforeMutation"
+      ],
+      "rationale": "Removing this fact allows tasks with no AuditCreated entry; the injected violation forces a task to exist with only AuditChanged entries and no AuditCreated entry, which AuditCompleteness and FR_015_AuditPerEditEvent catch.",
+      "inject_violation": "fact MUTATE_MissingCreatedEntry { some t: Task | no ae: AuditEntry | ae.ae_task = t and ae.ae_change = AuditCreated and some ae2: AuditEntry | ae2.ae_task = t and ae2.ae_change = AuditChanged }"
+    },
+    {
+      "fact_name": "F_AuditTeamMatchesTask",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "FR_011_CrossTeamIsolation",
+        "AttributionCorrectness",
+        "FR_005_TaskTeamImmutable"
+      ],
+      "rationale": "Removing this fact allows ae_team to differ from task_team, creating a cross-team audit entry \u2014 exactly the information-leakage scenario FR-014 prohibits. The injection forces the mismatch.",
+      "inject_violation": "fact MUTATE_CrossTeamAudit { some ae: AuditEntry, t2: Team | ae.ae_team != ae.ae_task.task_team and ae.ae_team = t2 }"
+    },
+    {
+      "fact_name": "F_AssigneeIsMember",
+      "asserts_violated": [
+        "FR_012_AssigneeInSameTeam"
+      ],
+      "rationale": "Removing this fact allows a task to name an assignee who is not a member of the task's team. The injected violation forces such a task to exist, which FR_012_AssigneeInSameTeam catches.",
+      "inject_violation": "fact MUTATE_OutsideTeamAssignee { some t: Task, u: User | t.task_assignee = u and no m: TeamMembership | m.mem_user = u and m.mem_team = t.task_team }"
+    },
+    {
+      "fact_name": "F_AuditDeletedEntryOnDeletedTask",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_015_AuditPerEditEvent",
+        "FR_016_AuditImmutable"
+      ],
+      "rationale": "Removing this fact severs the coupling between DeletedTask membership and the presence of an AuditDeleted entry. The injection forces a DeletedTask with no AuditDeleted entry and a live Task with a spurious AuditDeleted entry, both of which AuditCompleteness catches.",
+      "inject_violation": "fact MUTATE_DeletedAuditMismatch { some t: DeletedTask | no ae: AuditEntry | ae.ae_task = t and ae.ae_change = AuditDeleted }"
+    }
+  ]
+}

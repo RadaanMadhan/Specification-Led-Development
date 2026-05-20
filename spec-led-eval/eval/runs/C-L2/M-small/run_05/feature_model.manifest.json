@@ -1,0 +1,114 @@
+{
+  "feature_id": "C-L2",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "AppendOnly",
+    "AuditCompleteness",
+    "AttributionCorrectness",
+    "NoInformationLeakage",
+    "AuthRequiredEverywhere"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthenticationRequired",
+    "FR_004_CareTeamGatingEnforced",
+    "FR_005_AdministratorContentBlind",
+    "FR_006_ByteEquivalentUnauthorised",
+    "FR_011_NotesImmutable",
+    "FR_012_OneAuditPerAccess",
+    "FR_014_AuditImmutable"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthenticationRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-004": [
+      "FR_004_CareTeamGatingEnforced",
+      "OwnershipBasedAccess"
+    ],
+    "FR-005": [
+      "FR_005_AdministratorContentBlind",
+      "LeastPrivilege"
+    ],
+    "FR-006": [
+      "FR_006_ByteEquivalentUnauthorised",
+      "NoInformationLeakage"
+    ],
+    "FR-011": [
+      "FR_011_NotesImmutable",
+      "AppendOnlyNotes"
+    ],
+    "FR-012": [
+      "FR_012_OneAuditPerAccess",
+      "AuditCompleteness"
+    ],
+    "FR-014": [
+      "FR_014_AuditImmutable",
+      "AppendOnlyAuditEntries"
+    ],
+    "FR-017": [
+      "LeastPrivilege"
+    ],
+    "FR-018": [
+      "FR_005_AdministratorContentBlind"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_PermissionMatrix",
+      "asserts_violated": [
+        "LeastPrivilege"
+      ],
+      "rationale": "Removing this fact clears the permission matrix; the assertion checks that specific role-operation pairs are allowed and others are denied. Without this fact, Alloy can construct universes where administrators have read access or clinical roles have audit access, violating the least-privilege invariant.",
+      "inject_violation": "fact MUTATE_PermissionMatrixViolation { (HospitalAdministrator -> ReadAccess) in PermMatrix.Allowed }"
+    },
+    {
+      "fact_name": "F_CareTeamGatingForPermittedAccess",
+      "asserts_violated": [
+        "FR_004_CareTeamGatingEnforced",
+        "OwnershipBasedAccess"
+      ],
+      "rationale": "Removing this fact allows permitted accesses without care-team membership. The assertions check that every permitted record access implies active membership. Without this fact, users not on the care team can successfully access patient records, violating the ownership-based access control invariant.",
+      "inject_violation": "fact MUTATE_CareTeamGatingViolation { some u: User, p: Patient, ae: AuditEntry | (ae.user = u and ae.patient_accessed = p and ae.outcome = Permitted and ae.access_type = ReadAccess) and no ctm: CareTeamMembership | ctm.clinician = u and ctm.patient = p and ctm.status = ActiveMembership }"
+    },
+    {
+      "fact_name": "F_AuditCompletenessForNotes",
+      "asserts_violated": [
+        "AuditCompleteness",
+        "FR_012_OneAuditPerAccess"
+      ],
+      "rationale": "Removing this fact allows notes to exist without audit entries. The assertions check that every note has exactly one matching audit entry. Without this fact, notes can be created in the model without being recorded in the audit log, violating the audit completeness invariant.",
+      "inject_violation": "fact MUTATE_AuditCompletenessViolation { some n: ClinicalNote | no ae: AuditEntry | ae.linked_note = n }"
+    },
+    {
+      "fact_name": "F_ClinicalNotesAppendOnly",
+      "asserts_violated": [
+        "AppendOnlyNotes",
+        "FR_011_NotesImmutable"
+      ],
+      "rationale": "Removing this fact allows duplicate notes (representing mutations). The assertions check that each note is unique and appears in exactly one audit entry. Without this fact, the model can exhibit notes that have been overwritten or duplicated, violating the append-only invariant.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some disj n1, n2: ClinicalNote | n1.patient = n2.patient and n1.author = n2.author }"
+    },
+    {
+      "fact_name": "F_AdministratorRoleRestriction",
+      "asserts_violated": [
+        "FR_005_AdministratorContentBlind",
+        "LeastPrivilege"
+      ],
+      "rationale": "Removing this fact allows administrators to perform any operation. The assertions check that administrators can only list audit entries. Without this fact, the model allows administrators to read patient records or add notes, violating the role-based access control invariant.",
+      "inject_violation": "fact MUTATE_AdminRestrictionViolation { some u: User, ae: AuditEntry | u.user_role = HospitalAdministrator and ae.user = u and ae.access_type = ReadAccess }"
+    },
+    {
+      "fact_name": "F_AllAccessesAuthenticated",
+      "asserts_violated": [
+        "AuthRequiredEverywhere",
+        "FR_001_AuthenticationRequired"
+      ],
+      "rationale": "Removing this fact allows unauthenticated audit entries. The assertions check that every audit entry has a valid user. Without this fact, audit entries can exist without corresponding authenticated users, violating the authentication-required invariant.",
+      "inject_violation": "fact MUTATE_AuthenticationViolation { some ae: AuditEntry | ae.user not in User }"
+    }
+  ]
+}

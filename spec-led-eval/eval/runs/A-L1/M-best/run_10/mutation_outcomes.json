@@ -1,0 +1,43 @@
+{
+  "F_AccessControlOnOperations": {
+    "targeted_asserts": {
+      "LeastPrivilege": "BIT",
+      "FR_015_OnlyStaffCanDecide": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AuditEventsExist": {
+    "targeted_asserts": {
+      "AuditCompleteness": "BIT",
+      "FR_016_AuditTrailComplete": "BIT",
+      "FR_014_DecisionEventRecorded": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_AppendOnlyAuditLog": {
+    "targeted_asserts": {
+      "AppendOnly": "BIT",
+      "FR_017_RetentionAppendOnly": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_OnePendingPerCustomer": {
+    "targeted_asserts": {
+      "FR_005_OnePendingPerCustomer": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_OwnershipForCustomerRead": {
+    "targeted_asserts": {
+      "OwnershipBasedAccess": "BIT",
+      "FR_013_CustomerOnlySeesOwn": "BIT"
+    },
+    "all_bit": true
+  },
+  "F_NoLeakOnNonOwnedRead": {
+    "targeted_asserts": {
+      "NoInformationLeakage": "BIT"
+    },
+    "all_bit": true
+  }
+}

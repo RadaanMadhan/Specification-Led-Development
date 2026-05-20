@@ -1,0 +1,168 @@
+{
+  "feature_id": "B-L3",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "PermissionCompleteness",
+    "PermissionGrounding",
+    "PrivilegeMonotonicity",
+    "AuthRequiredEverywhere",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipExclusivity",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage",
+    "ValidationBeforeMutation"
+  ],
+  "feature_specific_predicates": [
+    "FR_002_OneTeamPerUser",
+    "FR_009_ImmutableOwnerAndTeam",
+    "FR_010_OwnerOnlyShareControl",
+    "FR_011_ShareeCannotDelete",
+    "FR_012_CrossTeamSharingForbidden",
+    "FR_013_ShareAuditEntries",
+    "FR_014_CrossTeamByteEquivalentIsolation",
+    "FR_015_OneAuditEntryPerEvent",
+    "FR_016_AuditActorRoleSnapshot",
+    "FR_017_AuditImmutableOutlivesTask",
+    "FR_019_AuditReadAccess"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_OneTeamPerUser"
+    ],
+    "FR-002a": [
+      "FR_002_OneTeamPerUser"
+    ],
+    "FR-003": [
+      "LeastPrivilege",
+      "OwnershipBasedAccess"
+    ],
+    "FR-004": [
+      "LeastPrivilege",
+      "NoInformationLeakage"
+    ],
+    "FR-005": [
+      "LeastPrivilege",
+      "PrivilegeMonotonicity"
+    ],
+    "FR-006": [
+      "FR_014_CrossTeamByteEquivalentIsolation",
+      "NoInformationLeakage"
+    ],
+    "FR-007": [
+      "ValidationBeforeMutation"
+    ],
+    "FR-008": [
+      "ValidationBeforeMutation"
+    ],
+    "FR-009": [
+      "FR_009_ImmutableOwnerAndTeam",
+      "OwnershipExclusivity"
+    ],
+    "FR-010": [
+      "FR_010_OwnerOnlyShareControl",
+      "OwnershipBasedAccess"
+    ],
+    "FR-011": [
+      "FR_011_ShareeCannotDelete",
+      "LeastPrivilege"
+    ],
+    "FR-012": [
+      "FR_012_CrossTeamSharingForbidden"
+    ],
+    "FR-013": [
+      "FR_013_ShareAuditEntries",
+      "AuditCompleteness"
+    ],
+    "FR-014": [
+      "FR_014_CrossTeamByteEquivalentIsolation",
+      "NoInformationLeakage"
+    ],
+    "FR-015": [
+      "FR_015_OneAuditEntryPerEvent",
+      "AuditCompleteness"
+    ],
+    "FR-016": [
+      "FR_016_AuditActorRoleSnapshot",
+      "AttributionCorrectness"
+    ],
+    "FR-017": [
+      "FR_017_AuditImmutableOutlivesTask",
+      "AppendOnly"
+    ],
+    "FR-018": [
+      "AuditCompleteness",
+      "ValidationBeforeMutation"
+    ],
+    "FR-019": [
+      "FR_019_AuditReadAccess"
+    ],
+    "FR-020": [
+      "FR_017_AuditImmutableOutlivesTask"
+    ],
+    "FR-021": []
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_CrossTeamIsolation",
+      "asserts_violated": [
+        "NoInformationLeakage",
+        "FR_014_CrossTeamByteEquivalentIsolation",
+        "LeastPrivilege"
+      ],
+      "rationale": "Removing F_CrossTeamIsolation allows the model to construct a world where a caller from team T successfully reads or acts on a task in team U (U \u2260 T), violating the absolute byte-equivalent 404 guarantee of FR-014. The injection forces an outsider to get ResultSuccess.",
+      "inject_violation": "fact MUTATE_CrossTeamIsolationViolation { some op : Operation | some t : Task | op.opTask = t and op.opCaller.userTeam != t.taskTeam and op.opResult = ResultSuccess }"
+    },
+    {
+      "fact_name": "F_AppendOnlyAuditEntries",
+      "asserts_violated": [
+        "AppendOnly",
+        "FR_015_OneAuditEntryPerEvent",
+        "FR_017_AuditImmutableOutlivesTask"
+      ],
+      "rationale": "Removing F_AppendOnlyAuditEntries allows the model to place two AuditEntry atoms with the same (entryTask, entryActor, entryOp, entryTeam), which represents an in-place update or duplicate creation of an audit record. The injection forces exactly this collision.",
+      "inject_violation": "fact MUTATE_AppendOnlyViolation { some disj ae1, ae2 : AuditEntry | ae1.entryTask = ae2.entryTask and ae1.entryActor = ae2.entryActor and ae1.entryOp = ae2.entryOp and ae1.entryTeam = ae2.entryTeam }"
+    },
+    {
+      "fact_name": "F_OwnerOnlyShareControl",
+      "asserts_violated": [
+        "FR_010_OwnerOnlyShareControl",
+        "OwnershipBasedAccess",
+        "LeastPrivilege"
+      ],
+      "rationale": "Removing F_OwnerOnlyShareControl allows a non-owner (sharee or team admin) to execute PatchSharedWith with ResultSuccess, violating the owner-only invariant mandated by FR-010 / Q1=A. The injection places a successful PatchSharedWith for a non-owner caller.",
+      "inject_violation": "fact MUTATE_OwnerOnlyShareViolation { some op : Operation | some t : Task | op.opTask = t and op.opKind = PatchSharedWith and op.opResult = ResultSuccess and t.taskOwner != op.opCaller }"
+    },
+    {
+      "fact_name": "F_ShareeCannotDelete",
+      "asserts_violated": [
+        "FR_011_ShareeCannotDelete",
+        "LeastPrivilege"
+      ],
+      "rationale": "Removing F_ShareeCannotDelete lets the model construct a world where a sharee (who is not owner or team admin) successfully deletes a task, violating FR-011 / Q3=B which restricts deletion to owner or team admin only. The injection forces a sharee's delete to succeed.",
+      "inject_violation": "fact MUTATE_ShareeDeleteViolation { some op : Operation, ts : TaskShare | op.opKind = DeleteTask and op.opResult = ResultSuccess and op.opTask = ts.shareTask and op.opCaller = ts.sharee and op.opCaller != ts.shareTask.taskOwner and op.opCaller.userRole = Member }"
+    },
+    {
+      "fact_name": "F_ShareeSameTeam",
+      "asserts_violated": [
+        "FR_012_CrossTeamSharingForbidden",
+        "NoInformationLeakage"
+      ],
+      "rationale": "Removing F_ShareeSameTeam permits a TaskShare to link a task to a sharee in a different team, violating FR-012's cross-team sharing prohibition. The injection forces a TaskShare where the sharee is in a different team than the task.",
+      "inject_violation": "fact MUTATE_CrossTeamShareViolation { some ts : TaskShare | ts.sharee.userTeam != ts.shareTask.taskTeam }"
+    },
+    {
+      "fact_name": "F_AuditActorRoleSnapshot",
+      "asserts_violated": [
+        "AttributionCorrectness",
+        "FR_016_AuditActorRoleSnapshot"
+      ],
+      "rationale": "Removing F_AuditActorRoleSnapshot allows an audit entry to record a role that does not match the actor's actual role (e.g., recording 'team_admin' for a member's action), violating the snapshot attribution requirement of FR-016. The injection forces a mismatch between entryActorRole and the actor's actual role.",
+      "inject_violation": "fact MUTATE_ActorRoleMismatch { some ae : AuditEntry | ae.entryActorRole != ae.entryActor.userRole }"
+    }
+  ]
+}

@@ -1,0 +1,140 @@
+{
+  "feature_id": "B-L3",
+  "patterns_applied": [
+    "LeastPrivilege",
+    "AuthRequiredEverywhere",
+    "OwnershipExclusivity",
+    "CrossTeamIsolation",
+    "AuditCompleteness",
+    "AppendOnly",
+    "AttributionCorrectness",
+    "OwnershipBasedAccess",
+    "NoInformationLeakage"
+  ],
+  "feature_specific_predicates": [
+    "FR_001_AuthRequired",
+    "FR_002_IdentityFromToken",
+    "FR_003_MemberPermissions",
+    "FR_004_MemberCannotSeeUnsharedTasks",
+    "FR_005_AdminFullAccess",
+    "FR_006_NoCrossTeamAccess",
+    "FR_009_ImmutableOwnerTeam",
+    "FR_010_OwnerOnlyShareControl",
+    "FR_011_ShareeCannotDelete",
+    "FR_012_CrossTeamSharingForbidden",
+    "FR_013_ShareAuditEntries",
+    "FR_014_ByteEquivalentIsolation",
+    "FR_015_AuditPerEvent",
+    "FR_016_AuditEntryFields",
+    "FR_017_AuditImmutable",
+    "FR_019_AuditReadable"
+  ],
+  "fr_assertion_map": {
+    "FR-001": [
+      "FR_001_AuthRequired",
+      "AuthRequiredEverywhere"
+    ],
+    "FR-002": [
+      "FR_002_IdentityFromToken"
+    ],
+    "FR-003": [
+      "FR_003_MemberPermissions",
+      "LeastPrivilege"
+    ],
+    "FR-004": [
+      "FR_004_MemberCannotSeeUnsharedTasks"
+    ],
+    "FR-005": [
+      "FR_005_AdminFullAccess"
+    ],
+    "FR-006": [
+      "FR_006_NoCrossTeamAccess",
+      "CrossTeamIsolation"
+    ],
+    "FR-009": [
+      "FR_009_ImmutableOwnerTeam",
+      "OwnershipExclusivity"
+    ],
+    "FR-010": [
+      "FR_010_OwnerOnlyShareControl"
+    ],
+    "FR-011": [
+      "FR_011_ShareeCannotDelete"
+    ],
+    "FR-012": [
+      "FR_012_CrossTeamSharingForbidden"
+    ],
+    "FR-013": [
+      "FR_013_ShareAuditEntries"
+    ],
+    "FR-014": [
+      "FR_014_ByteEquivalentIsolation",
+      "NoInformationLeakage"
+    ],
+    "FR-015": [
+      "FR_015_AuditPerEvent"
+    ],
+    "FR-016": [
+      "FR_016_AuditEntryFields",
+      "AttributionCorrectness"
+    ],
+    "FR-017": [
+      "FR_017_AuditImmutable",
+      "AppendOnly"
+    ],
+    "FR-019": [
+      "FR_019_AuditReadable"
+    ]
+  },
+  "mutation_targets": [
+    {
+      "fact_name": "F_LeastPrivilege",
+      "asserts_violated": [
+        "LeastPrivilege"
+      ],
+      "rationale": "Removing F_LeastPrivilege erases the permission matrix. The LeastPrivilege assertion checks that Members and TeamAdmins have the correct allowed operations. Injecting a scenario where Member can delete tasks (unauthorized) causes the assertion to fail.",
+      "inject_violation": "PermMatrix.allowed = (Member -> PostTasks) + (Member -> GetTasksById) + (Member -> PatchTasksById) + (Member -> DeleteTasksById) + (Member -> GetAuditById) + (TeamAdmin -> PostTasks) + (TeamAdmin -> GetTasksById) + (TeamAdmin -> PatchTasksById) + (TeamAdmin -> DeleteTasksById) + (TeamAdmin -> GetAuditById)"
+    },
+    {
+      "fact_name": "F_AuditCompleteness",
+      "asserts_violated": [
+        "AuditCompleteness"
+      ],
+      "rationale": "Removing F_AuditCompleteness allows tasks to exist without any Created audit entry. The AuditCompleteness assertion requires all tasks to have at least one Created entry. Injecting a task with no Created entry falsifies the assertion.",
+      "inject_violation": "some t: Task | no ae: AuditEntry | ae.task = t and ae.op = Created"
+    },
+    {
+      "fact_name": "F_CrossTeamIsolation",
+      "asserts_violated": [
+        "CrossTeamIsolation",
+        "NoInformationLeakage"
+      ],
+      "rationale": "Removing cross-team isolation allows users from Team A to appear in a Task owned by Team B. The CrossTeamIsolation assertion checks that cross-team users cannot own or be sharees on tasks outside their team. Injecting such a violation falsifies the assertion.",
+      "inject_violation": "some disj t1, t2: Team | some u: User, tk: Task | u.team = t1 and tk.team = t2 and (u = tk.owner or u in tk.shared_with)"
+    },
+    {
+      "fact_name": "F_OwnershipExclusivity",
+      "asserts_violated": [
+        "OwnershipExclusivity"
+      ],
+      "rationale": "Removing F_OwnershipExclusivity removes the structural constraint that each task has exactly one owner. The OwnershipExclusivity assertion checks this uniqueness. Allowing multiple owners or zero owners falsifies the assertion.",
+      "inject_violation": "all t: Task | some u: User | u = t.owner"
+    },
+    {
+      "fact_name": "F_AppendOnlyAuditEntries",
+      "asserts_violated": [
+        "AppendOnly"
+      ],
+      "rationale": "Removing the append-only guarantee allows audit entries to be deleted or severed from their tasks. The AppendOnly assertion checks that audit entries remain linked to valid tasks. Injecting an orphaned or modified entry falsifies this.",
+      "inject_violation": "some ae: AuditEntry | ae.task not in Task"
+    },
+    {
+      "fact_name": "F_AttributionCorrectness",
+      "asserts_violated": [
+        "AttributionCorrectness"
+      ],
+      "rationale": "Removing attribution constraints allows audit entries to have actors from outside their task's team without admin role. The AttributionCorrectness assertion verifies that every audit entry's actor is either in the task's team or is a TeamAdmin. Injecting a cross-team non-admin actor falsifies this.",
+      "inject_violation": "some disj t1, t2: Team | some ae: AuditEntry, u: User | ae.task.team = t1 and u.team = t2 and ae.actor = u and u.role = Member"
+    }
+  ]
+}

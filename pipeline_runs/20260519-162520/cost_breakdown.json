@@ -1,0 +1,57 @@
+{
+  "phases": {
+    "guided_codegen": {
+      "input_tokens": 32,
+      "output_tokens": 33712,
+      "cache_creation_tokens": 63781,
+      "cache_read_tokens": 1692143,
+      "input_cost": 9.6e-05,
+      "output_cost": 0.50568,
+      "cache_write_cost": 0.191343,
+      "cache_read_cost": 0.5076429000000001,
+      "total_cost": 1.2047619000000003,
+      "model": "claude-sonnet-4"
+    },
+    "guided_testgen": {
+      "input_tokens": 13905,
+      "output_tokens": 25844,
+      "cache_creation_tokens": 72759,
+      "cache_read_tokens": 1368723,
+      "input_cost": 0.041715,
+      "output_cost": 0.38766,
+      "cache_write_cost": 0.218277,
+      "cache_read_cost": 0.41061690000000006,
+      "total_cost": 1.0582689,
+      "model": "claude-sonnet-4"
+    },
+    "baseline_codegen": {
+      "input_tokens": 32,
+      "output_tokens": 22134,
+      "cache_creation_tokens": 37864,
+      "cache_read_tokens": 1128330,
+      "input_cost": 9.6e-05,
+      "output_cost": 0.33201,
+      "cache_write_cost": 0.113592,
+      "cache_read_cost": 0.33849900000000005,
+      "total_cost": 0.784197,
+      "model": "claude-sonnet-4"
+    },
+    "comparison": {
+      "input_tokens": 2,
+      "output_tokens": 4095,
+      "cache_creation_tokens": 67865,
+      "cache_read_tokens": 18196,
+      "input_cost": 6e-06,
+      "output_cost": 0.061425,
+      "cache_write_cost": 0.203595,
+      "cache_read_cost": 0.005458800000000001,
+      "total_cost": 0.27048479999999997,
+      "model": "claude-sonnet-4"
+    }
+  },
+  "totals": {
+    "input_tokens": 13971,
+    "output_tokens": 85785,
+    "total_cost": 3.3177126
+  }
+}

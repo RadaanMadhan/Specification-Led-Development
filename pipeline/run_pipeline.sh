@@ -341,5 +341,15 @@ print(f\"Verdict: {scores.get('verdict', 'UNKNOWN')}\")
 " 2>/dev/null || warn "Could not print score summary"
 fi
 
+# ============================================================
+# Step 8: Calculate token usage and costs
+# ============================================================
+
+log "Calculating token usage and costs..."
+
+python3 "$SCRIPT_DIR/calculate_costs.py" "$WORKSPACE" -o "$WORKSPACE/cost_breakdown.json" || {
+    warn "Could not calculate costs (JSON outputs may be incomplete)"
+}
+
 echo ""
 ok "Done."

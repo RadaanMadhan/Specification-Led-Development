@@ -1,0 +1,64 @@
+{
+  "value": [
+    {
+      "id": "NIST:ID",
+      "pillar_id": "identify",
+      "framework_id": "nist_csf",
+      "recommendation": "Develop an organisational understanding of cybersecurity risk to systems, people, assets, data, and capabilities. Establish an asset inventory, risk register, and governance policy that form the foundation for all other CSF functions.",
+      "metric_patterns": ["asset_inventory_coverage_percentage", "risk_register_completeness_percentage", "data_classification_coverage_percentage", "third_party_risk_assessment_coverage_percentage"],
+      "typical_thresholds": "Asset inventory coverage: >= 95% of known production assets catalogued. Risk register: 100% of critical systems with assessed risk ratings. Data classification: 100% of data stores labelled. Third-party risk assessments: 100% of critical vendors assessed annually.",
+      "risk_summary": "Without visibility into assets and risks, teams cannot prioritise protective controls. Unknown assets become shadow IT attack vectors. Unassessed third-party risks propagate supply chain breaches.",
+      "tradeoff_pillar_ids": ["protect", "recover"],
+      "source_url": "https://www.nist.gov/cyberframework",
+      "embedding": "[vector omitted — generated at index time]"
+    },
+    {
+      "id": "NIST:PR",
+      "pillar_id": "protect",
+      "framework_id": "nist_csf",
+      "recommendation": "Implement appropriate safeguards to ensure delivery of critical services. Controls span identity management, access control, awareness training, data security, information protection processes, and maintenance of protective technology.",
+      "metric_patterns": ["mfa_enforcement_percentage", "patch_compliance_percentage", "security_training_completion_percentage", "encryption_coverage_percentage", "privileged_access_review_frequency_days"],
+      "typical_thresholds": "MFA enforcement: 100% of human identities. Patch compliance (critical): 100% within 72 hours, high: within 7 days. Security awareness training: 100% of staff annually. Data at rest encryption: 100% of sensitive data. Privileged access reviews: at least quarterly.",
+      "risk_summary": "Weak protective controls are the primary entry point for attackers. Unpatched systems and weak authentication account for the majority of breach initial access vectors. Insider threats exploit excessive access without regular access reviews.",
+      "tradeoff_pillar_ids": ["performance_efficiency", "cost", "identify"],
+      "source_url": "https://www.nist.gov/cyberframework",
+      "embedding": "[vector omitted — generated at index time]"
+    },
+    {
+      "id": "NIST:DE",
+      "pillar_id": "detect",
+      "framework_id": "nist_csf",
+      "recommendation": "Develop and implement appropriate activities to identify the occurrence of a cybersecurity event in a timely manner. Maintain continuous monitoring, anomaly detection, and detection process testing.",
+      "metric_patterns": ["mttd_minutes", "alert_coverage_percentage", "false_positive_rate_percentage", "log_retention_days", "siem_ingestion_coverage_percentage"],
+      "typical_thresholds": "MTTD for critical events: <= 15 minutes. Alert coverage: 100% of critical asset categories. False positive rate: <= 10% to prevent alert fatigue. Log retention: >= 365 days for security logs. SIEM ingestion: 100% of production systems.",
+      "risk_summary": "Slow or absent detection allows attackers to dwell undetected, increasing breach scope and cost. The average breach dwell time without effective detection exceeds 200 days. Alert fatigue from high false positives causes real threats to be missed.",
+      "tradeoff_pillar_ids": ["protect", "respond", "cost"],
+      "source_url": "https://www.nist.gov/cyberframework",
+      "embedding": "[vector omitted — generated at index time]"
+    },
+    {
+      "id": "NIST:RS",
+      "pillar_id": "respond",
+      "framework_id": "nist_csf",
+      "recommendation": "Develop and implement appropriate activities to take action regarding a detected cybersecurity incident. Establish response planning, communications, analysis, mitigation, and improvement processes.",
+      "metric_patterns": ["mttr_hours", "incident_response_plan_coverage_percentage", "tabletop_exercise_frequency_per_year", "containment_time_hours", "stakeholder_notification_time_hours"],
+      "typical_thresholds": "MTTR for critical incidents: <= 4 hours. Incident response plan: covers 100% of threat scenarios in risk register. Tabletop exercises: >= 2 per year. Containment: <= 1 hour for P1 incidents. Regulatory notification (e.g. GDPR 72-hour rule): <= 72 hours from breach discovery.",
+      "risk_summary": "Uncoordinated incident response extends breach duration and magnifies damage. Failure to notify regulators within required windows (GDPR 72 hours, HIPAA 60 days) incurs statutory penalties. Inadequate communication causes reputational damage beyond technical scope.",
+      "tradeoff_pillar_ids": ["detect", "recover", "cost"],
+      "source_url": "https://www.nist.gov/cyberframework",
+      "embedding": "[vector omitted — generated at index time]"
+    },
+    {
+      "id": "NIST:RC",
+      "pillar_id": "recover",
+      "framework_id": "nist_csf",
+      "recommendation": "Develop and implement appropriate activities to maintain plans for resilience and restore capabilities or services impaired due to a cybersecurity incident. Ensure recovery planning, improvements, and communications are in place.",
+      "metric_patterns": ["rto_hours", "rpo_minutes", "recovery_test_frequency_per_year", "system_restoration_success_rate", "lessons_learned_action_completion_percentage"],
+      "typical_thresholds": "RTO: <= 4 hours for critical systems, <= 24 hours for non-critical. RPO: <= 1 hour for critical systems. Recovery drills: >= 1 per year for each critical system. System restoration success rate: >= 95% in drills. Post-incident actions: 100% of P1 lessons-learned items closed within 30 days.",
+      "risk_summary": "Untested recovery procedures fail under pressure. Organisations without tested RTO/RPO targets routinely exceed them in actual incidents. Poor post-incident improvement cycles result in repeat incidents of the same type.",
+      "tradeoff_pillar_ids": ["identify", "respond", "cost"],
+      "source_url": "https://www.nist.gov/cyberframework",
+      "embedding": "[vector omitted — generated at index time]"
+    }
+  ]
+}

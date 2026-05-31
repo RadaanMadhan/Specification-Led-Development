@@ -1,0 +1,76 @@
+{
+  "value": [
+    {
+      "id": "SRE:LAT",
+      "pillar_id": "latency",
+      "framework_id": "sre",
+      "recommendation": "Measure and track the time taken to service a request. Distinguish between the latency of successful requests and the latency of failed requests, since failed requests often return fast (but misleadingly). Use percentile distributions rather than averages to capture tail latency.",
+      "metric_patterns": ["p50_latency_ms", "p95_latency_ms", "p99_latency_ms", "p999_latency_ms", "error_latency_ms"],
+      "typical_thresholds": "Internal services: p99 latency <= 100ms. User-facing services: p99 <= 300ms, p999 <= 1000ms. Failed requests must not be excluded from latency histograms — they should be tracked in a separate series. Alert threshold typically set at 2x normal p99 baseline.",
+      "risk_summary": "High tail latency causes timeouts in dependent services and cascading slowdowns across the call graph. Averages hide tail latency spikes that affect a significant fraction of users. Failed requests with deceptively low latency mask unhealthy service states.",
+      "tradeoff_pillar_ids": ["saturation", "errors"],
+      "source_url": "https://sre.google/sre-book/monitoring-distributed-systems/",
+      "embedding": "[vector omitted — generated at index time]"
+    },
+    {
+      "id": "SRE:TRA",
+      "pillar_id": "traffic",
+      "framework_id": "sre",
+      "recommendation": "Measure how much demand is being placed on your system. For web services this is typically requests per second, for audio/video systems it is network I/O rate, for storage systems it is transactions or reads/writes per second.",
+      "metric_patterns": ["requests_per_second", "transactions_per_second", "concurrent_users", "ingress_bytes_per_second", "queue_depth"],
+      "typical_thresholds": "System must be sized to handle peak traffic at no more than 60% of rated capacity to maintain latency headroom. Auto-scaling triggers should fire before 70% sustained utilisation. Queue depth: alert when exceeding 2x normal baseline for > 5 minutes.",
+      "risk_summary": "Without traffic measurement, capacity planning is guesswork. Unexpected traffic spikes saturate resources before autoscaling can respond. Unchecked queue growth indicates a systemic throughput deficit that will eventually cause data loss or timeout storms.",
+      "tradeoff_pillar_ids": ["latency", "saturation"],
+      "source_url": "https://sre.google/sre-book/monitoring-distributed-systems/",
+      "embedding": "[vector omitted — generated at index time]"
+    },
+    {
+      "id": "SRE:ERR",
+      "pillar_id": "errors",
+      "framework_id": "sre",
+      "recommendation": "Track the rate of requests that fail, either explicitly (HTTP 5xx), implicitly (HTTP 200 with wrong content), or by policy (any response taking longer than a defined timeout SLO). Make errors a first-class metric distinct from latency.",
+      "metric_patterns": ["error_rate_percentage", "http_5xx_rate", "http_4xx_rate", "explicit_error_count", "policy_violation_rate_percentage"],
+      "typical_thresholds": "Error rate for user-facing services: < 0.1% of all requests. HTTP 5xx rate: < 0.1%. Policy violations (too-slow responses counted as errors): defined by SLO. Error budget burn rate: alert at 2% burn in 1 hour or 5% burn in 6 hours (Google SRE standard).",
+      "risk_summary": "Untracked implicit errors (correct HTTP code, wrong content) are invisible to users but violate contracts. High error rates during traffic spikes indicate capacity or dependency issues. Error budget burn alerts are the primary signal for halting risky deployments.",
+      "tradeoff_pillar_ids": ["latency", "service_level_objectives"],
+      "source_url": "https://sre.google/sre-book/monitoring-distributed-systems/",
+      "embedding": "[vector omitted — generated at index time]"
+    },
+    {
+      "id": "SRE:SAT",
+      "pillar_id": "saturation",
+      "framework_id": "sre",
+      "recommendation": "Measure how 'full' your service is. Focus on constrained resources (CPU, memory, I/O, network bandwidth, thread pools). Saturation must be measured prospectively — predict when the service will hit a ceiling and act before it does.",
+      "metric_patterns": ["cpu_utilisation_percentage", "memory_utilisation_percentage", "disk_io_utilisation_percentage", "thread_pool_utilisation_percentage", "connection_pool_saturation_percentage", "network_bandwidth_utilisation_percentage"],
+      "typical_thresholds": "CPU: alert at >= 80% sustained for 5 minutes. Memory: alert at >= 85%. Thread/connection pool: alert at >= 75% utilisation. Disk I/O: alert at >= 80% sustained. Network: alert at >= 70% of provisioned bandwidth. Services should scale out before any resource reaches 80%.",
+      "risk_summary": "Saturated resources cause latency increases before they cause outright failures, masking the root cause. Memory saturation triggers OOM kills and cascading restarts. Thread pool saturation causes request queuing and cascading timeouts across dependent services.",
+      "tradeoff_pillar_ids": ["latency", "traffic"],
+      "source_url": "https://sre.google/sre-book/monitoring-distributed-systems/",
+      "embedding": "[vector omitted — generated at index time]"
+    },
+    {
+      "id": "SRE:SLO",
+      "pillar_id": "service_level_objectives",
+      "framework_id": "sre",
+      "recommendation": "Define precise, measurable SLOs for each user-facing service. An SLO specifies the target value or range for a Service Level Indicator (SLI) that must be met over a rolling window. SLOs form the basis of reliability decisions, on-call escalation, and error budget management.",
+      "metric_patterns": ["slo_attainment_percentage", "sli_measurement_coverage_percentage", "slo_review_frequency_days", "slo_breach_count"],
+      "typical_thresholds": "SLO attainment: the SLO itself defines the threshold (e.g. 99.9% availability over 30 days). SLI coverage: 100% of user-facing services must have defined SLIs and SLOs. SLO review: at minimum quarterly or after any SLO breach. New services must have SLOs defined before production launch.",
+      "risk_summary": "Without SLOs, reliability is unmeasurable and reliability work cannot be prioritised. Teams default to 100% availability aspirations which are unachievable and leave no room for velocity. Absent SLOs make it impossible to determine when to halt deployments or declare incidents.",
+      "tradeoff_pillar_ids": ["error_budgets", "latency", "errors"],
+      "source_url": "https://sre.google/sre-book/monitoring-distributed-systems/",
+      "embedding": "[vector omitted — generated at index time]"
+    },
+    {
+      "id": "SRE:BUD",
+      "pillar_id": "error_budgets",
+      "framework_id": "sre",
+      "recommendation": "Quantify the acceptable amount of unreliability (the error budget) as 1 minus the SLO target. Use the error budget to balance release velocity against reliability: when the budget is healthy, ship; when it is exhausted, freeze risky changes and focus on reliability work.",
+      "metric_patterns": ["error_budget_remaining_percentage", "error_budget_burn_rate", "deployment_freeze_trigger_percentage", "reliability_investment_percentage"],
+      "typical_thresholds": "Error budget burn rate alert: fast burn (2% budget consumed in 1 hour) or slow burn (5% consumed in 6 hours) triggers page. Deployment freeze: when error budget is <= 0% remaining for the rolling window. Reliability investment: when error budget is exhausted, >= 50% of sprint capacity must go to reliability work.",
+      "risk_summary": "Without error budgets, velocity-reliability tension is resolved by politics rather than data. Teams that routinely exhaust error budgets without consequence develop a culture where reliability is secondary. Error budget burn is the earliest quantitative signal that a release is degrading production.",
+      "tradeoff_pillar_ids": ["service_level_objectives", "errors", "traffic"],
+      "source_url": "https://sre.google/sre-book/monitoring-distributed-systems/",
+      "embedding": "[vector omitted — generated at index time]"
+    }
+  ]
+}

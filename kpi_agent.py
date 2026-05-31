@@ -1,7 +1,7 @@
 """
 kpi_agent.py
 ------------
-Local KPI derivation agent. No Azure credentials needed.
+Local KPI derivation agent
 
 Takes a natural language requirement, finds the most relevant WAF
 principles from the local seed file using cosine similarity, then
@@ -21,7 +21,6 @@ Get a key at: platform.openai.com
 """
 
 import json
-import math
 import os
 import uuid
 from datetime import datetime
@@ -31,6 +30,21 @@ try:
     from dotenv import load_dotenv; load_dotenv()
 except ImportError:
     pass  # .env loading is optional; set OPENAI_API_KEY in environment directly
+
+# On Windows, requests uses certifi's CA bundle which may be missing intermediate
+# certificates that Windows fetches automatically via AIA chaining. Using a custom
+# adapter that calls ssl.create_default_context() lets requests benefit from the
+# Windows CryptoAPI trust model (same as browsers and curl on Windows).
+import ssl as _ssl
+from requests.adapters import HTTPAdapter as _HTTPAdapter
+
+class _WindowsSSLAdapter(_HTTPAdapter):
+    def init_poolmanager(self, *args, **kwargs):
+        kwargs['ssl_context'] = _ssl.create_default_context()
+        return super().init_poolmanager(*args, **kwargs)
+
+_session = requests.Session()
+_session.mount('https://', _WindowsSSLAdapter())
 
 # ══════════════════════════════════════════════════════════════════════════════
 # SPEC PARSER — reads a SpecKit spec.md and extracts requirements
@@ -96,14 +110,32 @@ def parse_spec(spec_path: Path) -> dict:
 # ── Config ─────────────────────────────────────────────────────────────────
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
 OPENAI_MODEL   = "gpt-4o-mini"   # cheap and fast — swap to gpt-4o for better quality
-SEED_FILE      = Path(__file__).parent / "db" / "waf_index_seed.json"
-GQM_OUTPUT        = Path(__file__).parent / "gqm_output.json"
-KPI_OUTPUT        = Path(__file__).parent / "kpi_output.json"
-TOP_K             = 3   # how many WAF principles to retrieve per requirement
-COST_LOG_OUTPUT   = Path(__file__).parent / "cost_log.json"
+TOP_K          = 3   # how many framework principles to retrieve per requirement
+
+VALID_FRAMEWORKS = ["waf", "iso25010", "nist_csf", "sre", "all"]
+
+# Resolved at runtime via resolve_paths(framework)
+SEED_FILE       = None
+GQM_OUTPUT      = None
+KPI_OUTPUT      = None
+COST_LOG_OUTPUT = None
+
+
+def resolve_paths(framework: str) -> None:
+    """Set module-level path globals based on the selected framework."""
+    global SEED_FILE, GQM_OUTPUT, KPI_OUTPUT, COST_LOG_OUTPUT
+    db = Path(__file__).parent / "db"
+    SEED_FILE = db / "all_frameworks_seed.json"  # always use combined file; filter below
+    root = Path(__file__).parent
+    GQM_OUTPUT      = root / f"gqm_output_{framework}.json"
+    KPI_OUTPUT      = root / f"kpi_output_{framework}.json"
+    COST_LOG_OUTPUT = root / f"cost_log_{framework}.json"
 
 # ── Token usage accumulator — reset per CLI invocation in __main__ ───────────
 _token_usage: dict = {"chat_input": 0, "chat_output": 0, "embed_input": 0}
+
+# Active framework (set in __main__ before run())
+_active_framework: str = "waf"
 
 # Rates in USD per token (not per 1k)
 _COST_RATES: dict = {
@@ -123,14 +155,21 @@ def step(n, m): print(f"\n{BOLD}{P}[{n}]{RESET} {BOLD}{m}{RESET}")
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# STEP 1 — Load WAF seed data
+# STEP 1 — Load framework seed data
 # ══════════════════════════════════════════════════════════════════════════════
 def load_waf_records():
     if not SEED_FILE.exists():
         err(f"Seed file not found: {SEED_FILE}")
         raise SystemExit(1)
-    records = json.loads(SEED_FILE.read_text())["value"]
-    ok(f"Loaded {len(records)} WAF records from seed file")
+    all_records = json.loads(SEED_FILE.read_text())["value"]
+    if _active_framework == "all":
+        records = all_records
+    else:
+        records = [r for r in all_records if r.get("framework_id") == _active_framework]
+    if not records:
+        err(f"No records found for framework '{_active_framework}' in {SEED_FILE.name}")
+        raise SystemExit(1)
+    ok(f"Loaded {len(records)} records for framework '{_active_framework}'")
     return records
 
 
@@ -143,18 +182,18 @@ def load_waf_records():
 # When Azure AI Search is ready, replace search_waf() with an Azure Search call.
 # ══════════════════════════════════════════════════════════════════════════════
 EMBED_MODEL  = "text-embedding-3-small"
-EMBED_CACHE  = Path(__file__).parent / "waf_embeddings_cache.json"
+# Cache path is resolved per-framework in load_waf_embeddings()
+_EMBED_CACHE_DIR = Path(__file__).parent
 
 def cosine(a, b):
-    dot   = sum(x*y for x,y in zip(a,b))
-    mag_a = math.sqrt(sum(x*x for x in a))
-    mag_b = math.sqrt(sum(x*x for x in b))
-    if mag_a == 0 or mag_b == 0: return 0.0
-    return dot / (mag_a * mag_b)
+    import numpy as _np
+    va, vb = _np.array(a), _np.array(b)
+    denom = _np.linalg.norm(va) * _np.linalg.norm(vb)
+    return 0.0 if denom == 0 else float(_np.dot(va, vb) / denom)
 
 def get_embedding(text: str) -> list:
     """Call OpenAI to embed a single string. Returns 1536 floats."""
-    response = requests.post(
+    response = _session.post(
         "https://api.openai.com/v1/embeddings",
         headers={
             "Authorization": f"Bearer {OPENAI_API_KEY}",
@@ -171,29 +210,28 @@ def get_embedding(text: str) -> list:
 
 def load_waf_embeddings(records) -> dict:
     """
-    Load cached WAF embeddings from disk, or generate and cache them.
-    Only calls OpenAI once for all 59 records — subsequent runs use the cache.
-    Cache key is the WAF record id (e.g. RE:04).
+    Load cached embeddings from disk, or generate and cache them.
+    Cache is per-framework so records from different frameworks don't collide.
+    Cache key is the record id (e.g. RE:04, ISO:FUN).
     """
-    # Load existing cache
-    cache = {}
-    if EMBED_CACHE.exists():
-        cache = json.loads(EMBED_CACHE.read_text())
+    embed_cache = _EMBED_CACHE_DIR / f"embeddings_cache_{_active_framework}.json"
 
-    # Find any records not yet cached
+    cache = {}
+    if embed_cache.exists():
+        cache = json.loads(embed_cache.read_text())
+
     missing = [r for r in records if r["id"] not in cache]
 
     if missing:
-        info(f"Generating embeddings for {len(missing)} WAF records (cached: {len(cache)})...")
+        info(f"Generating embeddings for {len(missing)} records (cached: {len(cache)})...")
         for r in missing:
             text = r["recommendation"] + " " + r["risk_summary"]
             cache[r["id"]] = get_embedding(text)
             ok(f"Embedded {r['id']}")
-        # Save updated cache
-        EMBED_CACHE.write_text(json.dumps(cache, indent=2))
-        ok(f"Embeddings cached → {EMBED_CACHE.name}")
+        embed_cache.write_text(json.dumps(cache, indent=2))
+        ok(f"Embeddings cached → {embed_cache.name}")
     else:
-        ok(f"Using cached embeddings for all {len(records)} WAF records")
+        ok(f"Using cached embeddings for all {len(records)} records")
 
     return cache
 
@@ -203,7 +241,7 @@ def search_waf(requirement, records, waf_embeddings, top_k=TOP_K):
     Embeds the requirement, then ranks all WAF records by cosine distance.
 
     Azure version (swap this entire function):
-        response = requests.post(
+        response = _session.post(
             f"{AZURE_SEARCH_ENDPOINT}/indexes/waf-index/docs/search?api-version=2024-05-01-preview",
             headers={"api-key": AZURE_SEARCH_ADMIN_KEY, "Content-Type": "application/json"},
             json={"vectorQueries": [{"vector": get_embedding(requirement), "fields": "embedding", "k": top_k}]}
@@ -230,7 +268,7 @@ def call_openai(prompt):
         err("Get a key at: platform.openai.com")
         raise SystemExit(1)
 
-    response = requests.post(
+    response = _session.post(
         "https://api.openai.com/v1/chat/completions",
         headers={
             "Authorization": f"Bearer {OPENAI_API_KEY}",
@@ -256,7 +294,7 @@ def call_openai(prompt):
 def derive_gqm_and_kpi(requirement, waf_matches, spec_id):
     """
     Builds the prompt from the requirement + top WAF matches,
-    calls Claude to generate a GQM chain and KPI targets,
+    calls OpenAI to generate a GQM chain and KPI targets,
     and parses the JSON response into records ready for storage.
     """
 
@@ -463,23 +501,23 @@ def write_cost_log(spec_id: str, run_id: str, num_gqm: int, num_kpi: int) -> Non
 # ══════════════════════════════════════════════════════════════════════════════
 def run(requirement, spec_id="spec-local-001"):
     print(f"\n{BOLD}{'='*60}")
-    print("  KPI derivation agent — local mode")
+    print(f"  KPI derivation agent — framework: {_active_framework}")
     print(f"{'='*60}{RESET}\n")
 
-    # 1 — Load WAF data + embeddings
-    step(1, "Loading WAF reference data")
+    # 1 — Load framework data + embeddings
+    step(1, f"Loading {_active_framework} reference data")
     records = load_waf_records()
     waf_embeddings = load_waf_embeddings(records)
 
-    # 2 — Search for relevant WAF principles
-    step(2, "Searching for relevant WAF principles")
+    # 2 — Search for relevant principles
+    step(2, f"Searching for relevant {_active_framework} principles")
     info(f"Requirement: \"{requirement}\"")
     matches = search_waf(requirement, records, waf_embeddings)
     print()
-    
+
     for i, (score, r) in enumerate(matches, 1):
         bar = "█" * int(score * 20)
-        print(f"  {i}. {G}{r['id']}{RESET}  {r['pillar_id']:<14}  score: {score:.3f}  {B}{bar}{RESET}")
+        print(f"  {i}. {G}{r['id']}{RESET}  {r['pillar_id']:<25}  score: {score:.3f}  {B}{bar}{RESET}")
         print(f"     {r['recommendation'][:80]}...")
 
     info(f"Using real OpenAI embeddings (text-embedding-3-small)")
@@ -494,7 +532,7 @@ def run(requirement, spec_id="spec-local-001"):
     print(f"  {'Goal':<12} {gqm_record['goal']}")
     print(f"  {'Question':<12} {gqm_record['question']}")
     print(f"  {'Metric':<12} {gqm_record['metric_name']} ({gqm_record['metric_unit']})")
-    print(f"  {'WAF refs':<12} {gqm_record['waf_code_refs']}")
+    print(f"  {'Refs':<12} {gqm_record['waf_code_refs']}")
     print(f"  {'Pillar':<12} {gqm_record['pillar_id']}")
 
     print(f"\n  {BOLD}KPI targets:{RESET}")
@@ -517,17 +555,34 @@ def run(requirement, spec_id="spec-local-001"):
 
 # ── Entry point ─────────────────────────────────────────────────────────────
 if __name__ == "__main__":
-    import sys
+    import argparse
 
-    # Accept spec file as argv[1], optional run_id as argv[2]
-    spec_path  = Path(sys.argv[1]) if len(sys.argv) > 1 else Path(__file__).parent / "spec.md"
-    run_id_arg = sys.argv[2] if len(sys.argv) > 2 else None
+    parser = argparse.ArgumentParser(description="KPI derivation agent")
+    parser.add_argument("spec", nargs="?", default=str(Path(__file__).parent / "spec.md"),
+                        help="Path to spec.md (default: ./spec.md)")
+    parser.add_argument("run_id", nargs="?", default=None,
+                        help="Optional run identifier embedded in cost_log")
+    parser.add_argument(
+        "--framework",
+        choices=VALID_FRAMEWORKS,
+        default="waf",
+        metavar="FRAMEWORK",
+        help=f"Knowledge base framework to use. One of: {', '.join(VALID_FRAMEWORKS)}. Default: waf",
+    )
+    args = parser.parse_args()
+
+    spec_path  = Path(args.spec)
+    run_id_arg = args.run_id
+
+    # Resolve globals for the chosen framework
+    _active_framework = args.framework
+    resolve_paths(_active_framework)
 
     # Reset token accumulator for this invocation
     _token_usage["chat_input"] = _token_usage["chat_output"] = _token_usage["embed_input"] = 0
 
     print(f"\n{BOLD}{'='*60}")
-    print("  KPI-Spec — reading from spec.md")
+    print(f"  KPI-Spec — framework: {_active_framework}")
     print(f"{'='*60}{RESET}")
 
     # Parse the spec
@@ -570,5 +625,6 @@ if __name__ == "__main__":
     print(f"  Requirements:   {len(spec['frs'])} FRs")
     print(f"  GQM chains:     {len(all_gqm)} generated")
     print(f"  KPI targets:    {len(all_kpi)} generated")
-    print(f"  Outputs:        gqm_output.json  +  kpi_output.json  +  cost_log.json")
+    print(f"  Framework:      {_active_framework}")
+    print(f"  Outputs:        {GQM_OUTPUT.name}  +  {KPI_OUTPUT.name}  +  {COST_LOG_OUTPUT.name}")
     print(f"{'='*60}{RESET}\n")

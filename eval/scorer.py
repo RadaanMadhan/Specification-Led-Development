@@ -3,9 +3,10 @@ scorer.py
 ---------
 Deterministic KPI Quality Score (KQS) scorer.
 
-Loads a (kpi_record, gqm_record) pair and returns D1-D4 dimension scores
-plus kqs_partial (mean of D1-D4). D5 is computed externally at aggregation
-time because it requires multiple runs of the same (spec_id, fr_id, metric_name).
+Loads a (kpi_record, gqm_record) pair and returns D1, D3, D4 dimension scores
+plus kqs_partial = mean(D1, D3, D4).
+D5 is computed externally at aggregation time because it requires multiple runs
+of the same (spec_id, fr_id, metric_name).
 
 Usage:
     python scorer.py <gqm_output.json> <kpi_output.json> <spec_id> <run_n>
@@ -17,14 +18,6 @@ import json
 import re
 from pathlib import Path
 
-# ── Pillar → WAF code prefix map ──────────────────────────────────────────────
-PILLAR_PREFIXES = {
-    "reliability":  "RE",
-    "security":     "SE",
-    "cost":         "CO",
-    "operations":   "OE",
-    "performance":  "PE",
-}
 
 # ── D3 keyword sets ────────────────────────────────────────────────────────────
 LTE_KEYWORDS = {
@@ -92,42 +85,6 @@ def score_d1(kpi_record: dict) -> float:
         non_trivial = numeric > 0
 
     return 1.0 if non_trivial else 0.0
-
-
-# ══════════════════════════════════════════════════════════════════════════════
-# D2 — WAF code precision
-# ══════════════════════════════════════════════════════════════════════════════
-
-def score_d2(gqm_record: dict) -> float:
-    """
-    Scores WAF code precision from a gqm_output record.
-
-    Args:
-        gqm_record: single dict from gqm_output.json. Expected keys:
-                    waf_code_refs (list[str]), pillar_id (str).
-
-    Returns:
-        1.0 — len(waf_code_refs) >= 2 AND all codes match declared pillar prefix
-        0.5 — codes present but at least one from a different pillar (cross-pillar bleed),
-              OR pillar_id is unknown (cannot verify)
-        0.0 — waf_code_refs is empty or has only 1 code
-
-    Edge cases:
-        - Unknown pillar_id → no expected prefix → 0.5 if >= 2 codes present
-        - None waf_code_refs → treated as empty → 0.0
-    """
-    codes = gqm_record.get("waf_code_refs") or []
-    pillar = gqm_record.get("pillar_id", "")
-    expected_prefix = PILLAR_PREFIXES.get(pillar, "")
-
-    if len(codes) < 2:
-        return 0.0
-
-    if not expected_prefix:
-        return 0.5
-
-    all_match = all(c.startswith(expected_prefix + ":") for c in codes)
-    return 1.0 if all_match else 0.5
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -261,7 +218,9 @@ def score_pair(
     run_id: str,
 ) -> dict:
     """
-    Scores a single (kpi_record, gqm_record) pair across dimensions D1-D4.
+    Scores a single (kpi_record, gqm_record) pair across dimensions D1, D3, D4.
+
+    kqs_partial = mean(D1, D3, D4) — three dimensions.
 
     Args:
         kpi_record: single dict from kpi_output.json.
@@ -274,19 +233,18 @@ def score_pair(
     Returns:
         Dict with fields: run_id, spec_id, richness, context, fr_id, kpi_id,
         gqm_id, pillar_id, metric_name, threshold_numeric, threshold_direction,
-        waf_code_refs, d1, d2, d3, d4, kqs_partial.
+        waf_code_refs, d1, d3, d4, kqs_partial.
 
     Edge cases:
-        - gqm_record is None → d2, d3, d4 all 0.0
+        - gqm_record is None → d3, d4 all 0.0
         - spec_id shorter than 4 chars → context/richness default to '?'
     """
     d1 = score_d1(kpi_record)
-    d2 = score_d2(gqm_record) if gqm_record else 0.0
     d3 = score_d3(kpi_record, gqm_record) if gqm_record else 0.0
     d4 = score_d4(gqm_record) if gqm_record else 0.0
-    kqs_partial = round((d1 + d2 + d3 + d4) / 4, 4)
+    kqs_partial = round((d1 + d3 + d4) / 3, 4)
 
-    context = spec_id[0] if spec_id else "?"
+    context  = spec_id[0] if spec_id else "?"
     richness = spec_id[2:] if len(spec_id) >= 4 else "?"
 
     return {
@@ -305,7 +263,6 @@ def score_pair(
         "threshold_direction": kpi_record.get("threshold_direction"),
         "waf_code_refs":       gqm_record.get("waf_code_refs") if gqm_record else [],
         "d1":                  d1,
-        "d2":                  d2,
         "d3":                  d3,
         "d4":                  d4,
         "kqs_partial":         kqs_partial,
@@ -331,7 +288,7 @@ def score_run(
         List of scored record dicts (one per kpi_record).
 
     Edge cases:
-        - gqm_records empty → all d2/d3/d4 scores are 0.0
+        - gqm_records empty → all d3/d4 scores are 0.0
         - kpi_records empty → returns empty list
         - kpi_record references gqm_id not in gqm_records → gqm_record=None
     """

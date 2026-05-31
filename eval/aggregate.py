@@ -29,16 +29,16 @@ SPEC_ORDER   = ["A-L1", "A-L2", "A-L3", "B-L1", "B-L2", "B-L3", "C-L1", "C-L2", 
 PILLAR_ORDER = ["reliability", "security", "cost", "operations", "performance"]
 
 ALL_SCORES_FIELDS = [
-    "run_id", "spec_id", "richness", "context", "fr_id",
+    "run_id", "spec_id", "framework_id", "richness", "context", "fr_id",
     "kpi_id", "gqm_id", "pillar_id", "metric_name",
     "threshold_numeric", "threshold_direction", "waf_code_refs",
-    "d1", "d2", "d3", "d4", "kqs_partial", "d5",
+    "d1", "d3", "d4", "kqs_partial", "d5",
     "total_tokens", "cost_usd", "cost_per_kpi_usd",
 ]
 
 CELL_FIELDS = [
-    "spec_id", "context", "richness", "pillar_id", "n_records",
-    "d1_mean", "d2_mean", "d3_mean", "d4_mean", "d5",
+    "spec_id", "framework_id", "context", "richness", "pillar_id", "n_records",
+    "d1_mean", "d3_mean", "d4_mean", "d5",
     "kqs_partial_mean", "kqs_full",
 ]
 
@@ -70,7 +70,7 @@ def compute_d5(values: list[float]) -> float:
     if mean == 0:
         return 0.0
 
-    variance = sum((x - mean) ** 2 for x in values) / n
+    variance = sum((x - mean) ** 2 for x in values) / (n - 1)
     std = math.sqrt(variance)
     cv = std / mean
     return max(0.0, 1.0 - cv)
@@ -80,25 +80,51 @@ def compute_d5(values: list[float]) -> float:
 
 def load_all_scores() -> list[dict]:
     """
-    Walk eval/runs/*/run_*/scores.json and return a flat list of scored records.
+    Walk eval/runs/ and return a flat list of scored records.
 
-    Args:
-        (none — reads from RUNS_DIR)
+    Supports both old layout (runs/{spec_id}/run_{nn}/scores.json) and new
+    framework-aware layout (runs/{spec_id}/{framework}/run_{nn}/scores.json).
+    framework_id is extracted from the directory structure; records from the
+    old layout receive framework_id='waf' for backwards compatibility.
 
     Returns:
-        List of scored record dicts as written by scorer.score_run().
-
-    Edge cases:
-        - Missing or malformed scores.json files are skipped with a warning.
-        - Returns empty list if no runs found.
+        List of scored record dicts with framework_id attached.
     """
     all_records: list[dict] = []
-    for scores_file in sorted(RUNS_DIR.glob("*/run_*/scores.json")):
+
+    # Determine which (spec, framework) pairs have new-layout runs so old-layout
+    # WAF runs are not double-counted when the framework comparison was also run.
+    new_layout_keys: set = set()
+    for f in RUNS_DIR.glob("*/*/run_*/scores.json"):
+        spec     = f.parent.parent.parent.name
+        framework = f.parent.parent.name
+        new_layout_keys.add((spec, framework))
+
+    # New layout: spec_id / framework / run_NN
+    for scores_file in sorted(RUNS_DIR.glob("*/*/run_*/scores.json")):
         try:
+            framework_id = scores_file.parent.parent.name
             records = json.loads(scores_file.read_text())
+            for r in records:
+                r.setdefault("framework_id", framework_id)
             all_records.extend(records)
         except Exception as e:
             print(f"  ! Skipping {scores_file}: {e}")
+
+    # Old layout: spec_id / run_NN (no framework directory)
+    # Skip any spec that already has new-layout WAF runs to avoid inflating WAF n.
+    for scores_file in sorted(RUNS_DIR.glob("*/run_*/scores.json")):
+        spec = scores_file.parent.parent.name
+        if (spec, "waf") in new_layout_keys:
+            continue
+        try:
+            records = json.loads(scores_file.read_text())
+            for r in records:
+                r.setdefault("framework_id", "waf")
+            all_records.extend(records)
+        except Exception as e:
+            print(f"  ! Skipping {scores_file}: {e}")
+
     return all_records
 
 
@@ -120,11 +146,21 @@ def load_cost_data() -> dict[str, dict]:
         - If run_id is missing from the file, the file is skipped.
     """
     cost_map: dict[str, dict] = {}
-    for cost_file in sorted(RUNS_DIR.glob("*/run_*/cost_log.json")):
+    # New framework-aware layout: spec / framework / run_NN
+    for cost_file in sorted(RUNS_DIR.glob("*/*/run_*/cost_log.json")):
         try:
             data = json.loads(cost_file.read_text())
             run_id = data.get("run_id")
             if run_id:
+                cost_map[run_id] = data
+        except Exception as e:
+            print(f"  ! Skipping {cost_file}: {e}")
+    # Old layout: spec / run_NN
+    for cost_file in sorted(RUNS_DIR.glob("*/run_*/cost_log.json")):
+        try:
+            data = json.loads(cost_file.read_text())
+            run_id = data.get("run_id")
+            if run_id and run_id not in cost_map:
                 cost_map[run_id] = data
         except Exception as e:
             print(f"  ! Skipping {cost_file}: {e}")
@@ -146,9 +182,16 @@ def attach_cost(records: list[dict], cost_map: dict[str, dict]) -> list[dict]:
         - Records whose run_id has no matching cost_log entry get None values.
     """
     for r in records:
-        cost = cost_map.get(r.get("run_id"), {})
-        r["total_tokens"]    = cost.get("total_tokens")
-        r["cost_usd"]        = cost.get("cost_usd")
+        run_id = r.get("run_id", "")
+        cost = cost_map.get(run_id)
+        if cost is None:
+            # New-layout cost_logs embed the framework in the run_id
+            # e.g. scores use "A-L1_run_01" but cost_log has "A-L1_waf_run_01"
+            framework = r.get("framework_id") or "waf"
+            fw_run_id = run_id.replace("_run_", f"_{framework}_run_", 1)
+            cost = cost_map.get(fw_run_id, {})
+        r["total_tokens"]     = cost.get("total_tokens")
+        r["cost_usd"]         = cost.get("cost_usd")
         r["cost_per_kpi_usd"] = cost.get("cost_per_kpi_usd")
     return records
 
@@ -172,7 +215,7 @@ def attach_d5(records: list[dict]) -> list[dict]:
     """
     groups: dict[tuple, list[float]] = {}
     for r in records:
-        key = (r.get("spec_id", ""), r.get("fr_id", ""), r.get("metric_name", ""))
+        key = (r.get("spec_id", ""), r.get("framework_id", ""), r.get("fr_id", ""), r.get("metric_name", ""))
         numeric = r.get("threshold_numeric")
         if numeric is not None:
             groups.setdefault(key, []).append(float(numeric))
@@ -180,7 +223,7 @@ def attach_d5(records: list[dict]) -> list[dict]:
     d5_map = {k: compute_d5(vs) for k, vs in groups.items()}
 
     for r in records:
-        key = (r.get("spec_id", ""), r.get("fr_id", ""), r.get("metric_name", ""))
+        key = (r.get("spec_id", ""), r.get("framework_id", ""), r.get("fr_id", ""), r.get("metric_name", ""))
         r["d5"] = round(d5_map.get(key, 0.5), 4)
 
     return records
@@ -190,62 +233,67 @@ def attach_d5(records: list[dict]) -> list[dict]:
 
 def compute_cell_summary(records: list[dict]) -> list[dict]:
     """
-    Group records by (spec_id, pillar_id) and compute aggregate KQS metrics.
+    Group records by (spec_id, framework_id, pillar_id) and compute aggregate KQS metrics.
 
     Args:
         records: list of scored records with d5 already attached.
 
     Returns:
-        List of cell summary dicts sorted by SPEC_ORDER x PILLAR_ORDER.
+        List of cell summary dicts sorted by SPEC_ORDER × framework × PILLAR_ORDER.
 
     Edge cases:
         - pillar_id=None records are grouped under 'unknown'.
+        - framework_id=None records are grouped under 'waf'.
         - D5 per cell is the mean of the unique D5 values for distinct
           (fr_id, metric_name) groups within the cell.
+        - kqs_full = mean(D1, D3, D4, D5) — four dimensions.
     """
     cells: dict[tuple, list[dict]] = {}
     for r in records:
-        key = (r.get("spec_id", "?"), r.get("pillar_id") or "unknown")
+        key = (
+            r.get("spec_id", "?"),
+            r.get("framework_id") or "waf",
+            r.get("pillar_id") or "unknown",
+        )
         cells.setdefault(key, []).append(r)
 
     summary = []
-    for (spec_id, pillar_id), cell_records in cells.items():
+    for (spec_id, framework_id, pillar_id), cell_records in cells.items():
         n = len(cell_records)
-        d1_mean = sum(r["d1"] for r in cell_records) / n
-        d2_mean = sum(r["d2"] for r in cell_records) / n
-        d3_mean = sum(r["d3"] for r in cell_records) / n
-        d4_mean = sum(r["d4"] for r in cell_records) / n
+        d1_mean  = sum(r["d1"]  for r in cell_records) / n
+        d3_mean  = sum(r["d3"]  for r in cell_records) / n
+        d4_mean  = sum(r["d4"]  for r in cell_records) / n
         kqs_partial_mean = sum(r["kqs_partial"] for r in cell_records) / n
 
-        # D5 per cell: mean over distinct (fr_id, metric_name) groups
         group_d5: dict[tuple, float] = {}
         for r in cell_records:
             gkey = (r.get("fr_id", ""), r.get("metric_name", ""))
             group_d5[gkey] = r["d5"]
         d5 = sum(group_d5.values()) / len(group_d5) if group_d5 else 0.5
 
-        kqs_full = (d1_mean + d2_mean + d3_mean + d4_mean + d5) / 5
+        # kqs_full uses 4 dimensions: D1, D3, D4, D5
+        kqs_full = (d1_mean + d3_mean + d4_mean + d5) / 4
 
         summary.append({
-            "spec_id":         spec_id,
-            "context":         spec_id[0] if spec_id else "?",
-            "richness":        spec_id[2:] if len(spec_id) >= 4 else "?",
-            "pillar_id":       pillar_id,
-            "n_records":       n,
-            "d1_mean":         round(d1_mean, 4),
-            "d2_mean":         round(d2_mean, 4),
-            "d3_mean":         round(d3_mean, 4),
-            "d4_mean":         round(d4_mean, 4),
-            "d5":              round(d5, 4),
+            "spec_id":          spec_id,
+            "framework_id":     framework_id,
+            "context":          spec_id[0] if spec_id else "?",
+            "richness":         spec_id[2:] if len(spec_id) >= 4 else "?",
+            "pillar_id":        pillar_id,
+            "n_records":        n,
+            "d1_mean":          round(d1_mean, 4),
+            "d3_mean":          round(d3_mean, 4),
+            "d4_mean":          round(d4_mean, 4),
+            "d5":               round(d5, 4),
             "kqs_partial_mean": round(kqs_partial_mean, 4),
-            "kqs_full":        round(kqs_full, 4),
+            "kqs_full":         round(kqs_full, 4),
         })
 
-    # Sort by canonical order
     spec_rank   = {s: i for i, s in enumerate(SPEC_ORDER)}
     pillar_rank = {p: i for i, p in enumerate(PILLAR_ORDER)}
     summary.sort(key=lambda r: (
         spec_rank.get(r["spec_id"], 99),
+        r.get("framework_id", ""),
         pillar_rank.get(r["pillar_id"], 99),
     ))
     return summary
@@ -274,7 +322,7 @@ def _write_csv(path: Path, rows: list[dict], fieldnames: list[str]) -> None:
             if "waf_code_refs" in flat and isinstance(flat["waf_code_refs"], list):
                 flat["waf_code_refs"] = "|".join(flat["waf_code_refs"])
             writer.writerow(flat)
-    print(f"  Wrote {len(rows)} rows → {path}")
+    print(f"  Wrote {len(rows)} rows -> {path}")
 
 
 # ── Main ───────────────────────────────────────────────────────────────────────
@@ -302,8 +350,8 @@ def main() -> None:
     _write_csv(CELL_SUMMARY_CSV, cell_summary, CELL_FIELDS)
 
     print(f"\nAggregation complete.")
-    print(f"  all_scores.csv   → {ALL_SCORES_CSV}")
-    print(f"  cell_summary.csv → {CELL_SUMMARY_CSV}")
+    print(f"  all_scores.csv   -> {ALL_SCORES_CSV}")
+    print(f"  cell_summary.csv -> {CELL_SUMMARY_CSV}")
     print(f"\nRun visualise.py next to generate figures.")
 
 

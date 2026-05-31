@@ -1,7 +1,8 @@
-requests
-python-dotenv
-matplotlib
-seaborn
-pandas
-numpy
-pytest
+requests>=2.32
+python-dotenv>=1.0
+matplotlib>=3.10
+seaborn>=0.13
+pandas>=2.2
+numpy>=2.0
+scipy>=1.13
+pytest>=8.0

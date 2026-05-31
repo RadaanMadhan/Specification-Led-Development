@@ -1020,6 +1020,409 @@
       ],
       "source_url": "https://learn.microsoft.com/en-us/azure/well-architected/performance-efficiency/continuous-performance-optimize",
       "framework_id": "waf"
+    },
+    {
+      "id": "ISO:FUN",
+      "pillar_id": "functional_suitability",
+      "framework_id": "iso25010",
+      "recommendation": "Ensure the product provides functions that meet stated and implied needs under specified conditions. All required functions must be present, correct, and appropriate for the intended use.",
+      "metric_patterns": [
+        "functional_completeness_percentage",
+        "functional_correctness_rate",
+        "requirements_coverage_percentage",
+        "defect_escape_rate"
+      ],
+      "typical_thresholds": "Requirements coverage: 100% of must-have FRs implemented and tested. Defect escape rate to production: < 1% of released stories. Functional correctness: zero P0 functional defects in release.",
+      "risk_summary": "Incomplete or incorrect functionality directly undermines user trust and product value. Gaps between specified and implemented behaviour cause downstream integration failures and regulatory non-compliance.",
+      "tradeoff_pillar_ids": [
+        "performance_efficiency",
+        "usability"
+      ],
+      "source_url": "https://www.iso.org/standard/35733.html",
+      "embedding": "[vector omitted \u00e2\u20ac\u201d generated at index time]"
+    },
+    {
+      "id": "ISO:REL",
+      "pillar_id": "reliability",
+      "framework_id": "iso25010",
+      "recommendation": "Design the system to perform specified functions under stated conditions for a defined period without failure. Address maturity, availability, fault tolerance, and recoverability systematically.",
+      "metric_patterns": [
+        "availability_percentage",
+        "mtbf_hours",
+        "mttr_minutes",
+        "fault_tolerance_rate",
+        "recovery_time_seconds"
+      ],
+      "typical_thresholds": "Availability: >= 99.9% for standard systems, >= 99.99% for mission-critical. MTBF: >= 720 hours for production services. MTTR: <= 30 minutes for P1 incidents. Fault tolerance: system must degrade gracefully under partial failures.",
+      "risk_summary": "Unreliable software erodes user confidence and causes financial loss. Failures in safety-critical domains can endanger lives. Without recoverability targets, incidents have no measurable resolution criteria.",
+      "tradeoff_pillar_ids": [
+        "performance_efficiency",
+        "maintainability"
+      ],
+      "source_url": "https://www.iso.org/standard/35733.html",
+      "embedding": "[vector omitted \u00e2\u20ac\u201d generated at index time]"
+    },
+    {
+      "id": "ISO:PER",
+      "pillar_id": "performance_efficiency",
+      "framework_id": "iso25010",
+      "recommendation": "Optimise resource usage relative to the amount of resources used under stated conditions. Consider time behaviour, resource utilisation, and capacity to handle anticipated load.",
+      "metric_patterns": [
+        "response_time_ms",
+        "throughput_rps",
+        "cpu_utilisation_percentage",
+        "memory_utilisation_percentage",
+        "p95_latency_ms",
+        "p99_latency_ms"
+      ],
+      "typical_thresholds": "API p95 response time: <= 200ms under normal load. p99: <= 500ms. Throughput: system must sustain peak load with < 5% degradation. CPU and memory utilisation: <= 70% at peak to maintain headroom.",
+      "risk_summary": "Poor performance efficiency causes poor user experience, increased infrastructure costs, and capacity failures under load. Unmonitored resource utilisation leads to unexpected service degradation or outages.",
+      "tradeoff_pillar_ids": [
+        "reliability",
+        "maintainability",
+        "security"
+      ],
+      "source_url": "https://www.iso.org/standard/35733.html",
+      "embedding": "[vector omitted \u00e2\u20ac\u201d generated at index time]"
+    },
+    {
+      "id": "ISO:USE",
+      "pillar_id": "usability",
+      "framework_id": "iso25010",
+      "recommendation": "Ensure the product can be used by specified users to achieve goals with effectiveness, efficiency, and satisfaction in a specified context of use. Address learnability, operability, and user error protection.",
+      "metric_patterns": [
+        "task_completion_rate",
+        "error_rate_percentage",
+        "time_on_task_seconds",
+        "user_satisfaction_score",
+        "accessibility_compliance_percentage"
+      ],
+      "typical_thresholds": "Task completion rate: >= 90% for primary user flows. User error rate: <= 5% on critical tasks. User satisfaction (SUS): >= 68 (industry average). WCAG 2.1 AA compliance: 100% for public-facing interfaces.",
+      "risk_summary": "Poor usability increases support costs, causes user errors that may have downstream consequences, and reduces adoption. In regulated domains, accessibility failures result in legal liability.",
+      "tradeoff_pillar_ids": [
+        "performance_efficiency",
+        "functional_suitability"
+      ],
+      "source_url": "https://www.iso.org/standard/35733.html",
+      "embedding": "[vector omitted \u00e2\u20ac\u201d generated at index time]"
+    },
+    {
+      "id": "ISO:SEC",
+      "pillar_id": "security",
+      "framework_id": "iso25010",
+      "recommendation": "Protect information and data so that persons or systems have authorised access appropriate to their types and levels. Address confidentiality, integrity, non-repudiation, accountability, and authenticity.",
+      "metric_patterns": [
+        "auth_coverage_percentage",
+        "vulnerability_count",
+        "patch_time_hours",
+        "audit_log_coverage_percentage",
+        "data_encryption_coverage_percentage"
+      ],
+      "typical_thresholds": "100% of API endpoints must enforce authentication. Zero critical or high CVEs unpatched beyond 72 hours. 100% of sensitive data encrypted at rest and in transit. Audit log coverage: 100% of privileged actions.",
+      "risk_summary": "Security breaches result in data loss, regulatory fines, reputational damage, and in critical infrastructure, physical harm. Without non-repudiation and accountability controls, forensic investigation after incidents is impossible.",
+      "tradeoff_pillar_ids": [
+        "performance_efficiency",
+        "usability",
+        "maintainability"
+      ],
+      "source_url": "https://www.iso.org/standard/35733.html",
+      "embedding": "[vector omitted \u00e2\u20ac\u201d generated at index time]"
+    },
+    {
+      "id": "ISO:COM",
+      "pillar_id": "compatibility",
+      "framework_id": "iso25010",
+      "recommendation": "Ensure the product can exchange information with other products, systems, or components, and perform its required functions while sharing an environment and resources. Address co-existence and interoperability.",
+      "metric_patterns": [
+        "api_compatibility_score",
+        "integration_test_pass_rate",
+        "interface_contract_violation_count",
+        "backward_compatibility_breakage_count"
+      ],
+      "typical_thresholds": "Integration test pass rate: 100% before release. Zero breaking API changes without a versioning policy. API contract violations in production: zero. Backward compatibility maintained for >= 2 major versions.",
+      "risk_summary": "Incompatible systems create integration failures that break consumer applications. Breaking changes without versioning force emergency updates across dependent services and can cause production outages.",
+      "tradeoff_pillar_ids": [
+        "maintainability",
+        "performance_efficiency"
+      ],
+      "source_url": "https://www.iso.org/standard/35733.html",
+      "embedding": "[vector omitted \u00e2\u20ac\u201d generated at index time]"
+    },
+    {
+      "id": "ISO:MAI",
+      "pillar_id": "maintainability",
+      "framework_id": "iso25010",
+      "recommendation": "Ensure the product can be effectively and efficiently modified by designated maintainers. Address modularity, reusability, analysability, modifiability, and testability.",
+      "metric_patterns": [
+        "test_coverage_percentage",
+        "cyclomatic_complexity",
+        "code_duplication_percentage",
+        "mean_time_to_change_hours",
+        "technical_debt_ratio"
+      ],
+      "typical_thresholds": "Unit test coverage: >= 80% for production code paths. Cyclomatic complexity: <= 10 per function. Code duplication: <= 5%. Technical debt ratio (SonarQube): <= 5%. Mean time to implement a small change: <= 1 working day.",
+      "risk_summary": "Poorly maintainable code increases change lead time, magnifies the cost of every bug fix and feature, and creates knowledge silos. High complexity increases defect rates and makes refactoring risky.",
+      "tradeoff_pillar_ids": [
+        "performance_efficiency",
+        "functional_suitability"
+      ],
+      "source_url": "https://www.iso.org/standard/35733.html",
+      "embedding": "[vector omitted \u00e2\u20ac\u201d generated at index time]"
+    },
+    {
+      "id": "ISO:POR",
+      "pillar_id": "portability",
+      "framework_id": "iso25010",
+      "recommendation": "Ensure the product can be transferred from one hardware, software, or environmental context to another with defined effectiveness and efficiency. Address adaptability, installability, and replaceability.",
+      "metric_patterns": [
+        "environment_parity_score",
+        "deployment_success_rate",
+        "environment_specific_defect_count",
+        "containerisation_coverage_percentage"
+      ],
+      "typical_thresholds": "Deployment success rate across target environments: >= 99%. Zero environment-specific defects in staging that do not reproduce in production. Containerisation: 100% of services deployable from a single image. Config via environment variables: no hard-coded environment specifics.",
+      "risk_summary": "Poor portability creates environment-specific bugs that are expensive to diagnose and fix. Lock-in to a single vendor or runtime reduces negotiating power and increases migration cost significantly.",
+      "tradeoff_pillar_ids": [
+        "performance_efficiency",
+        "maintainability"
+      ],
+      "source_url": "https://www.iso.org/standard/35733.html",
+      "embedding": "[vector omitted \u00e2\u20ac\u201d generated at index time]"
+    },
+    {
+      "id": "NIST:ID",
+      "pillar_id": "identify",
+      "framework_id": "nist_csf",
+      "recommendation": "Develop an organisational understanding of cybersecurity risk to systems, people, assets, data, and capabilities. Establish an asset inventory, risk register, and governance policy that form the foundation for all other CSF functions.",
+      "metric_patterns": [
+        "asset_inventory_coverage_percentage",
+        "risk_register_completeness_percentage",
+        "data_classification_coverage_percentage",
+        "third_party_risk_assessment_coverage_percentage"
+      ],
+      "typical_thresholds": "Asset inventory coverage: >= 95% of known production assets catalogued. Risk register: 100% of critical systems with assessed risk ratings. Data classification: 100% of data stores labelled. Third-party risk assessments: 100% of critical vendors assessed annually.",
+      "risk_summary": "Without visibility into assets and risks, teams cannot prioritise protective controls. Unknown assets become shadow IT attack vectors. Unassessed third-party risks propagate supply chain breaches.",
+      "tradeoff_pillar_ids": [
+        "protect",
+        "recover"
+      ],
+      "source_url": "https://www.nist.gov/cyberframework",
+      "embedding": "[vector omitted \u00e2\u20ac\u201d generated at index time]"
+    },
+    {
+      "id": "NIST:PR",
+      "pillar_id": "protect",
+      "framework_id": "nist_csf",
+      "recommendation": "Implement appropriate safeguards to ensure delivery of critical services. Controls span identity management, access control, awareness training, data security, information protection processes, and maintenance of protective technology.",
+      "metric_patterns": [
+        "mfa_enforcement_percentage",
+        "patch_compliance_percentage",
+        "security_training_completion_percentage",
+        "encryption_coverage_percentage",
+        "privileged_access_review_frequency_days"
+      ],
+      "typical_thresholds": "MFA enforcement: 100% of human identities. Patch compliance (critical): 100% within 72 hours, high: within 7 days. Security awareness training: 100% of staff annually. Data at rest encryption: 100% of sensitive data. Privileged access reviews: at least quarterly.",
+      "risk_summary": "Weak protective controls are the primary entry point for attackers. Unpatched systems and weak authentication account for the majority of breach initial access vectors. Insider threats exploit excessive access without regular access reviews.",
+      "tradeoff_pillar_ids": [
+        "performance_efficiency",
+        "cost",
+        "identify"
+      ],
+      "source_url": "https://www.nist.gov/cyberframework",
+      "embedding": "[vector omitted \u00e2\u20ac\u201d generated at index time]"
+    },
+    {
+      "id": "NIST:DE",
+      "pillar_id": "detect",
+      "framework_id": "nist_csf",
+      "recommendation": "Develop and implement appropriate activities to identify the occurrence of a cybersecurity event in a timely manner. Maintain continuous monitoring, anomaly detection, and detection process testing.",
+      "metric_patterns": [
+        "mttd_minutes",
+        "alert_coverage_percentage",
+        "false_positive_rate_percentage",
+        "log_retention_days",
+        "siem_ingestion_coverage_percentage"
+      ],
+      "typical_thresholds": "MTTD for critical events: <= 15 minutes. Alert coverage: 100% of critical asset categories. False positive rate: <= 10% to prevent alert fatigue. Log retention: >= 365 days for security logs. SIEM ingestion: 100% of production systems.",
+      "risk_summary": "Slow or absent detection allows attackers to dwell undetected, increasing breach scope and cost. The average breach dwell time without effective detection exceeds 200 days. Alert fatigue from high false positives causes real threats to be missed.",
+      "tradeoff_pillar_ids": [
+        "protect",
+        "respond",
+        "cost"
+      ],
+      "source_url": "https://www.nist.gov/cyberframework",
+      "embedding": "[vector omitted \u00e2\u20ac\u201d generated at index time]"
+    },
+    {
+      "id": "NIST:RS",
+      "pillar_id": "respond",
+      "framework_id": "nist_csf",
+      "recommendation": "Develop and implement appropriate activities to take action regarding a detected cybersecurity incident. Establish response planning, communications, analysis, mitigation, and improvement processes.",
+      "metric_patterns": [
+        "mttr_hours",
+        "incident_response_plan_coverage_percentage",
+        "tabletop_exercise_frequency_per_year",
+        "containment_time_hours",
+        "stakeholder_notification_time_hours"
+      ],
+      "typical_thresholds": "MTTR for critical incidents: <= 4 hours. Incident response plan: covers 100% of threat scenarios in risk register. Tabletop exercises: >= 2 per year. Containment: <= 1 hour for P1 incidents. Regulatory notification (e.g. GDPR 72-hour rule): <= 72 hours from breach discovery.",
+      "risk_summary": "Uncoordinated incident response extends breach duration and magnifies damage. Failure to notify regulators within required windows (GDPR 72 hours, HIPAA 60 days) incurs statutory penalties. Inadequate communication causes reputational damage beyond technical scope.",
+      "tradeoff_pillar_ids": [
+        "detect",
+        "recover",
+        "cost"
+      ],
+      "source_url": "https://www.nist.gov/cyberframework",
+      "embedding": "[vector omitted \u00e2\u20ac\u201d generated at index time]"
+    },
+    {
+      "id": "NIST:RC",
+      "pillar_id": "recover",
+      "framework_id": "nist_csf",
+      "recommendation": "Develop and implement appropriate activities to maintain plans for resilience and restore capabilities or services impaired due to a cybersecurity incident. Ensure recovery planning, improvements, and communications are in place.",
+      "metric_patterns": [
+        "rto_hours",
+        "rpo_minutes",
+        "recovery_test_frequency_per_year",
+        "system_restoration_success_rate",
+        "lessons_learned_action_completion_percentage"
+      ],
+      "typical_thresholds": "RTO: <= 4 hours for critical systems, <= 24 hours for non-critical. RPO: <= 1 hour for critical systems. Recovery drills: >= 1 per year for each critical system. System restoration success rate: >= 95% in drills. Post-incident actions: 100% of P1 lessons-learned items closed within 30 days.",
+      "risk_summary": "Untested recovery procedures fail under pressure. Organisations without tested RTO/RPO targets routinely exceed them in actual incidents. Poor post-incident improvement cycles result in repeat incidents of the same type.",
+      "tradeoff_pillar_ids": [
+        "identify",
+        "respond",
+        "cost"
+      ],
+      "source_url": "https://www.nist.gov/cyberframework",
+      "embedding": "[vector omitted \u00e2\u20ac\u201d generated at index time]"
+    },
+    {
+      "id": "SRE:LAT",
+      "pillar_id": "latency",
+      "framework_id": "sre",
+      "recommendation": "Measure and track the time taken to service a request. Distinguish between the latency of successful requests and the latency of failed requests, since failed requests often return fast (but misleadingly). Use percentile distributions rather than averages to capture tail latency.",
+      "metric_patterns": [
+        "p50_latency_ms",
+        "p95_latency_ms",
+        "p99_latency_ms",
+        "p999_latency_ms",
+        "error_latency_ms"
+      ],
+      "typical_thresholds": "Internal services: p99 latency <= 100ms. User-facing services: p99 <= 300ms, p999 <= 1000ms. Failed requests must not be excluded from latency histograms \u00e2\u20ac\u201d they should be tracked in a separate series. Alert threshold typically set at 2x normal p99 baseline.",
+      "risk_summary": "High tail latency causes timeouts in dependent services and cascading slowdowns across the call graph. Averages hide tail latency spikes that affect a significant fraction of users. Failed requests with deceptively low latency mask unhealthy service states.",
+      "tradeoff_pillar_ids": [
+        "saturation",
+        "errors"
+      ],
+      "source_url": "https://sre.google/sre-book/monitoring-distributed-systems/",
+      "embedding": "[vector omitted \u00e2\u20ac\u201d generated at index time]"
+    },
+    {
+      "id": "SRE:TRA",
+      "pillar_id": "traffic",
+      "framework_id": "sre",
+      "recommendation": "Measure how much demand is being placed on your system. For web services this is typically requests per second, for audio/video systems it is network I/O rate, for storage systems it is transactions or reads/writes per second.",
+      "metric_patterns": [
+        "requests_per_second",
+        "transactions_per_second",
+        "concurrent_users",
+        "ingress_bytes_per_second",
+        "queue_depth"
+      ],
+      "typical_thresholds": "System must be sized to handle peak traffic at no more than 60% of rated capacity to maintain latency headroom. Auto-scaling triggers should fire before 70% sustained utilisation. Queue depth: alert when exceeding 2x normal baseline for > 5 minutes.",
+      "risk_summary": "Without traffic measurement, capacity planning is guesswork. Unexpected traffic spikes saturate resources before autoscaling can respond. Unchecked queue growth indicates a systemic throughput deficit that will eventually cause data loss or timeout storms.",
+      "tradeoff_pillar_ids": [
+        "latency",
+        "saturation"
+      ],
+      "source_url": "https://sre.google/sre-book/monitoring-distributed-systems/",
+      "embedding": "[vector omitted \u00e2\u20ac\u201d generated at index time]"
+    },
+    {
+      "id": "SRE:ERR",
+      "pillar_id": "errors",
+      "framework_id": "sre",
+      "recommendation": "Track the rate of requests that fail, either explicitly (HTTP 5xx), implicitly (HTTP 200 with wrong content), or by policy (any response taking longer than a defined timeout SLO). Make errors a first-class metric distinct from latency.",
+      "metric_patterns": [
+        "error_rate_percentage",
+        "http_5xx_rate",
+        "http_4xx_rate",
+        "explicit_error_count",
+        "policy_violation_rate_percentage"
+      ],
+      "typical_thresholds": "Error rate for user-facing services: < 0.1% of all requests. HTTP 5xx rate: < 0.1%. Policy violations (too-slow responses counted as errors): defined by SLO. Error budget burn rate: alert at 2% burn in 1 hour or 5% burn in 6 hours (Google SRE standard).",
+      "risk_summary": "Untracked implicit errors (correct HTTP code, wrong content) are invisible to users but violate contracts. High error rates during traffic spikes indicate capacity or dependency issues. Error budget burn alerts are the primary signal for halting risky deployments.",
+      "tradeoff_pillar_ids": [
+        "latency",
+        "service_level_objectives"
+      ],
+      "source_url": "https://sre.google/sre-book/monitoring-distributed-systems/",
+      "embedding": "[vector omitted \u00e2\u20ac\u201d generated at index time]"
+    },
+    {
+      "id": "SRE:SAT",
+      "pillar_id": "saturation",
+      "framework_id": "sre",
+      "recommendation": "Measure how 'full' your service is. Focus on constrained resources (CPU, memory, I/O, network bandwidth, thread pools). Saturation must be measured prospectively \u00e2\u20ac\u201d predict when the service will hit a ceiling and act before it does.",
+      "metric_patterns": [
+        "cpu_utilisation_percentage",
+        "memory_utilisation_percentage",
+        "disk_io_utilisation_percentage",
+        "thread_pool_utilisation_percentage",
+        "connection_pool_saturation_percentage",
+        "network_bandwidth_utilisation_percentage"
+      ],
+      "typical_thresholds": "CPU: alert at >= 80% sustained for 5 minutes. Memory: alert at >= 85%. Thread/connection pool: alert at >= 75% utilisation. Disk I/O: alert at >= 80% sustained. Network: alert at >= 70% of provisioned bandwidth. Services should scale out before any resource reaches 80%.",
+      "risk_summary": "Saturated resources cause latency increases before they cause outright failures, masking the root cause. Memory saturation triggers OOM kills and cascading restarts. Thread pool saturation causes request queuing and cascading timeouts across dependent services.",
+      "tradeoff_pillar_ids": [
+        "latency",
+        "traffic"
+      ],
+      "source_url": "https://sre.google/sre-book/monitoring-distributed-systems/",
+      "embedding": "[vector omitted \u00e2\u20ac\u201d generated at index time]"
+    },
+    {
+      "id": "SRE:SLO",
+      "pillar_id": "service_level_objectives",
+      "framework_id": "sre",
+      "recommendation": "Define precise, measurable SLOs for each user-facing service. An SLO specifies the target value or range for a Service Level Indicator (SLI) that must be met over a rolling window. SLOs form the basis of reliability decisions, on-call escalation, and error budget management.",
+      "metric_patterns": [
+        "slo_attainment_percentage",
+        "sli_measurement_coverage_percentage",
+        "slo_review_frequency_days",
+        "slo_breach_count"
+      ],
+      "typical_thresholds": "SLO attainment: the SLO itself defines the threshold (e.g. 99.9% availability over 30 days). SLI coverage: 100% of user-facing services must have defined SLIs and SLOs. SLO review: at minimum quarterly or after any SLO breach. New services must have SLOs defined before production launch.",
+      "risk_summary": "Without SLOs, reliability is unmeasurable and reliability work cannot be prioritised. Teams default to 100% availability aspirations which are unachievable and leave no room for velocity. Absent SLOs make it impossible to determine when to halt deployments or declare incidents.",
+      "tradeoff_pillar_ids": [
+        "error_budgets",
+        "latency",
+        "errors"
+      ],
+      "source_url": "https://sre.google/sre-book/monitoring-distributed-systems/",
+      "embedding": "[vector omitted \u00e2\u20ac\u201d generated at index time]"
+    },
+    {
+      "id": "SRE:BUD",
+      "pillar_id": "error_budgets",
+      "framework_id": "sre",
+      "recommendation": "Quantify the acceptable amount of unreliability (the error budget) as 1 minus the SLO target. Use the error budget to balance release velocity against reliability: when the budget is healthy, ship; when it is exhausted, freeze risky changes and focus on reliability work.",
+      "metric_patterns": [
+        "error_budget_remaining_percentage",
+        "error_budget_burn_rate",
+        "deployment_freeze_trigger_percentage",
+        "reliability_investment_percentage"
+      ],
+      "typical_thresholds": "Error budget burn rate alert: fast burn (2% budget consumed in 1 hour) or slow burn (5% consumed in 6 hours) triggers page. Deployment freeze: when error budget is <= 0% remaining for the rolling window. Reliability investment: when error budget is exhausted, >= 50% of sprint capacity must go to reliability work.",
+      "risk_summary": "Without error budgets, velocity-reliability tension is resolved by politics rather than data. Teams that routinely exhaust error budgets without consequence develop a culture where reliability is secondary. Error budget burn is the earliest quantitative signal that a release is degrading production.",
+      "tradeoff_pillar_ids": [
+        "service_level_objectives",
+        "errors",
+        "traffic"
+      ],
+      "source_url": "https://sre.google/sre-book/monitoring-distributed-systems/",
+      "embedding": "[vector omitted \u00e2\u20ac\u201d generated at index time]"
     }
   ]
 }

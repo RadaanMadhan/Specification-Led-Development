@@ -1,0 +1,100 @@
+{
+  "value": [
+    {
+      "id": "ISO:FUN",
+      "pillar_id": "functional_suitability",
+      "framework_id": "iso25010",
+      "recommendation": "Ensure the product provides functions that meet stated and implied needs under specified conditions. All required functions must be present, correct, and appropriate for the intended use.",
+      "metric_patterns": ["functional_completeness_percentage", "functional_correctness_rate", "requirements_coverage_percentage", "defect_escape_rate"],
+      "typical_thresholds": "Requirements coverage: 100% of must-have FRs implemented and tested. Defect escape rate to production: < 1% of released stories. Functional correctness: zero P0 functional defects in release.",
+      "risk_summary": "Incomplete or incorrect functionality directly undermines user trust and product value. Gaps between specified and implemented behaviour cause downstream integration failures and regulatory non-compliance.",
+      "tradeoff_pillar_ids": ["performance_efficiency", "usability"],
+      "source_url": "https://www.iso.org/standard/35733.html",
+      "embedding": "[vector omitted — generated at index time]"
+    },
+    {
+      "id": "ISO:REL",
+      "pillar_id": "reliability",
+      "framework_id": "iso25010",
+      "recommendation": "Design the system to perform specified functions under stated conditions for a defined period without failure. Address maturity, availability, fault tolerance, and recoverability systematically.",
+      "metric_patterns": ["availability_percentage", "mtbf_hours", "mttr_minutes", "fault_tolerance_rate", "recovery_time_seconds"],
+      "typical_thresholds": "Availability: >= 99.9% for standard systems, >= 99.99% for mission-critical. MTBF: >= 720 hours for production services. MTTR: <= 30 minutes for P1 incidents. Fault tolerance: system must degrade gracefully under partial failures.",
+      "risk_summary": "Unreliable software erodes user confidence and causes financial loss. Failures in safety-critical domains can endanger lives. Without recoverability targets, incidents have no measurable resolution criteria.",
+      "tradeoff_pillar_ids": ["performance_efficiency", "maintainability"],
+      "source_url": "https://www.iso.org/standard/35733.html",
+      "embedding": "[vector omitted — generated at index time]"
+    },
+    {
+      "id": "ISO:PER",
+      "pillar_id": "performance_efficiency",
+      "framework_id": "iso25010",
+      "recommendation": "Optimise resource usage relative to the amount of resources used under stated conditions. Consider time behaviour, resource utilisation, and capacity to handle anticipated load.",
+      "metric_patterns": ["response_time_ms", "throughput_rps", "cpu_utilisation_percentage", "memory_utilisation_percentage", "p95_latency_ms", "p99_latency_ms"],
+      "typical_thresholds": "API p95 response time: <= 200ms under normal load. p99: <= 500ms. Throughput: system must sustain peak load with < 5% degradation. CPU and memory utilisation: <= 70% at peak to maintain headroom.",
+      "risk_summary": "Poor performance efficiency causes poor user experience, increased infrastructure costs, and capacity failures under load. Unmonitored resource utilisation leads to unexpected service degradation or outages.",
+      "tradeoff_pillar_ids": ["reliability", "maintainability", "security"],
+      "source_url": "https://www.iso.org/standard/35733.html",
+      "embedding": "[vector omitted — generated at index time]"
+    },
+    {
+      "id": "ISO:USE",
+      "pillar_id": "usability",
+      "framework_id": "iso25010",
+      "recommendation": "Ensure the product can be used by specified users to achieve goals with effectiveness, efficiency, and satisfaction in a specified context of use. Address learnability, operability, and user error protection.",
+      "metric_patterns": ["task_completion_rate", "error_rate_percentage", "time_on_task_seconds", "user_satisfaction_score", "accessibility_compliance_percentage"],
+      "typical_thresholds": "Task completion rate: >= 90% for primary user flows. User error rate: <= 5% on critical tasks. User satisfaction (SUS): >= 68 (industry average). WCAG 2.1 AA compliance: 100% for public-facing interfaces.",
+      "risk_summary": "Poor usability increases support costs, causes user errors that may have downstream consequences, and reduces adoption. In regulated domains, accessibility failures result in legal liability.",
+      "tradeoff_pillar_ids": ["performance_efficiency", "functional_suitability"],
+      "source_url": "https://www.iso.org/standard/35733.html",
+      "embedding": "[vector omitted — generated at index time]"
+    },
+    {
+      "id": "ISO:SEC",
+      "pillar_id": "security",
+      "framework_id": "iso25010",
+      "recommendation": "Protect information and data so that persons or systems have authorised access appropriate to their types and levels. Address confidentiality, integrity, non-repudiation, accountability, and authenticity.",
+      "metric_patterns": ["auth_coverage_percentage", "vulnerability_count", "patch_time_hours", "audit_log_coverage_percentage", "data_encryption_coverage_percentage"],
+      "typical_thresholds": "100% of API endpoints must enforce authentication. Zero critical or high CVEs unpatched beyond 72 hours. 100% of sensitive data encrypted at rest and in transit. Audit log coverage: 100% of privileged actions.",
+      "risk_summary": "Security breaches result in data loss, regulatory fines, reputational damage, and in critical infrastructure, physical harm. Without non-repudiation and accountability controls, forensic investigation after incidents is impossible.",
+      "tradeoff_pillar_ids": ["performance_efficiency", "usability", "maintainability"],
+      "source_url": "https://www.iso.org/standard/35733.html",
+      "embedding": "[vector omitted — generated at index time]"
+    },
+    {
+      "id": "ISO:COM",
+      "pillar_id": "compatibility",
+      "framework_id": "iso25010",
+      "recommendation": "Ensure the product can exchange information with other products, systems, or components, and perform its required functions while sharing an environment and resources. Address co-existence and interoperability.",
+      "metric_patterns": ["api_compatibility_score", "integration_test_pass_rate", "interface_contract_violation_count", "backward_compatibility_breakage_count"],
+      "typical_thresholds": "Integration test pass rate: 100% before release. Zero breaking API changes without a versioning policy. API contract violations in production: zero. Backward compatibility maintained for >= 2 major versions.",
+      "risk_summary": "Incompatible systems create integration failures that break consumer applications. Breaking changes without versioning force emergency updates across dependent services and can cause production outages.",
+      "tradeoff_pillar_ids": ["maintainability", "performance_efficiency"],
+      "source_url": "https://www.iso.org/standard/35733.html",
+      "embedding": "[vector omitted — generated at index time]"
+    },
+    {
+      "id": "ISO:MAI",
+      "pillar_id": "maintainability",
+      "framework_id": "iso25010",
+      "recommendation": "Ensure the product can be effectively and efficiently modified by designated maintainers. Address modularity, reusability, analysability, modifiability, and testability.",
+      "metric_patterns": ["test_coverage_percentage", "cyclomatic_complexity", "code_duplication_percentage", "mean_time_to_change_hours", "technical_debt_ratio"],
+      "typical_thresholds": "Unit test coverage: >= 80% for production code paths. Cyclomatic complexity: <= 10 per function. Code duplication: <= 5%. Technical debt ratio (SonarQube): <= 5%. Mean time to implement a small change: <= 1 working day.",
+      "risk_summary": "Poorly maintainable code increases change lead time, magnifies the cost of every bug fix and feature, and creates knowledge silos. High complexity increases defect rates and makes refactoring risky.",
+      "tradeoff_pillar_ids": ["performance_efficiency", "functional_suitability"],
+      "source_url": "https://www.iso.org/standard/35733.html",
+      "embedding": "[vector omitted — generated at index time]"
+    },
+    {
+      "id": "ISO:POR",
+      "pillar_id": "portability",
+      "framework_id": "iso25010",
+      "recommendation": "Ensure the product can be transferred from one hardware, software, or environmental context to another with defined effectiveness and efficiency. Address adaptability, installability, and replaceability.",
+      "metric_patterns": ["environment_parity_score", "deployment_success_rate", "environment_specific_defect_count", "containerisation_coverage_percentage"],
+      "typical_thresholds": "Deployment success rate across target environments: >= 99%. Zero environment-specific defects in staging that do not reproduce in production. Containerisation: 100% of services deployable from a single image. Config via environment variables: no hard-coded environment specifics.",
+      "risk_summary": "Poor portability creates environment-specific bugs that are expensive to diagnose and fix. Lock-in to a single vendor or runtime reduces negotiating power and increases migration cost significantly.",
+      "tradeoff_pillar_ids": ["performance_efficiency", "maintainability"],
+      "source_url": "https://www.iso.org/standard/35733.html",
+      "embedding": "[vector omitted — generated at index time]"
+    }
+  ]
+}

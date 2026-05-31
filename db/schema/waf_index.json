@@ -9,6 +9,7 @@
     { "name": "risk_summary",        "type": "Edm.String",              "key": false, "searchable": true,  "filterable": false, "sortable": false, "facetable": false, "retrievable": true  },
     { "name": "tradeoff_pillar_ids", "type": "Collection(Edm.String)",  "key": false, "searchable": false, "filterable": true,  "sortable": false, "facetable": false, "retrievable": true  },
     { "name": "source_url",          "type": "Edm.String",              "key": false, "searchable": false, "filterable": false, "sortable": false, "facetable": false, "retrievable": true  },
+    { "name": "framework_id", "type": "Edm.String", "key": false, "searchable": false, "filterable": true, "sortable": false, "facetable": true, "retrievable": true },
     {
       "name": "embedding",
       "type": "Collection(Edm.Single)",

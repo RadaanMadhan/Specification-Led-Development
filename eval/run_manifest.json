@@ -1,812 +1,1802 @@
 [
   {
     "spec_id": "A-L1",
-    "run_n": 1,
-    "run_id": "A-L1_run_01",
-    "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L1\\run_01",
-    "started_at": "2026-05-13T15:45:32.685034",
-    "elapsed_seconds": 25.4
-  },
-  {
-    "spec_id": "A-L1",
-    "run_n": 2,
-    "run_id": "A-L1_run_02",
-    "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L1\\run_02",
-    "started_at": "2026-05-13T15:45:58.088830",
-    "elapsed_seconds": 27.4
-  },
-  {
-    "spec_id": "A-L1",
-    "run_n": 3,
-    "run_id": "A-L1_run_03",
-    "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L1\\run_03",
-    "started_at": "2026-05-13T15:46:25.495995",
-    "elapsed_seconds": 18.8
-  },
-  {
-    "spec_id": "A-L1",
-    "run_n": 4,
-    "run_id": "A-L1_run_04",
-    "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L1\\run_04",
-    "started_at": "2026-05-13T15:46:44.361570",
-    "elapsed_seconds": 27.3
-  },
-  {
-    "spec_id": "A-L1",
-    "run_n": 5,
-    "run_id": "A-L1_run_05",
-    "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L1\\run_05",
-    "started_at": "2026-05-13T15:47:11.704841",
-    "elapsed_seconds": 27.4
-  },
-  {
-    "spec_id": "A-L1",
+    "framework": "waf",
     "run_n": 6,
-    "run_id": "A-L1_run_06",
+    "run_id": "A-L1_waf_run_06",
     "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L1\\run_06",
-    "started_at": "2026-05-13T15:47:39.530720",
-    "elapsed_seconds": 24.9
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L1\\waf\\run_06",
+    "started_at": "2026-05-31T20:17:44.970754",
+    "elapsed_seconds": 11.6
   },
   {
     "spec_id": "A-L1",
+    "framework": "waf",
     "run_n": 7,
-    "run_id": "A-L1_run_07",
+    "run_id": "A-L1_waf_run_07",
     "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L1\\run_07",
-    "started_at": "2026-05-13T15:48:04.525046",
-    "elapsed_seconds": 24.7
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L1\\waf\\run_07",
+    "started_at": "2026-05-31T20:17:56.568995",
+    "elapsed_seconds": 12.2
   },
   {
     "spec_id": "A-L1",
+    "framework": "waf",
     "run_n": 8,
-    "run_id": "A-L1_run_08",
+    "run_id": "A-L1_waf_run_08",
     "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L1\\run_08",
-    "started_at": "2026-05-13T15:48:29.202876",
-    "elapsed_seconds": 20.6
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L1\\waf\\run_08",
+    "started_at": "2026-05-31T20:18:08.826858",
+    "elapsed_seconds": 13.3
   },
   {
     "spec_id": "A-L1",
+    "framework": "waf",
     "run_n": 9,
-    "run_id": "A-L1_run_09",
+    "run_id": "A-L1_waf_run_09",
     "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L1\\run_09",
-    "started_at": "2026-05-13T15:48:49.772633",
-    "elapsed_seconds": 19.8
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L1\\waf\\run_09",
+    "started_at": "2026-05-31T20:18:22.160148",
+    "elapsed_seconds": 11.5
   },
   {
     "spec_id": "A-L1",
+    "framework": "waf",
     "run_n": 10,
-    "run_id": "A-L1_run_10",
+    "run_id": "A-L1_waf_run_10",
     "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L1\\run_10",
-    "started_at": "2026-05-13T15:49:09.563429",
-    "elapsed_seconds": 18.1
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L1\\waf\\run_10",
+    "started_at": "2026-05-31T20:18:33.717023",
+    "elapsed_seconds": 11.6
   },
   {
     "spec_id": "A-L2",
-    "run_n": 1,
-    "run_id": "A-L2_run_01",
-    "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L2\\run_01",
-    "started_at": "2026-05-13T15:49:27.676808",
-    "elapsed_seconds": 23.2
-  },
-  {
-    "spec_id": "A-L2",
-    "run_n": 2,
-    "run_id": "A-L2_run_02",
-    "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L2\\run_02",
-    "started_at": "2026-05-13T15:49:50.890336",
-    "elapsed_seconds": 24.3
-  },
-  {
-    "spec_id": "A-L2",
-    "run_n": 3,
-    "run_id": "A-L2_run_03",
-    "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L2\\run_03",
-    "started_at": "2026-05-13T15:50:15.177920",
-    "elapsed_seconds": 19.6
-  },
-  {
-    "spec_id": "A-L2",
-    "run_n": 4,
-    "run_id": "A-L2_run_04",
-    "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L2\\run_04",
-    "started_at": "2026-05-13T15:50:34.774730",
-    "elapsed_seconds": 39.4
-  },
-  {
-    "spec_id": "A-L2",
-    "run_n": 5,
-    "run_id": "A-L2_run_05",
-    "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L2\\run_05",
-    "started_at": "2026-05-13T15:51:14.205189",
-    "elapsed_seconds": 28.7
-  },
-  {
-    "spec_id": "A-L2",
+    "framework": "waf",
     "run_n": 6,
-    "run_id": "A-L2_run_06",
+    "run_id": "A-L2_waf_run_06",
     "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L2\\run_06",
-    "started_at": "2026-05-13T15:51:42.939700",
-    "elapsed_seconds": 21.1
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L2\\waf\\run_06",
+    "started_at": "2026-05-31T20:18:45.315874",
+    "elapsed_seconds": 10.2
   },
   {
     "spec_id": "A-L2",
+    "framework": "waf",
     "run_n": 7,
-    "run_id": "A-L2_run_07",
+    "run_id": "A-L2_waf_run_07",
     "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L2\\run_07",
-    "started_at": "2026-05-13T15:52:04.097270",
-    "elapsed_seconds": 19.4
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L2\\waf\\run_07",
+    "started_at": "2026-05-31T20:18:55.556094",
+    "elapsed_seconds": 11.1
   },
   {
     "spec_id": "A-L2",
+    "framework": "waf",
     "run_n": 8,
-    "run_id": "A-L2_run_08",
+    "run_id": "A-L2_waf_run_08",
     "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L2\\run_08",
-    "started_at": "2026-05-13T15:52:23.510773",
-    "elapsed_seconds": 18.3
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L2\\waf\\run_08",
+    "started_at": "2026-05-31T20:19:06.627604",
+    "elapsed_seconds": 11.2
   },
   {
     "spec_id": "A-L2",
+    "framework": "waf",
     "run_n": 9,
-    "run_id": "A-L2_run_09",
+    "run_id": "A-L2_waf_run_09",
     "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L2\\run_09",
-    "started_at": "2026-05-13T15:52:41.783253",
-    "elapsed_seconds": 18.8
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L2\\waf\\run_09",
+    "started_at": "2026-05-31T20:19:17.871919",
+    "elapsed_seconds": 10.8
   },
   {
     "spec_id": "A-L2",
+    "framework": "waf",
     "run_n": 10,
-    "run_id": "A-L2_run_10",
+    "run_id": "A-L2_waf_run_10",
     "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L2\\run_10",
-    "started_at": "2026-05-13T15:53:00.565936",
-    "elapsed_seconds": 17.4
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L2\\waf\\run_10",
+    "started_at": "2026-05-31T20:19:28.714613",
+    "elapsed_seconds": 11.5
   },
   {
     "spec_id": "A-L3",
-    "run_n": 1,
-    "run_id": "A-L3_run_01",
-    "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L3\\run_01",
-    "started_at": "2026-05-13T15:53:17.994196",
-    "elapsed_seconds": 40.8
-  },
-  {
-    "spec_id": "A-L3",
-    "run_n": 2,
-    "run_id": "A-L3_run_02",
-    "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L3\\run_02",
-    "started_at": "2026-05-13T15:53:58.760769",
-    "elapsed_seconds": 18.5
-  },
-  {
-    "spec_id": "A-L3",
-    "run_n": 3,
-    "run_id": "A-L3_run_03",
-    "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L3\\run_03",
-    "started_at": "2026-05-13T15:54:17.298330",
-    "elapsed_seconds": 20.3
-  },
-  {
-    "spec_id": "A-L3",
-    "run_n": 4,
-    "run_id": "A-L3_run_04",
-    "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L3\\run_04",
-    "started_at": "2026-05-13T15:54:37.635044",
-    "elapsed_seconds": 16.4
-  },
-  {
-    "spec_id": "A-L3",
-    "run_n": 5,
-    "run_id": "A-L3_run_05",
-    "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L3\\run_05",
-    "started_at": "2026-05-13T15:54:54.038738",
-    "elapsed_seconds": 16.9
-  },
-  {
-    "spec_id": "A-L3",
+    "framework": "waf",
     "run_n": 6,
-    "run_id": "A-L3_run_06",
+    "run_id": "A-L3_waf_run_06",
     "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L3\\run_06",
-    "started_at": "2026-05-13T15:55:10.943352",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L3\\waf\\run_06",
+    "started_at": "2026-05-31T20:19:40.219207",
+    "elapsed_seconds": 13.0
+  },
+  {
+    "spec_id": "A-L3",
+    "framework": "waf",
+    "run_n": 7,
+    "run_id": "A-L3_waf_run_07",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L3\\waf\\run_07",
+    "started_at": "2026-05-31T20:19:53.280862",
+    "elapsed_seconds": 14.5
+  },
+  {
+    "spec_id": "A-L3",
+    "framework": "waf",
+    "run_n": 8,
+    "run_id": "A-L3_waf_run_08",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L3\\waf\\run_08",
+    "started_at": "2026-05-31T20:20:07.808642",
+    "elapsed_seconds": 14.7
+  },
+  {
+    "spec_id": "A-L3",
+    "framework": "waf",
+    "run_n": 9,
+    "run_id": "A-L3_waf_run_09",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L3\\waf\\run_09",
+    "started_at": "2026-05-31T20:20:22.538911",
+    "elapsed_seconds": 14.4
+  },
+  {
+    "spec_id": "A-L3",
+    "framework": "waf",
+    "run_n": 10,
+    "run_id": "A-L3_waf_run_10",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L3\\waf\\run_10",
+    "started_at": "2026-05-31T20:20:36.935202",
+    "elapsed_seconds": 14.0
+  },
+  {
+    "spec_id": "B-L1",
+    "framework": "waf",
+    "run_n": 6,
+    "run_id": "B-L1_waf_run_06",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L1\\waf\\run_06",
+    "started_at": "2026-05-31T20:20:50.969200",
+    "elapsed_seconds": 11.3
+  },
+  {
+    "spec_id": "B-L1",
+    "framework": "waf",
+    "run_n": 7,
+    "run_id": "B-L1_waf_run_07",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L1\\waf\\run_07",
+    "started_at": "2026-05-31T20:21:02.264941",
+    "elapsed_seconds": 11.7
+  },
+  {
+    "spec_id": "B-L1",
+    "framework": "waf",
+    "run_n": 8,
+    "run_id": "B-L1_waf_run_08",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L1\\waf\\run_08",
+    "started_at": "2026-05-31T20:21:13.990163",
+    "elapsed_seconds": 11.8
+  },
+  {
+    "spec_id": "B-L1",
+    "framework": "waf",
+    "run_n": 9,
+    "run_id": "B-L1_waf_run_09",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L1\\waf\\run_09",
+    "started_at": "2026-05-31T20:21:25.835731",
+    "elapsed_seconds": 12.3
+  },
+  {
+    "spec_id": "B-L1",
+    "framework": "waf",
+    "run_n": 10,
+    "run_id": "B-L1_waf_run_10",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L1\\waf\\run_10",
+    "started_at": "2026-05-31T20:21:38.161610",
     "elapsed_seconds": 16.2
   },
   {
-    "spec_id": "A-L3",
-    "run_n": 7,
-    "run_id": "A-L3_run_07",
-    "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L3\\run_07",
-    "started_at": "2026-05-13T15:55:27.140844",
-    "elapsed_seconds": 18.5
-  },
-  {
-    "spec_id": "A-L3",
-    "run_n": 8,
-    "run_id": "A-L3_run_08",
-    "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L3\\run_08",
-    "started_at": "2026-05-13T15:55:45.694327",
-    "elapsed_seconds": 16.6
-  },
-  {
-    "spec_id": "A-L3",
-    "run_n": 9,
-    "run_id": "A-L3_run_09",
-    "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L3\\run_09",
-    "started_at": "2026-05-13T15:56:02.330349",
-    "elapsed_seconds": 20.8
-  },
-  {
-    "spec_id": "A-L3",
-    "run_n": 10,
-    "run_id": "A-L3_run_10",
-    "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L3\\run_10",
-    "started_at": "2026-05-13T15:56:23.132799",
-    "elapsed_seconds": 162.1
-  },
-  {
-    "spec_id": "B-L1",
-    "run_n": 1,
-    "run_id": "B-L1_run_01",
-    "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L1\\run_01",
-    "started_at": "2026-05-13T15:59:05.246357",
-    "elapsed_seconds": 17.9
-  },
-  {
-    "spec_id": "B-L1",
-    "run_n": 2,
-    "run_id": "B-L1_run_02",
-    "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L1\\run_02",
-    "started_at": "2026-05-13T15:59:23.140692",
-    "elapsed_seconds": 19.0
-  },
-  {
-    "spec_id": "B-L1",
-    "run_n": 3,
-    "run_id": "B-L1_run_03",
-    "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L1\\run_03",
-    "started_at": "2026-05-13T15:59:42.160883",
-    "elapsed_seconds": 16.4
-  },
-  {
-    "spec_id": "B-L1",
-    "run_n": 4,
-    "run_id": "B-L1_run_04",
-    "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L1\\run_04",
-    "started_at": "2026-05-13T15:59:58.594899",
-    "elapsed_seconds": 18.5
-  },
-  {
-    "spec_id": "B-L1",
-    "run_n": 5,
-    "run_id": "B-L1_run_05",
-    "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L1\\run_05",
-    "started_at": "2026-05-13T16:00:17.125507",
-    "elapsed_seconds": 18.1
-  },
-  {
-    "spec_id": "B-L1",
+    "spec_id": "B-L2",
+    "framework": "waf",
     "run_n": 6,
-    "run_id": "B-L1_run_06",
+    "run_id": "B-L2_waf_run_06",
     "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L1\\run_06",
-    "started_at": "2026-05-13T16:00:35.255532",
-    "elapsed_seconds": 15.0
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L2\\waf\\run_06",
+    "started_at": "2026-05-31T20:21:54.336477",
+    "elapsed_seconds": 26.1
   },
   {
-    "spec_id": "B-L1",
+    "spec_id": "B-L2",
+    "framework": "waf",
     "run_n": 7,
-    "run_id": "B-L1_run_07",
+    "run_id": "B-L2_waf_run_07",
     "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L1\\run_07",
-    "started_at": "2026-05-13T16:00:50.295622",
-    "elapsed_seconds": 16.0
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L2\\waf\\run_07",
+    "started_at": "2026-05-31T20:22:20.430646",
+    "elapsed_seconds": 11.8
   },
   {
-    "spec_id": "B-L1",
+    "spec_id": "B-L2",
+    "framework": "waf",
     "run_n": 8,
-    "run_id": "B-L1_run_08",
+    "run_id": "B-L2_waf_run_08",
     "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L1\\run_08",
-    "started_at": "2026-05-13T16:01:06.283364",
-    "elapsed_seconds": 13.9
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L2\\waf\\run_08",
+    "started_at": "2026-05-31T20:22:32.231085",
+    "elapsed_seconds": 18.8
   },
   {
-    "spec_id": "B-L1",
+    "spec_id": "B-L2",
+    "framework": "waf",
     "run_n": 9,
-    "run_id": "B-L1_run_09",
+    "run_id": "B-L2_waf_run_09",
     "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L1\\run_09",
-    "started_at": "2026-05-13T16:01:20.194761",
-    "elapsed_seconds": 15.2
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L2\\waf\\run_09",
+    "started_at": "2026-05-31T20:22:51.082438",
+    "elapsed_seconds": 13.7
   },
   {
-    "spec_id": "B-L1",
+    "spec_id": "B-L2",
+    "framework": "waf",
     "run_n": 10,
-    "run_id": "B-L1_run_10",
+    "run_id": "B-L2_waf_run_10",
     "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L1\\run_10",
-    "started_at": "2026-05-13T16:01:35.366666",
-    "elapsed_seconds": 17.9
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L2\\waf\\run_10",
+    "started_at": "2026-05-31T20:23:04.807921",
+    "elapsed_seconds": 12.0
   },
   {
-    "spec_id": "B-L2",
-    "run_n": 1,
-    "run_id": "B-L2_run_01",
-    "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L2\\run_01",
-    "started_at": "2026-05-13T16:01:53.258194",
-    "elapsed_seconds": 18.2
-  },
-  {
-    "spec_id": "B-L2",
-    "run_n": 2,
-    "run_id": "B-L2_run_02",
-    "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L2\\run_02",
-    "started_at": "2026-05-13T16:02:11.440295",
-    "elapsed_seconds": 19.4
-  },
-  {
-    "spec_id": "B-L2",
-    "run_n": 3,
-    "run_id": "B-L2_run_03",
-    "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L2\\run_03",
-    "started_at": "2026-05-13T16:02:30.856191",
-    "elapsed_seconds": 21.9
-  },
-  {
-    "spec_id": "B-L2",
-    "run_n": 4,
-    "run_id": "B-L2_run_04",
-    "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L2\\run_04",
-    "started_at": "2026-05-13T16:02:52.819036",
-    "elapsed_seconds": 20.8
-  },
-  {
-    "spec_id": "B-L2",
-    "run_n": 5,
-    "run_id": "B-L2_run_05",
-    "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L2\\run_05",
-    "started_at": "2026-05-13T16:03:13.694565",
-    "elapsed_seconds": 18.9
-  },
-  {
-    "spec_id": "B-L2",
+    "spec_id": "B-L3",
+    "framework": "waf",
     "run_n": 6,
-    "run_id": "B-L2_run_06",
+    "run_id": "B-L3_waf_run_06",
     "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L2\\run_06",
-    "started_at": "2026-05-13T16:03:32.558668",
-    "elapsed_seconds": 17.9
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L3\\waf\\run_06",
+    "started_at": "2026-05-31T20:23:16.850977",
+    "elapsed_seconds": 12.6
   },
   {
-    "spec_id": "B-L2",
+    "spec_id": "B-L3",
+    "framework": "waf",
     "run_n": 7,
-    "run_id": "B-L2_run_07",
+    "run_id": "B-L3_waf_run_07",
     "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L2\\run_07",
-    "started_at": "2026-05-13T16:03:50.432758",
-    "elapsed_seconds": 18.1
-  },
-  {
-    "spec_id": "B-L2",
-    "run_n": 8,
-    "run_id": "B-L2_run_08",
-    "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L2\\run_08",
-    "started_at": "2026-05-13T16:04:08.553580",
-    "elapsed_seconds": 18.6
-  },
-  {
-    "spec_id": "B-L2",
-    "run_n": 9,
-    "run_id": "B-L2_run_09",
-    "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L2\\run_09",
-    "started_at": "2026-05-13T16:04:27.141603",
-    "elapsed_seconds": 17.7
-  },
-  {
-    "spec_id": "B-L2",
-    "run_n": 10,
-    "run_id": "B-L2_run_10",
-    "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L2\\run_10",
-    "started_at": "2026-05-13T16:04:44.874229",
-    "elapsed_seconds": 17.4
-  },
-  {
-    "spec_id": "B-L3",
-    "run_n": 1,
-    "run_id": "B-L3_run_01",
-    "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L3\\run_01",
-    "started_at": "2026-05-13T16:05:02.298467",
-    "elapsed_seconds": 24.5
-  },
-  {
-    "spec_id": "B-L3",
-    "run_n": 2,
-    "run_id": "B-L3_run_02",
-    "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L3\\run_02",
-    "started_at": "2026-05-13T16:05:26.801978",
-    "elapsed_seconds": 24.5
-  },
-  {
-    "spec_id": "B-L3",
-    "run_n": 3,
-    "run_id": "B-L3_run_03",
-    "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L3\\run_03",
-    "started_at": "2026-05-13T16:05:51.358321",
-    "elapsed_seconds": 18.5
-  },
-  {
-    "spec_id": "B-L3",
-    "run_n": 4,
-    "run_id": "B-L3_run_04",
-    "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L3\\run_04",
-    "started_at": "2026-05-13T16:06:09.897128",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L3\\waf\\run_07",
+    "started_at": "2026-05-31T20:23:29.427613",
     "elapsed_seconds": 21.5
   },
   {
     "spec_id": "B-L3",
-    "run_n": 5,
-    "run_id": "B-L3_run_05",
-    "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L3\\run_05",
-    "started_at": "2026-05-13T16:06:31.447476",
-    "elapsed_seconds": 18.2
-  },
-  {
-    "spec_id": "B-L3",
-    "run_n": 6,
-    "run_id": "B-L3_run_06",
-    "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L3\\run_06",
-    "started_at": "2026-05-13T16:06:49.627747",
-    "elapsed_seconds": 29.7
-  },
-  {
-    "spec_id": "B-L3",
-    "run_n": 7,
-    "run_id": "B-L3_run_07",
-    "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L3\\run_07",
-    "started_at": "2026-05-13T16:07:19.369799",
-    "elapsed_seconds": 21.3
-  },
-  {
-    "spec_id": "B-L3",
+    "framework": "waf",
     "run_n": 8,
-    "run_id": "B-L3_run_08",
+    "run_id": "B-L3_waf_run_08",
     "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L3\\run_08",
-    "started_at": "2026-05-13T16:07:40.671917",
-    "elapsed_seconds": 20.0
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L3\\waf\\run_08",
+    "started_at": "2026-05-31T20:23:50.902521",
+    "elapsed_seconds": 13.0
   },
   {
     "spec_id": "B-L3",
+    "framework": "waf",
     "run_n": 9,
-    "run_id": "B-L3_run_09",
+    "run_id": "B-L3_waf_run_09",
     "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L3\\run_09",
-    "started_at": "2026-05-13T16:08:00.737171",
-    "elapsed_seconds": 24.9
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L3\\waf\\run_09",
+    "started_at": "2026-05-31T20:24:03.895343",
+    "elapsed_seconds": 18.3
   },
   {
     "spec_id": "B-L3",
+    "framework": "waf",
     "run_n": 10,
-    "run_id": "B-L3_run_10",
+    "run_id": "B-L3_waf_run_10",
     "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L3\\run_10",
-    "started_at": "2026-05-13T16:08:25.634434",
-    "elapsed_seconds": 21.6
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L3\\waf\\run_10",
+    "started_at": "2026-05-31T20:24:22.207081",
+    "elapsed_seconds": 13.3
   },
   {
     "spec_id": "C-L1",
-    "run_n": 1,
-    "run_id": "C-L1_run_01",
-    "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L1\\run_01",
-    "started_at": "2026-05-13T16:08:47.294646",
-    "elapsed_seconds": 14.5
-  },
-  {
-    "spec_id": "C-L1",
-    "run_n": 2,
-    "run_id": "C-L1_run_02",
-    "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L1\\run_02",
-    "started_at": "2026-05-13T16:09:01.818472",
-    "elapsed_seconds": 15.9
-  },
-  {
-    "spec_id": "C-L1",
-    "run_n": 3,
-    "run_id": "C-L1_run_03",
-    "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L1\\run_03",
-    "started_at": "2026-05-13T16:09:17.697347",
-    "elapsed_seconds": 14.8
-  },
-  {
-    "spec_id": "C-L1",
-    "run_n": 4,
-    "run_id": "C-L1_run_04",
-    "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L1\\run_04",
-    "started_at": "2026-05-13T16:09:32.468811",
-    "elapsed_seconds": 14.5
-  },
-  {
-    "spec_id": "C-L1",
-    "run_n": 5,
-    "run_id": "C-L1_run_05",
-    "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L1\\run_05",
-    "started_at": "2026-05-13T16:09:47.019818",
-    "elapsed_seconds": 15.0
-  },
-  {
-    "spec_id": "C-L1",
+    "framework": "waf",
     "run_n": 6,
-    "run_id": "C-L1_run_06",
+    "run_id": "C-L1_waf_run_06",
     "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L1\\run_06",
-    "started_at": "2026-05-13T16:10:02.056645",
-    "elapsed_seconds": 202.6
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L1\\waf\\run_06",
+    "started_at": "2026-05-31T20:24:35.553907",
+    "elapsed_seconds": 12.4
   },
   {
     "spec_id": "C-L1",
+    "framework": "waf",
     "run_n": 7,
-    "run_id": "C-L1_run_07",
+    "run_id": "C-L1_waf_run_07",
     "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L1\\run_07",
-    "started_at": "2026-05-13T16:13:24.707255",
-    "elapsed_seconds": 16.6
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L1\\waf\\run_07",
+    "started_at": "2026-05-31T20:24:47.961004",
+    "elapsed_seconds": 12.5
   },
   {
     "spec_id": "C-L1",
+    "framework": "waf",
     "run_n": 8,
-    "run_id": "C-L1_run_08",
+    "run_id": "C-L1_waf_run_08",
     "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L1\\run_08",
-    "started_at": "2026-05-13T16:13:41.295683",
-    "elapsed_seconds": 15.2
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L1\\waf\\run_08",
+    "started_at": "2026-05-31T20:25:00.509229",
+    "elapsed_seconds": 12.2
   },
   {
     "spec_id": "C-L1",
+    "framework": "waf",
     "run_n": 9,
-    "run_id": "C-L1_run_09",
+    "run_id": "C-L1_waf_run_09",
     "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L1\\run_09",
-    "started_at": "2026-05-13T16:13:56.474512",
-    "elapsed_seconds": 16.2
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L1\\waf\\run_09",
+    "started_at": "2026-05-31T20:25:12.698393",
+    "elapsed_seconds": 12.4
   },
   {
     "spec_id": "C-L1",
+    "framework": "waf",
     "run_n": 10,
-    "run_id": "C-L1_run_10",
+    "run_id": "C-L1_waf_run_10",
     "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L1\\run_10",
-    "started_at": "2026-05-13T16:14:12.656629",
-    "elapsed_seconds": 15.8
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L1\\waf\\run_10",
+    "started_at": "2026-05-31T20:25:25.125875",
+    "elapsed_seconds": 12.2
   },
   {
     "spec_id": "C-L2",
-    "run_n": 1,
-    "run_id": "C-L2_run_01",
-    "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L2\\run_01",
-    "started_at": "2026-05-13T16:14:28.461480",
-    "elapsed_seconds": 15.9
-  },
-  {
-    "spec_id": "C-L2",
-    "run_n": 2,
-    "run_id": "C-L2_run_02",
-    "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L2\\run_02",
-    "started_at": "2026-05-13T16:14:44.377806",
-    "elapsed_seconds": 18.1
-  },
-  {
-    "spec_id": "C-L2",
-    "run_n": 3,
-    "run_id": "C-L2_run_03",
-    "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L2\\run_03",
-    "started_at": "2026-05-13T16:15:02.499720",
-    "elapsed_seconds": 18.8
-  },
-  {
-    "spec_id": "C-L2",
-    "run_n": 4,
-    "run_id": "C-L2_run_04",
-    "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L2\\run_04",
-    "started_at": "2026-05-13T16:15:21.422177",
-    "elapsed_seconds": 15.4
-  },
-  {
-    "spec_id": "C-L2",
-    "run_n": 5,
-    "run_id": "C-L2_run_05",
-    "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L2\\run_05",
-    "started_at": "2026-05-13T16:15:36.810349",
-    "elapsed_seconds": 14.2
-  },
-  {
-    "spec_id": "C-L2",
+    "framework": "waf",
     "run_n": 6,
-    "run_id": "C-L2_run_06",
+    "run_id": "C-L2_waf_run_06",
     "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L2\\run_06",
-    "started_at": "2026-05-13T16:15:51.046916",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L2\\waf\\run_06",
+    "started_at": "2026-05-31T20:25:37.367755",
+    "elapsed_seconds": 28.4
+  },
+  {
+    "spec_id": "C-L2",
+    "framework": "waf",
+    "run_n": 7,
+    "run_id": "C-L2_waf_run_07",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L2\\waf\\run_07",
+    "started_at": "2026-05-31T20:26:05.732803",
+    "elapsed_seconds": 12.8
+  },
+  {
+    "spec_id": "C-L2",
+    "framework": "waf",
+    "run_n": 8,
+    "run_id": "C-L2_waf_run_08",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L2\\waf\\run_08",
+    "started_at": "2026-05-31T20:26:18.541479",
+    "elapsed_seconds": 11.0
+  },
+  {
+    "spec_id": "C-L2",
+    "framework": "waf",
+    "run_n": 9,
+    "run_id": "C-L2_waf_run_09",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L2\\waf\\run_09",
+    "started_at": "2026-05-31T20:26:29.600919",
+    "elapsed_seconds": 12.5
+  },
+  {
+    "spec_id": "C-L2",
+    "framework": "waf",
+    "run_n": 10,
+    "run_id": "C-L2_waf_run_10",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L2\\waf\\run_10",
+    "started_at": "2026-05-31T20:26:42.103384",
+    "elapsed_seconds": 12.7
+  },
+  {
+    "spec_id": "C-L3",
+    "framework": "waf",
+    "run_n": 6,
+    "run_id": "C-L3_waf_run_06",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L3\\waf\\run_06",
+    "started_at": "2026-05-31T20:26:54.813161",
+    "elapsed_seconds": 13.7
+  },
+  {
+    "spec_id": "C-L3",
+    "framework": "waf",
+    "run_n": 7,
+    "run_id": "C-L3_waf_run_07",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L3\\waf\\run_07",
+    "started_at": "2026-05-31T20:27:08.522896",
     "elapsed_seconds": 15.1
   },
   {
-    "spec_id": "C-L2",
-    "run_n": 7,
-    "run_id": "C-L2_run_07",
+    "spec_id": "C-L3",
+    "framework": "waf",
+    "run_n": 8,
+    "run_id": "C-L3_waf_run_08",
     "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L2\\run_07",
-    "started_at": "2026-05-13T16:16:06.205251",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L3\\waf\\run_08",
+    "started_at": "2026-05-31T20:27:23.576299",
+    "elapsed_seconds": 16.7
+  },
+  {
+    "spec_id": "C-L3",
+    "framework": "waf",
+    "run_n": 9,
+    "run_id": "C-L3_waf_run_09",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L3\\waf\\run_09",
+    "started_at": "2026-05-31T20:27:40.268148",
+    "elapsed_seconds": 13.9
+  },
+  {
+    "spec_id": "C-L3",
+    "framework": "waf",
+    "run_n": 10,
+    "run_id": "C-L3_waf_run_10",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L3\\waf\\run_10",
+    "started_at": "2026-05-31T20:27:54.215063",
+    "elapsed_seconds": 13.5
+  },
+  {
+    "spec_id": "A-L1",
+    "framework": "iso25010",
+    "run_n": 6,
+    "run_id": "A-L1_iso25010_run_06",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L1\\iso25010\\run_06",
+    "started_at": "2026-05-31T20:28:07.717256",
+    "elapsed_seconds": 11.8
+  },
+  {
+    "spec_id": "A-L1",
+    "framework": "iso25010",
+    "run_n": 7,
+    "run_id": "A-L1_iso25010_run_07",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L1\\iso25010\\run_07",
+    "started_at": "2026-05-31T20:28:19.583039",
+    "elapsed_seconds": 12.5
+  },
+  {
+    "spec_id": "A-L1",
+    "framework": "iso25010",
+    "run_n": 8,
+    "run_id": "A-L1_iso25010_run_08",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L1\\iso25010\\run_08",
+    "started_at": "2026-05-31T20:28:32.102193",
+    "elapsed_seconds": 12.5
+  },
+  {
+    "spec_id": "A-L1",
+    "framework": "iso25010",
+    "run_n": 9,
+    "run_id": "A-L1_iso25010_run_09",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L1\\iso25010\\run_09",
+    "started_at": "2026-05-31T20:28:44.584825",
+    "elapsed_seconds": 12.2
+  },
+  {
+    "spec_id": "A-L1",
+    "framework": "iso25010",
+    "run_n": 10,
+    "run_id": "A-L1_iso25010_run_10",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L1\\iso25010\\run_10",
+    "started_at": "2026-05-31T20:28:56.836510",
+    "elapsed_seconds": 11.7
+  },
+  {
+    "spec_id": "A-L2",
+    "framework": "iso25010",
+    "run_n": 6,
+    "run_id": "A-L2_iso25010_run_06",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L2\\iso25010\\run_06",
+    "started_at": "2026-05-31T20:29:08.531705",
+    "elapsed_seconds": 26.8
+  },
+  {
+    "spec_id": "A-L2",
+    "framework": "iso25010",
+    "run_n": 7,
+    "run_id": "A-L2_iso25010_run_07",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L2\\iso25010\\run_07",
+    "started_at": "2026-05-31T20:29:35.365014",
+    "elapsed_seconds": 18.8
+  },
+  {
+    "spec_id": "A-L2",
+    "framework": "iso25010",
+    "run_n": 8,
+    "run_id": "A-L2_iso25010_run_08",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L2\\iso25010\\run_08",
+    "started_at": "2026-05-31T20:29:54.203933",
+    "elapsed_seconds": 10.2
+  },
+  {
+    "spec_id": "A-L2",
+    "framework": "iso25010",
+    "run_n": 9,
+    "run_id": "A-L2_iso25010_run_09",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L2\\iso25010\\run_09",
+    "started_at": "2026-05-31T20:30:04.441660",
+    "elapsed_seconds": 10.9
+  },
+  {
+    "spec_id": "A-L2",
+    "framework": "iso25010",
+    "run_n": 10,
+    "run_id": "A-L2_iso25010_run_10",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L2\\iso25010\\run_10",
+    "started_at": "2026-05-31T20:30:15.339718",
+    "elapsed_seconds": 11.2
+  },
+  {
+    "spec_id": "A-L3",
+    "framework": "iso25010",
+    "run_n": 6,
+    "run_id": "A-L3_iso25010_run_06",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L3\\iso25010\\run_06",
+    "started_at": "2026-05-31T20:30:26.579870",
+    "elapsed_seconds": 15.0
+  },
+  {
+    "spec_id": "A-L3",
+    "framework": "iso25010",
+    "run_n": 7,
+    "run_id": "A-L3_iso25010_run_07",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L3\\iso25010\\run_07",
+    "started_at": "2026-05-31T20:30:41.599293",
     "elapsed_seconds": 14.4
   },
   {
-    "spec_id": "C-L2",
+    "spec_id": "A-L3",
+    "framework": "iso25010",
     "run_n": 8,
-    "run_id": "C-L2_run_08",
+    "run_id": "A-L3_iso25010_run_08",
     "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L2\\run_08",
-    "started_at": "2026-05-13T16:16:20.640824",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L3\\iso25010\\run_08",
+    "started_at": "2026-05-31T20:30:56.026068",
+    "elapsed_seconds": 12.5
+  },
+  {
+    "spec_id": "A-L3",
+    "framework": "iso25010",
+    "run_n": 9,
+    "run_id": "A-L3_iso25010_run_09",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L3\\iso25010\\run_09",
+    "started_at": "2026-05-31T20:31:08.561735",
+    "elapsed_seconds": 12.6
+  },
+  {
+    "spec_id": "A-L3",
+    "framework": "iso25010",
+    "run_n": 10,
+    "run_id": "A-L3_iso25010_run_10",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L3\\iso25010\\run_10",
+    "started_at": "2026-05-31T20:31:21.131549",
     "elapsed_seconds": 13.8
   },
   {
-    "spec_id": "C-L2",
-    "run_n": 9,
-    "run_id": "C-L2_run_09",
+    "spec_id": "B-L1",
+    "framework": "iso25010",
+    "run_n": 6,
+    "run_id": "B-L1_iso25010_run_06",
     "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L2\\run_09",
-    "started_at": "2026-05-13T16:16:34.414445",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L1\\iso25010\\run_06",
+    "started_at": "2026-05-31T20:31:34.968024",
+    "elapsed_seconds": 10.4
+  },
+  {
+    "spec_id": "B-L1",
+    "framework": "iso25010",
+    "run_n": 7,
+    "run_id": "B-L1_iso25010_run_07",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L1\\iso25010\\run_07",
+    "started_at": "2026-05-31T20:31:45.402122",
+    "elapsed_seconds": 10.7
+  },
+  {
+    "spec_id": "B-L1",
+    "framework": "iso25010",
+    "run_n": 8,
+    "run_id": "B-L1_iso25010_run_08",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L1\\iso25010\\run_08",
+    "started_at": "2026-05-31T20:31:56.073101",
+    "elapsed_seconds": 10.8
+  },
+  {
+    "spec_id": "B-L1",
+    "framework": "iso25010",
+    "run_n": 9,
+    "run_id": "B-L1_iso25010_run_09",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L1\\iso25010\\run_09",
+    "started_at": "2026-05-31T20:32:06.923181",
+    "elapsed_seconds": 11.2
+  },
+  {
+    "spec_id": "B-L1",
+    "framework": "iso25010",
+    "run_n": 10,
+    "run_id": "B-L1_iso25010_run_10",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L1\\iso25010\\run_10",
+    "started_at": "2026-05-31T20:32:18.164054",
+    "elapsed_seconds": 10.6
+  },
+  {
+    "spec_id": "B-L2",
+    "framework": "iso25010",
+    "run_n": 6,
+    "run_id": "B-L2_iso25010_run_06",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L2\\iso25010\\run_06",
+    "started_at": "2026-05-31T20:32:28.797461",
+    "elapsed_seconds": 12.5
+  },
+  {
+    "spec_id": "B-L2",
+    "framework": "iso25010",
+    "run_n": 7,
+    "run_id": "B-L2_iso25010_run_07",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L2\\iso25010\\run_07",
+    "started_at": "2026-05-31T20:32:41.302841",
+    "elapsed_seconds": 12.0
+  },
+  {
+    "spec_id": "B-L2",
+    "framework": "iso25010",
+    "run_n": 8,
+    "run_id": "B-L2_iso25010_run_08",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L2\\iso25010\\run_08",
+    "started_at": "2026-05-31T20:32:53.314666",
+    "elapsed_seconds": 11.7
+  },
+  {
+    "spec_id": "B-L2",
+    "framework": "iso25010",
+    "run_n": 9,
+    "run_id": "B-L2_iso25010_run_09",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L2\\iso25010\\run_09",
+    "started_at": "2026-05-31T20:33:05.061189",
+    "elapsed_seconds": 13.1
+  },
+  {
+    "spec_id": "B-L2",
+    "framework": "iso25010",
+    "run_n": 10,
+    "run_id": "B-L2_iso25010_run_10",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L2\\iso25010\\run_10",
+    "started_at": "2026-05-31T20:33:18.204773",
+    "elapsed_seconds": 13.3
+  },
+  {
+    "spec_id": "B-L3",
+    "framework": "iso25010",
+    "run_n": 6,
+    "run_id": "B-L3_iso25010_run_06",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L3\\iso25010\\run_06",
+    "started_at": "2026-05-31T20:33:31.552079",
+    "elapsed_seconds": 11.4
+  },
+  {
+    "spec_id": "B-L3",
+    "framework": "iso25010",
+    "run_n": 7,
+    "run_id": "B-L3_iso25010_run_07",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L3\\iso25010\\run_07",
+    "started_at": "2026-05-31T20:33:42.965836",
+    "elapsed_seconds": 12.1
+  },
+  {
+    "spec_id": "B-L3",
+    "framework": "iso25010",
+    "run_n": 8,
+    "run_id": "B-L3_iso25010_run_08",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L3\\iso25010\\run_08",
+    "started_at": "2026-05-31T20:33:55.056873",
+    "elapsed_seconds": 13.3
+  },
+  {
+    "spec_id": "B-L3",
+    "framework": "iso25010",
+    "run_n": 9,
+    "run_id": "B-L3_iso25010_run_09",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L3\\iso25010\\run_09",
+    "started_at": "2026-05-31T20:34:08.370296",
+    "elapsed_seconds": 12.5
+  },
+  {
+    "spec_id": "B-L3",
+    "framework": "iso25010",
+    "run_n": 10,
+    "run_id": "B-L3_iso25010_run_10",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L3\\iso25010\\run_10",
+    "started_at": "2026-05-31T20:34:20.826534",
+    "elapsed_seconds": 11.0
+  },
+  {
+    "spec_id": "C-L1",
+    "framework": "iso25010",
+    "run_n": 6,
+    "run_id": "C-L1_iso25010_run_06",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L1\\iso25010\\run_06",
+    "started_at": "2026-05-31T20:34:31.854980",
+    "elapsed_seconds": 10.7
+  },
+  {
+    "spec_id": "C-L1",
+    "framework": "iso25010",
+    "run_n": 7,
+    "run_id": "C-L1_iso25010_run_07",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L1\\iso25010\\run_07",
+    "started_at": "2026-05-31T20:34:42.571844",
+    "elapsed_seconds": 11.1
+  },
+  {
+    "spec_id": "C-L1",
+    "framework": "iso25010",
+    "run_n": 8,
+    "run_id": "C-L1_iso25010_run_08",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L1\\iso25010\\run_08",
+    "started_at": "2026-05-31T20:34:53.655967",
+    "elapsed_seconds": 11.4
+  },
+  {
+    "spec_id": "C-L1",
+    "framework": "iso25010",
+    "run_n": 9,
+    "run_id": "C-L1_iso25010_run_09",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L1\\iso25010\\run_09",
+    "started_at": "2026-05-31T20:35:05.094265",
+    "elapsed_seconds": 10.8
+  },
+  {
+    "spec_id": "C-L1",
+    "framework": "iso25010",
+    "run_n": 10,
+    "run_id": "C-L1_iso25010_run_10",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L1\\iso25010\\run_10",
+    "started_at": "2026-05-31T20:35:15.948281",
+    "elapsed_seconds": 28.9
+  },
+  {
+    "spec_id": "C-L2",
+    "framework": "iso25010",
+    "run_n": 6,
+    "run_id": "C-L2_iso25010_run_06",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L2\\iso25010\\run_06",
+    "started_at": "2026-05-31T20:35:44.835415",
+    "elapsed_seconds": 14.3
+  },
+  {
+    "spec_id": "C-L2",
+    "framework": "iso25010",
+    "run_n": 7,
+    "run_id": "C-L2_iso25010_run_07",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L2\\iso25010\\run_07",
+    "started_at": "2026-05-31T20:35:59.163089",
+    "elapsed_seconds": 11.9
+  },
+  {
+    "spec_id": "C-L2",
+    "framework": "iso25010",
+    "run_n": 8,
+    "run_id": "C-L2_iso25010_run_08",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L2\\iso25010\\run_08",
+    "started_at": "2026-05-31T20:36:11.033086",
+    "elapsed_seconds": 13.7
+  },
+  {
+    "spec_id": "C-L2",
+    "framework": "iso25010",
+    "run_n": 9,
+    "run_id": "C-L2_iso25010_run_09",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L2\\iso25010\\run_09",
+    "started_at": "2026-05-31T20:36:24.713130",
+    "elapsed_seconds": 13.0
+  },
+  {
+    "spec_id": "C-L2",
+    "framework": "iso25010",
+    "run_n": 10,
+    "run_id": "C-L2_iso25010_run_10",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L2\\iso25010\\run_10",
+    "started_at": "2026-05-31T20:36:37.686864",
+    "elapsed_seconds": 12.3
+  },
+  {
+    "spec_id": "C-L3",
+    "framework": "iso25010",
+    "run_n": 6,
+    "run_id": "C-L3_iso25010_run_06",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L3\\iso25010\\run_06",
+    "started_at": "2026-05-31T20:36:49.984225",
     "elapsed_seconds": 17.7
   },
   {
-    "spec_id": "C-L2",
-    "run_n": 10,
-    "run_id": "C-L2_run_10",
-    "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L2\\run_10",
-    "started_at": "2026-05-13T16:16:52.176783",
-    "elapsed_seconds": 16.9
-  },
-  {
     "spec_id": "C-L3",
-    "run_n": 1,
-    "run_id": "C-L3_run_01",
-    "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L3\\run_01",
-    "started_at": "2026-05-13T16:17:09.089937",
-    "elapsed_seconds": 20.8
-  },
-  {
-    "spec_id": "C-L3",
-    "run_n": 2,
-    "run_id": "C-L3_run_02",
-    "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L3\\run_02",
-    "started_at": "2026-05-13T16:17:29.848759",
-    "elapsed_seconds": 19.7
-  },
-  {
-    "spec_id": "C-L3",
-    "run_n": 3,
-    "run_id": "C-L3_run_03",
-    "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L3\\run_03",
-    "started_at": "2026-05-13T16:17:49.524193",
-    "elapsed_seconds": 23.7
-  },
-  {
-    "spec_id": "C-L3",
-    "run_n": 4,
-    "run_id": "C-L3_run_04",
-    "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L3\\run_04",
-    "started_at": "2026-05-13T16:18:13.283765",
-    "elapsed_seconds": 21.2
-  },
-  {
-    "spec_id": "C-L3",
-    "run_n": 5,
-    "run_id": "C-L3_run_05",
-    "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L3\\run_05",
-    "started_at": "2026-05-13T16:18:34.478906",
-    "elapsed_seconds": 21.1
-  },
-  {
-    "spec_id": "C-L3",
-    "run_n": 6,
-    "run_id": "C-L3_run_06",
-    "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L3\\run_06",
-    "started_at": "2026-05-13T16:18:55.571359",
-    "elapsed_seconds": 20.3
-  },
-  {
-    "spec_id": "C-L3",
+    "framework": "iso25010",
     "run_n": 7,
-    "run_id": "C-L3_run_07",
+    "run_id": "C-L3_iso25010_run_07",
     "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L3\\run_07",
-    "started_at": "2026-05-13T16:19:15.868211",
-    "elapsed_seconds": 21.1
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L3\\iso25010\\run_07",
+    "started_at": "2026-05-31T20:37:07.651787",
+    "elapsed_seconds": 11.8
   },
   {
     "spec_id": "C-L3",
+    "framework": "iso25010",
     "run_n": 8,
-    "run_id": "C-L3_run_08",
+    "run_id": "C-L3_iso25010_run_08",
     "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L3\\run_08",
-    "started_at": "2026-05-13T16:19:36.984934",
-    "elapsed_seconds": 17.6
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L3\\iso25010\\run_08",
+    "started_at": "2026-05-31T20:37:19.472111",
+    "elapsed_seconds": 15.0
   },
   {
     "spec_id": "C-L3",
+    "framework": "iso25010",
     "run_n": 9,
-    "run_id": "C-L3_run_09",
+    "run_id": "C-L3_iso25010_run_09",
     "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L3\\run_09",
-    "started_at": "2026-05-13T16:19:54.644196",
-    "elapsed_seconds": 24.7
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L3\\iso25010\\run_09",
+    "started_at": "2026-05-31T20:37:34.521155",
+    "elapsed_seconds": 12.1
   },
   {
     "spec_id": "C-L3",
+    "framework": "iso25010",
     "run_n": 10,
-    "run_id": "C-L3_run_10",
+    "run_id": "C-L3_iso25010_run_10",
     "status": "success",
-    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L3\\run_10",
-    "started_at": "2026-05-13T16:20:19.342563",
-    "elapsed_seconds": 22.9
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L3\\iso25010\\run_10",
+    "started_at": "2026-05-31T20:37:46.671648",
+    "elapsed_seconds": 12.5
+  },
+  {
+    "spec_id": "A-L1",
+    "framework": "nist_csf",
+    "run_n": 6,
+    "run_id": "A-L1_nist_csf_run_06",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L1\\nist_csf\\run_06",
+    "started_at": "2026-05-31T20:37:59.182899",
+    "elapsed_seconds": 13.5
+  },
+  {
+    "spec_id": "A-L1",
+    "framework": "nist_csf",
+    "run_n": 7,
+    "run_id": "A-L1_nist_csf_run_07",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L1\\nist_csf\\run_07",
+    "started_at": "2026-05-31T20:38:12.695691",
+    "elapsed_seconds": 11.5
+  },
+  {
+    "spec_id": "A-L1",
+    "framework": "nist_csf",
+    "run_n": 8,
+    "run_id": "A-L1_nist_csf_run_08",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L1\\nist_csf\\run_08",
+    "started_at": "2026-05-31T20:38:24.168372",
+    "elapsed_seconds": 14.2
+  },
+  {
+    "spec_id": "A-L1",
+    "framework": "nist_csf",
+    "run_n": 9,
+    "run_id": "A-L1_nist_csf_run_09",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L1\\nist_csf\\run_09",
+    "started_at": "2026-05-31T20:38:38.427306",
+    "elapsed_seconds": 11.9
+  },
+  {
+    "spec_id": "A-L1",
+    "framework": "nist_csf",
+    "run_n": 10,
+    "run_id": "A-L1_nist_csf_run_10",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L1\\nist_csf\\run_10",
+    "started_at": "2026-05-31T20:38:50.379580",
+    "elapsed_seconds": 11.5
+  },
+  {
+    "spec_id": "A-L2",
+    "framework": "nist_csf",
+    "run_n": 6,
+    "run_id": "A-L2_nist_csf_run_06",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L2\\nist_csf\\run_06",
+    "started_at": "2026-05-31T20:39:01.848769",
+    "elapsed_seconds": 11.4
+  },
+  {
+    "spec_id": "A-L2",
+    "framework": "nist_csf",
+    "run_n": 7,
+    "run_id": "A-L2_nist_csf_run_07",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L2\\nist_csf\\run_07",
+    "started_at": "2026-05-31T20:39:13.304547",
+    "elapsed_seconds": 11.9
+  },
+  {
+    "spec_id": "A-L2",
+    "framework": "nist_csf",
+    "run_n": 8,
+    "run_id": "A-L2_nist_csf_run_08",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L2\\nist_csf\\run_08",
+    "started_at": "2026-05-31T20:39:25.196822",
+    "elapsed_seconds": 11.1
+  },
+  {
+    "spec_id": "A-L2",
+    "framework": "nist_csf",
+    "run_n": 9,
+    "run_id": "A-L2_nist_csf_run_09",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L2\\nist_csf\\run_09",
+    "started_at": "2026-05-31T20:39:36.346897",
+    "elapsed_seconds": 11.8
+  },
+  {
+    "spec_id": "A-L2",
+    "framework": "nist_csf",
+    "run_n": 10,
+    "run_id": "A-L2_nist_csf_run_10",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L2\\nist_csf\\run_10",
+    "started_at": "2026-05-31T20:39:48.171253",
+    "elapsed_seconds": 12.2
+  },
+  {
+    "spec_id": "A-L3",
+    "framework": "nist_csf",
+    "run_n": 6,
+    "run_id": "A-L3_nist_csf_run_06",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L3\\nist_csf\\run_06",
+    "started_at": "2026-05-31T20:40:00.420229",
+    "elapsed_seconds": 12.3
+  },
+  {
+    "spec_id": "A-L3",
+    "framework": "nist_csf",
+    "run_n": 7,
+    "run_id": "A-L3_nist_csf_run_07",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L3\\nist_csf\\run_07",
+    "started_at": "2026-05-31T20:40:12.716981",
+    "elapsed_seconds": 13.1
+  },
+  {
+    "spec_id": "A-L3",
+    "framework": "nist_csf",
+    "run_n": 8,
+    "run_id": "A-L3_nist_csf_run_08",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L3\\nist_csf\\run_08",
+    "started_at": "2026-05-31T20:40:25.824154",
+    "elapsed_seconds": 13.5
+  },
+  {
+    "spec_id": "A-L3",
+    "framework": "nist_csf",
+    "run_n": 9,
+    "run_id": "A-L3_nist_csf_run_09",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L3\\nist_csf\\run_09",
+    "started_at": "2026-05-31T20:40:39.364816",
+    "elapsed_seconds": 20.7
+  },
+  {
+    "spec_id": "A-L3",
+    "framework": "nist_csf",
+    "run_n": 10,
+    "run_id": "A-L3_nist_csf_run_10",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L3\\nist_csf\\run_10",
+    "started_at": "2026-05-31T20:41:00.099396",
+    "elapsed_seconds": 12.3
+  },
+  {
+    "spec_id": "B-L1",
+    "framework": "nist_csf",
+    "run_n": 6,
+    "run_id": "B-L1_nist_csf_run_06",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L1\\nist_csf\\run_06",
+    "started_at": "2026-05-31T20:41:12.463977",
+    "elapsed_seconds": 11.1
+  },
+  {
+    "spec_id": "B-L1",
+    "framework": "nist_csf",
+    "run_n": 7,
+    "run_id": "B-L1_nist_csf_run_07",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L1\\nist_csf\\run_07",
+    "started_at": "2026-05-31T20:41:23.565655",
+    "elapsed_seconds": 10.7
+  },
+  {
+    "spec_id": "B-L1",
+    "framework": "nist_csf",
+    "run_n": 8,
+    "run_id": "B-L1_nist_csf_run_08",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L1\\nist_csf\\run_08",
+    "started_at": "2026-05-31T20:41:34.274162",
+    "elapsed_seconds": 11.0
+  },
+  {
+    "spec_id": "B-L1",
+    "framework": "nist_csf",
+    "run_n": 9,
+    "run_id": "B-L1_nist_csf_run_09",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L1\\nist_csf\\run_09",
+    "started_at": "2026-05-31T20:41:45.301914",
+    "elapsed_seconds": 13.5
+  },
+  {
+    "spec_id": "B-L1",
+    "framework": "nist_csf",
+    "run_n": 10,
+    "run_id": "B-L1_nist_csf_run_10",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L1\\nist_csf\\run_10",
+    "started_at": "2026-05-31T20:41:58.800503",
+    "elapsed_seconds": 11.0
+  },
+  {
+    "spec_id": "B-L2",
+    "framework": "nist_csf",
+    "run_n": 6,
+    "run_id": "B-L2_nist_csf_run_06",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L2\\nist_csf\\run_06",
+    "started_at": "2026-05-31T20:42:09.857570",
+    "elapsed_seconds": 10.2
+  },
+  {
+    "spec_id": "B-L2",
+    "framework": "nist_csf",
+    "run_n": 7,
+    "run_id": "B-L2_nist_csf_run_07",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L2\\nist_csf\\run_07",
+    "started_at": "2026-05-31T20:42:20.106415",
+    "elapsed_seconds": 11.1
+  },
+  {
+    "spec_id": "B-L2",
+    "framework": "nist_csf",
+    "run_n": 8,
+    "run_id": "B-L2_nist_csf_run_08",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L2\\nist_csf\\run_08",
+    "started_at": "2026-05-31T20:42:31.228260",
+    "elapsed_seconds": 11.8
+  },
+  {
+    "spec_id": "B-L2",
+    "framework": "nist_csf",
+    "run_n": 9,
+    "run_id": "B-L2_nist_csf_run_09",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L2\\nist_csf\\run_09",
+    "started_at": "2026-05-31T20:42:43.036644",
+    "elapsed_seconds": 11.9
+  },
+  {
+    "spec_id": "B-L2",
+    "framework": "nist_csf",
+    "run_n": 10,
+    "run_id": "B-L2_nist_csf_run_10",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L2\\nist_csf\\run_10",
+    "started_at": "2026-05-31T20:42:54.951196",
+    "elapsed_seconds": 11.0
+  },
+  {
+    "spec_id": "B-L3",
+    "framework": "nist_csf",
+    "run_n": 6,
+    "run_id": "B-L3_nist_csf_run_06",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L3\\nist_csf\\run_06",
+    "started_at": "2026-05-31T20:43:05.995593",
+    "elapsed_seconds": 11.2
+  },
+  {
+    "spec_id": "B-L3",
+    "framework": "nist_csf",
+    "run_n": 7,
+    "run_id": "B-L3_nist_csf_run_07",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L3\\nist_csf\\run_07",
+    "started_at": "2026-05-31T20:43:17.257915",
+    "elapsed_seconds": 11.2
+  },
+  {
+    "spec_id": "B-L3",
+    "framework": "nist_csf",
+    "run_n": 8,
+    "run_id": "B-L3_nist_csf_run_08",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L3\\nist_csf\\run_08",
+    "started_at": "2026-05-31T20:43:28.485341",
+    "elapsed_seconds": 11.9
+  },
+  {
+    "spec_id": "B-L3",
+    "framework": "nist_csf",
+    "run_n": 9,
+    "run_id": "B-L3_nist_csf_run_09",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L3\\nist_csf\\run_09",
+    "started_at": "2026-05-31T20:43:40.381441",
+    "elapsed_seconds": 11.9
+  },
+  {
+    "spec_id": "B-L3",
+    "framework": "nist_csf",
+    "run_n": 10,
+    "run_id": "B-L3_nist_csf_run_10",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L3\\nist_csf\\run_10",
+    "started_at": "2026-05-31T20:43:52.259353",
+    "elapsed_seconds": 10.9
+  },
+  {
+    "spec_id": "C-L1",
+    "framework": "nist_csf",
+    "run_n": 6,
+    "run_id": "C-L1_nist_csf_run_06",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L1\\nist_csf\\run_06",
+    "started_at": "2026-05-31T20:44:03.142832",
+    "elapsed_seconds": 9.6
+  },
+  {
+    "spec_id": "C-L1",
+    "framework": "nist_csf",
+    "run_n": 7,
+    "run_id": "C-L1_nist_csf_run_07",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L1\\nist_csf\\run_07",
+    "started_at": "2026-05-31T20:44:12.741678",
+    "elapsed_seconds": 9.8
+  },
+  {
+    "spec_id": "C-L1",
+    "framework": "nist_csf",
+    "run_n": 8,
+    "run_id": "C-L1_nist_csf_run_08",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L1\\nist_csf\\run_08",
+    "started_at": "2026-05-31T20:44:22.569082",
+    "elapsed_seconds": 10.0
+  },
+  {
+    "spec_id": "C-L1",
+    "framework": "nist_csf",
+    "run_n": 9,
+    "run_id": "C-L1_nist_csf_run_09",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L1\\nist_csf\\run_09",
+    "started_at": "2026-05-31T20:44:32.603349",
+    "elapsed_seconds": 10.0
+  },
+  {
+    "spec_id": "C-L1",
+    "framework": "nist_csf",
+    "run_n": 10,
+    "run_id": "C-L1_nist_csf_run_10",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L1\\nist_csf\\run_10",
+    "started_at": "2026-05-31T20:44:42.662452",
+    "elapsed_seconds": 10.9
+  },
+  {
+    "spec_id": "C-L2",
+    "framework": "nist_csf",
+    "run_n": 6,
+    "run_id": "C-L2_nist_csf_run_06",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L2\\nist_csf\\run_06",
+    "started_at": "2026-05-31T20:44:53.572605",
+    "elapsed_seconds": 10.9
+  },
+  {
+    "spec_id": "C-L2",
+    "framework": "nist_csf",
+    "run_n": 7,
+    "run_id": "C-L2_nist_csf_run_07",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L2\\nist_csf\\run_07",
+    "started_at": "2026-05-31T20:45:04.478498",
+    "elapsed_seconds": 11.7
+  },
+  {
+    "spec_id": "C-L2",
+    "framework": "nist_csf",
+    "run_n": 8,
+    "run_id": "C-L2_nist_csf_run_08",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L2\\nist_csf\\run_08",
+    "started_at": "2026-05-31T20:45:16.230572",
+    "elapsed_seconds": 10.6
+  },
+  {
+    "spec_id": "C-L2",
+    "framework": "nist_csf",
+    "run_n": 9,
+    "run_id": "C-L2_nist_csf_run_09",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L2\\nist_csf\\run_09",
+    "started_at": "2026-05-31T20:45:26.785322",
+    "elapsed_seconds": 11.8
+  },
+  {
+    "spec_id": "C-L2",
+    "framework": "nist_csf",
+    "run_n": 10,
+    "run_id": "C-L2_nist_csf_run_10",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L2\\nist_csf\\run_10",
+    "started_at": "2026-05-31T20:45:38.581287",
+    "elapsed_seconds": 10.5
+  },
+  {
+    "spec_id": "C-L3",
+    "framework": "nist_csf",
+    "run_n": 6,
+    "run_id": "C-L3_nist_csf_run_06",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L3\\nist_csf\\run_06",
+    "started_at": "2026-05-31T20:45:49.129333",
+    "elapsed_seconds": 29.7
+  },
+  {
+    "spec_id": "C-L3",
+    "framework": "nist_csf",
+    "run_n": 7,
+    "run_id": "C-L3_nist_csf_run_07",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L3\\nist_csf\\run_07",
+    "started_at": "2026-05-31T20:46:18.894901",
+    "elapsed_seconds": 15.9
+  },
+  {
+    "spec_id": "C-L3",
+    "framework": "nist_csf",
+    "run_n": 8,
+    "run_id": "C-L3_nist_csf_run_08",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L3\\nist_csf\\run_08",
+    "started_at": "2026-05-31T20:46:34.836339",
+    "elapsed_seconds": 14.0
+  },
+  {
+    "spec_id": "C-L3",
+    "framework": "nist_csf",
+    "run_n": 9,
+    "run_id": "C-L3_nist_csf_run_09",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L3\\nist_csf\\run_09",
+    "started_at": "2026-05-31T20:46:48.809274",
+    "elapsed_seconds": 12.7
+  },
+  {
+    "spec_id": "C-L3",
+    "framework": "nist_csf",
+    "run_n": 10,
+    "run_id": "C-L3_nist_csf_run_10",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L3\\nist_csf\\run_10",
+    "started_at": "2026-05-31T20:47:01.506880",
+    "elapsed_seconds": 29.1
+  },
+  {
+    "spec_id": "A-L1",
+    "framework": "sre",
+    "run_n": 6,
+    "run_id": "A-L1_sre_run_06",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L1\\sre\\run_06",
+    "started_at": "2026-05-31T20:47:30.617731",
+    "elapsed_seconds": 14.7
+  },
+  {
+    "spec_id": "A-L1",
+    "framework": "sre",
+    "run_n": 7,
+    "run_id": "A-L1_sre_run_07",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L1\\sre\\run_07",
+    "started_at": "2026-05-31T20:47:45.346119",
+    "elapsed_seconds": 12.7
+  },
+  {
+    "spec_id": "A-L1",
+    "framework": "sre",
+    "run_n": 8,
+    "run_id": "A-L1_sre_run_08",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L1\\sre\\run_08",
+    "started_at": "2026-05-31T20:47:58.071442",
+    "elapsed_seconds": 13.0
+  },
+  {
+    "spec_id": "A-L1",
+    "framework": "sre",
+    "run_n": 9,
+    "run_id": "A-L1_sre_run_09",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L1\\sre\\run_09",
+    "started_at": "2026-05-31T20:48:11.132683",
+    "elapsed_seconds": 14.0
+  },
+  {
+    "spec_id": "A-L1",
+    "framework": "sre",
+    "run_n": 10,
+    "run_id": "A-L1_sre_run_10",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L1\\sre\\run_10",
+    "started_at": "2026-05-31T20:48:25.189978",
+    "elapsed_seconds": 11.8
+  },
+  {
+    "spec_id": "A-L2",
+    "framework": "sre",
+    "run_n": 6,
+    "run_id": "A-L2_sre_run_06",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L2\\sre\\run_06",
+    "started_at": "2026-05-31T20:48:36.960079",
+    "elapsed_seconds": 10.0
+  },
+  {
+    "spec_id": "A-L2",
+    "framework": "sre",
+    "run_n": 7,
+    "run_id": "A-L2_sre_run_07",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L2\\sre\\run_07",
+    "started_at": "2026-05-31T20:48:46.963184",
+    "elapsed_seconds": 11.2
+  },
+  {
+    "spec_id": "A-L2",
+    "framework": "sre",
+    "run_n": 8,
+    "run_id": "A-L2_sre_run_08",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L2\\sre\\run_08",
+    "started_at": "2026-05-31T20:48:58.181922",
+    "elapsed_seconds": 10.5
+  },
+  {
+    "spec_id": "A-L2",
+    "framework": "sre",
+    "run_n": 9,
+    "run_id": "A-L2_sre_run_09",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L2\\sre\\run_09",
+    "started_at": "2026-05-31T20:49:08.704524",
+    "elapsed_seconds": 10.8
+  },
+  {
+    "spec_id": "A-L2",
+    "framework": "sre",
+    "run_n": 10,
+    "run_id": "A-L2_sre_run_10",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L2\\sre\\run_10",
+    "started_at": "2026-05-31T20:49:19.549155",
+    "elapsed_seconds": 11.5
+  },
+  {
+    "spec_id": "A-L3",
+    "framework": "sre",
+    "run_n": 6,
+    "run_id": "A-L3_sre_run_06",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L3\\sre\\run_06",
+    "started_at": "2026-05-31T20:49:31.020305",
+    "elapsed_seconds": 12.2
+  },
+  {
+    "spec_id": "A-L3",
+    "framework": "sre",
+    "run_n": 7,
+    "run_id": "A-L3_sre_run_07",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L3\\sre\\run_07",
+    "started_at": "2026-05-31T20:49:43.197119",
+    "elapsed_seconds": 12.6
+  },
+  {
+    "spec_id": "A-L3",
+    "framework": "sre",
+    "run_n": 8,
+    "run_id": "A-L3_sre_run_08",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L3\\sre\\run_08",
+    "started_at": "2026-05-31T20:49:55.778405",
+    "elapsed_seconds": 12.0
+  },
+  {
+    "spec_id": "A-L3",
+    "framework": "sre",
+    "run_n": 9,
+    "run_id": "A-L3_sre_run_09",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L3\\sre\\run_09",
+    "started_at": "2026-05-31T20:50:07.778922",
+    "elapsed_seconds": 12.8
+  },
+  {
+    "spec_id": "A-L3",
+    "framework": "sre",
+    "run_n": 10,
+    "run_id": "A-L3_sre_run_10",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\A-L3\\sre\\run_10",
+    "started_at": "2026-05-31T20:50:20.581896",
+    "elapsed_seconds": 13.1
+  },
+  {
+    "spec_id": "B-L1",
+    "framework": "sre",
+    "run_n": 6,
+    "run_id": "B-L1_sre_run_06",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L1\\sre\\run_06",
+    "started_at": "2026-05-31T20:50:33.687289",
+    "elapsed_seconds": 9.7
+  },
+  {
+    "spec_id": "B-L1",
+    "framework": "sre",
+    "run_n": 7,
+    "run_id": "B-L1_sre_run_07",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L1\\sre\\run_07",
+    "started_at": "2026-05-31T20:50:43.435680",
+    "elapsed_seconds": 9.5
+  },
+  {
+    "spec_id": "B-L1",
+    "framework": "sre",
+    "run_n": 8,
+    "run_id": "B-L1_sre_run_08",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L1\\sre\\run_08",
+    "started_at": "2026-05-31T20:50:52.940403",
+    "elapsed_seconds": 10.6
+  },
+  {
+    "spec_id": "B-L1",
+    "framework": "sre",
+    "run_n": 9,
+    "run_id": "B-L1_sre_run_09",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L1\\sre\\run_09",
+    "started_at": "2026-05-31T20:51:03.586555",
+    "elapsed_seconds": 9.6
+  },
+  {
+    "spec_id": "B-L1",
+    "framework": "sre",
+    "run_n": 10,
+    "run_id": "B-L1_sre_run_10",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L1\\sre\\run_10",
+    "started_at": "2026-05-31T20:51:13.242406",
+    "elapsed_seconds": 9.5
+  },
+  {
+    "spec_id": "B-L2",
+    "framework": "sre",
+    "run_n": 6,
+    "run_id": "B-L2_sre_run_06",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L2\\sre\\run_06",
+    "started_at": "2026-05-31T20:51:22.804460",
+    "elapsed_seconds": 11.3
+  },
+  {
+    "spec_id": "B-L2",
+    "framework": "sre",
+    "run_n": 7,
+    "run_id": "B-L2_sre_run_07",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L2\\sre\\run_07",
+    "started_at": "2026-05-31T20:51:34.137749",
+    "elapsed_seconds": 11.1
+  },
+  {
+    "spec_id": "B-L2",
+    "framework": "sre",
+    "run_n": 8,
+    "run_id": "B-L2_sre_run_08",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L2\\sre\\run_08",
+    "started_at": "2026-05-31T20:51:45.297610",
+    "elapsed_seconds": 11.3
+  },
+  {
+    "spec_id": "B-L2",
+    "framework": "sre",
+    "run_n": 9,
+    "run_id": "B-L2_sre_run_09",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L2\\sre\\run_09",
+    "started_at": "2026-05-31T20:51:56.632945",
+    "elapsed_seconds": 18.2
+  },
+  {
+    "spec_id": "B-L2",
+    "framework": "sre",
+    "run_n": 10,
+    "run_id": "B-L2_sre_run_10",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L2\\sre\\run_10",
+    "started_at": "2026-05-31T20:52:14.871721",
+    "elapsed_seconds": 12.1
+  },
+  {
+    "spec_id": "B-L3",
+    "framework": "sre",
+    "run_n": 6,
+    "run_id": "B-L3_sre_run_06",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L3\\sre\\run_06",
+    "started_at": "2026-05-31T20:52:26.952529",
+    "elapsed_seconds": 18.6
+  },
+  {
+    "spec_id": "B-L3",
+    "framework": "sre",
+    "run_n": 7,
+    "run_id": "B-L3_sre_run_07",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L3\\sre\\run_07",
+    "started_at": "2026-05-31T20:52:45.592641",
+    "elapsed_seconds": 12.5
+  },
+  {
+    "spec_id": "B-L3",
+    "framework": "sre",
+    "run_n": 8,
+    "run_id": "B-L3_sre_run_08",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L3\\sre\\run_08",
+    "started_at": "2026-05-31T20:52:58.071222",
+    "elapsed_seconds": 12.5
+  },
+  {
+    "spec_id": "B-L3",
+    "framework": "sre",
+    "run_n": 9,
+    "run_id": "B-L3_sre_run_09",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L3\\sre\\run_09",
+    "started_at": "2026-05-31T20:53:10.567117",
+    "elapsed_seconds": 13.5
+  },
+  {
+    "spec_id": "B-L3",
+    "framework": "sre",
+    "run_n": 10,
+    "run_id": "B-L3_sre_run_10",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\B-L3\\sre\\run_10",
+    "started_at": "2026-05-31T20:53:24.057399",
+    "elapsed_seconds": 13.5
+  },
+  {
+    "spec_id": "C-L1",
+    "framework": "sre",
+    "run_n": 6,
+    "run_id": "C-L1_sre_run_06",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L1\\sre\\run_06",
+    "started_at": "2026-05-31T20:53:37.602758",
+    "elapsed_seconds": 14.1
+  },
+  {
+    "spec_id": "C-L1",
+    "framework": "sre",
+    "run_n": 7,
+    "run_id": "C-L1_sre_run_07",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L1\\sre\\run_07",
+    "started_at": "2026-05-31T20:53:51.743669",
+    "elapsed_seconds": 12.5
+  },
+  {
+    "spec_id": "C-L1",
+    "framework": "sre",
+    "run_n": 8,
+    "run_id": "C-L1_sre_run_08",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L1\\sre\\run_08",
+    "started_at": "2026-05-31T20:54:04.229420",
+    "elapsed_seconds": 11.2
+  },
+  {
+    "spec_id": "C-L1",
+    "framework": "sre",
+    "run_n": 9,
+    "run_id": "C-L1_sre_run_09",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L1\\sre\\run_09",
+    "started_at": "2026-05-31T20:54:15.471355",
+    "elapsed_seconds": 11.5
+  },
+  {
+    "spec_id": "C-L1",
+    "framework": "sre",
+    "run_n": 10,
+    "run_id": "C-L1_sre_run_10",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L1\\sre\\run_10",
+    "started_at": "2026-05-31T20:54:26.988653",
+    "elapsed_seconds": 12.4
+  },
+  {
+    "spec_id": "C-L2",
+    "framework": "sre",
+    "run_n": 6,
+    "run_id": "C-L2_sre_run_06",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L2\\sre\\run_06",
+    "started_at": "2026-05-31T20:54:39.436724",
+    "elapsed_seconds": 14.8
+  },
+  {
+    "spec_id": "C-L2",
+    "framework": "sre",
+    "run_n": 7,
+    "run_id": "C-L2_sre_run_07",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L2\\sre\\run_07",
+    "started_at": "2026-05-31T20:54:54.224402",
+    "elapsed_seconds": 11.4
+  },
+  {
+    "spec_id": "C-L2",
+    "framework": "sre",
+    "run_n": 8,
+    "run_id": "C-L2_sre_run_08",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L2\\sre\\run_08",
+    "started_at": "2026-05-31T20:55:05.659292",
+    "elapsed_seconds": 11.5
+  },
+  {
+    "spec_id": "C-L2",
+    "framework": "sre",
+    "run_n": 9,
+    "run_id": "C-L2_sre_run_09",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L2\\sre\\run_09",
+    "started_at": "2026-05-31T20:55:17.154260",
+    "elapsed_seconds": 12.4
+  },
+  {
+    "spec_id": "C-L2",
+    "framework": "sre",
+    "run_n": 10,
+    "run_id": "C-L2_sre_run_10",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L2\\sre\\run_10",
+    "started_at": "2026-05-31T20:55:29.588429",
+    "elapsed_seconds": 12.6
+  },
+  {
+    "spec_id": "C-L3",
+    "framework": "sre",
+    "run_n": 6,
+    "run_id": "C-L3_sre_run_06",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L3\\sre\\run_06",
+    "started_at": "2026-05-31T20:55:42.178152",
+    "elapsed_seconds": 13.4
+  },
+  {
+    "spec_id": "C-L3",
+    "framework": "sre",
+    "run_n": 7,
+    "run_id": "C-L3_sre_run_07",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L3\\sre\\run_07",
+    "started_at": "2026-05-31T20:55:55.629557",
+    "elapsed_seconds": 16.8
+  },
+  {
+    "spec_id": "C-L3",
+    "framework": "sre",
+    "run_n": 8,
+    "run_id": "C-L3_sre_run_08",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L3\\sre\\run_08",
+    "started_at": "2026-05-31T20:56:12.453219",
+    "elapsed_seconds": 18.0
+  },
+  {
+    "spec_id": "C-L3",
+    "framework": "sre",
+    "run_n": 9,
+    "run_id": "C-L3_sre_run_09",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L3\\sre\\run_09",
+    "started_at": "2026-05-31T20:56:30.469819",
+    "elapsed_seconds": 14.2
+  },
+  {
+    "spec_id": "C-L3",
+    "framework": "sre",
+    "run_n": 10,
+    "run_id": "C-L3_sre_run_10",
+    "status": "success",
+    "run_dir": "C:\\Users\\charl\\Desktop\\EEE\\Y3\\TermThree\\Specification-Led-Development\\eval\\runs\\C-L3\\sre\\run_10",
+    "started_at": "2026-05-31T20:56:44.699683",
+    "elapsed_seconds": 15.0
   }
 ]

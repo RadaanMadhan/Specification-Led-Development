@@ -1,47 +1,59 @@
-# KPI-Spec / Database & Agent Layer
+# KPI-Spec
 
-Quantitative KPI derivation from natural language specifications, grounded in the Azure Well-Architected Framework (WAF). Part of the Specification-Led Development evaluation framework.
+Automated KPI derivation from natural-language software specifications, grounded in architectural quality frameworks (WAF, ISO 25010, NIST CSF, SRE). Part of the Specification-Led Development research project.
 
 ## What this does
 
-Takes a `spec.md` file in SpecKit format, extracts functional requirements (FR-NNN lines), and derives measurable KPI targets for each one — grounded in WAF principles via semantic search. Outputs structured GQM chains and KPI records ready for validation and report generation.
+Takes a `spec.md` file in SpecKit format, extracts functional requirements (FR-NNN lines), and derives measurable KPI targets for each one — grounded in framework principles via semantic embedding search. Outputs structured GQM chains and KPI records.
 
 ```
-spec.md → kpi_agent.py → gqm_output.json + kpi_output.json
+spec.md → kpi_agent.py → gqm_output_{framework}.json + kpi_output_{framework}.json
 ```
 
-## Structure
+## Repository structure
 
 ```
-KPI_DB/
-├── kpi_agent.py                  # Main agent — run this
-├── spec.md                       # Example spec in SpecKit format
-├── waf_embeddings_cache.json     # Auto-generated on first run, do not commit
-├── gqm_output.json               # Auto-generated output, do not commit
-├── kpi_output.json               # Auto-generated output, do not commit
+.
+├── kpi_agent.py                      # KPI derivation agent — main entry point
+├── spec.md                           # Example spec in SpecKit format
+├── requirements.txt                  # Python dependencies
+│
 ├── db/
 │   ├── schema/
-│   │   ├── waf_index.json        # Azure AI Search index definition (WAF catalogue)
-│   │   ├── gqm_index.json        # Azure AI Search index definition (GQM chains)
-│   │   └── kpi_index.json        # Azure AI Search index definition (KPI targets)
+│   │   ├── waf_index.json            # Azure AI Search index definition (WAF)
+│   │   ├── gqm_index.json            # Azure AI Search index definition (GQM chains)
+│   │   └── kpi_index.json            # Azure AI Search index definition (KPI targets)
 │   ├── scripts/
-│   │   ├── seed.py               # Creates Azure indexes + uploads WAF records
-│   │   └── embed.py              # Generates embeddings via Azure OpenAI (Azure only)
-│   ├── waf_index_seed.json       # 59 canonical WAF records (RE:01–PE:12)
-│   └── README.md
-└── docs/
-    ├── WAF_Reference_Document.docx
-    └── KPI_Spec_IA_Design.docx
+│   │   ├── seed.py                   # Creates Azure indexes + uploads seed records
+│   │   └── embed.py                  # Generates embeddings via Azure OpenAI
+│   ├── waf_index_seed.json           # 59 canonical WAF records (RE:01–PE:12)
+│   ├── all_frameworks_seed.json      # Combined seed: WAF + ISO 25010 + NIST CSF + SRE
+│   ├── iso25010_seed.json
+│   ├── nist_csf_seed.json
+│   └── sre_golden_signals_seed.json
+│
+└── eval/
+    ├── run_experiment.py             # Orchestrates all specs × frameworks × runs
+    ├── scorer.py                     # KQS scoring logic (D1, D3, D4)
+    ├── aggregate.py                  # D5 stability + CSV aggregation
+    ├── visualise.py                  # Generates paper figures
+    ├── significance_testing.py       # Kruskal-Wallis / Mann-Whitney tests
+    ├── specs/                        # 9 evaluation specs (A-L1 … C-L3)
+    ├── runs/                         # Experiment outputs (gitignored per run)
+    └── results/
+        ├── all_scores.csv
+        ├── cell_summary.csv
+        ├── significance_report.md
+        └── figures/
 ```
 
-## Running the agent
+## Setup
 
-### Requirements
-- Python 3.10+
-- `requests` library (`pip install requests`)
-- An OpenAI API key (get one at platform.openai.com)
+**Requirements:** Python 3.10+, an OpenAI API key.
 
-### Setup
+```bash
+pip install -r requirements.txt
+```
 
 ```bash
 # Mac/Linux
@@ -51,30 +63,33 @@ export OPENAI_API_KEY="sk-..."
 $env:OPENAI_API_KEY="sk-..."
 ```
 
-### Run
+## Running the agent
 
 ```bash
-# Run against any SpecKit spec
+# Run against any SpecKit spec (default framework: WAF)
 python kpi_agent.py spec.md
 
-# Or point at a different spec file
-python kpi_agent.py path/to/your/spec.md
+# Choose a different knowledge base
+python kpi_agent.py spec.md --framework iso25010
+python kpi_agent.py spec.md --framework nist_csf
+python kpi_agent.py spec.md --framework sre
+
+# Available frameworks: waf, iso25010, nist_csf, sre, all
 ```
 
 ### What happens
 
 1. Parses the spec — extracts all FR-NNN functional requirements
-2. Loads 59 WAF records from `db/waf_index_seed.json`
-3. First run: generates embeddings for all 59 WAF records via OpenAI, caches to `waf_embeddings_cache.json`
+2. Loads framework seed records from `db/all_frameworks_seed.json`
+3. First run per framework: generates embeddings via OpenAI, caches to `embeddings_cache_{framework}.json`
 4. Subsequent runs: loads cache instantly — no extra API calls
-5. For each FR: embeds the requirement, finds top 3 matching WAF principles by cosine similarity, calls OpenAI to derive a GQM chain and KPI targets
-6. Saves all chains to `gqm_output.json` and all KPI targets to `kpi_output.json`
+5. For each FR: embeds the requirement, finds top 3 matching principles by cosine similarity, calls OpenAI (GPT-4o-mini) to derive a GQM chain and KPI targets
+6. Saves all chains to `gqm_output_{framework}.json` and targets to `kpi_output_{framework}.json`
+7. Writes a cost summary to `cost_log_{framework}.json`
 
 ### Output files
 
-Both output files use the exact same schema as the Azure AI Search indexes — they can be bulk-uploaded directly when Azure credentials are available.
-
-**gqm_output.json** — one record per GQM chain:
+**`gqm_output_{framework}.json`** — one record per GQM chain:
 ```json
 {
   "id": "uuid",
@@ -89,7 +104,7 @@ Both output files use the exact same schema as the Azure AI Search indexes — t
 }
 ```
 
-**kpi_output.json** — one record per measurable threshold:
+**`kpi_output_{framework}.json`** — one record per measurable threshold:
 ```json
 {
   "id": "uuid",
@@ -106,17 +121,67 @@ Both output files use the exact same schema as the Azure AI Search indexes — t
 }
 ```
 
-## The three indexes (Azure — future)
+## Evaluation pipeline
 
-The `db/schema/` folder defines the Azure AI Search index structure. Currently the agent runs fully locally using OpenAI for embeddings and local JSON files for storage. When Azure credits are available, `seed.py` and `embed.py` replace the local layer.
+The `eval/` directory contains the full experimental evaluation. Nine specifications (3 application contexts × 3 richness levels) are each processed 10 times per framework (360 total runs) to measure output quality and Monte Carlo stability.
 
-| Index | Records | Currently | Azure (future) |
-|---|---|---|---|
-| `waf-index` | 59 WAF principles | `waf_index_seed.json` (local) | Azure AI Search |
-| `gqm-index` | One per FR per spec run | `gqm_output.json` (local) | Azure AI Search |
-| `kpi-index` | One per KPI threshold | `kpi_output.json` (local) | Azure AI Search |
+```bash
+# Run the full framework comparison (9 specs × 4 frameworks × 10 runs)
+python eval/run_experiment.py --mode framework_comparison
 
-### Azure first-time setup (when credits available)
+# Run a single spec × all frameworks (e.g. for validation)
+python eval/run_experiment.py --mode framework_comparison --spec A-L2
+
+# Resume after interruption — only run runs 6–10 (skips already-completed 1–5)
+python eval/run_experiment.py --mode framework_comparison --runs 10 --start-run 6
+
+# Re-score all saved run outputs after changing scoring logic (no API calls)
+python eval/run_experiment.py --rescore
+
+# Aggregate results
+python eval/aggregate.py
+
+# Run significance tests
+python eval/significance_testing.py
+
+# Generate paper figures
+python eval/visualise.py
+```
+
+### Scoring dimensions
+
+Each derived KPI is scored across four dimensions (KQS = KPI Quality Score):
+
+| Dim | Name | Measures |
+|-----|------|----------|
+| D1 | Threshold specificity | Numeric threshold present and non-trivial |
+| D3 | Directionality coherence | `gte`/`lte` direction matches metric semantics |
+| D4 | GQM chain coherence | Metric name is snake_case, unit is from valid set |
+| D5 | Monte Carlo stability | CV of threshold_numeric across repeated runs |
+
+`kqs_partial` = mean(D1, D3, D4). `kqs_full` = mean(D1, D3, D4, D5), computed at aggregation time.
+
+### Spec naming convention
+
+| ID | Context | Richness |
+|----|---------|----------|
+| A-L1 | Banking | Sparse (1 FR) |
+| A-L2 | Banking | Standard (3 FRs) |
+| A-L3 | Banking | Rich (5 FRs + scenarios) |
+| B-Lx | SaaS | as above |
+| C-Lx | Healthcare | as above |
+
+## Key design decisions
+
+- **LLM as translator, not oracle** — GPT-4o-mini derives structured GQM/KPI records from requirements; it does not make pass/fail judgements. Scoring is deterministic and rule-based.
+- **Real embeddings via OpenAI** — uses `text-embedding-3-small` for framework principle matching. Cached after first run per framework.
+- **Seed data is immutable** — framework records are the ground truth; never modified at runtime.
+- **`threshold_direction`** — `gte` (higher is better: uptime, coverage) or `lte` (lower is better: latency, MTTR). Required for automated pass/fail logic.
+- **Output schema matches Azure AI Search** — `gqm_output_*.json` and `kpi_output_*.json` are structured identically to the Azure indexes for zero-friction cloud migration.
+
+## Azure deployment (optional)
+
+The agent runs fully locally by default. To use Azure AI Search instead:
 
 ```bash
 export AZURE_SEARCH_ENDPOINT="https://your-resource.search.windows.net"
@@ -125,25 +190,12 @@ export AZURE_OPENAI_ENDPOINT="https://your-resource.openai.azure.com"
 export AZURE_OPENAI_API_KEY="your-openai-key"
 export AZURE_OPENAI_EMBED_DEPLOY="text-embedding-3-small"
 
-python db/scripts/seed.py    # creates indexes + uploads 59 WAF records
+python db/scripts/seed.py    # creates indexes + uploads seed records
 python db/scripts/embed.py   # generates and attaches embeddings
 ```
 
-## Key design decisions
+## Running tests
 
-- **Real embeddings via OpenAI** — uses `text-embedding-3-small` (same model as Azure OpenAI) for WAF principle matching. Cached after first run so subsequent runs are free.
-- **waf-index is immutable** — 59 WAF records are the ground truth. Never modified at runtime. Corrections require a new record version.
-- **threshold_direction** — `gte` (higher is better, e.g. uptime, coverage) or `lte` (lower is better, e.g. latency, MTTR). Required for automated pass/fail logic.
-- **Deduplication** — if the LLM returns two KPI targets with identical numeric threshold and direction for the same chain, the duplicate is silently dropped.
-- **Output schema matches Azure** — `gqm_output.json` and `kpi_output.json` are structured identically to the Azure AI Search indexes, so switching from local to Azure requires no schema changes.
-
-## .gitignore
-
-Add these generated files — anyone running the agent regenerates them:
-
-```
-waf_embeddings_cache.json
-gqm_output.json
-kpi_output.json
-.env
+```bash
+pytest eval/tests/ -v
 ```

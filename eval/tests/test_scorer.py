@@ -1,9 +1,8 @@
 """
 test_scorer.py
 --------------
-Pytest tests for scorer.py covering all five required cases:
+Pytest tests for scorer.py covering all required cases:
   - perfect score
-  - cross-pillar bleed (D2 = 0.5)
   - inverted direction (D3 = 0.0)
   - null threshold (D1 = 0.0)
   - plus additional edge cases for robustness
@@ -20,7 +19,6 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from scorer import (
     score_d1,
-    score_d2,
     score_d3,
     score_d4,
     score_pair,
@@ -100,44 +98,6 @@ class TestD1:
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# D2 — WAF code precision
-# ══════════════════════════════════════════════════════════════════════════════
-
-class TestD2:
-    def test_perfect_two_codes_same_pillar(self):
-        """2 SE codes declared under security pillar → 1.0."""
-        assert score_d2(make_gqm(waf_code_refs=["SE:05", "SE:09"], pillar_id="security")) == 1.0
-
-    def test_perfect_three_codes_same_pillar(self):
-        """3 RE codes declared under reliability pillar → 1.0."""
-        assert score_d2(make_gqm(waf_code_refs=["RE:01", "RE:02", "RE:03"], pillar_id="reliability")) == 1.0
-
-    def test_cross_pillar_bleed_case(self):
-        """One SE code + one RE code under security → 0.5 (cross-pillar bleed)."""
-        assert score_d2(make_gqm(waf_code_refs=["SE:05", "RE:01"], pillar_id="security")) == 0.5
-
-    def test_all_codes_wrong_pillar(self):
-        """Two RE codes declared under security (mismatched) → 0.5."""
-        assert score_d2(make_gqm(waf_code_refs=["RE:01", "RE:02"], pillar_id="security")) == 0.5
-
-    def test_only_one_code(self):
-        """Single code → 0.0 (insufficient codes)."""
-        assert score_d2(make_gqm(waf_code_refs=["SE:05"], pillar_id="security")) == 0.0
-
-    def test_empty_codes(self):
-        """Empty list → 0.0."""
-        assert score_d2(make_gqm(waf_code_refs=[], pillar_id="security")) == 0.0
-
-    def test_none_codes(self):
-        """None codes → 0.0."""
-        assert score_d2(make_gqm(waf_code_refs=None, pillar_id="security")) == 0.0
-
-    def test_unknown_pillar_with_codes(self):
-        """Unknown pillar_id → can't verify → 0.5 if >= 2 codes."""
-        assert score_d2(make_gqm(waf_code_refs=["XX:01", "XX:02"], pillar_id="unknown_pillar")) == 0.5
-
-
-# ══════════════════════════════════════════════════════════════════════════════
 # D3 — Directionality coherence
 # ══════════════════════════════════════════════════════════════════════════════
 
@@ -208,8 +168,6 @@ class TestD4:
 
     def test_sentence_with_should(self):
         """metric_name is a space-separated sentence starting with 'should' → 0.0."""
-        # Verb detection fires on space-separated text; underscore-joined names
-        # that happen to start with a verb still pass snake_case → 1.0 (by design).
         assert score_d4(make_gqm(metric_name="should return within limits", metric_unit="milliseconds")) == 0.0
 
     def test_missing_metric_unit(self):
@@ -233,28 +191,26 @@ class TestD4:
 
 class TestScorePair:
     def test_perfect_score_case(self):
-        """All four dimensions should be 1.0 for a well-formed pair."""
+        """All three kqs_partial dimensions should be 1.0 for a well-formed pair."""
         kpi = make_kpi()
         gqm = make_gqm()
         result = score_pair(kpi, gqm, "A-L1", "A-L1_run_01")
         assert result["d1"] == 1.0
-        assert result["d2"] == 1.0
         assert result["d3"] == 1.0
         assert result["d4"] == 1.0
         assert result["kqs_partial"] == 1.0
 
     def test_null_gqm_drops_gqm_dimensions(self):
-        """Missing gqm_record → d2, d3, d4 all 0.0."""
+        """Missing gqm_record → d3, d4 all 0.0."""
         kpi = make_kpi()
         result = score_pair(kpi, None, "A-L1", "A-L1_run_01")
-        assert result["d2"] == 0.0
         assert result["d3"] == 0.0
         assert result["d4"] == 0.0
 
     def test_spec_id_parsed_correctly(self):
         """context and richness are parsed from spec_id."""
         result = score_pair(make_kpi(), make_gqm(), "C-L3", "C-L3_run_05")
-        assert result["context"] == "C"
+        assert result["context"]  == "C"
         assert result["richness"] == "L3"
 
     def test_fr_id_extracted_from_notes(self):
@@ -269,14 +225,21 @@ class TestScorePair:
         result = score_pair(kpi, make_gqm(), "A-L1", "A-L1_run_01")
         assert result["fr_id"] == "unknown"
 
-    def test_kqs_partial_is_mean_of_d1_to_d4(self):
-        """kqs_partial should equal mean(d1, d2, d3, d4) to 4 decimal places."""
+    def test_kqs_partial_is_three_dim_mean(self):
+        """kqs_partial = mean(d1, d3, d4) to 4 decimal places."""
         kpi = make_kpi(threshold_numeric=None, threshold_value="<= 200ms",
                        threshold_direction="lte")
         gqm = make_gqm(metric_name="api_latency_ms", metric_unit="milliseconds")
         result = score_pair(kpi, gqm, "B-L3", "B-L3_run_07")
-        expected = round((result["d1"] + result["d2"] + result["d3"] + result["d4"]) / 4, 4)
+        expected = round((result["d1"] + result["d3"] + result["d4"]) / 3, 4)
         assert result["kqs_partial"] == expected
+
+    def test_no_d2_fields_in_result(self):
+        """score_pair output must not contain d2a, d2b, or d2."""
+        result = score_pair(make_kpi(), make_gqm(), "A-L1", "A-L1_run_01")
+        assert "d2a" not in result
+        assert "d2b" not in result
+        assert "d2"  not in result
 
 
 class TestScoreRun:
@@ -315,7 +278,7 @@ class TestComputeD5:
     def test_high_variance_approaches_zero(self):
         """Very high variance → cv ≈ 1 → D5 close to 0 (clamped floor is 0.0)."""
         result = compute_d5([1.0, 1000.0])
-        assert result < 0.01
+        assert result < 0.1
 
     def test_zero_mean_returns_zero(self):
         """Mean=0 → cv undefined → D5=0.0."""

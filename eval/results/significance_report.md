@@ -21,8 +21,21 @@ L1 vs L3: p = 0.0000 · d = 1.84 (large)
 L2 vs L3: p = 0.0000 · d = 1.36 (large)
 
 ## Interpretation
-The Kruskal-Wallis test on overall KQS scores yields H = 403.88 (p = 0.0000), indicating that differences across richness levels are significant. Mean KQS peaks at L2 then drops at L3 across levels (L1 = 0.888, L2 = 0.890, L3 = 0.729). The L1→L2 improvement is not significant after Bonferroni correction (p = 1.0000) with a negligible effect (d = 0.01). The L2→L3 drop is highly significant (p = 0.0000) with a large effect (d = 0.90). The L1 vs L3 contrast is highly significant (p = 0.0000) (d = 0.89). For D5 stability, the Kruskal-Wallis test yields H = 709.25 (p = 0.0000), which is significant, confirming that richer specs produce more stable numeric thresholds across Monte Carlo runs.
-
+The Kruskal-Wallis test on overall KQS scores yields H = 403.88 
+(p = 0.0000), indicating that differences across richness levels 
+are significant. Mean KQS is statistically equivalent at L1 (0.888) 
+and L2 (0.890), with a negligible and non-significant difference 
+between them (p = 1.000, d = 0.01). The L2→L3 drop is highly 
+significant (p = 0.0000) with a large effect (d = 0.90), and the 
+L1 vs L3 contrast is equally large (d = 0.89). The dominant effect 
+in the experiment is therefore not an improvement from sparse to 
+standard richness but a sharp degradation at over-specified inputs. 
+For D5 stability, the Kruskal-Wallis test yields H = 709.25 
+(p = 0.0000), which is significant. L1 and L2 differ by a small 
+but significant margin (d = 0.37), while L3 is dramatically less 
+stable than both L1 (d = 1.84) and L2 (d = 1.36), confirming that 
+threshold instability is an over-specification phenomenon specific 
+to L3, not a general richness gradient.
 ## Framework Comparison — Kruskal-Wallis
 
 ### Kruskal-Wallis across frameworks (all richness levels)

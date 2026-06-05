@@ -9,6 +9,59 @@ from pathlib import Path
 from typing import Optional
 
 
+def classify_kpi(category: str, name: str, description: str) -> str:
+    """Classify KPI as 'Technical' or 'Business' based on category, name, and description."""
+    category_lower = category.lower()
+    name_lower = name.lower()
+    description_lower = description.lower()
+    
+    # 1. Broad category-based indicators
+    technical_categories = {
+        "success rate", "error rate", "availability", "latency", "throughput",
+        "security", "reliability", "scalability", "data quality", "data immutability",
+        "data integrity", "performance", "response time"
+    }
+    
+    business_categories = {
+        "compliance", "propensity score", "cost efficiency", "user satisfaction",
+        "business goal", "revenue", "roi", "financial", "churn", "retention"
+    }
+    
+    if any(tech in category_lower for tech in technical_categories):
+        return "Technical"
+    if any(bus in category_lower for bus in business_categories):
+        return "Business"
+        
+    # 2. Keyword check on name and description
+    tech_keywords = {
+        "error", "failure", "success rate", "latency", "throughput", "response time",
+        "uptime", "downtime", "availability", "performance", "database", "api",
+        "security", "encryption", "auth", "immutable", "integrity", "correctness",
+        "atomically", "gated", "circuit breaker", "traces", "cache", "network"
+    }
+    
+    bus_keywords = {
+        "cost", "revenue", "budget", "satisfaction", "nps", "compliance", "audit",
+        "fraud", "churn", "conversion", "propensity", "user behavior", "risk profile",
+        "marketing", "sales", "business", "regulatory", "billing", "pricing"
+    }
+    
+    for kw in tech_keywords:
+        if kw in name_lower or kw in description_lower:
+            return "Technical"
+            
+    for kw in bus_keywords:
+        if kw in name_lower or kw in description_lower:
+            return "Business"
+            
+    # 3. Fallback based on typical attributes (e.g. if it has code patterns/Alloy terms, it's Technical)
+    if any(p in name_lower or p in description_lower for p in ["sig ", "pred ", "fact ", "assert ", "relation", "cardinality"]):
+        return "Technical"
+        
+    # Default fallback
+    return "Business"
+
+
 @dataclass
 class KPI:
     """A single Key Performance Indicator extracted from SpecKit or user prompt."""
@@ -21,6 +74,7 @@ class KPI:
     source_location: Optional[str] = None        # e.g., "FR-001", "line X"
     status: str = "To be measured"               # "Fulfilled", "To be measured", or "Missing"
     matched_constraint: Optional[str] = None     # Matched Alloy predicate/fact name, if any
+    kpi_type: str = "Business"                   # "Technical" or "Business"
 
     def __hash__(self):
         """Hash on (name, category) for deduplication."""
@@ -71,6 +125,8 @@ class KPICollection:
                 "total_speckit_kpis": len(self.speckit_kpis),
                 "total_user_prompt_kpis": len(self.user_prompt_kpis),
                 "total_unique_kpis": len(self.merged_kpis),
+                "total_technical_kpis": sum(1 for k in self.merged_kpis if k.kpi_type == "Technical"),
+                "total_business_kpis": sum(1 for k in self.merged_kpis if k.kpi_type == "Business"),
             },
             "kpis": [kpi.to_dict() for kpi in self.merged_kpis],
         }
@@ -137,6 +193,7 @@ class KPIExtractor:
                 strategy = cells[3].strip('*_ ') if len(cells) > 3 else ""
                 
                 if metric_name and category:
+                    kpi_type = classify_kpi(category, metric_name, strategy)
                     kpi = KPI(
                         name=metric_name,
                         category=category,
@@ -145,6 +202,7 @@ class KPIExtractor:
                         measurement_strategy=strategy if strategy else None,
                         source="speckit",
                         source_location="spec.md: Formal Requirements & Advanced KPI Mapping",
+                        kpi_type=kpi_type,
                     )
                     kpis.append(kpi)
 
@@ -182,6 +240,7 @@ class KPIExtractor:
                 end = min(len(prompt), match.end() + 50)
                 context = prompt[start:end].strip()
                 
+                kpi_type = classify_kpi(category, category, default_strategy)
                 kpi = KPI(
                     name=category,
                     category=category,
@@ -190,6 +249,7 @@ class KPIExtractor:
                     measurement_strategy=default_strategy,
                     source="user_prompt",
                     source_location="User-provided description",
+                    kpi_type=kpi_type,
                 )
                 kpis.append(kpi)
                 found_categories[category] = True

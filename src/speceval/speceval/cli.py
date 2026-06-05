@@ -337,7 +337,7 @@ def cmd_generate(
 
 
 
-@click.command()
+@main.command("extract-kpis")
 @click.argument("spec_md", type=click.Path(exists=True, path_type=Path))
 @click.option(
     "--user-prompt",

@@ -8,7 +8,7 @@ from typing import Optional
 
 import streamlit as st
 
-from speceval.kpi_extractor import extract_all_kpis, save_kpis_json
+from speceval.kpi_extractor import extract_all_kpis, save_kpis_json, classify_kpi
 from speceval.speckit_generator import generate_speckit, GeneratorConfig
 from speceval.providers.anthropic import AnthropicProvider
 
@@ -90,17 +90,33 @@ def run_dashboard(
     st.markdown(f"**Feature ID:** `{feature_id}`")
     st.markdown("---")
 
+    # Calculate counts dynamically
+    technical_kpis = []
+    business_kpis = []
+    for k in kpis:
+        k_type = k.get("kpi_type")
+        if k_type == "Technical":
+            technical_kpis.append(k)
+        else:
+            business_kpis.append(k)
+
     # Summary metrics
-    col1, col2, col3, col4 = st.columns(4)
+    col1, col2, col3 = st.columns(3)
     with col1:
-        st.metric("Total KPIs", metadata.get("total_unique_kpis", 0))
+        st.metric("Total KPIs", len(kpis))
     with col2:
+        st.metric("🔧 Technical KPIs", len(technical_kpis))
+    with col3:
+        st.metric("💼 Business KPIs", len(business_kpis))
+
+    col1, col2, col3 = st.columns(3)
+    with col1:
         fulfilled = sum(1 for k in kpis if k.get("status") == "Fulfilled")
         st.metric("✓ Fulfilled", fulfilled, delta_color="off")
-    with col3:
+    with col2:
         to_measure = sum(1 for k in kpis if k.get("status") == "To be measured")
         st.metric("○ To be measured", to_measure, delta_color="off")
-    with col4:
+    with col3:
         missing = sum(1 for k in kpis if k.get("status") == "Missing")
         st.metric("✗ Missing", missing, delta_color="off")
 
@@ -109,9 +125,24 @@ def run_dashboard(
     # KPI Table grouped by status
     st.subheader("KPI Details")
 
+    col_filter_1, col_filter_2 = st.columns([1, 2])
+    with col_filter_1:
+        type_filter = st.selectbox(
+            "Filter by KPI Type",
+            options=["All Types", "Technical KPIs", "Business KPIs"],
+            index=0
+        )
+
+    # Filter the kpis to display
+    display_kpis = kpis
+    if type_filter == "Technical KPIs":
+        display_kpis = technical_kpis
+    elif type_filter == "Business KPIs":
+        display_kpis = business_kpis
+
     status_order = ["Fulfilled", "To be measured", "Missing"]
     for status in status_order:
-        status_kpis = [k for k in kpis if k.get("status") == status]
+        status_kpis = [k for k in display_kpis if k.get("status") == status]
         if not status_kpis:
             continue
 
@@ -124,7 +155,9 @@ def run_dashboard(
                 col1, col2 = st.columns([3, 1])
                 with col1:
                     st.write(f"**{kpi.get('name', 'N/A')}**")
-                    st.caption(f"Category: {kpi.get('category', 'N/A')}")
+                    kpi_type = kpi.get("kpi_type", "Business")
+                    type_color = "blue" if kpi_type == "Technical" else "green"
+                    st.caption(f"Category: {kpi.get('category', 'N/A')} | Type: :{type_color}[{kpi_type}]")
                     if kpi.get("description"):
                         st.caption(
                             f"Description: {kpi.get('description')[:100]}..."

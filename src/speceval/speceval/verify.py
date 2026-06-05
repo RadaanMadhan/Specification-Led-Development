@@ -285,7 +285,7 @@ def _render_kpi_section(kpi_collection) -> list[str]:
     lines: list[str] = []
     bar = "=" * 78
     lines.append(bar)
-    lines.append("  Business KPI Extraction & Fulfillment Analysis")
+    lines.append("  KPI Extraction & Fulfillment Analysis")
     lines.append(bar)
     lines.append("")
 
@@ -293,10 +293,14 @@ def _render_kpi_section(kpi_collection) -> list[str]:
     fulfilled = sum(1 for kpi in kpi_collection.merged_kpis if kpi.status == "Fulfilled")
     to_measure = sum(1 for kpi in kpi_collection.merged_kpis if kpi.status == "To be measured")
     missing = sum(1 for kpi in kpi_collection.merged_kpis if kpi.status == "Missing")
+    technical = sum(1 for kpi in kpi_collection.merged_kpis if kpi.kpi_type == "Technical")
+    business = sum(1 for kpi in kpi_collection.merged_kpis if kpi.kpi_type == "Business")
 
     lines.append(
-        f"  Extracted {total_unique} KPIs "
-        f"({len(kpi_collection.speckit_kpis)} from SpecKit spec, "
+        f"  Extracted {total_unique} KPIs ({technical} Technical, {business} Business)"
+    )
+    lines.append(
+        f"    ({len(kpi_collection.speckit_kpis)} from SpecKit spec, "
         f"{len(kpi_collection.user_prompt_kpis)} from user prompt)"
     )
     lines.append("")
@@ -332,7 +336,7 @@ def _render_kpi_section(kpi_collection) -> list[str]:
             lines.append(f"  {status_emoji} {status_label}")
             for kpi in sorted(kpis, key=lambda k: k.name):
                 lines.append(
-                    f"      [{kpi.category}] {kpi.name}"
+                    f"      [{kpi.kpi_type} | {kpi.category}] {kpi.name}"
                 )
                 if kpi.matched_constraint:
                     lines.append(

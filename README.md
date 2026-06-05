@@ -4,6 +4,181 @@ A system that turns natural-language feature descriptions into formally verified
 
 ## What changed on this branch
 
+# KPI Dashboard Feature
+
+The KPI Dashboard provides an interactive Streamlit interface for reviewing extracted KPIs and their fulfillment status against the generated Alloy code.
+
+## Features
+
+✅ **Color-Coded KPI Status**
+- 🟢 **Green (Fulfilled)**: KPI is directly addressed by an Alloy predicate or assertion
+- 🟡 **Yellow (To be measured)**: KPI requires runtime measurement (success rates, throughput, etc.)
+- 🔴 **Red (Missing)**: KPI is not addressed in the Alloy code
+
+📊 **KPI Summary Statistics**
+- Total KPIs extracted
+- Breakdown by status (Fulfilled, To be measured, Missing)
+- Source tracking (SpecKit vs user prompt)
+
+🔄 **Interactive Regeneration**
+- Modify your original prompt to improve KPI extraction
+- Regenerate SpecKit artefacts with new description
+- Loop until satisfied with KPI coverage
+
+📥 **Export Functionality**
+- Download KPIs as JSON for integration with other tools
+
+## CLI Commands
+
+### View Dashboard for Existing Feature
+
+```bash
+speceval dashboard specs/005-banking-transfer-system
+```
+
+This displays KPIs extracted from an existing feature directory's `kpis.json` file.
+
+### Generate with Interactive Dashboard
+
+```bash
+speceval generate-interactive "A banking transfer system with audit logging"
+```
+
+This command:
+1. Generates SpecKit artefacts (spec.md, data-model.md, http-api.md)
+2. Extracts KPIs from the spec
+3. Launches the dashboard for review
+4. Allows you to:
+   - Review KPI fulfillment status
+   - Click "Regenerate" to modify your prompt and try again
+   - Click "Continue" when satisfied
+5. Repeats until you're happy or reach max iterations (5)
+
+### Optional: Customize Generation
+
+```bash
+speceval generate-interactive \
+  --project-type "web-api" \
+  --tech-stack "Python, FastAPI, PostgreSQL" \
+  --target-frs 12 \
+  --feature-id "my-custom-feature" \
+  "Your feature description"
+```
+
+## Dashboard Sections
+
+### Header
+- Feature name and ID
+- Quick status summary (total KPIs, counts by status)
+
+### KPI Details (Grouped by Status)
+Each expandable section shows:
+- KPI name and category
+- Description
+- Alloy match (if Fulfilled)
+- Measurement strategy
+
+### Action Buttons
+- **🔄 Regenerate with Modified Prompt**: Opens a text area to edit your description and restart generation
+- **✓ Continue / Close**: Accept current KPIs and proceed
+- **📋 Export KPIs as JSON**: Download the full KPI dataset
+
+## KPI Matching Algorithm
+
+The dashboard uses a similarity-based algorithm to match KPIs against Alloy code:
+
+1. **Extracts** all predicate, assertion, and fact names from the Alloy model
+2. **Normalizes** names (lowercase, removes special characters)
+3. **Computes similarity** using:
+   - Exact match (score: 1.0)
+   - Substring containment (score: 0.7)
+   - Trigram overlap (score: 0.0-1.0)
+4. **Tags** based on threshold:
+   - ≥ 0.6: **Fulfilled** ✓
+   - 0.3-0.6 or runtime metric: **To be measured** ○
+   - < 0.3: **Missing** ✗
+
+## JSON Output Format
+
+The `kpis.json` file saved in your feature directory contains:
+
+```json
+{
+  "feature_id": "005-banking-transfer-system",
+  "feature_name": "Banking Transfer System",
+  "metadata": {
+    "total_speckit_kpis": 8,
+    "total_user_prompt_kpis": 3,
+    "total_unique_kpis": 10
+  },
+  "kpis": [
+    {
+      "name": "Audit Entry Immutability",
+      "category": "Data Integrity",
+      "description": "All audit entries must be append-only",
+      "formal_constraint": "fact F_AppendOnly",
+      "measurement_strategy": "Verify no audit record is ever modified",
+      "source": "speckit",
+      "source_location": "spec.md: Formal Requirements & Advanced KPI Mapping",
+      "status": "Fulfilled",
+      "matched_constraint": "F_AppendOnlyAuditEntries"
+    },
+    {
+      "name": "Success Rate",
+      "category": "Success Rate",
+      "description": "Ratio of successful operations",
+      "formal_constraint": null,
+      "measurement_strategy": "Ratio of successful operations",
+      "source": "user_prompt",
+      "source_location": "User-provided description",
+      "status": "To be measured",
+      "matched_constraint": null
+    }
+  ]
+}
+```
+
+## Example Workflow
+
+```bash
+# Step 1: Generate interactively
+$ speceval generate-interactive "A banking system with transfers and audit logging"
+[gen]     iteration 1/5
+[gen]     generating SpecKit artefacts...
+[gen]     provider: Anthropic (claude-3-5-sonnet-20241022)
+[gen]     output:   /path/to/specs
+
+[kpi]     extracting KPIs from spec.md...
+[kpi]     extracted 8 KPIs
+
+[dashboard] launching KPI review dashboard...
+```
+
+At this point, Streamlit opens in your browser showing:
+- ✓ 5 Fulfilled KPIs (data integrity, access control, etc.)
+- ○ 2 To be measured (success rate, transaction throughput)
+- ✗ 1 Missing (cost tracking)
+
+You can either:
+- Click "Continue" to proceed with these KPIs
+- Click "Regenerate" to modify your prompt and try again:
+  - "A banking system with transfers, audit logging, and cost tracking per transaction"
+  - Dashboard regenerates with the updated spec and KPIs
+  - Now shows all 8 KPIs as Fulfilled
+
+# Step 2: Verification
+$ speceval run specs/005-banking-transfer-system
+[parse]   feature '005-banking-transfer-system', 8 FRs, 3 user stories
+[lift]    calling LLM...
+[alloy]   running alloy.jar on feature_model.als...
+[kpi]     extracted 8 KPIs (8 from spec.md)
+```
+
+The full verification runs and dashboard displays KPI-Alloy alignment.
+
+
+##Previous changes on the radaan-code-generation branch:
+
 ### 1. CLI redesign
 
 The CLI was rewritten from scratch with three clean commands:

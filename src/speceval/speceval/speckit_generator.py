@@ -483,6 +483,54 @@ def generate_speckit(
     )
 
 
+from pathlib import Path
+from speceval.speckit_generator import generate_speckit, GeneratorConfig
+from speceval.providers.anthropic import AnthropicProvider
+from speceval.kpi_extractor import extract_all_kpis, save_kpis_json
+
+
+def generate_with_kpis(
+    description: str,
+    feature_id: str,
+    specs_dir: Path,
+    cache_dir: Path,
+    provider: AnthropicProvider,
+):
+    """Generate SpecKit artefacts + extract KPIs to JSON."""
+    
+    # Step 1: Generate SpecKit artefacts (spec.md, data-model.md, http-api.md)
+    print(f"[gen]     generating SpecKit for {feature_id}...")
+    result = generate_speckit(
+        description=description,
+        config=GeneratorConfig(
+            feature_id=feature_id,
+            project_type="web-api",
+            target_fr_count=10,
+        ),
+        provider=provider,
+        output_base=specs_dir,
+        cache_dir=cache_dir,
+        use_cache=True,
+    )
+    
+    # Step 2: Extract KPIs from both spec.md and user prompt
+    print(f"[kpi]     extracting KPIs...")
+    kpi_collection = extract_all_kpis(
+        feature_id=result.feature_id,
+        spec_md=result.spec_md,
+        user_prompt=description,
+        feature_name=result.feature_id.replace("-", " ").title(),
+    )
+    
+    # Step 3: Save KPIs to JSON
+    kpi_output = result.feature_dir / "kpis.json"
+    save_kpis_json(kpi_collection, kpi_output)
+    
+    print(f"[kpi]     saved {len(kpi_collection.merged_kpis)} KPIs → {kpi_output}")
+    print(f"[kpi]     - {len(kpi_collection.speckit_kpis)} from spec.md")
+    print(f"[kpi]     - {len(kpi_collection.user_prompt_kpis)} from user prompt")
+    
+    return result, kpi_collection
 
 def _build_spec_prompt(
     description: str, cfg: GeneratorConfig, feature_id: str

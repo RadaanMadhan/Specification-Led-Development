@@ -16,7 +16,7 @@ from pathlib import Path
 from typing import Any, Callable
 
 from speceval.verify import run_verification
-
+from speceval.kpi_extractor import extract_all_kpis, save_kpis_json
 
 def _project_root() -> Path:
     """The speceval project root, i.e. src/speceval/."""
@@ -225,3 +225,42 @@ def run_unified(
         result["generation"] = generation_result
 
     return result
+
+
+def extract_kpis_for_run(
+    feature_dir: Path,
+    user_prompt: str = "",
+    *,
+    echo: Callable[[str], Any] | None = None,
+) -> dict:
+    """Extract KPIs from a feature directory's spec.md."""
+    if echo is None:
+        def echo(_msg):  # noqa: ARG001
+            return None
+    
+    spec_md_path = feature_dir / "spec.md"
+    if not spec_md_path.exists():
+        echo(f"[kpi-extract]     spec.md not found at {spec_md_path}")
+        return {}
+    
+    spec_md = spec_md_path.read_text(encoding="utf-8")
+    feature_id = feature_dir.name
+    
+    echo(f"[kpi-extract]     extracting KPIs from {feature_id}...")
+    collection = extract_all_kpis(
+        feature_id=feature_id,
+        spec_md=spec_md,
+        user_prompt=user_prompt,
+    )
+    
+    # Save to JSON
+    kpi_output = feature_dir / "kpis.json"
+    save_kpis_json(collection, kpi_output)
+    
+    echo(
+        f"[kpi-extract]     {len(collection.merged_kpis)} KPIs extracted "
+        f"({len(collection.speckit_kpis)} from spec, "
+        f"{len(collection.user_prompt_kpis)} from prompt)"
+    )
+    
+    return collection.to_dict()

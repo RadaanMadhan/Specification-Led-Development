@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from speceval.kpi_extractor import extract_all_kpis, save_kpis_json
 from speceval.lifter_design import (
     DesignLiftError,
     emit_mutated_als,
@@ -139,6 +140,23 @@ def run_verification(
         )
         report_lines.extend(mut_lines)
 
+    # --- Extract KPIs from spec.md and save to JSON ---
+    kpi_collection = extract_all_kpis(
+        feature_id=inputs.feature_id,
+        spec_md=inputs.spec_md,
+        user_prompt="",  # User prompt not available in verification mode
+        feature_name=inputs.feature_id.replace("-", " ").title(),
+        alloy_code=pkg.feature_model_als,  # Pass Alloy code for KPI matching
+    )
+    kpi_output = run_dir / "kpis.json"
+    save_kpis_json(kpi_collection, kpi_output)
+    echo(
+        f"[kpi]     extracted {len(kpi_collection.merged_kpis)} KPIs "
+        f"({len(kpi_collection.speckit_kpis)} from spec.md) → {kpi_output}"
+    )
+    kpi_lines = _render_kpi_section(kpi_collection)
+    report_lines.extend(kpi_lines)
+
     report_text = "\n".join(report_lines) + "\n"
 
     return {
@@ -154,6 +172,8 @@ def run_verification(
         "fr_ids": fr_ids,
         "coverage": coverage,
         "mutation_results": mutation_results,
+        "kpi_collection": kpi_collection,
+        "kpi_output": kpi_output,
         "report_text": report_text,
     }
 
@@ -257,6 +277,76 @@ def _render_design_report(
     else:
         lines.append("  All FRs have at least one matching assertion.")
     lines.append("")
+    return lines
+
+
+def _render_kpi_section(kpi_collection) -> list[str]:
+    """Render KPI extraction results with fulfillment status for the report."""
+    lines: list[str] = []
+    bar = "=" * 78
+    lines.append(bar)
+    lines.append("  Business KPI Extraction & Fulfillment Analysis")
+    lines.append(bar)
+    lines.append("")
+
+    total_unique = len(kpi_collection.merged_kpis)
+    fulfilled = sum(1 for kpi in kpi_collection.merged_kpis if kpi.status == "Fulfilled")
+    to_measure = sum(1 for kpi in kpi_collection.merged_kpis if kpi.status == "To be measured")
+    missing = sum(1 for kpi in kpi_collection.merged_kpis if kpi.status == "Missing")
+
+    lines.append(
+        f"  Extracted {total_unique} KPIs "
+        f"({len(kpi_collection.speckit_kpis)} from SpecKit spec, "
+        f"{len(kpi_collection.user_prompt_kpis)} from user prompt)"
+    )
+    lines.append("")
+    lines.append("  Status Summary")
+    lines.append("  " + "-" * 76)
+    lines.append(f"    ✓ Fulfilled (addressed by Alloy code):      {fulfilled}")
+    lines.append(f"    ○ To be measured (runtime metrics):         {to_measure}")
+    lines.append(f"    ✗ Missing (not addressed):                  {missing}")
+    lines.append("")
+
+    if kpi_collection.merged_kpis:
+        lines.append("  KPI Details")
+        lines.append("  " + "-" * 76)
+        
+        # Group by status for clarity
+        status_groups = {
+            "Fulfilled": [],
+            "To be measured": [],
+            "Missing": [],
+        }
+        for kpi in kpi_collection.merged_kpis:
+            status_groups[kpi.status].append(kpi)
+        
+        for status_label, status_emoji in [
+            ("Fulfilled", "✓"),
+            ("To be measured", "○"),
+            ("Missing", "✗"),
+        ]:
+            kpis = status_groups[status_label]
+            if not kpis:
+                continue
+            
+            lines.append(f"  {status_emoji} {status_label}")
+            for kpi in sorted(kpis, key=lambda k: k.name):
+                lines.append(
+                    f"      [{kpi.category}] {kpi.name}"
+                )
+                if kpi.matched_constraint:
+                    lines.append(
+                        f"          → Matched to: {kpi.matched_constraint}"
+                    )
+                if kpi.measurement_strategy:
+                    lines.append(
+                        f"          → Measurement: {kpi.measurement_strategy[:60]}"
+                    )
+            lines.append("")
+    else:
+        lines.append("  No KPIs extracted from spec.md.")
+        lines.append("")
+
     return lines
 
 

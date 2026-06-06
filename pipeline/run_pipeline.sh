@@ -231,10 +231,17 @@ ok "Both tracks complete"
 
 log "Running automated scorer..."
 
+# Copy kpis.json if it exists in RUN_DIR
+if [[ -f "$RUN_DIR/kpis.json" ]]; then
+    cp "$RUN_DIR/kpis.json" "$WORKSPACE/kpis.json"
+    log "Copied kpis.json to workspace"
+fi
+
 python3 "$SCRIPT_DIR/score.py" \
     "$WORKSPACE/guided" \
     "$WORKSPACE/baseline" \
     "$WORKSPACE/verification_context.md" \
+    --kpis "$RUN_DIR/kpis.json" \
     -o "$WORKSPACE/scores.json"
 
 ok "Scoring complete"

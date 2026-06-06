@@ -326,6 +326,10 @@ def main():
         "-o", "--output", type=Path, default=None,
         help="Output path for scores.json (default: stdout)",
     )
+    parser.add_argument(
+        "--kpis", type=Path, default=None,
+        help="Path to kpis.json to include in the scores output",
+    )
     args = parser.parse_args()
 
     if not args.context_path.exists():
@@ -365,6 +369,14 @@ def main():
         "security_posture": 5,
     }
 
+    kpi_data = {}
+    if args.kpis and args.kpis.exists():
+        try:
+            with open(args.kpis, "r", encoding="utf-8") as f:
+                kpi_data = json.load(f)
+        except Exception as e:
+            print(f"WARNING: Failed to load KPIs from {args.kpis}: {e}", file=sys.stderr)
+
     output = {
         "dimensions": [
             {
@@ -387,6 +399,8 @@ def main():
             "mutations_expected": len(context["mutations"]),
             "facts_expected": len(context["facts"]),
         },
+        "kpis": kpi_data.get("kpis", []),
+        "kpi_metadata": kpi_data.get("metadata", {}),
     }
 
     result_json = json.dumps(output, indent=2)

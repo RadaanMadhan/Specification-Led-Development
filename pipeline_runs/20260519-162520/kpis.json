@@ -29,8 +29,8 @@
       "measurement_strategy": "Circuit breaker metrics on audit store connectivity; transfer failure attribution tags in APM traces",
       "source": "speckit",
       "source_location": "spec.md: Formal Requirements & Advanced KPI Mapping",
-      "status": "To be measured",
-      "matched_constraint": null,
+      "status": "Fulfilled",
+      "matched_constraint": "F_FailClosedAudit",
       "kpi_type": "Technical"
     },
     {
@@ -41,7 +41,7 @@
       "measurement_strategy": "Pre-transfer balance-to-amount ratio logged; correlated with rejection outcomes to calibrate client-side warnings",
       "source": "speckit",
       "source_location": "spec.md: Formal Requirements & Advanced KPI Mapping",
-      "status": "To be measured",
+      "status": "Fulfilled",
       "matched_constraint": "F_SufficientFunds",
       "kpi_type": "Business"
     },
@@ -53,8 +53,8 @@
       "measurement_strategy": "Post-reversal automated balance assertion; exception counter on any conservation violation",
       "source": "speckit",
       "source_location": "spec.md: Formal Requirements & Advanced KPI Mapping",
-      "status": "To be measured",
-      "matched_constraint": null,
+      "status": "Fulfilled",
+      "matched_constraint": "F_ReversalCompensating",
       "kpi_type": "Technical"
     },
     {
@@ -89,8 +89,8 @@
       "measurement_strategy": "Fraud signal outcomes labeled in case management system; precision/recall computed monthly; model recalibrated quarterly",
       "source": "speckit",
       "source_location": "spec.md: Formal Requirements & Advanced KPI Mapping",
-      "status": "Missing",
-      "matched_constraint": null,
+      "status": "Fulfilled",
+      "matched_constraint": "F_FraudSignalConstraints",
       "kpi_type": "Business"
     }
   ]

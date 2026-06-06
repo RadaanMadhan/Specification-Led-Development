@@ -364,7 +364,6 @@ def extract_kpis(spec_md: Path, user_prompt: str, output: Path) -> None:
     collection = extract_all_kpis(
         feature_id=feature_id,
         spec_md=spec_text,
-        user_prompt=user_prompt,
     )
     
     # Determine output path
@@ -378,7 +377,6 @@ def extract_kpis(spec_md: Path, user_prompt: str, output: Path) -> None:
     
     click.echo(f"Extracted {len(collection.merged_kpis)} KPIs:")
     click.echo(f"  - {len(collection.speckit_kpis)} from spec.md")
-    click.echo(f"  - {len(collection.user_prompt_kpis)} from user prompt")
     click.echo(f"  - {len(collection.merged_kpis)} unique (merged)")
     click.echo(f"\nSaved to: {output}")
     

@@ -201,9 +201,14 @@ def render_app() -> None:
                                 <div class="kpi-card">
                                     <div class="kpi-title">{status_html} {k.get('name', 'Unnamed KPI')}</div>
                                     <div class="kpi-meta">Category: <b>{k.get('category', 'General')}</b> | Source: <i>{k.get('source', 'unknown')} ({k.get('source_location', 'N/A')})</i></div>
-                                    <div class="kpi-detail">📝 <b>Description:</b> {k.get('description', 'No description')}</div>
-                                    <div class="kpi-detail">⏱️ <b>Measurement Strategy:</b> {k.get('measurement_strategy', 'N/A')}</div>
-                                    {f'<div class="kpi-detail">⛓️ <b>Formal Constraint:</b> <code>{k.get("formal_constraint")}</code></div>' if k.get("formal_constraint") else ''}
+                                    <div class="kpi-detail">🛡️ <b>Logically Guaranteed:</b> {'✅ Yes (<code>' + k.get("matched_constraint") + '</code>)' if k.get("matched_constraint") else '❌ No (or not formally mapped)'}</div>
+                                    <div class="kpi-detail">📊 <b>Operationally Observable:</b> {'✅ Yes (Runtime metric required)' if k.get("status") in ["To be measured", "Fulfilled"] else '❌ Missing telemetry strategy'}</div>
+                                    <details>
+                                        <summary style="cursor: pointer; font-weight: bold; margin-top: 5px; color: #4F8BF9;">More Details</summary>
+                                        <div class="kpi-detail" style="margin-top: 5px;">📝 <b>Description:</b> {k.get('description', 'No description')}</div>
+                                        <div class="kpi-detail">⏱️ <b>Measurement Strategy:</b> {k.get('measurement_strategy', 'N/A')}</div>
+                                        {f'<div class="kpi-detail">⛓️ <b>Formal Constraint:</b> <code>{k.get("formal_constraint")}</code></div>' if k.get("formal_constraint") else ''}
+                                    </details>
                                 </div>
                                 """,
                                 unsafe_allow_html=True
@@ -362,9 +367,14 @@ def render_app() -> None:
                                     <div class="kpi-card">
                                         <div class="kpi-title">{status_html} {k.get('name', 'Unnamed KPI')}</div>
                                         <div class="kpi-meta">{meta_str}</div>
-                                        <div class="kpi-detail">📝 <b>Description:</b> {k.get('description', 'No description')}</div>
-                                        <div class="kpi-detail">⏱️ <b>Measurement:</b> {k.get('measurement_strategy', 'N/A')}</div>
-                                        {f'<div class="kpi-detail">⛓️ <b>Formal Constraint:</b> <code>{k.get("formal_constraint")}</code></div>' if k.get("formal_constraint") else ''}
+                                        <div class="kpi-detail">🛡️ <b>Logically Guaranteed:</b> {'✅ Yes (<code>' + k.get("matched_constraint") + '</code>)' if k.get("matched_constraint") else '❌ No (or not formally mapped)'}</div>
+                                        <div class="kpi-detail">📊 <b>Operationally Observable:</b> {'✅ Yes (Runtime metric required)' if k.get("status") in ["To be measured", "Fulfilled"] else '❌ Missing telemetry strategy'}</div>
+                                        <details>
+                                            <summary style="cursor: pointer; font-weight: bold; margin-top: 5px; color: #4F8BF9;">More Details</summary>
+                                            <div class="kpi-detail" style="margin-top: 5px;">📝 <b>Description:</b> {k.get('description', 'No description')}</div>
+                                            <div class="kpi-detail">⏱️ <b>Measurement:</b> {k.get('measurement_strategy', 'N/A')}</div>
+                                            {f'<div class="kpi-detail">⛓️ <b>Formal Constraint:</b> <code>{k.get("formal_constraint")}</code></div>' if k.get("formal_constraint") else ''}
+                                        </details>
                                     </div>
                                     """,
                                     unsafe_allow_html=True

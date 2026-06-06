@@ -65,12 +65,9 @@ and configuration, produce a **spec.md** file in the EXACT SpecKit template \
 format shown below.
 
 CONSTITUTION PRINCIPLE — Formal Specification & Business KPI Alignment:
-Every feature specification must explicitly map formal constraints to business \
-outcomes. Whenever describing a system state or invariant (conceptually mapping \
-to an Alloy `sig` or `fact`), define how maintaining that state impacts a \
-business metric. Whenever describing a state transition or action (conceptually \
-mapping to an Alloy `pred`), define a measurable Business KPI (e.g., propensity \
-scores, agent success rates) that tracks the success of this transition.
+Every feature specification must explicitly map formal constraints to business outcomes.
+First, identify any business KPIs explicitly requested in the user description. Then, generate additional KPIs derived from the Azure Well-Architected Framework.
+For ALL KPIs (user-provided or generated), you must explicitly bridge the vocabulary between business outcomes and technical logic. Do this by defining the EXACT Alloy constraint name (e.g., F_FailClosedAudit) that logically enforces it.
 
 EXACT TEMPLATE — follow this structure precisely:
 
@@ -141,10 +138,10 @@ EXACT TEMPLATE — follow this structure precisely:
 
 ## Formal Requirements & Advanced KPI Mapping
 
-| KPI Category | Specific Business Metric | Formal Constraint (Alloy Concept) | Measurement & Telemetry Strategy |
+| KPI Category | Specific Business Metric | Exact Alloy Constraint Name (e.g., F_FailClosedAudit) | Measurement & Telemetry Strategy |
 | :--- | :--- | :--- | :--- |
-| **Success Rate** | <success rate KPI> | <Alloy pred pre/post conditions> | <how to log> |
-| **Propensity Score** | <predictive score KPI> | <Alloy sig relational density> | <data pipeline> |
+| **Success Rate** | <success rate KPI> | <Exact Name> | <how to log> |
+| **Propensity Score** | <predictive score KPI> | <Exact Name> | <data pipeline> |
 ```
 
 CRITICAL PARSER CONSTRAINTS — the downstream parser uses these exact regex \

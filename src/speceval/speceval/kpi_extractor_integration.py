@@ -50,7 +50,6 @@ def generate_with_kpis(
     
     print(f"[kpi]     saved {len(kpi_collection.merged_kpis)} KPIs → {kpi_output}")
     print(f"[kpi]     - {len(kpi_collection.speckit_kpis)} from spec.md")
-    print(f"[kpi]     - {len(kpi_collection.user_prompt_kpis)} from user prompt")
     
     return result, kpi_collection
 
@@ -66,20 +65,15 @@ from speceval.kpi_extractor import extract_all_kpis, save_kpis_json
 
 @click.command()
 @click.argument("spec_md", type=click.Path(exists=True, path_type=Path))
-@click.option(
-    "--user-prompt",
-    type=str,
-    default="",
-    help="User's original prompt (for keyword extraction)",
-)
+
 @click.option(
     "--output",
     type=click.Path(path_type=Path),
     default=None,
     help="Output JSON file. Defaults to <spec_dir>/kpis.json",
 )
-def extract_kpis(spec_md: Path, user_prompt: str, output: Path) -> None:
-    """Extract business KPIs from spec.md and/or user prompt.
+def extract_kpis(spec_md: Path, output: Path) -> None:
+    """Extract business KPIs from spec.md.
     
     Outputs a JSON file with all extracted KPIs, deduplicated across sources.
     """
@@ -91,7 +85,6 @@ def extract_kpis(spec_md: Path, user_prompt: str, output: Path) -> None:
     collection = extract_all_kpis(
         feature_id=feature_id,
         spec_md=spec_text,
-        user_prompt=user_prompt,
     )
     
     # Determine output path
@@ -105,7 +98,6 @@ def extract_kpis(spec_md: Path, user_prompt: str, output: Path) -> None:
     
     click.echo(f"Extracted {len(collection.merged_kpis)} KPIs:")
     click.echo(f"  - {len(collection.speckit_kpis)} from spec.md")
-    click.echo(f"  - {len(collection.user_prompt_kpis)} from user prompt")
     click.echo(f"  - {len(collection.merged_kpis)} unique (merged)")
     click.echo(f"\nSaved to: {output}")
     
@@ -128,7 +120,6 @@ from speceval.kpi_extractor import extract_all_kpis, save_kpis_json
 
 def extract_kpis_for_run(
     feature_dir: Path,
-    user_prompt: str = "",
     *,
     echo: Callable[[str], Any] | None = None,
 ) -> dict:
@@ -149,7 +140,6 @@ def extract_kpis_for_run(
     collection = extract_all_kpis(
         feature_id=feature_id,
         spec_md=spec_md,
-        user_prompt=user_prompt,
     )
     
     # Save to JSON
@@ -158,8 +148,7 @@ def extract_kpis_for_run(
     
     echo(
         f"[kpi-extract]     {len(collection.merged_kpis)} KPIs extracted "
-        f"({len(collection.speckit_kpis)} from spec, "
-        f"{len(collection.user_prompt_kpis)} from prompt)"
+        f"({len(collection.speckit_kpis)} from spec)"
     )
     
     return collection.to_dict()

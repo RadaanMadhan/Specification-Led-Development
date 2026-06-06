@@ -300,8 +300,7 @@ def _render_kpi_section(kpi_collection) -> list[str]:
         f"  Extracted {total_unique} KPIs ({technical} Technical, {business} Business)"
     )
     lines.append(
-        f"    ({len(kpi_collection.speckit_kpis)} from SpecKit spec, "
-        f"{len(kpi_collection.user_prompt_kpis)} from user prompt)"
+        f"    ({len(kpi_collection.speckit_kpis)} from SpecKit spec)"
     )
     lines.append("")
     lines.append("  Status Summary")

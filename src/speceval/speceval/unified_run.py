@@ -229,7 +229,6 @@ def run_unified(
 
 def extract_kpis_for_run(
     feature_dir: Path,
-    user_prompt: str = "",
     *,
     echo: Callable[[str], Any] | None = None,
 ) -> dict:
@@ -250,7 +249,6 @@ def extract_kpis_for_run(
     collection = extract_all_kpis(
         feature_id=feature_id,
         spec_md=spec_md,
-        user_prompt=user_prompt,
     )
     
     # Save to JSON
@@ -259,8 +257,7 @@ def extract_kpis_for_run(
     
     echo(
         f"[kpi-extract]     {len(collection.merged_kpis)} KPIs extracted "
-        f"({len(collection.speckit_kpis)} from spec, "
-        f"{len(collection.user_prompt_kpis)} from prompt)"
+        f"({len(collection.speckit_kpis)} from spec)"
     )
     
     return collection.to_dict()

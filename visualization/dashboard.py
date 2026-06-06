@@ -253,15 +253,29 @@ def render_app() -> None:
             st.subheader("⚙️ Verification Quality Scores (Guided Track)")
             score = score_cards(metrics)
             
-            col_t1, col_t2, col_t3, col_t4 = st.columns(4)
-            col_t1.metric("Structural Completeness", f"{score['structural']} / 10")
-            col_t1.caption(f"{metrics.get('patterns_expected', 0)} patterns checked")
-            col_t2.metric("FR Coverage", f"{score['fr_coverage']} / 10")
-            col_t2.caption(f"{metrics.get('frs_expected', 0)} functional reqs")
-            col_t3.metric("Invariant Enforcement", f"{score['invariant']} / 10")
-            col_t3.caption(f"{metrics.get('facts_expected', 0)} Alloy invariants")
-            col_t4.metric("Security Posture", f"{score['security']} / 10")
+            col_t1, col_t2, col_t3, col_t4, col_t5 = st.columns(5)
+            score_value = score['structural']
+            metric = metrics.get('patterns_expected', 0)
+            col_t1.metric("Structural Completeness", f"{int(score_value/100*metric)}/{metric}")
+            col_t1.caption(f"{score_value} % of patterns checked")
+
+            score_value = score['fr_coverage']
+            metric = metrics.get('frs_expected', 0)
+            col_t2.metric("FR Coverage", f"{int(score_value/100*metric)}/{metric}")
+            col_t2.caption(f"{score_value} % of functional reqs")
+
+            score_value = score['invariant']
+            metric = metrics.get('facts_expected', 0)
+            col_t3.metric("Invariant Enforcement", f"{int(score_value/100*metric)}/{metric}")
+            col_t3.caption(f"{score_value} % of Alloy invariants")
+
+            score_value = score['security']
+            col_t4.metric("Security Posture", f"{score_value} %")
             col_t4.caption("checklist of security controls")
+
+            score_value = score.get('kpi', 0.0)
+            col_t5.metric("KPI Instrumentation", f"{score_value} %")
+            col_t5.caption("of KPIs instrumented")
 
             # 2. Test Composition and KPI constants
             st.write("")

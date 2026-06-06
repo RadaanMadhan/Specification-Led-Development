@@ -12,6 +12,7 @@ def score_cards(metrics: dict[str, Any]) -> dict[str, float]:
         "fr_coverage": round(float(metrics.get("fr_score", 0.0)) * 10.0, 1),
         "invariant": round(float(metrics.get("invariant_score", 0.0)) * 10.0, 1),
         "security": round(float(metrics.get("security_score", 0.0)) * 10.0, 1),
+        "kpi": round(float(metrics.get("kpi_score", 0.0)) * 10.0, 1),
     }
 
 

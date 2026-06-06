@@ -1,11 +1,11 @@
 ==============================================================================
   Unified Compliance Report  —  005-a-banking-transfer-system-with-audit-logging
-  feature folder : /home/radaan/Projects/Specification-Led-Development/specs/005-a-banking-transfer-system-with-audit-logging
+  feature folder : C:\Users\Keshav\Desktop\TelecomParis\3A - MVA - Imperial College London\Microsoft group project\Specification-Led-Development\specs\005-a-banking-transfer-system-with-audit-logging
 ==============================================================================
 
   Executive summary
     Alloy:  20/20 assertions PASS; mutations 0/6 bit
-    KPI:    10 GQM chains, 12 KPI rows (10 FRs)
+    KPI:    skipped
 
 ==============================================================================
   1. Structural Verification (Alloy)
@@ -14,8 +14,8 @@
 ==============================================================================
   Design Compliance Report  (Phase 3 — feature_model.als)
   feature       : 005-a-banking-transfer-system-with-audit-logging
-  spec source   : /home/radaan/Projects/Specification-Led-Development/specs/005-a-banking-transfer-system-with-audit-logging
-  alloy model   : /home/radaan/Projects/Specification-Led-Development/runs/005-a-banking-transfer-system-with-audit-logging/feature_model.als
+  spec source   : C:\Users\Keshav\Desktop\TelecomParis\3A - MVA - Imperial College London\Microsoft group project\Specification-Led-Development\specs\005-a-banking-transfer-system-with-audit-logging
+  alloy model   : C:\Users\Keshav\Desktop\TelecomParis\3A - MVA - Imperial College London\Microsoft group project\Specification-Led-Development\runs\005-a-banking-transfer-system-with-audit-logging\feature_model.als
   patterns      : LeastPrivilege, PermissionCompleteness, AuthRequiredEverywhere, NoSelfMutation, AuditCompleteness, AppendOnly, AttributionCorrectness, OwnershipExclusivity, OwnershipBasedAccess, ConservationOfValue, NoInformationLeakage
   fr count      : 10 declared in spec.md
   assertions    : 20 total (20/20 PASS via Alloy)
@@ -48,16 +48,16 @@
 
   FR coverage
   ----------------------------------------------------------------------------
-  FR-001  →  FR_001_AtomicTransfer=PASS, ConservationOfValue=PASS
-  FR-002  →  FR_002_SufficientFunds=PASS
-  FR-003  →  FR_003_UniqueTransactionRef=PASS
-  FR-004  →  FR_004_AuditForEveryEvent=PASS, AuditCompleteness=PASS, AppendOnly=PASS
-  FR-005  →  FR_005_HashChain=PASS
-  FR-006  →  FR_006_DailyLimit=PASS
-  FR-007  →  LeastPrivilege=PASS
-  FR-008  →  FR_008_BalanceConsistency=PASS
-  FR-009  →  FR_009_ReversalCompensating=PASS
-  FR-010  →  FR_010_FailClosedAudit=PASS, AuthRequiredEverywhere=PASS
+  FR-001  ->  FR_001_AtomicTransfer=PASS, ConservationOfValue=PASS
+  FR-002  ->  FR_002_SufficientFunds=PASS
+  FR-003  ->  FR_003_UniqueTransactionRef=PASS
+  FR-004  ->  FR_004_AuditForEveryEvent=PASS, AuditCompleteness=PASS, AppendOnly=PASS
+  FR-005  ->  FR_005_HashChain=PASS
+  FR-006  ->  FR_006_DailyLimit=PASS
+  FR-007  ->  LeastPrivilege=PASS
+  FR-008  ->  FR_008_BalanceConsistency=PASS
+  FR-009  ->  FR_009_ReversalCompensating=PASS
+  FR-010  ->  FR_010_FailClosedAudit=PASS, AuthRequiredEverywhere=PASS
 
   All FRs have at least one matching assertion.
 
@@ -70,34 +70,34 @@
   mutated model. If it still PASSes, the assertion is vacuous and
   must be strengthened.
 
-  - MUTATE F_NoSelfTransfer  → runs/005-a-banking-transfer-system-with-audit-logging/mutated_F_NoSelfTransfer.als
+  - MUTATE F_NoSelfTransfer  -> runs\005-a-banking-transfer-system-with-audit-logging\mutated_F_NoSelfTransfer.als
     rationale: Removing F_NoSelfTransfer allows a Transfer where source = destination, which directly violates the NoSelfMutation assertion. The injection forces such a transfer to exist.
     expected to FAIL: NoSelfMutation
       - NoSelfMutation: PASS (vacuous?)
 
-  - MUTATE F_AuditCompleteness  → runs/005-a-banking-transfer-system-with-audit-logging/mutated_F_AuditCompleteness.als
+  - MUTATE F_AuditCompleteness  -> runs\005-a-banking-transfer-system-with-audit-logging\mutated_F_AuditCompleteness.als
     rationale: Removing F_AuditCompleteness allows a Transfer with no AuditEntry. The injection forces such an orphan transfer to exist, violating audit completeness and fail-closed assertions.
     expected to FAIL: AuditCompleteness, FR_004_AuditForEveryEvent, FR_010_FailClosedAudit
       - AuditCompleteness: PASS (vacuous?)
       - FR_004_AuditForEveryEvent: PASS (vacuous?)
       - FR_010_FailClosedAudit: PASS (vacuous?)
 
-  - MUTATE F_AppendOnlyAuditEntries  → runs/005-a-banking-transfer-system-with-audit-logging/mutated_F_AppendOnlyAuditEntries.als
+  - MUTATE F_AppendOnlyAuditEntries  -> runs\005-a-banking-transfer-system-with-audit-logging\mutated_F_AppendOnlyAuditEntries.als
     rationale: Removing F_AppendOnlyAuditEntries allows two distinct AuditEntry atoms to share the same seqNum, violating the append-only uniqueness invariant. The injection forces duplicate sequence numbers.
     expected to FAIL: AppendOnly
       - AppendOnly: PASS (vacuous?)
 
-  - MUTATE F_OwnershipBasedAccess  → runs/005-a-banking-transfer-system-with-audit-logging/mutated_F_OwnershipBasedAccess.als
+  - MUTATE F_OwnershipBasedAccess  -> runs\005-a-banking-transfer-system-with-audit-logging\mutated_F_OwnershipBasedAccess.als
     rationale: Removing F_OwnershipBasedAccess allows a Customer to initiate a transfer from an account they don't own. The injection forces this scenario.
     expected to FAIL: OwnershipBasedAccess
       - OwnershipBasedAccess: PASS (vacuous?)
 
-  - MUTATE F_AuthRequiredEverywhere  → runs/005-a-banking-transfer-system-with-audit-logging/mutated_F_AuthRequiredEverywhere.als
+  - MUTATE F_AuthRequiredEverywhere  -> runs\005-a-banking-transfer-system-with-audit-logging\mutated_F_AuthRequiredEverywhere.als
     rationale: Removing F_AuthRequiredEverywhere allows unauthenticated users to initiate transfers. The injection forces a transfer initiated by an unauthenticated user.
     expected to FAIL: AuthRequiredEverywhere
       - AuthRequiredEverywhere: PASS (vacuous?)
 
-  - MUTATE F_AttributionCorrectness  → runs/005-a-banking-transfer-system-with-audit-logging/mutated_F_AttributionCorrectness.als
+  - MUTATE F_AttributionCorrectness  -> runs\005-a-banking-transfer-system-with-audit-logging\mutated_F_AttributionCorrectness.als
     rationale: Removing F_AttributionCorrectness allows an audit entry's actor to differ from the transfer's initiator. The injection forces misattribution.
     expected to FAIL: AttributionCorrectness
       - AttributionCorrectness: PASS (vacuous?)
@@ -112,69 +112,41 @@
   - F_AttributionCorrectness: ASSERTION VACUOUS (AttributionCorrectness)
 
 ==============================================================================
+  KPI Extraction & Fulfillment Analysis
+==============================================================================
+
+  Extracted 7 KPIs (4 Technical, 3 Business)
+    (7 from SpecKit spec, 0 from user prompt)
+
+  Status Summary
+  ----------------------------------------------------------------------------
+    ✓ Fulfilled (addressed by Alloy code):      0
+    ○ To be measured (runtime metrics):         5
+    ✗ Missing (not addressed):                  2
+
+  KPI Details
+  ----------------------------------------------------------------------------
+  ○ To be measured
+      [Technical | Success Rate] Audit write success rate = 100% (fail-closed)
+          -> Measurement: Circuit breaker metrics on audit store connectivity; transfe
+      [Business | Propensity Score] Insufficient-fund rejection propensity
+          -> Matched to: F_SufficientFunds
+          -> Measurement: Pre-transfer balance-to-amount ratio logged; correlated with
+      [Technical | Success Rate] Reversal correctness rate = 100%
+          -> Measurement: Post-reversal automated balance assertion; exception counter
+      [Technical | Success Rate] Step-up authentication completion rate ≥ 75%
+          -> Measurement: Funnel metrics: step-up issued → step-up completed → transfe
+      [Technical | Success Rate] Transfer completion rate ≥ 99.5% for valid requests
+          -> Measurement: API response status code distribution logged to time-series 
+
+  ✗ Missing
+      [Business | Propensity Score] Account risk profile score
+          -> Measurement: Nightly batch job computes per-account risk score; stored in
+      [Business | Propensity Score] Transfer fraud propensity score (precision ≥ 80%, recall ≥ 90%)
+          -> Measurement: Fraud signal outcomes labeled in case management system; pre
+
+==============================================================================
   2. Runtime KPI Targets (WAF-derived)
 ==============================================================================
 
-  feature        : Feature Specification: Banking Transfer System with Audit Logging
-  spec run id    : spec-20260519-145959
-  volume         : 10 GQM chains, 12 KPI rows (10 FRs)
-
-  pillar breakdown
-  ----------------------------------------------------------------------------
-    Cost Optimization (CO)           4 KPI rows
-    Reliability (RE)                 5 KPI rows
-    Security (SE)                    3 KPI rows
-
-  per-FR detail
-  ----------------------------------------------------------------------------
-    FR-001  System MUST execute transfers atomically — either both the debit and c
-      pillar=Cost Optimization (CO), waf=['CO:09', 'PE:09', 'RE:02']
-      metric: transfer_transaction_success_rate (percentage)
-        - >= 99.99%      (higher is better)  via system transaction logs analysis
-
-    FR-002  System MUST validate that the source account has sufficient available 
-      pillar=Cost Optimization (CO), waf=['CO:06', 'CO:01', 'SE:05']
-      metric: balance_validation_accuracy (percentage)
-        - >= 99%         (higher is better)  via automated transaction validation tests
-
-    FR-003  System MUST generate a unique, immutable transaction reference ID for 
-      pillar=Reliability (RE), waf=['RE:02', 'RE:05', 'SE:05']
-      metric: unique_transaction_reference_id_count (count)
-        - >= 1           (higher is better)  via system log analysis
-
-    FR-004  System MUST create an append-only audit log entry for every state-chan
-      pillar=Cost Optimization (CO), waf=['CO:01', 'CO:03', 'OE:02']
-      metric: audit_log_entry_creation_success_rate (percentage)
-        - >= 95%         (higher is better)  via log analysis tools
-
-    FR-005  System MUST cryptographically chain audit log entries using a hash-lin
-      pillar=Security (SE), waf=['SE:10', 'SE:09', 'SE:05']
-      metric: security_alert_mttd_minutes (minutes)
-        - <= 15 minutes  (lower is better)  via Azure Monitor
-
-    FR-006  System MUST enforce configurable per-account daily transfer limits and
-      pillar=Security (SE), waf=['SE:05', 'CO:01', 'CO:03']
-      metric: transfer_limit_enforcement_rate (percentage)
-        - >= 99%         (higher is better)  via transaction logging and analysis
-
-    FR-007  System MUST detect transfer velocity anomalies (configurable threshold
-      pillar=Reliability (RE), waf=['RE:02', 'SE:05', 'SE:10']
-      metric: anomaly_detection_mttd_minutes (minutes)
-        - <= 15 minutes  (lower is better)  via system monitoring and alerting tools
-        - < 5%           (lower is better)  via log analysis for false positives
-        - 100%           (higher is better)  via audit of MFA implementation
-
-    FR-008  System MUST provide a balance inquiry endpoint that reflects read-afte
-      pillar=Cost Optimization (CO), waf=['CO:06', 'PE:04', 'CO:03']
-      metric: read_after_write_consistency_rate (percentage)
-        - >= 99%         (higher is better)  via automated tests
-
-    FR-009  System MUST support administrative transfer reversal via compensating 
-      pillar=Security (SE), waf=['SE:05', 'PE:10', 'CO:09']
-      metric: transfer_reversal_audit_linkage_percentage (percentage)
-        - >= 95%         (higher is better)  via audit log review
-
-    FR-010  System MUST fail-closed when audit log persistence is unavailable — no
-      pillar=Reliability (RE), waf=['RE:03', 'RE:08', 'SE:05']
-      metric: identified_failure_modes_count (count)
-        - All P0/P1 failures have documented mitigations (higher is better)  via failure mode analysis review
+  Skipped via --skip-kpi.

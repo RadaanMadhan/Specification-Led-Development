@@ -8,7 +8,7 @@ Runs:
     2. Post-hoc pairwise Mann-Whitney U tests with Bonferroni correction
     3. Cohen's d effect sizes for significant pairs
     4. Per-context Kruskal-Wallis breakdown
-    5. D5 Monte Carlo stability significance tests
+    5. D4 Monte Carlo stability significance tests
 
 Writes:
     eval/results/significance_report.md
@@ -156,21 +156,21 @@ def section_per_context(df: pd.DataFrame) -> str:
     return "\n".join(lines)
 
 
-def section_d5(df: pd.DataFrame) -> tuple[str, float, float, dict]:
-    groups = {r: df.loc[df["richness"] == r, "d5"].dropna().to_numpy()
+def section_d4(df: pd.DataFrame) -> tuple[str, float, float, dict]:
+    groups = {r: df.loc[df["richness"] == r, "d4"].dropna().to_numpy()
               for r in ["L1", "L2", "L3"]}
     h, p = kruskal_result(list(groups.values()))
 
     lines = [
-        "## D5 Monte Carlo stability — Kruskal-Wallis",
+        "## D4 Monte Carlo stability — Kruskal-Wallis",
         f"H = {h:.2f}, p = {p:.4f} -> {sig_label(p)}",
     ]
     return "\n".join(lines), h, p, groups
 
 
-def section_d5_pairwise(groups: dict) -> str:
+def section_d4_pairwise(groups: dict) -> str:
     pairs = pairwise_mwu(groups)
-    lines = ["## Pairwise D5 comparisons (Bonferroni corrected)"]
+    lines = ["## Pairwise D4 comparisons (Bonferroni corrected)"]
     for l1, l2, u, p_corr, d in pairs:
         p_str = f"p = {p_corr:.4f}" if not math.isnan(p_corr) else "p = n/a"
         d_str = f"d = {d:.2f} ({interpret_d(d)})" if not math.isnan(d) else "d = n/a"
@@ -181,7 +181,7 @@ def section_d5_pairwise(groups: dict) -> str:
 def plain_english_summary(
     kqs_h: float, kqs_p: float,
     kqs_groups: dict,
-    d5_h: float, d5_p: float,
+    d4_h: float, d4_p: float,
 ) -> str:
     kqs_pairs = pairwise_mwu(kqs_groups)
     pair_map = {(l1, l2): (p, d) for l1, l2, _, p, d in kqs_pairs}
@@ -219,9 +219,9 @@ def plain_english_summary(
         f"{f' with a {interpret_d(l2l3_d)} effect (d = {l2l3_d:.2f})' if not math.isnan(l2l3_d) else ''}. "
         f"The L1 vs L3 contrast is {p_phrase(l1l3_p)}"
         f"{f' (d = {l1l3_d:.2f})' if not math.isnan(l1l3_d) else ''}. "
-        f"For D5 stability, the Kruskal-Wallis test yields H = {d5_h:.2f} (p = {d5_p:.4f}), "
-        f"which is {sig_label(d5_p)}, "
-        f"{'confirming that richer specs produce more stable numeric thresholds across Monte Carlo runs.' if d5_p < 0.05 else 'suggesting that threshold stability does not vary significantly with specification richness in this sample.'}"
+        f"For D4 stability, the Kruskal-Wallis test yields H = {d4_h:.2f} (p = {d4_p:.4f}), "
+        f"which is {sig_label(d4_p)}, "
+        f"{'confirming that richer specs produce more stable numeric thresholds across Monte Carlo runs.' if d4_p < 0.05 else 'suggesting that threshold stability does not vary significantly with specification richness in this sample.'}"
     )
     return "## Interpretation\n" + para
 
@@ -465,17 +465,17 @@ def main() -> None:
     sections.append(ctx_text)
     print(f"\n{ctx_text}")
 
-    # 4 & 5. D5
-    d5_kw, d5_h, d5_p, d5_groups = section_d5(df)
-    sections.append(d5_kw)
-    print(f"\n{d5_kw}")
+    # 4 & 5. D4
+    d4_kw, d4_h, d4_p, d4_groups = section_d4(df)
+    sections.append(d4_kw)
+    print(f"\n{d4_kw}")
 
-    d5_pairs_text = section_d5_pairwise(d5_groups)
-    sections.append(d5_pairs_text)
-    print(f"\n{d5_pairs_text}")
+    d4_pairs_text = section_d4_pairwise(d4_groups)
+    sections.append(d4_pairs_text)
+    print(f"\n{d4_pairs_text}")
 
     # Interpretation
-    interp = plain_english_summary(kqs_h, kqs_p, kqs_groups, d5_h, d5_p)
+    interp = plain_english_summary(kqs_h, kqs_p, kqs_groups, d4_h, d4_p)
     sections.append(interp)
     print(f"\n{interp}")
 

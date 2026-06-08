@@ -1,11 +1,11 @@
 """
 aggregate.py
 ------------
-Loads all scored records from all runs, computes D5 (Monte Carlo stability)
+Loads all scored records from all runs, computes D4 (Monte Carlo stability)
 per (spec_id, fr_id, metric_name) group, and writes:
 
     eval/results/all_scores.csv      — one row per kpi record across all 90 runs
-    eval/results/cell_summary.csv    — one row per (spec_id, pillar_id) with mean KQS + D5
+    eval/results/cell_summary.csv    — one row per (spec_id, pillar_id) with mean KQS + D4
 
 Usage:
     python eval/aggregate.py
@@ -32,20 +32,20 @@ ALL_SCORES_FIELDS = [
     "run_id", "spec_id", "framework_id", "richness", "context", "fr_id",
     "kpi_id", "gqm_id", "pillar_id", "metric_name",
     "threshold_numeric", "threshold_direction", "waf_code_refs",
-    "d1", "d3", "d4", "kqs_partial", "d5",
+    "d1", "d2", "d3", "kqs_partial", "d4",
     "total_tokens", "cost_usd", "cost_per_kpi_usd",
 ]
 
 CELL_FIELDS = [
     "spec_id", "framework_id", "context", "richness", "pillar_id", "n_records",
-    "d1_mean", "d3_mean", "d4_mean", "d5",
+    "d1_mean", "d2_mean", "d3_mean", "d4",
     "kqs_partial_mean", "kqs_full",
 ]
 
 
-# ── D5 computation ─────────────────────────────────────────────────────────────
+# ── D4 computation ─────────────────────────────────────────────────────────────
 
-def compute_d5(values: list[float]) -> float:
+def compute_d4(values: list[float]) -> float:
     """
     Compute Monte Carlo stability score for a group of threshold_numeric values.
 
@@ -59,8 +59,8 @@ def compute_d5(values: list[float]) -> float:
 
     Edge cases:
         - Empty list → 0.5
-        - All identical values → std=0 → cv=0 → D5=1.0
-        - Mean == 0 → cv undefined → D5=0.0
+        - All identical values → std=0 → cv=0 → D4=1.0
+        - Mean == 0 → cv undefined → D4=0.0
     """
     if len(values) < 2:
         return 0.5
@@ -196,22 +196,22 @@ def attach_cost(records: list[dict], cost_map: dict[str, dict]) -> list[dict]:
     return records
 
 
-# ── D5 attachment ──────────────────────────────────────────────────────────────
+# ── D4 attachment ──────────────────────────────────────────────────────────────
 
-def attach_d5(records: list[dict]) -> list[dict]:
+def attach_d4(records: list[dict]) -> list[dict]:
     """
-    Compute D5 for each (spec_id, fr_id, metric_name) group and attach to records.
+    Compute D4 for each (spec_id, fr_id, metric_name) group and attach to records.
 
     Args:
         records: flat list of scored records (output of load_all_scores).
 
     Returns:
-        Same list with 'd5' field added to each record in-place.
+        Same list with 'd4' field added to each record in-place.
 
     Edge cases:
         - Records with threshold_numeric=None are excluded from the value list
-          but still receive a d5 score based on the group's other values.
-        - Groups with < 2 non-null values receive d5=0.5.
+          but still receive a d4 score based on the group's other values.
+        - Groups with < 2 non-null values receive d4=0.5.
     """
     groups: dict[tuple, list[float]] = {}
     for r in records:
@@ -220,11 +220,11 @@ def attach_d5(records: list[dict]) -> list[dict]:
         if numeric is not None:
             groups.setdefault(key, []).append(float(numeric))
 
-    d5_map = {k: compute_d5(vs) for k, vs in groups.items()}
+    d4_map = {k: compute_d4(vs) for k, vs in groups.items()}
 
     for r in records:
         key = (r.get("spec_id", ""), r.get("framework_id", ""), r.get("fr_id", ""), r.get("metric_name", ""))
-        r["d5"] = round(d5_map.get(key, 0.5), 4)
+        r["d4"] = round(d4_map.get(key, 0.5), 4)
 
     return records
 
@@ -236,7 +236,7 @@ def compute_cell_summary(records: list[dict]) -> list[dict]:
     Group records by (spec_id, framework_id, pillar_id) and compute aggregate KQS metrics.
 
     Args:
-        records: list of scored records with d5 already attached.
+        records: list of scored records with d4 already attached.
 
     Returns:
         List of cell summary dicts sorted by SPEC_ORDER × framework × PILLAR_ORDER.
@@ -244,9 +244,9 @@ def compute_cell_summary(records: list[dict]) -> list[dict]:
     Edge cases:
         - pillar_id=None records are grouped under 'unknown'.
         - framework_id=None records are grouped under 'waf'.
-        - D5 per cell is the mean of the unique D5 values for distinct
+        - D4 per cell is the mean of the unique D4 values for distinct
           (fr_id, metric_name) groups within the cell.
-        - kqs_full = mean(D1, D3, D4, D5) — four dimensions.
+        - kqs_full = mean(D1, D2, D3, D4) — four dimensions.
     """
     cells: dict[tuple, list[dict]] = {}
     for r in records:
@@ -261,18 +261,18 @@ def compute_cell_summary(records: list[dict]) -> list[dict]:
     for (spec_id, framework_id, pillar_id), cell_records in cells.items():
         n = len(cell_records)
         d1_mean  = sum(r["d1"]  for r in cell_records) / n
+        d2_mean  = sum(r["d2"]  for r in cell_records) / n
         d3_mean  = sum(r["d3"]  for r in cell_records) / n
-        d4_mean  = sum(r["d4"]  for r in cell_records) / n
         kqs_partial_mean = sum(r["kqs_partial"] for r in cell_records) / n
 
-        group_d5: dict[tuple, float] = {}
+        group_d4: dict[tuple, float] = {}
         for r in cell_records:
             gkey = (r.get("fr_id", ""), r.get("metric_name", ""))
-            group_d5[gkey] = r["d5"]
-        d5 = sum(group_d5.values()) / len(group_d5) if group_d5 else 0.5
+            group_d4[gkey] = r["d4"]
+        d4 = sum(group_d4.values()) / len(group_d4) if group_d4 else 0.5
 
-        # kqs_full uses 4 dimensions: D1, D3, D4, D5
-        kqs_full = (d1_mean + d3_mean + d4_mean + d5) / 4
+        # kqs_full uses 4 dimensions: D1, D2, D3, D4
+        kqs_full = (d1_mean + d2_mean + d3_mean + d4) / 4
 
         summary.append({
             "spec_id":          spec_id,
@@ -282,9 +282,9 @@ def compute_cell_summary(records: list[dict]) -> list[dict]:
             "pillar_id":        pillar_id,
             "n_records":        n,
             "d1_mean":          round(d1_mean, 4),
+            "d2_mean":          round(d2_mean, 4),
             "d3_mean":          round(d3_mean, 4),
-            "d4_mean":          round(d4_mean, 4),
-            "d5":               round(d5, 4),
+            "d4":               round(d4, 4),
             "kqs_partial_mean": round(kqs_partial_mean, 4),
             "kqs_full":         round(kqs_full, 4),
         })
@@ -328,7 +328,7 @@ def _write_csv(path: Path, rows: list[dict], fieldnames: list[str]) -> None:
 # ── Main ───────────────────────────────────────────────────────────────────────
 
 def main() -> None:
-    """Load all scored runs, compute D5, write CSVs."""
+    """Load all scored runs, compute D4, write CSVs."""
     print("\nKPI-Spec Evaluation — Aggregation")
     print("=" * 40)
 
@@ -343,7 +343,7 @@ def main() -> None:
     print(f"  Loaded cost data for {len(cost_map)} runs")
 
     records = attach_cost(records, cost_map)
-    records = attach_d5(records)
+    records = attach_d4(records)
     cell_summary = compute_cell_summary(records)
 
     _write_csv(ALL_SCORES_CSV, records, ALL_SCORES_FIELDS)

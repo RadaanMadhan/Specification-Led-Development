@@ -3,9 +3,9 @@ scorer.py
 ---------
 Deterministic KPI Quality Score (KQS) scorer.
 
-Loads a (kpi_record, gqm_record) pair and returns D1, D3, D4 dimension scores
-plus kqs_partial = mean(D1, D3, D4).
-D5 is computed externally at aggregation time because it requires multiple runs
+Loads a (kpi_record, gqm_record) pair and returns D1, D2, D3 dimension scores
+plus kqs_partial = mean(D1, D2, D3).
+D4 is computed externally at aggregation time because it requires multiple runs
 of the same (spec_id, fr_id, metric_name).
 
 Usage:
@@ -19,7 +19,7 @@ import re
 from pathlib import Path
 
 
-# ── D3 keyword sets ────────────────────────────────────────────────────────────
+# ── D2 keyword sets ────────────────────────────────────────────────────────────
 LTE_KEYWORDS = {
     "latency", "time", "seconds", "ms", "milliseconds", "error",
     "cost", "mttr", "duration", "overhead", "spend",
@@ -29,7 +29,7 @@ GTE_KEYWORDS = {
     "percentage", "score", "throughput", "sla",
 }
 
-# ── D4 constants ───────────────────────────────────────────────────────────────
+# ── D3 constants ───────────────────────────────────────────────────────────────
 VALID_METRIC_UNITS = {
     "percentage", "milliseconds", "seconds", "hours", "currency", "count",
 }
@@ -88,7 +88,7 @@ def score_d1(kpi_record: dict) -> float:
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# D3 — Directionality coherence
+# D2 — Directionality coherence
 # ══════════════════════════════════════════════════════════════════════════════
 
 def _classify_direction(text: str) -> str | None:
@@ -116,7 +116,7 @@ def _classify_direction(text: str) -> str | None:
     return None
 
 
-def score_d3(kpi_record: dict, gqm_record: dict) -> float:
+def score_d2(kpi_record: dict, gqm_record: dict) -> float:
     """
     Scores directionality coherence between threshold direction and metric semantics.
 
@@ -149,10 +149,10 @@ def score_d3(kpi_record: dict, gqm_record: dict) -> float:
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# D4 — GQM chain coherence
+# D3 — GQM chain coherence
 # ══════════════════════════════════════════════════════════════════════════════
 
-def score_d4(gqm_record: dict) -> float:
+def score_d3(gqm_record: dict) -> float:
     """
     Scores GQM chain coherence from a gqm_output record.
 
@@ -220,7 +220,7 @@ def score_pair(
     """
     Scores a single (kpi_record, gqm_record) pair across dimensions D1, D3, D4.
 
-    kqs_partial = mean(D1, D3, D4) — three dimensions.
+    kqs_partial = mean(D1, D2, D3) — three dimensions.
 
     Args:
         kpi_record: single dict from kpi_output.json.
@@ -233,16 +233,16 @@ def score_pair(
     Returns:
         Dict with fields: run_id, spec_id, richness, context, fr_id, kpi_id,
         gqm_id, pillar_id, metric_name, threshold_numeric, threshold_direction,
-        waf_code_refs, d1, d3, d4, kqs_partial.
+        waf_code_refs, d1, d2, d3, kqs_partial.
 
     Edge cases:
-        - gqm_record is None → d3, d4 all 0.0
+        - gqm_record is None → d2, d3 all 0.0
         - spec_id shorter than 4 chars → context/richness default to '?'
     """
     d1 = score_d1(kpi_record)
-    d3 = score_d3(kpi_record, gqm_record) if gqm_record else 0.0
-    d4 = score_d4(gqm_record) if gqm_record else 0.0
-    kqs_partial = round((d1 + d3 + d4) / 3, 4)
+    d2 = score_d2(kpi_record, gqm_record) if gqm_record else 0.0
+    d3 = score_d3(gqm_record) if gqm_record else 0.0
+    kqs_partial = round((d1 + d2 + d3) / 3, 4)
 
     context  = spec_id[0] if spec_id else "?"
     richness = spec_id[2:] if len(spec_id) >= 4 else "?"
@@ -263,8 +263,8 @@ def score_pair(
         "threshold_direction": kpi_record.get("threshold_direction"),
         "waf_code_refs":       gqm_record.get("waf_code_refs") if gqm_record else [],
         "d1":                  d1,
+        "d2":                  d2,
         "d3":                  d3,
-        "d4":                  d4,
         "kqs_partial":         kqs_partial,
     }
 
@@ -288,7 +288,7 @@ def score_run(
         List of scored record dicts (one per kpi_record).
 
     Edge cases:
-        - gqm_records empty → all d3/d4 scores are 0.0
+        - gqm_records empty → all d2/d3 scores are 0.0
         - kpi_records empty → returns empty list
         - kpi_record references gqm_id not in gqm_records → gqm_record=None
     """

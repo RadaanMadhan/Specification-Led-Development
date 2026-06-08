@@ -19,12 +19,12 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from scorer import (
     score_d1,
+    score_d2,
     score_d3,
-    score_d4,
     score_pair,
     score_run,
 )
-from aggregate import compute_d5
+from aggregate import compute_d4
 
 
 # ── Fixture factories ──────────────────────────────────────────────────────────
@@ -98,90 +98,90 @@ class TestD1:
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# D3 — Directionality coherence
+# D2 — Directionality coherence
 # ══════════════════════════════════════════════════════════════════════════════
 
-class TestD3:
+class TestD2:
     def test_coherent_latency_lte(self):
         """Latency metric + lte direction → coherent → 1.0."""
         kpi = make_kpi(threshold_direction="lte")
         gqm = make_gqm(metric_name="api_latency_ms", metric_unit="milliseconds")
-        assert score_d3(kpi, gqm) == 1.0
+        assert score_d2(kpi, gqm) == 1.0
 
     def test_inverted_direction_case(self):
         """Latency metric with gte (wrong direction for latency) → 0.0."""
         kpi = make_kpi(threshold_direction="gte")
         gqm = make_gqm(metric_name="request_latency_ms", metric_unit="milliseconds")
-        assert score_d3(kpi, gqm) == 0.0
+        assert score_d2(kpi, gqm) == 0.0
 
     def test_coherent_coverage_gte(self):
         """Coverage metric + gte direction → coherent → 1.0."""
         kpi = make_kpi(threshold_direction="gte")
         gqm = make_gqm(metric_name="auth_coverage_percentage", metric_unit="percentage")
-        assert score_d3(kpi, gqm) == 1.0
+        assert score_d2(kpi, gqm) == 1.0
 
     def test_inverted_coverage_lte(self):
         """Coverage metric with lte direction → wrong → 0.0."""
         kpi = make_kpi(threshold_direction="lte")
         gqm = make_gqm(metric_name="service_uptime_percentage", metric_unit="percentage")
-        assert score_d3(kpi, gqm) == 0.0
+        assert score_d2(kpi, gqm) == 0.0
 
     def test_no_keyword_match_benefit_of_doubt(self):
         """Metric name matches no keyword list → benefit of doubt → 1.0."""
         kpi = make_kpi(threshold_direction="gte")
         gqm = make_gqm(metric_name="custom_novel_index", metric_unit="count")
-        assert score_d3(kpi, gqm) == 1.0
+        assert score_d2(kpi, gqm) == 1.0
 
     def test_unit_fallback_when_name_has_no_match(self):
         """metric_name has no keywords; metric_unit='milliseconds' → expect lte."""
         kpi = make_kpi(threshold_direction="lte")
         gqm = make_gqm(metric_name="p95_response", metric_unit="milliseconds")
-        assert score_d3(kpi, gqm) == 1.0
+        assert score_d2(kpi, gqm) == 1.0
 
     def test_unit_fallback_inverted(self):
         """metric_name has no keywords; metric_unit='milliseconds'; direction gte → 0.0."""
         kpi = make_kpi(threshold_direction="gte")
         gqm = make_gqm(metric_name="p99_response", metric_unit="milliseconds")
-        assert score_d3(kpi, gqm) == 0.0
+        assert score_d2(kpi, gqm) == 0.0
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# D4 — GQM chain coherence
+# D3 — GQM chain coherence
 # ══════════════════════════════════════════════════════════════════════════════
 
-class TestD4:
+class TestD3:
     def test_perfect_snake_case_valid_unit(self):
         """snake_case metric_name + valid unit → 1.0."""
-        assert score_d4(make_gqm(metric_name="auth_coverage_percentage", metric_unit="percentage")) == 1.0
+        assert score_d3(make_gqm(metric_name="auth_coverage_percentage", metric_unit="percentage")) == 1.0
 
     def test_readable_not_snake_case(self):
         """Spaces in metric_name, valid unit → 0.5."""
-        assert score_d4(make_gqm(metric_name="p95 API response time", metric_unit="milliseconds")) == 0.5
+        assert score_d3(make_gqm(metric_name="p95 API response time", metric_unit="milliseconds")) == 0.5
 
     def test_mixed_case_not_snake(self):
         """CamelCase metric_name, valid unit → 0.5."""
-        assert score_d4(make_gqm(metric_name="AuthCoveragePercentage", metric_unit="percentage")) == 0.5
+        assert score_d3(make_gqm(metric_name="AuthCoveragePercentage", metric_unit="percentage")) == 0.5
 
     def test_sentence_fragment_with_verb(self):
         """metric_name contains verb 'is' → sentence fragment → 0.0."""
-        assert score_d4(make_gqm(metric_name="is the system available", metric_unit="percentage")) == 0.0
+        assert score_d3(make_gqm(metric_name="is the system available", metric_unit="percentage")) == 0.0
 
     def test_sentence_with_should(self):
         """metric_name is a space-separated sentence starting with 'should' → 0.0."""
-        assert score_d4(make_gqm(metric_name="should return within limits", metric_unit="milliseconds")) == 0.0
+        assert score_d3(make_gqm(metric_name="should return within limits", metric_unit="milliseconds")) == 0.0
 
     def test_missing_metric_unit(self):
         """metric_unit is None → 0.0."""
-        assert score_d4(make_gqm(metric_name="auth_coverage_percentage", metric_unit=None)) == 0.0
+        assert score_d3(make_gqm(metric_name="auth_coverage_percentage", metric_unit=None)) == 0.0
 
     def test_invalid_metric_unit(self):
         """metric_unit not in valid set → 0.0."""
-        assert score_d4(make_gqm(metric_name="auth_coverage", metric_unit="requests_per_second")) == 0.0
+        assert score_d3(make_gqm(metric_name="auth_coverage", metric_unit="requests_per_second")) == 0.0
 
     def test_valid_units_all_accepted(self):
         """Each valid unit string should not penalise an otherwise-perfect name."""
         for unit in ("percentage", "milliseconds", "seconds", "hours", "currency", "count"):
-            result = score_d4(make_gqm(metric_name="some_metric_value", metric_unit=unit))
+            result = score_d3(make_gqm(metric_name="some_metric_value", metric_unit=unit))
             assert result == 1.0, f"unit '{unit}' was rejected unexpectedly"
 
 
@@ -196,16 +196,16 @@ class TestScorePair:
         gqm = make_gqm()
         result = score_pair(kpi, gqm, "A-L1", "A-L1_run_01")
         assert result["d1"] == 1.0
+        assert result["d2"] == 1.0
         assert result["d3"] == 1.0
-        assert result["d4"] == 1.0
         assert result["kqs_partial"] == 1.0
 
     def test_null_gqm_drops_gqm_dimensions(self):
-        """Missing gqm_record → d3, d4 all 0.0."""
+        """Missing gqm_record → d2, d3 all 0.0."""
         kpi = make_kpi()
         result = score_pair(kpi, None, "A-L1", "A-L1_run_01")
+        assert result["d2"] == 0.0
         assert result["d3"] == 0.0
-        assert result["d4"] == 0.0
 
     def test_spec_id_parsed_correctly(self):
         """context and richness are parsed from spec_id."""
@@ -226,20 +226,13 @@ class TestScorePair:
         assert result["fr_id"] == "unknown"
 
     def test_kqs_partial_is_three_dim_mean(self):
-        """kqs_partial = mean(d1, d3, d4) to 4 decimal places."""
+        """kqs_partial = mean(d1, d2, d3) to 4 decimal places."""
         kpi = make_kpi(threshold_numeric=None, threshold_value="<= 200ms",
                        threshold_direction="lte")
         gqm = make_gqm(metric_name="api_latency_ms", metric_unit="milliseconds")
         result = score_pair(kpi, gqm, "B-L3", "B-L3_run_07")
-        expected = round((result["d1"] + result["d3"] + result["d4"]) / 3, 4)
+        expected = round((result["d1"] + result["d2"] + result["d3"]) / 3, 4)
         assert result["kqs_partial"] == expected
-
-    def test_no_d2_fields_in_result(self):
-        """score_pair output must not contain d2a, d2b, or d2."""
-        result = score_pair(make_kpi(), make_gqm(), "A-L1", "A-L1_run_01")
-        assert "d2a" not in result
-        assert "d2b" not in result
-        assert "d2"  not in result
 
 
 class TestScoreRun:
@@ -262,29 +255,29 @@ class TestScoreRun:
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# D5 — Monte Carlo stability (from aggregate.py)
+# D4 — Monte Carlo stability (from aggregate.py)
 # ══════════════════════════════════════════════════════════════════════════════
 
-class TestComputeD5:
+class TestComputeD4:
     def test_identical_values_perfectly_stable(self):
-        """All identical → std=0 → cv=0 → D5=1.0."""
-        assert compute_d5([100.0, 100.0, 100.0]) == 1.0
+        """All identical → std=0 → cv=0 → D4=1.0."""
+        assert compute_d4([100.0, 100.0, 100.0]) == 1.0
 
     def test_insufficient_data(self):
-        """< 2 values → D5=0.5."""
-        assert compute_d5([]) == 0.5
-        assert compute_d5([100.0]) == 0.5
+        """< 2 values → D4=0.5."""
+        assert compute_d4([]) == 0.5
+        assert compute_d4([100.0]) == 0.5
 
     def test_high_variance_approaches_zero(self):
-        """Very high variance → cv ≈ 1 → D5 close to 0 (clamped floor is 0.0)."""
-        result = compute_d5([1.0, 1000.0])
+        """Very high variance → cv ≈ 1 → D4 close to 0 (clamped floor is 0.0)."""
+        result = compute_d4([1.0, 1000.0])
         assert result < 0.1
 
     def test_zero_mean_returns_zero(self):
-        """Mean=0 → cv undefined → D5=0.0."""
-        assert compute_d5([0.0, 0.0]) == 0.0
+        """Mean=0 → cv undefined → D4=0.0."""
+        assert compute_d4([0.0, 0.0]) == 0.0
 
     def test_low_variance_near_one(self):
-        """Low variance around a non-zero mean → D5 close to 1.0."""
-        result = compute_d5([99.0, 100.0, 101.0, 100.0, 99.5])
+        """Low variance around a non-zero mean → D4 close to 1.0."""
+        result = compute_d4([99.0, 100.0, 101.0, 100.0, 99.5])
         assert result > 0.9

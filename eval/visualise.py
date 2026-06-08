@@ -151,12 +151,12 @@ def fig1_bar_chart(records: list[dict]) -> None:
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# Figure 2 — Heatmap: Monte Carlo stability (D5) by spec × pillar
+# Figure 2 — Heatmap: Monte Carlo stability (D4) by spec × pillar
 # ══════════════════════════════════════════════════════════════════════════════
 
 def fig2_variance_heatmap(cell_rows: list[dict]) -> None:
     """
-    Figure 2: D5 score heatmap — rows are spec_ids, columns are WAF pillars.
+    Figure 2: D4 score heatmap — rows are spec_ids, columns are WAF pillars.
 
     Args:
         cell_rows: rows from cell_summary.csv.
@@ -175,9 +175,9 @@ def fig2_variance_heatmap(cell_rows: list[dict]) -> None:
             continue
         spec = str(row.get("spec_id", ""))
         pillar = str(row.get("pillar_id", ""))
-        d5 = row.get("d5")
-        if spec in pivot and pillar in pivot[spec] and d5 is not None:
-            pivot[spec][pillar].append(float(d5))
+        d4 = row.get("d4")
+        if spec in pivot and pillar in pivot[spec] and d4 is not None:
+            pivot[spec][pillar].append(float(d4))
 
     matrix = np.full((len(SPEC_ORDER), len(PILLAR_ORDER)), np.nan)
     for i, spec in enumerate(SPEC_ORDER):
@@ -196,7 +196,7 @@ def fig2_variance_heatmap(cell_rows: list[dict]) -> None:
         linewidths=0.5, linecolor="white",
         ax=ax,
     )
-    ax.set_title("Monte Carlo Threshold Stability by Spec and WAF Pillar")
+    ax.set_title("D4 Monte Carlo Threshold Stability by Spec and WAF Pillar")
     ax.set_xlabel("WAF Pillar")
     ax.set_ylabel("Spec ID")
     plt.tight_layout()

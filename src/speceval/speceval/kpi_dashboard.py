@@ -28,23 +28,6 @@ def _default_specs_dir() -> Path:
     return _project_root().parent.parent / "specs"
 
 
-def status_to_color(status: str) -> str:
-    """Map KPI status to Streamlit color name."""
-    return {
-        "Fulfilled": "green",
-        "To be measured": "orange",
-        "Missing": "red",
-    }.get(status, "gray")
-
-
-def status_to_emoji(status: str) -> str:
-    """Map KPI status to emoji."""
-    return {
-        "Fulfilled": "✓",
-        "To be measured": "○",
-        "Missing": "✗",
-    }.get(status, "?")
-
 
 def load_kpis_from_file(kpi_json_path: Path) -> dict:
     """Load KPI collection from JSON file."""
@@ -109,20 +92,17 @@ def run_dashboard(
     with col3:
         st.metric("💼 Business KPIs", len(business_kpis))
 
-    col1, col2, col3 = st.columns(3)
+    col1, col2 = st.columns(2)
     with col1:
-        fulfilled = sum(1 for k in kpis if k.get("status") == "Fulfilled")
-        st.metric("✓ Fulfilled", fulfilled, delta_color="off")
+        logically_guaranteed = sum(1 for k in kpis if k.get("matched_constraint"))
+        st.metric("🛡️ Logically Guaranteed", f"{logically_guaranteed} / {len(kpis)}")
     with col2:
-        to_measure = sum(1 for k in kpis if k.get("status") == "To be measured")
-        st.metric("○ To be measured", to_measure, delta_color="off")
-    with col3:
-        missing = sum(1 for k in kpis if k.get("status") == "Missing")
-        st.metric("✗ Missing", missing, delta_color="off")
+        operationally_observable = sum(1 for k in kpis if k.get("status") in ["To be measured", "Fulfilled"])
+        st.metric("📊 Operationally Observable", f"{operationally_observable} / {len(kpis)}")
 
     st.markdown("---")
 
-    # KPI Table grouped by status
+    # KPI Table
     st.subheader("KPI Details")
 
     col_filter_1, col_filter_2 = st.columns([1, 2])
@@ -140,40 +120,26 @@ def run_dashboard(
     elif type_filter == "Business KPIs":
         display_kpis = business_kpis
 
-    status_order = ["Fulfilled", "To be measured", "Missing"]
-    for status in status_order:
-        status_kpis = [k for k in display_kpis if k.get("status") == status]
-        if not status_kpis:
-            continue
+    for kpi in display_kpis:
+        is_guaranteed = bool(kpi.get("matched_constraint"))
+        is_observable = kpi.get("status") in ["To be measured", "Fulfilled"]
+        
+        status_icon = "✅" if (is_guaranteed or is_observable) else "❌"
 
-        # Collapsible section for each status
-        with st.expander(
-            f"{status_to_emoji(status)} {status} ({len(status_kpis)})",
-            expanded=(status == "Fulfilled"),
-        ):
-            for kpi in status_kpis:
-                col1, col2 = st.columns([3, 1])
-                with col1:
-                    st.write(f"**{kpi.get('name', 'N/A')}**")
-                    kpi_type = kpi.get("kpi_type", "Business")
-                    type_color = "blue" if kpi_type == "Technical" else "green"
-                    st.caption(f"Category: {kpi.get('category', 'N/A')} | Type: :{type_color}[{kpi_type}]")
-                    if kpi.get("description"):
-                        st.caption(
-                            f"Description: {kpi.get('description')[:100]}..."
-                        )
-                    if kpi.get("matched_constraint"):
-                        st.caption(
-                            f"Alloy Match: `{kpi.get('matched_constraint')}`"
-                        )
-                    if kpi.get("measurement_strategy"):
-                        st.caption(
-                            f"Measurement: {kpi.get('measurement_strategy')[:80]}"
-                        )
-                with col2:
-                    color = status_to_color(status)
-                    st.write(f":{color}[{status}]")
-                st.divider()
+        with st.expander(f"{status_icon} {kpi.get('name', 'N/A')}", expanded=False):
+            kpi_type = kpi.get("kpi_type", "Business")
+            type_color = "blue" if kpi_type == "Technical" else "green"
+            st.write(f"**Category:** {kpi.get('category', 'N/A')} | **Type:** :{type_color}[{kpi_type}]")
+            st.write(f"🛡️ **Logically Guaranteed:** {'✅ Yes (`' + kpi.get('matched_constraint') + '`)' if is_guaranteed else '❌ No (or not formally mapped)'}")
+            st.write(f"📊 **Operationally Observable:** {'✅ Yes (Runtime metric required)' if is_observable else '❌ Missing telemetry strategy'}")
+            
+            st.markdown("---")
+            if kpi.get("description"):
+                st.write(f"📝 **Description:** {kpi.get('description')}")
+            if kpi.get("formal_constraint"):
+                st.write(f"⛓️ **Formal Constraint:** `{kpi.get('formal_constraint')}`")
+            if kpi.get("measurement_strategy"):
+                st.write(f"⏱️ **Measurement Strategy:** {kpi.get('measurement_strategy')}")
 
     st.markdown("---")
 

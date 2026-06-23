@@ -6,12 +6,12 @@ A system that turns natural language feature descriptions into formally verified
 
 This project implements a multi-phase pipeline to bridge the gap between feature descriptions and secure, verified code:
 
-1. **Phase 1 (SpecKit Generation):** Takes a free-text description and produces three SpecKit artefacts (spec.md, data-model.md, contracts/http-api.md) via three sequential LLM passes. Each output is validated against regex anchors to enforce the SpecKit template format. 
+- **Phase 1 (SpecKit Generation):** Takes a free-text description and produces three SpecKit artefacts (`spec.md`, `data-model.md`, `contracts/http-api.md`) via three sequential LLM passes. Each output is validated against regex anchors to enforce the SpecKit template format. 
 
-In parallel:  
-2. **Phase 2.1 (Structural Verification):** Reads the SpecKit artefacts and produces a self-contained Alloy 6 model (`feature_model.als`). Runs structural verification and mutation testing.  
-3. **Phase 2.2 (KPI Derivation):** Derives runtime KPIs from Functional Requirements (FRs) by matching them against Well-Architected Framework (WAF) principles.  
-4. **Phase 3 (Code Generation & Evaluation):** Uses the formally verified outputs to guide agentic code generation via Claude Code (`claude -p`), comparing the result against a baseline generated without verification context.
+- **Phases 2.1 and 2.2 run in parallel:**  
+  - **Phase 2.1 (Structural Verification):** Reads the SpecKit artefacts and produces a self-contained Alloy 6 model (`feature_model.als`). Runs structural verification and mutation testing. 
+  - **Phase 2.2 (KPI Derivation):** Derives runtime KPIs from Functional Requirements (FRs) by matching them against Well-Architected Framework (WAF) principles. 
+- **Phase 3 (Code Generation & Evaluation):** Uses the formally verified outputs to guide agentic code generation via Claude Code (`claude -p`), comparing the result against a baseline generated without verification context.
 
 ## Setup
 
@@ -36,15 +36,15 @@ The CLI provides several commands to interact with the pipeline.
 speceval generate "A banking transfer system with audit logging"
 ```
 Produces `spec.md`, `data-model.md`, and `contracts/http-api.md` inside `specs/<feature-id>/` using three sequential LLM passes. Each output is validated against regex anchors to enforce the SpecKit template format. Results are content-addressed cached by SHA-256 over (description + config + prompts).
-  1. spec.md — functional requirements, user stories with Given/When/Then scenarios, success criteria
-  2. data-model.md — entities, fields, validation rules, relationships, indexes
-  3. contracts/http-api.md — authentication, authorization matrix, endpoint definitions with FR traceability
+  1. `spec.md` — functional requirements, user stories with Given/When/Then scenarios, success criteria
+  2. `data-model.md` — entities, fields, validation rules, relationships, indexes
+  3. `contracts/http-api.md` — authentication, authorization matrix, endpoint definitions with FR traceability
 
 **2. Run Verification & KPI Derivation (Phases 2.1 and 2.2)**
 ```bash
 speceval run specs/<feature-id>/
 ```
-Runs structural verification (Alloy) and runtime KPI derivation (WAF) on an existing feature directory. Produces a `unified_report.md` inside `runs/<feature-id>/`.
+Runs structural verification (Alloy) and runtime KPI derivation (WAF) on an existing feature directory. Produces a `unified_report.md` inside `runs/<feature-id>/`.  
 *Options:* `--from-description` to chain Phase 0 automatically, `--skip-alloy` / `--skip-kpi` to run one half, and `--no-mutate` to skip mutation testing.
 
 A design-mode lifter (lifter_design.py, verify.py, prompts.py) reads all three SpecKit artefacts plus the `patterns.md` catalogue and produces a self-contained `feature_model.als` with a structured manifest containing FR-to-assertion maps and mutation targets.
@@ -57,7 +57,7 @@ Checks Java 11+, Alloy JAR, and runs bundled test snapshots.
 
 ### Interactive Workflow (Pre-Code-Generation Dashboard)
 
-The KPI Dashboard provides an interactive Streamlit interface for reviewing extracted KPIs before any code or Alloy models are generated. It helps ensure that your initial prompt produces observable and structurally sound requirements.
+The pre-code-generation KPI Dashboard provides an interactive Streamlit interface for reviewing extracted KPIs and Alloy code before any software code is generated. It helps ensure that your initial prompt produced observable and structurally sound requirements that can be carried on to the code generation phase.
 
 **Generate with Interactive Dashboard**
 ```bash
@@ -67,13 +67,13 @@ This command generates the SpecKit artefacts, extracts KPIs, runs Alloy structur
 - 🛡️ **Logically Guaranteed:** Whether the KPI can be mapped to a formal structural constraint in the generated Alloy code.
 - 📊 **Operationally Observable:** Whether there is a clear runtime metric or telemetry strategy.
 
-You can review these metrics, modify your prompt to regenerate the artefacts if there are missing constraints or telemetry strategies, and proceed only when satisfied with the specifications.
+You can review these metrics, save them for reference in a `kpis.json` file, modify your prompt to regenerate the artefacts if there are missing constraints or telemetry strategies, and proceed when satisfied with the specifications.
 
 **View Dashboard for Existing Feature**
 ```bash
 speceval dashboard specs/<feature-id>
 ```
-Displays the KPI dashboard for an already generated feature.
+Displays the pre-code-generation KPI dashboard described above for an already generated feature.
 
 ## Code Generation Pipeline (Phase 3)
 
@@ -86,11 +86,19 @@ bash pipeline/run_pipeline.sh \
 ```
   1. `extract_verification_context.py` reads the speceval run directory (manifest JSON, `.als` model, unified report) and produces a `verification_context.md` with six sections: structural patterns, FR-to-assertion map, mutation results, invariant semantics, feature-specific predicates, and the full unified report.
 
-  2. Two tracks run in parallel via background processes:  
-    - **Guided track**: `claude -p` receives the verification context + guided system prompt. Instructed to add `// PATTERN:` comments, `Implements FR-NNN` docstrings, translate each Alloy fact into runtime checks, define `METRIC_*` threshold constants, and add `// HARDENED:` comments for mutation targets. A second `claude -p` pass generates tests following assertion/mutation/KPI/FR naming conventions.  
+2. Two tracks run in parallel via background processes: 
+    - **Guided track**: `claude -p` receives the verification context + guided system prompt. Instructed to: 
+        - add `// PATTERN:` comments 
+        - add `Implements FR-NNN` docstrings 
+        - translate each Alloy fact into runtime checks 
+        - define `METRIC_*` threshold constants 
+        - add `// HARDENED:` comments for mutation targets 
+
+        A second `claude -p` pass generates tests following assertion/mutation/KPI/FR naming conventions. 
+
     - **Baseline track**: `claude -p` receives only the goal description + a minimal system prompt. No verification context.
 
-  3. `score.py` counts concrete artifacts across six weighted dimensions:
+  3. `score.py` counts concrete artifacts across six weighted dimensions:  
     - Structural Completeness (25%) — `// PATTERN:` comments vs expected patterns  
     - FR Coverage (25%) — `Implements FR-NNN` docstrings vs FR list  
     - Invariant Enforcement (20%) — runtime checks matching named Alloy facts  
@@ -114,7 +122,7 @@ This interactive Streamlit dashboard provides:
 2. **Technical Details**: Detailed metrics for the 6 verification quality scores, along with pie charts illustrating test suite composition and a deep dive into KPI alignment and formal constraint mappings.
 
 *Example Comparison Results (Guided vs Baseline):*  
-In initial runs, the **Guided** track substantially outperformed the Baseline, yielding 3x more code with comprehensive invariant enforcement, complete test suites, WAF-derived KPIs, and full feature coverage, scoring an overall 8.88/10 vs the Baseline's 1.19/10.
+In initial runs, the **Guided** track substantially outperformed the **Baseline**, yielding 3x more code with comprehensive invariant enforcement, complete test suites, WAF-derived KPIs, and full feature coverage, scoring an overall 8.88/10 vs the Baseline's 1.19/10.
 
 First run on the banking transfer spec (`pipeline_runs/20260519-162520/`):
 

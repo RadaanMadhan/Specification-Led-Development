@@ -1,0 +1,316 @@
+{
+  "dimensions": [
+    {
+      "name": "Structural Completeness",
+      "key": "structural_completeness",
+      "weight": 25,
+      "guided_score": 6.4,
+      "baseline_score": 0.0,
+      "guided_detail": {
+        "score": 6.4,
+        "found": [
+          "AppendOnly",
+          "AuditCompleteness",
+          "AuthRequiredEverywhere",
+          "FailClosedAudit",
+          "LeastPrivilege",
+          "NoInformationLeakage",
+          "OwnershipBasedAccess",
+          "PermissionCompleteness"
+        ],
+        "expected": [
+          "LeastPrivilege",
+          "PermissionCompleteness",
+          "AuthRequiredEverywhere",
+          "NoSelfMutation",
+          "AuditCompleteness",
+          "AppendOnly",
+          "AttributionCorrectness",
+          "OwnershipExclusivity",
+          "OwnershipBasedAccess",
+          "ConservationOfValue",
+          "NoInformationLeakage"
+        ],
+        "matched": [
+          "AppendOnly",
+          "AuditCompleteness",
+          "AuthRequiredEverywhere",
+          "LeastPrivilege",
+          "NoInformationLeakage",
+          "OwnershipBasedAccess",
+          "PermissionCompleteness"
+        ],
+        "coverage": "7/11"
+      },
+      "baseline_detail": {
+        "score": 0.0,
+        "found": [],
+        "expected": [
+          "LeastPrivilege",
+          "PermissionCompleteness",
+          "AuthRequiredEverywhere",
+          "NoSelfMutation",
+          "AuditCompleteness",
+          "AppendOnly",
+          "AttributionCorrectness",
+          "OwnershipExclusivity",
+          "OwnershipBasedAccess",
+          "ConservationOfValue",
+          "NoInformationLeakage"
+        ],
+        "matched": [],
+        "coverage": "0/11"
+      }
+    },
+    {
+      "name": "FR Coverage",
+      "key": "fr_coverage",
+      "weight": 25,
+      "guided_score": 10.0,
+      "baseline_score": 0.0,
+      "guided_detail": {
+        "score": 10.0,
+        "found": [
+          "FR-001",
+          "FR-002",
+          "FR-003",
+          "FR-004",
+          "FR-005",
+          "FR-006",
+          "FR-007",
+          "FR-008",
+          "FR-009",
+          "FR-010"
+        ],
+        "expected": [
+          "FR-001",
+          "FR-002",
+          "FR-003",
+          "FR-004",
+          "FR-005",
+          "FR-006",
+          "FR-007",
+          "FR-008",
+          "FR-009",
+          "FR-010"
+        ],
+        "matched": [
+          "FR-001",
+          "FR-002",
+          "FR-003",
+          "FR-004",
+          "FR-005",
+          "FR-006",
+          "FR-007",
+          "FR-008",
+          "FR-009",
+          "FR-010"
+        ],
+        "coverage": "10/10"
+      },
+      "baseline_detail": {
+        "score": 0.0,
+        "found": [],
+        "expected": [
+          "FR-001",
+          "FR-002",
+          "FR-003",
+          "FR-004",
+          "FR-005",
+          "FR-006",
+          "FR-007",
+          "FR-008",
+          "FR-009",
+          "FR-010"
+        ],
+        "matched": [],
+        "coverage": "0/10"
+      }
+    },
+    {
+      "name": "Invariant Enforcement",
+      "key": "invariant_enforcement",
+      "weight": 20,
+      "guided_score": 8.9,
+      "baseline_score": 0.5,
+      "guided_detail": {
+        "score": 8.9,
+        "found": [
+          "F_ActiveAccountsOnly",
+          "F_AppendOnlyAuditEntries",
+          "F_AttributionCorrectness",
+          "F_AuditCompleteness",
+          "F_AuthRequiredEverywhere",
+          "F_ConservationOfValue",
+          "F_DailyLimitEnforcement",
+          "F_FailClosedAudit",
+          "F_FraudSignalConstraints",
+          "F_HashChainIntegrity",
+          "F_LeastPrivilege",
+          "F_NoSelfTransfer",
+          "F_OwnershipBasedAccess",
+          "F_OwnershipExclusivity",
+          "F_PermissionCompleteness",
+          "F_ReversalCompensating",
+          "F_SufficientFunds"
+        ],
+        "hardened": [
+          "F_AppendOnlyAuditEntries",
+          "F_AttributionCorrectness",
+          "F_AuditCompleteness",
+          "F_AuthRequiredEverywhere",
+          "F_NoSelfTransfer",
+          "F_OwnershipBasedAccess"
+        ],
+        "expected": [
+          "F_LeastPrivilege",
+          "F_PermissionCompleteness",
+          "F_AuthRequiredEverywhere",
+          "F_NoSelfTransfer",
+          "F_AuditCompleteness",
+          "F_AppendOnlyAuditEntries",
+          "F_AttributionCorrectness",
+          "F_OwnershipExclusivity",
+          "F_OwnershipBasedAccess",
+          "F_ConservationOfValue",
+          "F_SufficientFunds",
+          "F_UniqueTransactionId",
+          "F_HashChainIntegrity",
+          "F_DailyLimitEnforcement",
+          "F_ReversalCompensating",
+          "F_FailClosedAudit",
+          "F_FraudSignalConstraints",
+          "F_ActiveAccountsOnly",
+          "F_NonEmptyUniverse"
+        ],
+        "coverage": "17/19"
+      },
+      "baseline_detail": {
+        "score": 0.5,
+        "found": [
+          "F_SufficientFunds"
+        ],
+        "hardened": [],
+        "expected": [
+          "F_LeastPrivilege",
+          "F_PermissionCompleteness",
+          "F_AuthRequiredEverywhere",
+          "F_NoSelfTransfer",
+          "F_AuditCompleteness",
+          "F_AppendOnlyAuditEntries",
+          "F_AttributionCorrectness",
+          "F_OwnershipExclusivity",
+          "F_OwnershipBasedAccess",
+          "F_ConservationOfValue",
+          "F_SufficientFunds",
+          "F_UniqueTransactionId",
+          "F_HashChainIntegrity",
+          "F_DailyLimitEnforcement",
+          "F_ReversalCompensating",
+          "F_FailClosedAudit",
+          "F_FraudSignalConstraints",
+          "F_ActiveAccountsOnly",
+          "F_NonEmptyUniverse"
+        ],
+        "coverage": "1/19"
+      }
+    },
+    {
+      "name": "Test Quality",
+      "key": "test_quality",
+      "weight": 15,
+      "guided_score": 10.0,
+      "baseline_score": 5.0,
+      "guided_detail": {
+        "score": 10.0,
+        "total_test_files": 3,
+        "total_test_functions": 184,
+        "assertion_tests": 69,
+        "mutation_tests": 12,
+        "kpi_tests": 35,
+        "fr_tests": 56
+      },
+      "baseline_detail": {
+        "score": 5.0,
+        "total_test_files": 4,
+        "total_test_functions": 40,
+        "assertion_tests": 0,
+        "mutation_tests": 0,
+        "kpi_tests": 0,
+        "fr_tests": 0
+      }
+    },
+    {
+      "name": "KPI Instrumentation",
+      "key": "kpi_instrumentation",
+      "weight": 10,
+      "guided_score": 10.0,
+      "baseline_score": 0.0,
+      "guided_detail": {
+        "score": 10.0,
+        "metric_constants": [
+          "METRIC_ANOMALY_DETECTION_MTTD_MINUTES_THRESHOLD",
+          "METRIC_ANOMALY_FALSE_POSITIVE_RATE_THRESHOLD",
+          "METRIC_AUDIT_LOG_ENTRY_CREATION_SUCCESS_RATE_THRESHOLD",
+          "METRIC_BALANCE_VALIDATION_ACCURACY_THRESHOLD",
+          "METRIC_IDENTIFIED_FAILURE_MODES_COUNT_THRESHOLD",
+          "METRIC_MFA_IMPLEMENTATION_AUDIT_RATE_THRESHOLD",
+          "METRIC_READ_AFTER_WRITE_CONSISTENCY_RATE_THRESHOLD",
+          "METRIC_SECURITY_ALERT_MTTD_MINUTES_THRESHOLD",
+          "METRIC_TRANSFER_LIMIT_ENFORCEMENT_RATE_THRESHOLD",
+          "METRIC_TRANSFER_REVERSAL_AUDIT_LINKAGE_PERCENTAGE_THRESHOLD",
+          "METRIC_TRANSFER_TRANSACTION_SUCCESS_RATE_THRESHOLD",
+          "METRIC_UNIQUE_TRANSACTION_REFERENCE_ID_COUNT_THRESHOLD"
+        ],
+        "threshold_definitions": 12,
+        "kpi_comments": 9
+      },
+      "baseline_detail": {
+        "score": 0.0,
+        "metric_constants": [],
+        "threshold_definitions": 0,
+        "kpi_comments": 0
+      }
+    },
+    {
+      "name": "Security Posture",
+      "key": "security_posture",
+      "weight": 5,
+      "guided_score": 10.0,
+      "baseline_score": 6.7,
+      "guided_detail": {
+        "score": 10.0,
+        "checks": {
+          "auth_middleware": true,
+          "input_validation": true,
+          "ownership_check": true,
+          "rate_limiting": true,
+          "error_handling": true,
+          "no_info_leakage": true
+        },
+        "found": "6/6"
+      },
+      "baseline_detail": {
+        "score": 6.7,
+        "checks": {
+          "auth_middleware": false,
+          "input_validation": true,
+          "ownership_check": true,
+          "rate_limiting": false,
+          "error_handling": true,
+          "no_info_leakage": true
+        },
+        "found": "4/6"
+      }
+    }
+  ],
+  "guided_total": 8.88,
+  "baseline_total": 1.19,
+  "verdict": "GUIDED_WINS",
+  "context_summary": {
+    "patterns_expected": 11,
+    "frs_expected": 10,
+    "mutations_expected": 6,
+    "facts_expected": 19
+  }
+}

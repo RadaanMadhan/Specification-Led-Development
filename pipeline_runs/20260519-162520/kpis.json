@@ -1,0 +1,97 @@
+{
+  "feature_id": "005-a-banking-transfer-system-with-audit-logging",
+  "feature_name": "005 A Banking Transfer System With Audit Logging",
+  "metadata": {
+    "total_speckit_kpis": 7,
+    "total_user_prompt_kpis": 0,
+    "total_unique_kpis": 7,
+    "total_technical_kpis": 4,
+    "total_business_kpis": 3
+  },
+  "kpis": [
+    {
+      "name": "Account risk profile score",
+      "category": "Propensity Score",
+      "description": "Account risk profile score",
+      "formal_constraint": "Structural density of `sig Account` relations: count of distinct destinations, average transfer frequency, ratio of flagged transfers to total transfers (`sig FraudSignal` cardinality / `sig Transfer` cardinality per account)",
+      "measurement_strategy": "Nightly batch job computes per-account risk score; stored in account profile; consumed by fraud evaluation and compliance reporting",
+      "source": "speckit",
+      "source_location": "spec.md: Formal Requirements & Advanced KPI Mapping",
+      "status": "Missing",
+      "matched_constraint": null,
+      "kpi_type": "Business"
+    },
+    {
+      "name": "Audit write success rate = 100% (fail-closed)",
+      "category": "Success Rate",
+      "description": "Audit write success rate = 100% (fail-closed)",
+      "formal_constraint": "`pred writeAuditEntry` \u2014 precondition: audit store reachable; postcondition: AuditEntry persisted and hash chain extended; transfer gated on audit success",
+      "measurement_strategy": "Circuit breaker metrics on audit store connectivity; transfer failure attribution tags in APM traces",
+      "source": "speckit",
+      "source_location": "spec.md: Formal Requirements & Advanced KPI Mapping",
+      "status": "Fulfilled",
+      "matched_constraint": "F_FailClosedAudit",
+      "kpi_type": "Technical"
+    },
+    {
+      "name": "Insufficient-fund rejection propensity",
+      "category": "Propensity Score",
+      "description": "Insufficient-fund rejection propensity",
+      "formal_constraint": "`sig Account.availableBalance` relative to `sig Transfer.amount` in `pred executeTransfer` precondition check; propensity = `1 - (availableBalance / intendedAmount)` clamped [0,1]",
+      "measurement_strategy": "Pre-transfer balance-to-amount ratio logged; correlated with rejection outcomes to calibrate client-side warnings",
+      "source": "speckit",
+      "source_location": "spec.md: Formal Requirements & Advanced KPI Mapping",
+      "status": "Fulfilled",
+      "matched_constraint": "F_SufficientFunds",
+      "kpi_type": "Business"
+    },
+    {
+      "name": "Reversal correctness rate = 100%",
+      "category": "Success Rate",
+      "description": "Reversal correctness rate = 100%",
+      "formal_constraint": "`pred reverseTransfer` \u2014 precondition: original Transfer.status = COMPLETED, within ReversalWindow; postcondition: compensating Transfer created, MoneyConservation fact preserved",
+      "measurement_strategy": "Post-reversal automated balance assertion; exception counter on any conservation violation",
+      "source": "speckit",
+      "source_location": "spec.md: Formal Requirements & Advanced KPI Mapping",
+      "status": "Fulfilled",
+      "matched_constraint": "F_ReversalCompensating",
+      "kpi_type": "Technical"
+    },
+    {
+      "name": "Step-up authentication completion rate \u2265 75%",
+      "category": "Success Rate",
+      "description": "Step-up authentication completion rate \u2265 75%",
+      "formal_constraint": "`pred stepUpAuth` \u2014 triggered when `pred evaluateFraudRisk` returns score above threshold; success = user completes challenge within timeout",
+      "measurement_strategy": "Funnel metrics: step-up issued \u2192 step-up completed \u2192 transfer re-attempted; tracked per user cohort",
+      "source": "speckit",
+      "source_location": "spec.md: Formal Requirements & Advanced KPI Mapping",
+      "status": "To be measured",
+      "matched_constraint": null,
+      "kpi_type": "Technical"
+    },
+    {
+      "name": "Transfer completion rate \u2265 99.5% for valid requests",
+      "category": "Success Rate",
+      "description": "Transfer completion rate \u2265 99.5% for valid requests",
+      "formal_constraint": "`pred executeTransfer` \u2014 preconditions: `Account.availableBalance \u2265 Transfer.amount`, `Account.status = ACTIVE`, `User.authenticated = true`; postcondition: both Accounts updated atomically",
+      "measurement_strategy": "API response status code distribution logged to time-series DB; dashboard alert on completion rate drop below threshold",
+      "source": "speckit",
+      "source_location": "spec.md: Formal Requirements & Advanced KPI Mapping",
+      "status": "To be measured",
+      "matched_constraint": null,
+      "kpi_type": "Technical"
+    },
+    {
+      "name": "Transfer fraud propensity score (precision \u2265 80%, recall \u2265 90%)",
+      "category": "Propensity Score",
+      "description": "Transfer fraud propensity score (precision \u2265 80%, recall \u2265 90%)",
+      "formal_constraint": "`sig FraudSignal` computed from relational density of `sig Transfer` linked to `sig Account`: velocity (count of transfers in sliding window), amount deviation (z-score vs. account historical mean), destination novelty (new `sig Account` in destination relation)",
+      "measurement_strategy": "Fraud signal outcomes labeled in case management system; precision/recall computed monthly; model recalibrated quarterly",
+      "source": "speckit",
+      "source_location": "spec.md: Formal Requirements & Advanced KPI Mapping",
+      "status": "Fulfilled",
+      "matched_constraint": "F_FraudSignalConstraints",
+      "kpi_type": "Business"
+    }
+  ]
+}

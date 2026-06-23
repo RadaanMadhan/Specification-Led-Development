@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1300 1260" font-family="Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#333"/>
+    </marker>
+    <marker id="arrowred" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#c33"/>
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="650" y="38" text-anchor="middle" font-size="22" font-weight="700">Integrated MVP — Specification-Led Development</text>
+  <text x="650" y="62" text-anchor="middle" font-size="13" fill="#555" font-style="italic">
+    Formal verification (Alloy) + WAF-derived KPIs (Azure AI Search) — two complementary approaches over one set of Speckit artefacts
+  </text>
+
+  <!-- Natural Language -->
+  <rect x="550" y="95" width="200" height="60" rx="8" fill="#e8e8e8" stroke="#444" stroke-width="2"/>
+  <text x="650" y="128" text-anchor="middle" font-size="14" font-weight="700">Natural Language</text>
+  <text x="650" y="144" text-anchor="middle" font-size="10" fill="#555">(business requirement)</text>
+
+  <line x1="650" y1="155" x2="650" y2="195" stroke="#333" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Speckit -->
+  <rect x="520" y="195" width="260" height="80" rx="10" fill="#cfe2f3" stroke="#3a4d63" stroke-width="2"/>
+  <text x="650" y="222" text-anchor="middle" font-size="16" font-weight="700">Speckit</text>
+  <text x="650" y="241" text-anchor="middle" font-size="11" fill="#445">/speckit-specify · /speckit-plan · /speckit-tasks</text>
+  <text x="650" y="259" text-anchor="middle" font-size="10" fill="#666" font-style="italic">(GitHub Spec-Kit, driven from Claude Code)</text>
+
+  <line x1="650" y1="275" x2="650" y2="305" stroke="#333" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Speckit artefacts bundle -->
+  <rect x="270" y="305" width="760" height="100" rx="10" fill="#f4f4f4" stroke="#444" stroke-width="2"/>
+  <text x="650" y="328" text-anchor="middle" font-size="14" font-weight="700">Speckit artefacts (per feature)</text>
+  <line x1="290" y1="338" x2="1010" y2="338" stroke="#666" stroke-width="1"/>
+
+  <rect x="290" y="350" width="170" height="45" rx="6" fill="#fff" stroke="#666" stroke-width="1"/>
+  <text x="375" y="368" text-anchor="middle" font-size="11" font-weight="600">spec.md</text>
+  <text x="375" y="384" text-anchor="middle" font-size="9" fill="#666">FRs · scenarios · SCs</text>
+
+  <rect x="470" y="350" width="170" height="45" rx="6" fill="#fff" stroke="#666" stroke-width="1"/>
+  <text x="555" y="368" text-anchor="middle" font-size="11" font-weight="600">plan.md</text>
+  <text x="555" y="384" text-anchor="middle" font-size="9" fill="#666">tech context · gates</text>
+
+  <rect x="650" y="350" width="170" height="45" rx="6" fill="#fff" stroke="#666" stroke-width="1"/>
+  <text x="735" y="368" text-anchor="middle" font-size="11" font-weight="600">data-model.md</text>
+  <text x="735" y="384" text-anchor="middle" font-size="9" fill="#666">entities · schema</text>
+
+  <rect x="830" y="350" width="170" height="45" rx="6" fill="#fff" stroke="#666" stroke-width="1"/>
+  <text x="915" y="368" text-anchor="middle" font-size="11" font-weight="600">contracts/http-api.md</text>
+  <text x="915" y="384" text-anchor="middle" font-size="9" fill="#666">role × endpoint matrix</text>
+
+  <!-- Branching arrows from artefact bundle -->
+  <line x1="500" y1="405" x2="320" y2="455" stroke="#333" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <line x1="800" y1="405" x2="980" y2="455" stroke="#333" stroke-width="2.5" marker-end="url(#arrow)"/>
+
+  <!-- ========== LEFT BRANCH: Leon's Formal Verification ========== -->
+  <rect x="40" y="460" width="600" height="640" rx="14" fill="#f7faf3" stroke="#5a6e3f" stroke-width="2.5"/>
+  <text x="340" y="488" text-anchor="middle" font-size="17" font-weight="700" fill="#3d4a26">Formal Verification</text>
+  <text x="340" y="507" text-anchor="middle" font-size="11" fill="#445" font-style="italic">"Does the spec satisfy its structural invariants?" — mathematical proof via Alloy SAT</text>
+
+  <!-- patterns.md -->
+  <rect x="60" y="525" width="220" height="80" rx="6" fill="#e3eed3" stroke="#5a6e3f" stroke-width="2"/>
+  <text x="170" y="548" text-anchor="middle" font-size="12" font-weight="700">patterns.md</text>
+  <text x="170" y="563" text-anchor="middle" font-size="10" fill="#445" font-style="italic">15 patterns (human-curated)</text>
+  <text x="170" y="579" text-anchor="middle" font-size="9" fill="#555">LeastPrivilege · AppendOnly · AuditCompleteness</text>
+  <text x="170" y="592" text-anchor="middle" font-size="9" fill="#555">OwnershipExclusivity · NoLeakage · …</text>
+
+  <!-- LLM Lifter -->
+  <rect x="320" y="525" width="300" height="80" rx="6" fill="#f3deb8" stroke="#a07a3a" stroke-width="2"/>
+  <text x="470" y="548" text-anchor="middle" font-size="13" font-weight="700">LLM Lifter (Claude Opus)</text>
+  <text x="470" y="565" text-anchor="middle" font-size="10" fill="#445">speceval/lifter_design.py</text>
+  <text x="470" y="581" text-anchor="middle" font-size="10" fill="#445" font-style="italic">"translate, do not decide what to verify"</text>
+  <text x="470" y="596" text-anchor="middle" font-size="10" fill="#445">→ feature_model.als + manifest.json</text>
+
+  <!-- patterns + artefacts arrow into Lifter -->
+  <line x1="280" y1="565" x2="320" y2="565" stroke="#333" stroke-width="1.8" marker-end="url(#arrow)"/>
+
+  <!-- Down to feature_model.als output -->
+  <line x1="470" y1="605" x2="470" y2="635" stroke="#333" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <rect x="340" y="635" width="260" height="42" rx="6" fill="#f8f0d4" stroke="#a07a3a" stroke-width="1.5"/>
+  <text x="470" y="655" text-anchor="middle" font-size="12" font-weight="600">feature_model.als</text>
+  <text x="470" y="670" text-anchor="middle" font-size="9" fill="#666">domain · facts · 26 anchored assertions</text>
+
+  <!-- Human Validation Gate -->
+  <line x1="470" y1="677" x2="470" y2="707" stroke="#333" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <rect x="320" y="707" width="300" height="50" rx="8" fill="#fbe6c4" stroke="#aa6f33" stroke-width="2"/>
+  <text x="470" y="729" text-anchor="middle" font-size="13" font-weight="700">Human Validation Gate</text>
+  <text x="470" y="746" text-anchor="middle" font-size="10" fill="#445">anchors match FRs? tautologies? ~10 min</text>
+
+  <!-- Split into Mutation + SAT -->
+  <line x1="400" y1="757" x2="200" y2="803" stroke="#333" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="540" y1="757" x2="510" y2="803" stroke="#333" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Mutation Engine -->
+  <rect x="60" y="803" width="280" height="100" rx="6" fill="#ead2db" stroke="#7a3e4f" stroke-width="2"/>
+  <text x="200" y="826" text-anchor="middle" font-size="13" font-weight="700">Mutation Engine</text>
+  <text x="200" y="843" text-anchor="middle" font-size="10" fill="#445">clear named fact + inject_violation</text>
+  <text x="200" y="858" text-anchor="middle" font-size="10" fill="#445">→ mutated_F_*.als (one per fact)</text>
+  <text x="200" y="876" text-anchor="middle" font-size="10" fill="#666" font-style="italic">non-vacuity check:</text>
+  <text x="200" y="890" text-anchor="middle" font-size="10" fill="#666" font-style="italic">assertion must FAIL on mutant</text>
+
+  <!-- Alloy SAT Solver -->
+  <rect x="370" y="803" width="250" height="100" rx="6" fill="#e0d4ec" stroke="#553f76" stroke-width="2"/>
+  <text x="495" y="826" text-anchor="middle" font-size="13" font-weight="700">Alloy SAT Solver</text>
+  <text x="495" y="843" text-anchor="middle" font-size="10" fill="#445">speceval/runner.py</text>
+  <text x="495" y="860" text-anchor="middle" font-size="10" fill="#445">UNSAT = PASS · SAT = FAIL</text>
+  <text x="495" y="878" text-anchor="middle" font-size="10" fill="#666" font-style="italic">mathematical proof in scope 5</text>
+  <text x="495" y="892" text-anchor="middle" font-size="10" fill="#666" font-style="italic">(no AI in this step)</text>
+
+  <!-- Down to Leon's report -->
+  <line x1="200" y1="903" x2="290" y2="940" stroke="#333" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="495" y1="903" x2="400" y2="940" stroke="#333" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Leon's structural compliance matrix -->
+  <rect x="120" y="940" width="440" height="80" rx="8" fill="#fae8d4" stroke="#a05d22" stroke-width="2.5"/>
+  <text x="340" y="965" text-anchor="middle" font-size="13" font-weight="700">Structural Compliance Matrix</text>
+  <text x="340" y="982" text-anchor="middle" font-size="10" fill="#445">per-FR / per-pattern PASS · FAIL · counterexample</text>
+  <text x="340" y="998" text-anchor="middle" font-size="10" fill="#445">+ mutation summary (non-vacuity verdicts)</text>
+  <text x="340" y="1014" text-anchor="middle" font-size="10" font-weight="700" fill="#623813">banking demo: 24 / 26 PASS · 4 / 6 mutations bit</text>
+
+  <!-- Down arrow to unified -->
+  <line x1="340" y1="1020" x2="450" y2="1140" stroke="#333" stroke-width="2.5" marker-end="url(#arrow)"/>
+
+  <!-- ========== RIGHT BRANCH: Charlotte's WAF-derived KPIs ========== -->
+  <rect x="680" y="460" width="580" height="640" rx="14" fill="#f3faf3" stroke="#3f6e3f" stroke-width="2.5"/>
+  <text x="970" y="488" text-anchor="middle" font-size="17" font-weight="700" fill="#1a4a1a">WAF-derived KPIs</text>
+  <text x="970" y="507" text-anchor="middle" font-size="11" fill="#445" font-style="italic">"What numbers should the running system hit?" — measurable runtime KPIs grounded in Microsoft WAF</text>
+
+  <!-- WAF Vector DB -->
+  <ellipse cx="810" cy="585" rx="120" ry="55" fill="#d4e8d4" stroke="#3f6e3f" stroke-width="2"/>
+  <text x="810" y="575" text-anchor="middle" font-size="13" font-weight="700">WAF Vector DB</text>
+  <text x="810" y="592" text-anchor="middle" font-size="10" fill="#445">Azure AI Search</text>
+  <text x="810" y="606" text-anchor="middle" font-size="10" fill="#445">59 Microsoft WAF principles</text>
+  <text x="810" y="619" text-anchor="middle" font-size="9" fill="#666" font-style="italic">(RE · SE · CO · OE · PE pillars)</text>
+
+  <!-- KPI Derivation Agent -->
+  <rect x="970" y="545" width="270" height="80" rx="6" fill="#e3eed3" stroke="#5a6e3f" stroke-width="2"/>
+  <text x="1105" y="568" text-anchor="middle" font-size="13" font-weight="700">KPI Derivation Agent</text>
+  <text x="1105" y="585" text-anchor="middle" font-size="10" fill="#445">kpi_agent.py</text>
+  <text x="1105" y="601" text-anchor="middle" font-size="10" fill="#445">OpenAI gpt-4o-mini</text>
+  <text x="1105" y="616" text-anchor="middle" font-size="9" fill="#666" font-style="italic">cosine sim. → top-3 WAF refs</text>
+
+  <!-- WAF DB → KPI Agent -->
+  <line x1="930" y1="585" x2="970" y2="585" stroke="#333" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Down to GQM + KPI rows -->
+  <line x1="1105" y1="625" x2="970" y2="675" stroke="#333" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <rect x="730" y="675" width="480" height="90" rx="6" fill="#f8f0d4" stroke="#a07a3a" stroke-width="2"/>
+  <text x="970" y="700" text-anchor="middle" font-size="13" font-weight="700">GQM chains + Numerical KPI rows</text>
+  <text x="970" y="718" text-anchor="middle" font-size="10" fill="#445">gqm_output.json · kpi_output.json</text>
+  <text x="970" y="735" text-anchor="middle" font-size="10" fill="#445">e.g., p95 ≤ 200ms · RTO ≤ 30 min · auth coverage = 100 %</text>
+  <text x="970" y="751" text-anchor="middle" font-size="9" fill="#666" font-style="italic">each row anchored to ≥ 1 WAF principle</text>
+
+  <!-- Human Validation gate (parallel) -->
+  <line x1="970" y1="765" x2="970" y2="815" stroke="#333" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <rect x="820" y="815" width="300" height="60" rx="8" fill="#fbe6c4" stroke="#aa6f33" stroke-width="2"/>
+  <text x="970" y="840" text-anchor="middle" font-size="13" font-weight="700">Human Validation Gate</text>
+  <text x="970" y="858" text-anchor="middle" font-size="10" fill="#445">KPI rows reviewed before being trusted</text>
+
+  <!-- Down to KPI Targets Report -->
+  <line x1="970" y1="875" x2="970" y2="935" stroke="#333" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="970" y="912" text-anchor="middle" font-size="10" fill="#666" font-style="italic">ready for runtime measurement</text>
+
+  <!-- KPI Targets Report -->
+  <rect x="760" y="935" width="420" height="85" rx="8" fill="#fae8d4" stroke="#a05d22" stroke-width="2.5"/>
+  <text x="970" y="960" text-anchor="middle" font-size="13" font-weight="700">KPI Targets Report</text>
+  <text x="970" y="978" text-anchor="middle" font-size="10" fill="#445">per-FR measurable thresholds (gte / lte)</text>
+  <text x="970" y="994" text-anchor="middle" font-size="10" fill="#445">+ measurement method per row (load test · Azure Monitor · drill)</text>
+  <text x="970" y="1011" text-anchor="middle" font-size="10" font-weight="700" fill="#623813">3 sample chains derived · 5 KPI rows (banking-style probe)</text>
+
+  <!-- Down arrow to unified -->
+  <line x1="970" y1="1020" x2="860" y2="1140" stroke="#333" stroke-width="2.5" marker-end="url(#arrow)"/>
+
+  <!-- ========== UNIFIED COMPLIANCE / KPI REPORT ========== -->
+  <rect x="350" y="1140" width="600" height="80" rx="12" fill="#fae8d4" stroke="#a05d22" stroke-width="3.5"/>
+  <text x="650" y="1168" text-anchor="middle" font-size="16" font-weight="700">Unified Compliance / KPI Report</text>
+  <text x="650" y="1188" text-anchor="middle" font-size="11" fill="#333">structural verdicts (Alloy) + measurable targets (WAF) — per-FR traceability</text>
+  <text x="650" y="1206" text-anchor="middle" font-size="10" fill="#555" font-style="italic">"the spec is structurally sound AND the running system can be measured against these WAF-grounded numbers"</text>
+
+  <!-- Revisions arrow (red dotted) — from unified report back to Natural Language -->
+  <path d="M 350 1180 Q 60 1180, 60 700 Q 60 130, 545 130" stroke="#c33" stroke-width="2.5" stroke-dasharray="8,5" fill="none" marker-end="url(#arrowred)"/>
+  <text x="78" y="700" font-size="13" fill="#c33" font-weight="700" font-style="italic" transform="rotate(-90, 78, 700)">revisions</text>
+
+</svg>

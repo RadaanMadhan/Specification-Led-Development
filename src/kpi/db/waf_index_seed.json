@@ -1,0 +1,594 @@
+{
+  "value": [
+    {
+      "id": "RE:01",
+      "pillar_id": "reliability",
+      "recommendation": "Focus workload design on simplicity and efficiency. Use a practical approach to avoid unnecessary complexity while meeting your business goals and requirements.",
+      "metric_patterns": ["component_count", "dependency_depth", "failure_points_count"],
+      "typical_thresholds": "No universal numeric target. Principle is qualitative — every added component must justify its reliability cost.",
+      "risk_summary": "Over-engineered architectures accumulate hidden failure points. Each unnecessary component is a potential outage vector and increases operational overhead.",
+      "tradeoff_pillar_ids": ["operations", "performance"],
+      "source_url": "https://learn.microsoft.com/en-us/azure/well-architected/reliability/simplify"
+    },
+    {
+      "id": "RE:02",
+      "pillar_id": "reliability",
+      "recommendation": "Identify and rate user and system flows. Use a criticality scale based on your business requirements to prioritise the flows.",
+      "metric_patterns": ["critical_flow_count", "flow_availability_percentage"],
+      "typical_thresholds": "Critical flows typically require higher SLOs (99.99%+) than supporting flows (99.9%). Exact targets depend on business requirements.",
+      "risk_summary": "Without flow prioritisation, teams apply uniform reliability investment. Critical revenue paths receive the same treatment as low-value background jobs.",
+      "tradeoff_pillar_ids": ["cost"],
+      "source_url": "https://learn.microsoft.com/en-us/azure/well-architected/reliability/identify-flows"
+    },
+    {
+      "id": "RE:03",
+      "pillar_id": "reliability",
+      "recommendation": "Use failure mode analysis (FMA) to identify potential failures in your workload. Identify dependencies and failure points, and develop mitigation strategies for those failures.",
+      "metric_patterns": ["identified_failure_modes_count", "mitigated_failure_modes_percentage"],
+      "typical_thresholds": "All P0/P1 failure modes should have documented mitigation strategies. 100% mitigation coverage for critical path dependencies.",
+      "risk_summary": "Unknown failure modes surface as production incidents. Without FMA, the blast radius of any failure is undefined and potentially unbounded.",
+      "tradeoff_pillar_ids": ["operations", "cost"],
+      "source_url": "https://learn.microsoft.com/en-us/azure/well-architected/reliability/failure-mode-analysis"
+    },
+    {
+      "id": "RE:04",
+      "pillar_id": "reliability",
+      "recommendation": "Define reliability and recovery targets for your workload. Use the targets to inform your design and as the foundation of your health model.",
+      "metric_patterns": ["uptime_percentage", "rto_hours", "rpo_minutes", "sla_percentage", "error_rate_percentage"],
+      "typical_thresholds": "Production APIs: 99.9%–99.99% uptime. RTO: 1–4 hours non-critical, 15–60 min critical. RPO: 5–60 minutes. Error rate: < 0.1% at steady state.",
+      "risk_summary": "Without defined RTO/RPO, teams have no agreed recovery speed. Failures become open-ended incidents with no measurable success criteria for resolution.",
+      "tradeoff_pillar_ids": ["cost", "performance"],
+      "source_url": "https://learn.microsoft.com/en-us/azure/well-architected/reliability/metrics"
+    },
+    {
+      "id": "RE:05",
+      "pillar_id": "reliability",
+      "recommendation": "Add redundancy at different levels, especially for critical flows. Consider redundant infrastructure components such as compute and network, and multiple instances of your solution.",
+      "metric_patterns": ["replica_count", "availability_zone_count", "region_count"],
+      "typical_thresholds": "Minimum 2 replicas for production stateless services. Multi-AZ for any service with >= 99.9% SLO. Multi-region for >= 99.99% SLO.",
+      "risk_summary": "Single-region or single-zone deployment means one datacenter event causes total outage. Single instance deployments have no tolerance for host-level failures.",
+      "tradeoff_pillar_ids": ["cost", "performance"],
+      "source_url": "https://learn.microsoft.com/en-us/azure/well-architected/reliability/redundancy"
+    },
+    {
+      "id": "RE:06",
+      "pillar_id": "reliability",
+      "recommendation": "Implement a timely and reliable scaling strategy at the application, data, and infrastructure levels. Base the scaling strategy on actual or predicted usage patterns.",
+      "metric_patterns": ["scale_out_latency_seconds", "cpu_utilisation_percentage", "memory_utilisation_percentage", "autoscale_trigger_accuracy"],
+      "typical_thresholds": "Scale-out latency < 120 seconds for most App Service / AKS workloads. CPU utilisation trigger: 60–70% to allow headroom before saturation.",
+      "risk_summary": "Without autoscaling, sudden demand spikes overwhelm fixed capacity. Manual scaling cannot respond fast enough to viral traffic events.",
+      "tradeoff_pillar_ids": ["cost", "performance"],
+      "source_url": "https://learn.microsoft.com/en-us/azure/well-architected/reliability/scaling"
+    },
+    {
+      "id": "RE:07",
+      "pillar_id": "reliability",
+      "recommendation": "Strengthen the resiliency of your workload by implementing self-preservation and self-healing measures. Use built-in features and well-established cloud patterns.",
+      "metric_patterns": ["circuit_breaker_trip_rate", "retry_success_rate", "self_healing_resolution_rate"],
+      "typical_thresholds": "Retry policies: 3 attempts with exponential backoff. Circuit breaker open threshold: 50% failure rate over 30 seconds. Health check intervals: 30 seconds.",
+      "risk_summary": "Without circuit breakers and retry policies, transient failures become sustained outages. Tight coupling between services enables cascade failure.",
+      "tradeoff_pillar_ids": ["performance", "operations"],
+      "source_url": "https://learn.microsoft.com/en-us/azure/well-architected/reliability/self-preservation"
+    },
+    {
+      "id": "RE:08",
+      "pillar_id": "reliability",
+      "recommendation": "Test for resiliency and availability scenarios by applying the principles of chaos engineering. Perform active malfunction and simulated load testing.",
+      "metric_patterns": ["chaos_experiment_frequency", "load_test_pass_rate", "recovery_time_actual_hours"],
+      "typical_thresholds": "Chaos experiments: minimum quarterly for production, monthly for staging. Load tests before every major release. Recovery drill: annually minimum.",
+      "risk_summary": "DR plans that have never been drilled will fail under pressure. Untested assumptions about system resilience are frequently wrong.",
+      "tradeoff_pillar_ids": ["operations", "cost"],
+      "source_url": "https://learn.microsoft.com/en-us/azure/well-architected/reliability/testing-strategy"
+    },
+    {
+      "id": "RE:09",
+      "pillar_id": "reliability",
+      "recommendation": "Implement structured, tested, and documented disaster recovery plans that align with the recovery targets. Plans must cover all components and the system as a whole.",
+      "metric_patterns": ["dr_plan_coverage_percentage", "rto_drill_actual_hours", "rpo_drill_actual_minutes"],
+      "typical_thresholds": "DR plan must cover 100% of components on the critical path. Drill results must meet defined RTO/RPO targets within 10% tolerance.",
+      "risk_summary": "Undocumented DR procedures lead to confusion and extended downtime during incidents. Components with no recovery plan become single points of failure.",
+      "tradeoff_pillar_ids": ["cost", "operations"],
+      "source_url": "https://learn.microsoft.com/en-us/azure/well-architected/reliability/disaster-recovery"
+    },
+    {
+      "id": "RE:10",
+      "pillar_id": "reliability",
+      "recommendation": "Measure and model the solution's health signals. Continuously capture uptime and other reliability data from across the workload and from individual components and key flows.",
+      "metric_patterns": ["uptime_percentage", "mttd_minutes", "alert_false_positive_rate", "health_probe_coverage"],
+      "typical_thresholds": "MTTD < 5 minutes for P1 incidents. Health probe coverage: 100% of production services. Alert false positive rate: < 10%.",
+      "risk_summary": "Without health monitoring, failures are discovered by users before the team. No observability means no early warning and slower incident response.",
+      "tradeoff_pillar_ids": ["cost", "performance", "operations"],
+      "source_url": "https://learn.microsoft.com/en-us/azure/well-architected/reliability/monitoring-alerting-strategy"
+    },
+    {
+      "id": "SE:01",
+      "pillar_id": "security",
+      "recommendation": "Establish a security baseline aligned to compliance requirements, industry standards, and platform recommendations. Regularly measure your workload architecture and operations against the baseline.",
+      "metric_patterns": ["baseline_compliance_percentage", "security_score", "policy_violation_count"],
+      "typical_thresholds": "Microsoft Defender for Cloud secure score: target >= 80%. Zero critical policy violations in production. Baseline review: quarterly minimum.",
+      "risk_summary": "Without a defined baseline, there is no systematic way to identify gaps. Security posture drifts over time as new components are added without review.",
+      "tradeoff_pillar_ids": ["operations", "cost"],
+      "source_url": "https://learn.microsoft.com/en-us/azure/well-architected/security/establish-baseline"
+    },
+    {
+      "id": "SE:02",
+      "pillar_id": "security",
+      "recommendation": "Maintain a secure development lifecycle with a hardened, automated, and auditable software supply chain. Incorporate threat modelling to safeguard against security-defeating implementations.",
+      "metric_patterns": ["sast_scan_coverage_percentage", "dependency_vulnerability_count", "threat_model_coverage_percentage"],
+      "typical_thresholds": "100% of PRs scanned via SAST before merge. Zero known critical vulnerabilities in merged dependencies. Threat model updated on every major feature.",
+      "risk_summary": "Without supply chain security, malicious or vulnerable dependencies reach production. Security issues missed in development are exponentially more expensive to fix later.",
+      "tradeoff_pillar_ids": ["operations", "performance"],
+      "source_url": "https://learn.microsoft.com/en-us/azure/well-architected/security/secure-development-lifecycle"
+    },
+    {
+      "id": "SE:03",
+      "pillar_id": "security",
+      "recommendation": "Classify and consistently apply sensitivity and information type labels on all workload data and systems. Use classification to influence workload design and security prioritisation.",
+      "metric_patterns": ["data_classification_coverage_percentage", "unlabelled_data_store_count"],
+      "typical_thresholds": "100% of data stores classified. No production data stores with undefined sensitivity level.",
+      "risk_summary": "Without classification, all data receives the same (usually insufficient) protection. High-sensitivity data may be stored or transmitted without appropriate controls.",
+      "tradeoff_pillar_ids": ["operations", "cost"],
+      "source_url": "https://learn.microsoft.com/en-us/azure/well-architected/security/data-classification"
+    },
+    {
+      "id": "SE:04",
+      "pillar_id": "security",
+      "recommendation": "Create intentional segmentation and perimeters in your architecture design and in the workload's footprint. Include networks, roles, workload identities, and resource organisation.",
+      "metric_patterns": ["network_segment_count", "private_endpoint_coverage_percentage", "vnet_peering_exposure_count"],
+      "typical_thresholds": "All production data services accessible only via private endpoints. No public-IP data storage in production. Network segmentation validated via automated policy.",
+      "risk_summary": "Flat networks allow lateral movement after initial breach. A single compromised service can access all others without segmentation.",
+      "tradeoff_pillar_ids": ["reliability", "performance", "cost"],
+      "source_url": "https://learn.microsoft.com/en-us/azure/well-architected/security/segmentation"
+    },
+    {
+      "id": "SE:05",
+      "pillar_id": "security",
+      "recommendation": "Implement strict, conditional, and auditable identity and access management across all users, team members, and system components. Limit access exclusively to as necessary.",
+      "metric_patterns": ["auth_coverage_percentage", "privileged_access_count", "mfa_enforcement_percentage", "mttr_critical_cve_hours"],
+      "typical_thresholds": "100% authentication coverage on all production API endpoints. MFA enforced for 100% of human identities. Zero standing privileged access without JIT. MTTR for critical CVEs: <= 72 hours.",
+      "risk_summary": "Overly permissive IAM roles are exploited when accounts are compromised. Excessive privileges expand the blast radius of any breach.",
+      "tradeoff_pillar_ids": ["performance", "operations"],
+      "source_url": "https://learn.microsoft.com/en-us/azure/well-architected/security/identity-access"
+    },
+    {
+      "id": "SE:06",
+      "pillar_id": "security",
+      "recommendation": "Isolate, filter, and control network traffic across both ingress and egress flows. Apply defence-in-depth at all available network boundaries.",
+      "metric_patterns": ["firewall_rule_count", "blocked_threat_count", "waf_detection_rate"],
+      "typical_thresholds": "WAF enabled on all public-facing endpoints. Egress filtered to approved destinations only. Network security group rules reviewed quarterly.",
+      "risk_summary": "Without network controls, attackers who gain initial access can communicate freely with external C2 servers and exfiltrate data.",
+      "tradeoff_pillar_ids": ["performance", "reliability"],
+      "source_url": "https://learn.microsoft.com/en-us/azure/well-architected/security/networking"
+    },
+    {
+      "id": "SE:07",
+      "pillar_id": "security",
+      "recommendation": "Encrypt data using modern, industry-standard methods to guard confidentiality and integrity. Align the encryption scope with data classifications.",
+      "metric_patterns": ["encryption_at_rest_coverage_percentage", "encryption_in_transit_coverage_percentage", "tls_version_compliance_percentage"],
+      "typical_thresholds": "100% of data at rest encrypted with AES-256 or platform-managed keys. 100% of data in transit using TLS 1.2 minimum (TLS 1.3 preferred). Zero HTTP endpoints in production.",
+      "risk_summary": "Unencrypted data at rest is fully exposed in a storage breach. Unencrypted transit exposes credentials and PII to network interception.",
+      "tradeoff_pillar_ids": ["performance", "cost"],
+      "source_url": "https://learn.microsoft.com/en-us/azure/well-architected/security/encryption"
+    },
+    {
+      "id": "SE:08",
+      "pillar_id": "security",
+      "recommendation": "Harden all workload components by reducing extraneous surface area and tightening configurations to increase attacker cost.",
+      "metric_patterns": ["open_port_count", "unnecessary_service_count", "hardening_benchmark_score"],
+      "typical_thresholds": "Zero unnecessary open ports in production. CIS benchmark score >= 90% for all compute resources. Container images scanned and no critical CVEs.",
+      "risk_summary": "Every unnecessary service or open port is an attack vector. Default configurations are well-known to attackers and frequently exploited.",
+      "tradeoff_pillar_ids": ["operations"],
+      "source_url": "https://learn.microsoft.com/en-us/azure/well-architected/security/harden-resources"
+    },
+    {
+      "id": "SE:09",
+      "pillar_id": "security",
+      "recommendation": "Protect application secrets by hardening their storage, restricting access and manipulation, auditing those actions, and running a reliable rotation process.",
+      "metric_patterns": ["secrets_in_code_count", "secret_rotation_compliance_percentage", "key_vault_access_audit_coverage"],
+      "typical_thresholds": "Zero hardcoded secrets in source code (enforced by secret scanning in CI). 100% of secrets stored in Key Vault or equivalent. Rotation: 90 days for API keys, 365 days for certificates.",
+      "risk_summary": "Secrets in source code are exposed in repository history, logs, and build artefacts. Unrotated secrets remain valid after personnel changes or breaches.",
+      "tradeoff_pillar_ids": ["operations"],
+      "source_url": "https://learn.microsoft.com/en-us/azure/well-architected/security/application-secrets"
+    },
+    {
+      "id": "SE:10",
+      "pillar_id": "security",
+      "recommendation": "Implement a holistic monitoring strategy that relies on modern threat detection mechanisms integrated with the platform. Mechanisms should reliably alert for triage.",
+      "metric_patterns": ["security_alert_mttd_minutes", "false_positive_rate", "secops_coverage_percentage"],
+      "typical_thresholds": "MTTD for critical security alerts: < 15 minutes. False positive rate < 5%. 100% of production resources onboarded to Microsoft Defender for Cloud.",
+      "risk_summary": "Without security monitoring, breaches are discovered weeks or months after initial compromise. Insufficient logging prevents forensic investigation and root cause analysis.",
+      "tradeoff_pillar_ids": ["cost", "performance"],
+      "source_url": "https://learn.microsoft.com/en-us/azure/well-architected/security/monitor-threats"
+    },
+    {
+      "id": "SE:11",
+      "pillar_id": "security",
+      "recommendation": "Establish a comprehensive testing regimen that combines approaches to prevent security issues, validate threat prevention implementations, and test threat detection mechanisms.",
+      "metric_patterns": ["penetration_test_frequency", "dast_scan_coverage", "vulnerability_remediation_rate"],
+      "typical_thresholds": "Penetration test: annually minimum, after major architectural changes. DAST on every release to staging. Critical and high vulnerabilities remediated within SLA (72h critical, 7 days high).",
+      "risk_summary": "Security controls that have never been tested may not work. Assumed mitigations frequently fail when validated against realistic attack scenarios.",
+      "tradeoff_pillar_ids": ["cost", "operations"],
+      "source_url": "https://learn.microsoft.com/en-us/azure/well-architected/security/test"
+    },
+    {
+      "id": "SE:12",
+      "pillar_id": "security",
+      "recommendation": "Define and test effective incident response procedures covering a spectrum of incidents, from localised issues to disaster recovery. Clearly assign ownership.",
+      "metric_patterns": ["ir_plan_coverage_percentage", "security_mttr_hours", "incident_drill_frequency"],
+      "typical_thresholds": "IR plan covers 100% of identified threat scenarios. Security MTTR (mean time to contain): <= 4 hours for critical incidents. IR drill: minimum annually.",
+      "risk_summary": "Without tested incident response, security incidents become prolonged, chaotic, and more damaging. Unclear ownership leads to coordination failure during high-pressure events.",
+      "tradeoff_pillar_ids": ["operations"],
+      "source_url": "https://learn.microsoft.com/en-us/azure/well-architected/security/incident-response"
+    },
+    {
+      "id": "CO:01",
+      "pillar_id": "cost",
+      "recommendation": "Create a culture of financial responsibility. Regularly train personnel, foster creativity and spending accountability, and invest in tooling and automation.",
+      "metric_patterns": ["cost_awareness_training_coverage", "cost_anomaly_detection_coverage"],
+      "typical_thresholds": "All engineers with Azure access complete cost awareness training annually. Cost anomaly alerts configured on all subscriptions.",
+      "risk_summary": "Without financial accountability, individual engineers make expensive infrastructure choices without visibility into cost impact. Spend grows unchecked.",
+      "tradeoff_pillar_ids": ["operations"],
+      "source_url": "https://learn.microsoft.com/en-us/azure/well-architected/cost-optimization/create-culture-financial-responsibility"
+    },
+    {
+      "id": "CO:02",
+      "pillar_id": "cost",
+      "recommendation": "Create and maintain a cost model. A cost model should estimate the initial cost, run rates, and ongoing costs. Negotiate a budget with a buffer for unplanned spending.",
+      "metric_patterns": ["budget_variance_percentage", "cost_forecast_accuracy_percentage"],
+      "typical_thresholds": "Budget variance: < 10% month-over-month. Forecast accuracy within 15% of actuals. Budget buffer: 15–20% above expected run rate.",
+      "risk_summary": "Without a cost model, there is no baseline to detect overspend. Actual costs routinely exceed estimates by 2–5x when not modelled upfront.",
+      "tradeoff_pillar_ids": ["reliability", "performance"],
+      "source_url": "https://learn.microsoft.com/en-us/azure/well-architected/cost-optimization/cost-model"
+    },
+    {
+      "id": "CO:03",
+      "pillar_id": "cost",
+      "recommendation": "Collect and review cost data daily. Capture incurred costs, prepaid costs, trends, and forecasts. Automate alerts at key thresholds and detect anomalies.",
+      "metric_patterns": ["cost_per_request", "daily_spend_trend", "budget_utilisation_percentage"],
+      "typical_thresholds": "Budget alert at 80% consumed. Anomaly alert for daily spend > 20% above 7-day average. Cost per 1k API requests tracked as primary efficiency metric.",
+      "risk_summary": "Without daily cost visibility, overruns are discovered at month-end when it is too late to correct. Egress charges and idle resources accumulate silently.",
+      "tradeoff_pillar_ids": ["operations"],
+      "source_url": "https://learn.microsoft.com/en-us/azure/well-architected/cost-optimization/collect-review-cost-data"
+    },
+    {
+      "id": "CO:04",
+      "pillar_id": "cost",
+      "recommendation": "Set spending guardrails including release gates, governance policies, resource limits, and access controls. Prioritise platform automation over manual processes.",
+      "metric_patterns": ["policy_violation_count", "unapproved_resource_count"],
+      "typical_thresholds": "Zero unapproved resource types in production. Azure Policy deny effects for non-approved SKUs. Resource group budget limits enforced.",
+      "risk_summary": "Without guardrails, developers provision expensive resources (GPU VMs, large databases) that are forgotten and run indefinitely.",
+      "tradeoff_pillar_ids": ["operations"],
+      "source_url": "https://learn.microsoft.com/en-us/azure/well-architected/cost-optimization/set-spending-guardrails"
+    },
+    {
+      "id": "CO:05",
+      "pillar_id": "cost",
+      "recommendation": "Get the best rates from providers. Find and use the best rates for cloud resources and licenses. Review cost savings including reserved instances and commitment plans.",
+      "metric_patterns": ["reserved_instance_coverage_percentage", "savings_plan_utilisation_percentage"],
+      "typical_thresholds": "Reserved instance coverage: >= 70% of stable baseline compute. Savings plan utilisation: >= 90% of commitment. Review pricing tiers quarterly.",
+      "risk_summary": "Pay-as-you-go pricing for stable baseline workloads is 30–60% more expensive than reserved capacity. Significant ongoing waste without optimised billing.",
+      "tradeoff_pillar_ids": ["reliability"],
+      "source_url": "https://learn.microsoft.com/en-us/azure/well-architected/cost-optimization/get-best-rates"
+    },
+    {
+      "id": "CO:06",
+      "pillar_id": "cost",
+      "recommendation": "Align usage to billing increments. Understand billing meters and modify resource usage or service configuration to align with billing increments.",
+      "metric_patterns": ["billing_alignment_waste_percentage"],
+      "typical_thresholds": "Qualitative. Audit billing meters for top 5 cost drivers and validate usage patterns match billing increments. Review after architecture changes.",
+      "risk_summary": "Misaligned usage can cause disproportionate billing. A workload that runs for 61 minutes in an hourly-billed service pays for 2 hours.",
+      "tradeoff_pillar_ids": [],
+      "source_url": "https://learn.microsoft.com/en-us/azure/well-architected/cost-optimization/align-usage-to-billing-increments"
+    },
+    {
+      "id": "CO:07",
+      "pillar_id": "cost",
+      "recommendation": "Optimise component costs. Regularly remove or optimise legacy, unneeded, and underutilised workload components, application features, and platform resources.",
+      "metric_patterns": ["idle_resource_count", "cpu_average_utilisation_percentage", "underutilised_resource_percentage"],
+      "typical_thresholds": "CPU average utilisation: review resources below 20% for downsizing. Zero idle resources (0 requests in 30 days) in production. Monthly resource audit.",
+      "risk_summary": "Over-provisioned VMs and App Service plans pay for capacity that is never used. Orphaned resources (unused disks, old snapshots) accumulate ongoing charges.",
+      "tradeoff_pillar_ids": ["reliability", "performance"],
+      "source_url": "https://learn.microsoft.com/en-us/azure/well-architected/cost-optimization/optimize-component-costs"
+    },
+    {
+      "id": "CO:08",
+      "pillar_id": "cost",
+      "recommendation": "Optimise environment costs. Align spending to prioritise production, preproduction, and DR environments. Non-production environments should emulate but not replicate production costs.",
+      "metric_patterns": ["nonprod_to_prod_cost_ratio", "dev_environment_uptime_percentage"],
+      "typical_thresholds": "Non-production cost: typically 10–30% of production. Dev/test environments shut down outside business hours (target: <= 40% uptime vs production 99%+).",
+      "risk_summary": "Dev/test environments running 24/7 at production scale account for a disproportionate share of total spend. Common source of 30–50% cost savings when addressed.",
+      "tradeoff_pillar_ids": ["operations"],
+      "source_url": "https://learn.microsoft.com/en-us/azure/well-architected/cost-optimization/optimize-environment-costs"
+    },
+    {
+      "id": "CO:09",
+      "pillar_id": "cost",
+      "recommendation": "Optimise flow costs. Align the cost of each flow with flow priority. Consider features, functionality, and nonfunctional requirements of each flow.",
+      "metric_patterns": ["cost_per_flow", "cost_per_transaction"],
+      "typical_thresholds": "Cost per critical user flow tracked as primary unit metric. Non-critical flows should cost < 50% of equivalent critical flow where architecturally feasible.",
+      "risk_summary": "Uniform cost treatment across flows means low-value flows consume resources that should be reserved for revenue-critical paths.",
+      "tradeoff_pillar_ids": ["reliability", "performance"],
+      "source_url": "https://learn.microsoft.com/en-us/azure/well-architected/cost-optimization/optimize-flow-costs"
+    },
+    {
+      "id": "CO:10",
+      "pillar_id": "cost",
+      "recommendation": "Optimise data costs. Improve data management including tiering and retention, volume, replication, backups, file formats, and storage solutions.",
+      "metric_patterns": ["storage_cost_per_gb", "data_egress_cost", "backup_retention_waste_percentage"],
+      "typical_thresholds": "Data egress: monitored and budgeted. Blob storage: hot/cool/archive tiering applied based on access frequency. Backup retention: matches RPO, not maximum available.",
+      "risk_summary": "Unmonitored data egress charges are consistently underestimated. Storing all data in hot tier when most is archival wastes 60–80% of storage cost.",
+      "tradeoff_pillar_ids": ["reliability"],
+      "source_url": "https://learn.microsoft.com/en-us/azure/well-architected/cost-optimization/optimize-data-costs"
+    },
+    {
+      "id": "CO:11",
+      "pillar_id": "cost",
+      "recommendation": "Optimise code costs. Evaluate and modify code to meet functional and nonfunctional requirements with fewer or cheaper resources.",
+      "metric_patterns": ["compute_cost_per_request", "memory_utilisation_percentage", "serverless_execution_duration_ms"],
+      "typical_thresholds": "Serverless functions: target execution time reduction of >= 20% per optimisation cycle. Memory allocation: review functions/containers using < 50% allocated memory.",
+      "risk_summary": "Inefficient code consumes excessive compute. A function with unnecessary DB calls or blocking I/O can cost 10x more than an optimised equivalent.",
+      "tradeoff_pillar_ids": ["performance"],
+      "source_url": "https://learn.microsoft.com/en-us/azure/well-architected/cost-optimization/optimize-code-costs"
+    },
+    {
+      "id": "CO:12",
+      "pillar_id": "cost",
+      "recommendation": "Optimise scaling costs. Evaluate alternative scaling configurations and align with the cost model. Use strategies for controlling demand and supply.",
+      "metric_patterns": ["autoscale_efficiency_percentage", "scale_in_savings_percentage"],
+      "typical_thresholds": "Autoscale scale-in must be configured alongside scale-out. Review peak vs average instance count ratio — a ratio > 3x suggests demand shaping opportunity.",
+      "risk_summary": "Scaling only upward without scale-in leads to over-provisioned baseline after traffic peaks. Capped scaling limits may cause reliability failures at unexpected demand.",
+      "tradeoff_pillar_ids": ["reliability", "performance"],
+      "source_url": "https://learn.microsoft.com/en-us/azure/well-architected/cost-optimization/optimize-scaling-costs"
+    },
+    {
+      "id": "CO:13",
+      "pillar_id": "cost",
+      "recommendation": "Optimise personnel time. Align the time personnel spends on tasks with the priority of the task. Minimise noise, reduce build times, and enable high-fidelity debugging.",
+      "metric_patterns": ["build_time_minutes", "alert_noise_ratio", "on_call_incident_frequency"],
+      "typical_thresholds": "CI build time: target < 10 minutes for standard PR builds. Alert noise ratio (actionable vs total): target > 80% actionable. On-call page frequency: < 5 P1/P2 per engineer per month.",
+      "risk_summary": "Excessive alert noise causes alert fatigue and missed genuine incidents. Long build times slow delivery cycles and increase cost of development.",
+      "tradeoff_pillar_ids": ["operations"],
+      "source_url": "https://learn.microsoft.com/en-us/azure/well-architected/cost-optimization/optimize-personnel-time"
+    },
+    {
+      "id": "CO:14",
+      "pillar_id": "cost",
+      "recommendation": "Consolidate resources and responsibility. Look for consolidation opportunities within the workload and use existing centralised resources where appropriate.",
+      "metric_patterns": ["shared_service_utilisation_percentage", "duplicate_service_count"],
+      "typical_thresholds": "Identify and eliminate duplicate services performing identical functions. Centralised observability (Log Analytics workspace) shared across workloads where feasible.",
+      "risk_summary": "Redundant services performing the same function multiply cost without adding reliability. Multiple separate Log Analytics workspaces are a common source of avoidable spend.",
+      "tradeoff_pillar_ids": ["security", "reliability"],
+      "source_url": "https://learn.microsoft.com/en-us/azure/well-architected/cost-optimization/consolidation"
+    },
+    {
+      "id": "OE:01",
+      "pillar_id": "operations",
+      "recommendation": "Define standard practices to develop and operate your workload. Align team specialisations with clear practices for designing, deploying, and operating the workload.",
+      "metric_patterns": ["process_documentation_coverage_percentage", "team_practice_adoption_rate"],
+      "typical_thresholds": "100% of operational processes documented. Runbooks reviewed and updated quarterly. Onboarding time for new engineers <= 2 weeks to productive contribution.",
+      "risk_summary": "Undocumented practices create key-person dependency. Knowledge leaves when people leave. Inconsistent practices lead to inconsistent outcomes.",
+      "tradeoff_pillar_ids": ["cost"],
+      "source_url": "https://learn.microsoft.com/en-us/azure/well-architected/operational-excellence/devops-culture"
+    },
+    {
+      "id": "OE:02",
+      "pillar_id": "operations",
+      "recommendation": "Use standardisation to make routine, ad-hoc, and emergency operations consistent and predictable. Codify runbooks and standard operating procedures.",
+      "metric_patterns": ["runbook_coverage_percentage", "manual_step_count_per_operation"],
+      "typical_thresholds": "Runbooks for all P1/P2 incident types. Manual steps in critical operations: target zero, max 3. SOP review cycle: quarterly.",
+      "risk_summary": "Ad-hoc emergency operations performed differently each time produce inconsistent outcomes and extend incident duration.",
+      "tradeoff_pillar_ids": ["cost"],
+      "source_url": "https://learn.microsoft.com/en-us/azure/well-architected/operational-excellence/formalize-operations-tasks"
+    },
+    {
+      "id": "OE:03",
+      "pillar_id": "operations",
+      "recommendation": "Formalise processes across the full software development lifecycle, from ideation to delivery, and make them transparent to the team and stakeholders.",
+      "metric_patterns": ["cycle_time_days", "lead_time_days", "process_compliance_percentage"],
+      "typical_thresholds": "Cycle time (commit to production): target < 1 day for small changes. Lead time: measured and trending down sprint-over-sprint. Process compliance: >= 95%.",
+      "risk_summary": "Informal development processes accumulate technical debt and make quality unpredictable. Stakeholders cannot track progress without formalised workflow.",
+      "tradeoff_pillar_ids": ["cost"],
+      "source_url": "https://learn.microsoft.com/en-us/azure/well-architected/operational-excellence/formalize-development-practices"
+    },
+    {
+      "id": "OE:04",
+      "pillar_id": "operations",
+      "recommendation": "Enhance software development and quality assurance using industry-standard practices. Standardise tools, source control, design patterns, documentation, and style guides.",
+      "metric_patterns": ["code_review_coverage_percentage", "test_coverage_percentage", "defect_escape_rate"],
+      "typical_thresholds": "Code review: 100% of PRs reviewed before merge. Unit test coverage: >= 80% for new code. Defect escape rate (bugs found in production vs pre-production): target < 10%.",
+      "risk_summary": "Without standardised tooling and practices, code quality is inconsistent and defects escape to production at higher rates.",
+      "tradeoff_pillar_ids": ["cost"],
+      "source_url": "https://learn.microsoft.com/en-us/azure/well-architected/operational-excellence/tools-processes"
+    },
+    {
+      "id": "OE:05",
+      "pillar_id": "operations",
+      "recommendation": "Use a standardised infrastructure as code approach to prepare resources and configurations. Prefer declarative over imperative approaches when practical.",
+      "metric_patterns": ["iac_coverage_percentage", "configuration_drift_count", "manual_change_count"],
+      "typical_thresholds": "IaC coverage: 100% of production infrastructure defined in code. Zero manual changes to production resources outside IaC pipeline. Drift detection: automated, daily.",
+      "risk_summary": "Manual infrastructure changes are not repeatable, not auditable, and cannot be rolled back reliably. Configuration drift between environments causes dev/prod parity failures.",
+      "tradeoff_pillar_ids": ["cost", "reliability"],
+      "source_url": "https://learn.microsoft.com/en-us/azure/well-architected/operational-excellence/infrastructure-as-code-design"
+    },
+    {
+      "id": "OE:06",
+      "pillar_id": "operations",
+      "recommendation": "Build a workload supply chain that drives changes through predictable, automated pipelines. Test and promote changes across all environments and quality gates.",
+      "metric_patterns": ["deployment_frequency", "pipeline_success_rate_percentage", "change_failure_rate_percentage"],
+      "typical_thresholds": "Deployment frequency: >= weekly for production. Pipeline success rate: >= 95%. Change failure rate: < 5%. All production deployments via automated pipeline.",
+      "risk_summary": "Manual deployments are inconsistent and error-prone. Without quality gates, breaking changes reach production without detection.",
+      "tradeoff_pillar_ids": ["cost", "security"],
+      "source_url": "https://learn.microsoft.com/en-us/azure/well-architected/operational-excellence/workload-supply-chain"
+    },
+    {
+      "id": "OE:07",
+      "pillar_id": "operations",
+      "recommendation": "Design and implement a monitoring system to capture and expose telemetry, metrics, and logs from your infrastructure and code. Use data to validate design choices.",
+      "metric_patterns": ["telemetry_coverage_percentage", "log_ingestion_latency_seconds", "dashboard_coverage_percentage"],
+      "typical_thresholds": "100% of production services emitting structured telemetry. Log ingestion latency: < 60 seconds for real-time alerting. All P1 flows covered by dashboards.",
+      "risk_summary": "Without centralised logging and distributed tracing, diagnosing issues across service boundaries is impossible. Incidents are longer and more impactful.",
+      "tradeoff_pillar_ids": ["cost", "performance"],
+      "source_url": "https://learn.microsoft.com/en-us/azure/well-architected/operational-excellence/observability"
+    },
+    {
+      "id": "OE:08",
+      "pillar_id": "operations",
+      "recommendation": "Establish a clear, structured incident management process with defined roles, documented procedures, and architecture designed for rapid detection, diagnosis, and recovery.",
+      "metric_patterns": ["mttd_minutes", "mttr_minutes", "incident_recurrence_rate"],
+      "typical_thresholds": "MTTD: < 5 minutes for P1. MTTR: < 30 minutes for P1, < 4 hours for P2. Incident recurrence rate (same root cause): < 10%. Post-incident review within 48 hours.",
+      "risk_summary": "Without defined incident management, response is chaotic and extended. The same incidents recur because root causes are never systematically addressed.",
+      "tradeoff_pillar_ids": ["cost"],
+      "source_url": "https://learn.microsoft.com/en-us/azure/well-architected/operational-excellence/incident-response"
+    },
+    {
+      "id": "OE:09",
+      "pillar_id": "operations",
+      "recommendation": "Automate tasks that are repetitive, procedural, and provide a clear return on investment. Prefer off-the-shelf automation over custom solutions.",
+      "metric_patterns": ["automation_coverage_percentage", "manual_operation_time_hours"],
+      "typical_thresholds": "All routine operational tasks (backups, patching, certificate rotation) automated. Manual operational time: trending down quarter-over-quarter.",
+      "risk_summary": "Manual repetitive tasks introduce human error, are not scalable, and consume engineering time that could be spent on higher-value work.",
+      "tradeoff_pillar_ids": ["cost", "security"],
+      "source_url": "https://learn.microsoft.com/en-us/azure/well-architected/operational-excellence/automate-tasks"
+    },
+    {
+      "id": "OE:10",
+      "pillar_id": "operations",
+      "recommendation": "Design and implement automation upfront for tasks like lifecycle management, bootstrapping, and governance. Avoid retrofitting automation later.",
+      "metric_patterns": ["bootstrap_automation_coverage", "lifecycle_policy_coverage_percentage"],
+      "typical_thresholds": "Resource lifecycle policies (retention, cleanup) defined for 100% of resource types at creation. Bootstrap automation tested on every deploy.",
+      "risk_summary": "Retrofitting automation into an already-running system is significantly harder and more risky than building it in from the start.",
+      "tradeoff_pillar_ids": ["cost"],
+      "source_url": "https://learn.microsoft.com/en-us/azure/well-architected/operational-excellence/enable-automation"
+    },
+    {
+      "id": "OE:11",
+      "pillar_id": "operations",
+      "recommendation": "Clearly define your workload's safe deployment practices. Focus on small, incremental releases with quality gates. Use modern deployment patterns and progressive exposure.",
+      "metric_patterns": ["deployment_success_rate_percentage", "change_failure_rate_percentage", "rollback_time_minutes", "canary_traffic_percentage"],
+      "typical_thresholds": "Deployment success rate: >= 95%. Change failure rate: < 5%. Rollback time: < 15 minutes. Canary deployments: start at 5–10% traffic before full rollout.",
+      "risk_summary": "Big-bang releases accumulate risk. Without progressive exposure, a breaking change reaches 100% of users before it can be detected and rolled back.",
+      "tradeoff_pillar_ids": ["cost", "performance"],
+      "source_url": "https://learn.microsoft.com/en-us/azure/well-architected/operational-excellence/safe-deployments"
+    },
+    {
+      "id": "PE:01",
+      "pillar_id": "performance",
+      "recommendation": "Define performance targets. Performance targets should be numerical values tied to workload requirements, implemented for all workload flows.",
+      "metric_patterns": ["p50_response_time_ms", "p95_response_time_ms", "p99_response_time_ms", "throughput_rps"],
+      "typical_thresholds": "API endpoints: p95 <= 200ms, p99 <= 500ms at expected peak load. Throughput: validated against expected RPS at peak. Targets defined per flow, not globally.",
+      "risk_summary": "Without defined performance targets, teams have no criteria for success. Optimisation efforts are unfocused and regressions go undetected.",
+      "tradeoff_pillar_ids": ["cost", "reliability"],
+      "source_url": "https://learn.microsoft.com/en-us/azure/well-architected/performance-efficiency/performance-targets"
+    },
+    {
+      "id": "PE:02",
+      "pillar_id": "performance",
+      "recommendation": "Conduct capacity planning before predicted changes in usage patterns such as seasonal variations, product updates, marketing campaigns, or regulatory changes.",
+      "metric_patterns": ["capacity_headroom_percentage", "predicted_vs_actual_load_variance"],
+      "typical_thresholds": "Capacity headroom: >= 30% above expected peak before known events. Capacity review: 4 weeks before planned traffic events. Load forecast accuracy: within 25%.",
+      "risk_summary": "Without capacity planning, sudden traffic spikes (marketing campaigns, viral events) overwhelm under-provisioned systems. Reactive scaling is too slow.",
+      "tradeoff_pillar_ids": ["cost"],
+      "source_url": "https://learn.microsoft.com/en-us/azure/well-architected/performance-efficiency/capacity-planning"
+    },
+    {
+      "id": "PE:03",
+      "pillar_id": "performance",
+      "recommendation": "Select the right services. Infrastructure and tier selections must support your ability to reach the workload's performance targets and accommodate expected capacity changes.",
+      "metric_patterns": ["service_tier_headroom_percentage", "sku_utilisation_percentage"],
+      "typical_thresholds": "SKU utilisation: 40–70% at expected peak (headroom for spikes). Service tier review: at every major architectural change and annually.",
+      "risk_summary": "Wrong service tier selection means either over-spend on unused capacity or performance failures at load. Tier changes often require downtime.",
+      "tradeoff_pillar_ids": ["cost"],
+      "source_url": "https://learn.microsoft.com/en-us/azure/well-architected/performance-efficiency/select-services"
+    },
+    {
+      "id": "PE:04",
+      "pillar_id": "performance",
+      "recommendation": "Collect performance data. Workload components and flows should provide automatic, continuous, and meaningful metrics and logs at all levels.",
+      "metric_patterns": ["metrics_coverage_percentage", "trace_sampling_rate", "performance_data_latency_seconds"],
+      "typical_thresholds": "100% of production services emitting performance metrics. Trace sampling: >= 10% for normal traffic, 100% during load tests. Metrics retention: >= 30 days.",
+      "risk_summary": "Without performance data, regressions go undetected until they affect users. Profiling without baselines cannot identify what has changed.",
+      "tradeoff_pillar_ids": ["cost", "operations"],
+      "source_url": "https://learn.microsoft.com/en-us/azure/well-architected/performance-efficiency/collect-performance-data"
+    },
+    {
+      "id": "PE:05",
+      "pillar_id": "performance",
+      "recommendation": "Optimise scaling and partitioning. Incorporate reliable and controlled scaling and partitioning. Base the scale unit design on the workload's scaling strategy.",
+      "metric_patterns": ["scale_unit_latency_seconds", "partition_hotspot_rate", "horizontal_scale_efficiency"],
+      "typical_thresholds": "No partition hotspots (single partition handling > 3x average load). Scale-out triggered before saturation (< 80% utilisation threshold). Scale unit tested at 2x expected peak.",
+      "risk_summary": "Poor partitioning creates hotspots that cannot be resolved by scaling. Scaling units that are too coarse waste resource; too fine creates coordination overhead.",
+      "tradeoff_pillar_ids": ["cost", "reliability"],
+      "source_url": "https://learn.microsoft.com/en-us/azure/well-architected/performance-efficiency/scale-partition"
+    },
+    {
+      "id": "PE:06",
+      "pillar_id": "performance",
+      "recommendation": "Test performance regularly in an environment that matches the production environment. Compare results against the performance targets and the performance benchmark.",
+      "metric_patterns": ["load_test_frequency", "performance_regression_rate", "slo_breach_rate_percentage"],
+      "typical_thresholds": "Load testing: before every major release and monthly on stable codebases. SLO breach rate in load tests: 0%. Performance regression (> 10% degradation vs baseline) blocks release.",
+      "risk_summary": "Performance issues discovered by real users under production load are significantly more expensive to fix than those caught in pre-production testing.",
+      "tradeoff_pillar_ids": ["cost", "operations"],
+      "source_url": "https://learn.microsoft.com/en-us/azure/well-architected/performance-efficiency/performance-test"
+    },
+    {
+      "id": "PE:07",
+      "pillar_id": "performance",
+      "recommendation": "Optimise code and infrastructure. Use performant code that offloads responsibilities to the platform. Use code and infrastructure only for their core purpose.",
+      "metric_patterns": ["hot_path_latency_ms", "cpu_per_request_ms", "memory_per_request_mb"],
+      "typical_thresholds": "Hot path profiling: top 5 functions by CPU accounted for and optimised. N+1 query patterns: zero in production. Async I/O: used for all external calls.",
+      "risk_summary": "Synchronous calls to slow downstream services block entire request threads. Database queries without indexes on hot paths cause latency spikes that scale linearly with data.",
+      "tradeoff_pillar_ids": ["reliability"],
+      "source_url": "https://learn.microsoft.com/en-us/azure/well-architected/performance-efficiency/optimize-code-infrastructure"
+    },
+    {
+      "id": "PE:08",
+      "pillar_id": "performance",
+      "recommendation": "Optimise data usage. Optimise data stores, partitions, and indexes for their intended and actual use in the workload.",
+      "metric_patterns": ["query_execution_time_ms", "index_hit_rate_percentage", "database_cpu_percentage"],
+      "typical_thresholds": "Query execution time on hot paths: p95 < 20ms. Index hit rate: >= 95%. Database CPU: < 70% at expected peak load. Slow query log: reviewed weekly.",
+      "risk_summary": "Unindexed queries on hot paths cause latency spikes that scale linearly with data volume. A missing index can turn a 5ms query into a 5s full table scan.",
+      "tradeoff_pillar_ids": ["cost"],
+      "source_url": "https://learn.microsoft.com/en-us/azure/well-architected/performance-efficiency/optimize-data-performance"
+    },
+    {
+      "id": "PE:09",
+      "pillar_id": "performance",
+      "recommendation": "Prioritise the performance of critical flows. Allocate workload resources and optimisation efforts to the flows that support the most important business processes.",
+      "metric_patterns": ["critical_flow_p95_ms", "critical_flow_error_rate_percentage"],
+      "typical_thresholds": "Critical flows: p95 performance targets tighter than non-critical (e.g. critical: p95 <= 100ms vs non-critical: p95 <= 500ms). Critical flows monitored with dedicated alerts.",
+      "risk_summary": "Uniform performance investment across flows means critical revenue paths compete for resources with background processes.",
+      "tradeoff_pillar_ids": ["cost"],
+      "source_url": "https://learn.microsoft.com/en-us/azure/well-architected/performance-efficiency/prioritize-critical-flows"
+    },
+    {
+      "id": "PE:10",
+      "pillar_id": "performance",
+      "recommendation": "Optimise operational tasks. Monitor and minimise the effects of software development lifecycle operations on workload performance.",
+      "metric_patterns": ["operational_task_perf_impact_percentage", "backup_window_duration_minutes"],
+      "typical_thresholds": "Backup/reindex operations: scheduled outside peak hours. Operational task CPU impact: < 10% above baseline. Deployment impact on p99: < 20% increase during rollout.",
+      "risk_summary": "Backup jobs, index rebuilds, and certificate rotations running during peak hours can degrade performance significantly and unpredictably.",
+      "tradeoff_pillar_ids": ["operations"],
+      "source_url": "https://learn.microsoft.com/en-us/azure/well-architected/performance-efficiency/optimize-operational-tasks"
+    },
+    {
+      "id": "PE:11",
+      "pillar_id": "performance",
+      "recommendation": "Respond to live performance issues. Plan how to address performance problems with clear communication lines and responsibilities. Use incidents to drive preventive measures.",
+      "metric_patterns": ["performance_incident_mttd_minutes", "performance_incident_mttr_minutes"],
+      "typical_thresholds": "Performance degradation MTTD: < 5 minutes (via automated alerting). MTTR for performance incidents: < 30 minutes. Post-incident preventive action tracked to completion.",
+      "risk_summary": "Unplanned responses to performance incidents are slower and less effective. Without post-incident learning, the same performance problems recur.",
+      "tradeoff_pillar_ids": ["operations"],
+      "source_url": "https://learn.microsoft.com/en-us/azure/well-architected/performance-efficiency/respond-live-performance-issues"
+    },
+    {
+      "id": "PE:12",
+      "pillar_id": "performance",
+      "recommendation": "Continuously optimise performance. Focus on components showing deteriorating performance over time, such as databases and networking features.",
+      "metric_patterns": ["performance_trend_slope", "query_plan_regression_count", "index_fragmentation_percentage"],
+      "typical_thresholds": "Performance baseline reviewed monthly. Any metric showing > 10% degradation trend over 4 weeks triggers investigation. Index fragmentation: rebuild when > 30%.",
+      "risk_summary": "Databases and caches degrade silently over time as data grows and query plans change. Without continuous monitoring, deterioration is only noticed when it becomes a user-facing issue.",
+      "tradeoff_pillar_ids": ["cost", "operations"],
+      "source_url": "https://learn.microsoft.com/en-us/azure/well-architected/performance-efficiency/continuous-performance-optimize"
+    }
+  ]
+}

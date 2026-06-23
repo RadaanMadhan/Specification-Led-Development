@@ -1,0 +1,54 @@
+{
+  "name": "waf-index",
+  "fields": [
+    { "name": "id",                  "type": "Edm.String",              "key": true,  "searchable": false, "filterable": true,  "sortable": false, "facetable": false, "retrievable": true  },
+    { "name": "pillar_id",           "type": "Edm.String",              "key": false, "searchable": false, "filterable": true,  "sortable": false, "facetable": true,  "retrievable": true  },
+    { "name": "recommendation",      "type": "Edm.String",              "key": false, "searchable": true,  "filterable": false, "sortable": false, "facetable": false, "retrievable": true  },
+    { "name": "metric_patterns",     "type": "Collection(Edm.String)",  "key": false, "searchable": false, "filterable": false, "sortable": false, "facetable": false, "retrievable": true  },
+    { "name": "typical_thresholds",  "type": "Edm.String",              "key": false, "searchable": false, "filterable": false, "sortable": false, "facetable": false, "retrievable": true  },
+    { "name": "risk_summary",        "type": "Edm.String",              "key": false, "searchable": true,  "filterable": false, "sortable": false, "facetable": false, "retrievable": true  },
+    { "name": "tradeoff_pillar_ids", "type": "Collection(Edm.String)",  "key": false, "searchable": false, "filterable": true,  "sortable": false, "facetable": false, "retrievable": true  },
+    { "name": "source_url",          "type": "Edm.String",              "key": false, "searchable": false, "filterable": false, "sortable": false, "facetable": false, "retrievable": true  },
+    {
+      "name": "embedding",
+      "type": "Collection(Edm.Single)",
+      "searchable": true,
+      "retrievable": false,
+      "dimensions": 1536,
+      "vectorSearchProfile": "waf-vector-profile"
+    }
+  ],
+  "vectorSearch": {
+    "algorithms": [
+      {
+        "name": "waf-hnsw",
+        "kind": "hnsw",
+        "hnswParameters": {
+          "metric": "cosine",
+          "m": 4,
+          "efConstruction": 400,
+          "efSearch": 500
+        }
+      }
+    ],
+    "profiles": [
+      {
+        "name": "waf-vector-profile",
+        "algorithm": "waf-hnsw"
+      }
+    ]
+  },
+  "semantic": {
+    "configurations": [
+      {
+        "name": "waf-semantic",
+        "prioritizedFields": {
+          "contentFields": [
+            { "fieldName": "recommendation" },
+            { "fieldName": "risk_summary" }
+          ]
+        }
+      }
+    ]
+  }
+}

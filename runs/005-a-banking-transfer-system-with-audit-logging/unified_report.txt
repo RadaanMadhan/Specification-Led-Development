@@ -1,0 +1,152 @@
+==============================================================================
+  Unified Compliance Report  —  005-a-banking-transfer-system-with-audit-logging
+  feature folder : C:\Users\Keshav\Desktop\TelecomParis\3A - MVA - Imperial College London\Microsoft group project\Specification-Led-Development\specs\005-a-banking-transfer-system-with-audit-logging
+==============================================================================
+
+  Executive summary
+    Alloy:  20/20 assertions PASS; mutations 0/6 bit
+    KPI:    skipped
+
+==============================================================================
+  1. Structural Verification (Alloy)
+==============================================================================
+
+==============================================================================
+  Design Compliance Report  (Phase 3 — feature_model.als)
+  feature       : 005-a-banking-transfer-system-with-audit-logging
+  spec source   : C:\Users\Keshav\Desktop\TelecomParis\3A - MVA - Imperial College London\Microsoft group project\Specification-Led-Development\specs\005-a-banking-transfer-system-with-audit-logging
+  alloy model   : C:\Users\Keshav\Desktop\TelecomParis\3A - MVA - Imperial College London\Microsoft group project\Specification-Led-Development\runs\005-a-banking-transfer-system-with-audit-logging\feature_model.als
+  patterns      : LeastPrivilege, PermissionCompleteness, AuthRequiredEverywhere, NoSelfMutation, AuditCompleteness, AppendOnly, AttributionCorrectness, OwnershipExclusivity, OwnershipBasedAccess, ConservationOfValue, NoInformationLeakage
+  fr count      : 10 declared in spec.md
+  assertions    : 20 total (20/20 PASS via Alloy)
+==============================================================================
+
+  Compliance matrix
+  ----------------------------------------------------------------------------
+  Assertion                    Verdict   Anchor
+  -----------------------------------------------------------------
+  LeastPrivilege               PASS      PATTERN LeastPrivilege: contracts/http-api.md authorization matrix
+  PermissionCompleteness       PASS      PATTERN PermissionCompleteness: contracts/http-api.md authorization matrix
+  AuthRequiredEverywhere       PASS      PATTERN AuthRequiredEverywhere: spec.md FR-010; contracts/http-api.md
+  NoSelfMutation               PASS      PATTERN NoSelfMutation: spec.md edge cases; data-model.md
+  AuditCompleteness            PASS      PATTERN AuditCompleteness: spec.md FR-004; data-model.md
+  AppendOnly                   PASS      PATTERN AppendOnly: spec.md FR-004; data-model.md "append-only"
+  AttributionCorrectness       PASS      PATTERN AttributionCorrectness: data-model.md AuditEntry.actorId
+  OwnershipExclusivity         PASS      PATTERN OwnershipExclusivity: data-model.md Account.ownerId
+  OwnershipBasedAccess         PASS      PATTERN OwnershipBasedAccess: contracts/http-api.md "own accounts only"
+  ConservationOfValue          PASS      PATTERN ConservationOfValue: spec.md FR-001
+  NoInformationLeakage         PASS      PATTERN NoInformationLeakage: spec.md edge cases; contracts/http-api.md 404 responses
+  FR_001_AtomicTransfer        PASS      FEATURE-SPECIFIC: FR-001
+  FR_002_SufficientFunds       PASS      FEATURE-SPECIFIC: FR-002
+  FR_003_UniqueTransactionRef  PASS      FEATURE-SPECIFIC: FR-003
+  FR_004_AuditForEveryEvent    PASS      FEATURE-SPECIFIC: FR-004
+  FR_005_HashChain             PASS      FEATURE-SPECIFIC: FR-005
+  FR_006_DailyLimit            PASS      FEATURE-SPECIFIC: FR-006
+  FR_008_BalanceConsistency    PASS      FEATURE-SPECIFIC: FR-008
+  FR_009_ReversalCompensating  PASS      FEATURE-SPECIFIC: FR-009
+  FR_010_FailClosedAudit       PASS      FEATURE-SPECIFIC: FR-010
+
+  FR coverage
+  ----------------------------------------------------------------------------
+  FR-001  ->  FR_001_AtomicTransfer=PASS, ConservationOfValue=PASS
+  FR-002  ->  FR_002_SufficientFunds=PASS
+  FR-003  ->  FR_003_UniqueTransactionRef=PASS
+  FR-004  ->  FR_004_AuditForEveryEvent=PASS, AuditCompleteness=PASS, AppendOnly=PASS
+  FR-005  ->  FR_005_HashChain=PASS
+  FR-006  ->  FR_006_DailyLimit=PASS
+  FR-007  ->  LeastPrivilege=PASS
+  FR-008  ->  FR_008_BalanceConsistency=PASS
+  FR-009  ->  FR_009_ReversalCompensating=PASS
+  FR-010  ->  FR_010_FailClosedAudit=PASS, AuthRequiredEverywhere=PASS
+
+  All FRs have at least one matching assertion.
+
+==============================================================================
+  Mutation tests  (assertion-strength validation)
+==============================================================================
+
+  Strategy: replace each named fact's body with `{}` (no constraint),
+  then re-run Alloy. Each listed assertion should now FAIL on the
+  mutated model. If it still PASSes, the assertion is vacuous and
+  must be strengthened.
+
+  - MUTATE F_NoSelfTransfer  -> runs\005-a-banking-transfer-system-with-audit-logging\mutated_F_NoSelfTransfer.als
+    rationale: Removing F_NoSelfTransfer allows a Transfer where source = destination, which directly violates the NoSelfMutation assertion. The injection forces such a transfer to exist.
+    expected to FAIL: NoSelfMutation
+      - NoSelfMutation: PASS (vacuous?)
+
+  - MUTATE F_AuditCompleteness  -> runs\005-a-banking-transfer-system-with-audit-logging\mutated_F_AuditCompleteness.als
+    rationale: Removing F_AuditCompleteness allows a Transfer with no AuditEntry. The injection forces such an orphan transfer to exist, violating audit completeness and fail-closed assertions.
+    expected to FAIL: AuditCompleteness, FR_004_AuditForEveryEvent, FR_010_FailClosedAudit
+      - AuditCompleteness: PASS (vacuous?)
+      - FR_004_AuditForEveryEvent: PASS (vacuous?)
+      - FR_010_FailClosedAudit: PASS (vacuous?)
+
+  - MUTATE F_AppendOnlyAuditEntries  -> runs\005-a-banking-transfer-system-with-audit-logging\mutated_F_AppendOnlyAuditEntries.als
+    rationale: Removing F_AppendOnlyAuditEntries allows two distinct AuditEntry atoms to share the same seqNum, violating the append-only uniqueness invariant. The injection forces duplicate sequence numbers.
+    expected to FAIL: AppendOnly
+      - AppendOnly: PASS (vacuous?)
+
+  - MUTATE F_OwnershipBasedAccess  -> runs\005-a-banking-transfer-system-with-audit-logging\mutated_F_OwnershipBasedAccess.als
+    rationale: Removing F_OwnershipBasedAccess allows a Customer to initiate a transfer from an account they don't own. The injection forces this scenario.
+    expected to FAIL: OwnershipBasedAccess
+      - OwnershipBasedAccess: PASS (vacuous?)
+
+  - MUTATE F_AuthRequiredEverywhere  -> runs\005-a-banking-transfer-system-with-audit-logging\mutated_F_AuthRequiredEverywhere.als
+    rationale: Removing F_AuthRequiredEverywhere allows unauthenticated users to initiate transfers. The injection forces a transfer initiated by an unauthenticated user.
+    expected to FAIL: AuthRequiredEverywhere
+      - AuthRequiredEverywhere: PASS (vacuous?)
+
+  - MUTATE F_AttributionCorrectness  -> runs\005-a-banking-transfer-system-with-audit-logging\mutated_F_AttributionCorrectness.als
+    rationale: Removing F_AttributionCorrectness allows an audit entry's actor to differ from the transfer's initiator. The injection forces misattribution.
+    expected to FAIL: AttributionCorrectness
+      - AttributionCorrectness: PASS (vacuous?)
+
+  Mutation summary
+  ----------------------------------------------------------------------------
+  - F_NoSelfTransfer: ASSERTION VACUOUS (NoSelfMutation)
+  - F_AuditCompleteness: ASSERTION VACUOUS (AuditCompleteness, FR_004_AuditForEveryEvent, FR_010_FailClosedAudit)
+  - F_AppendOnlyAuditEntries: ASSERTION VACUOUS (AppendOnly)
+  - F_OwnershipBasedAccess: ASSERTION VACUOUS (OwnershipBasedAccess)
+  - F_AuthRequiredEverywhere: ASSERTION VACUOUS (AuthRequiredEverywhere)
+  - F_AttributionCorrectness: ASSERTION VACUOUS (AttributionCorrectness)
+
+==============================================================================
+  KPI Extraction & Fulfillment Analysis
+==============================================================================
+
+  Extracted 7 KPIs (4 Technical, 3 Business)
+    (7 from SpecKit spec, 0 from user prompt)
+
+  Status Summary
+  ----------------------------------------------------------------------------
+    ✓ Fulfilled (addressed by Alloy code):      0
+    ○ To be measured (runtime metrics):         5
+    ✗ Missing (not addressed):                  2
+
+  KPI Details
+  ----------------------------------------------------------------------------
+  ○ To be measured
+      [Technical | Success Rate] Audit write success rate = 100% (fail-closed)
+          -> Measurement: Circuit breaker metrics on audit store connectivity; transfe
+      [Business | Propensity Score] Insufficient-fund rejection propensity
+          -> Matched to: F_SufficientFunds
+          -> Measurement: Pre-transfer balance-to-amount ratio logged; correlated with
+      [Technical | Success Rate] Reversal correctness rate = 100%
+          -> Measurement: Post-reversal automated balance assertion; exception counter
+      [Technical | Success Rate] Step-up authentication completion rate ≥ 75%
+          -> Measurement: Funnel metrics: step-up issued → step-up completed → transfe
+      [Technical | Success Rate] Transfer completion rate ≥ 99.5% for valid requests
+          -> Measurement: API response status code distribution logged to time-series 
+
+  ✗ Missing
+      [Business | Propensity Score] Account risk profile score
+          -> Measurement: Nightly batch job computes per-account risk score; stored in
+      [Business | Propensity Score] Transfer fraud propensity score (precision ≥ 80%, recall ≥ 90%)
+          -> Measurement: Fraud signal outcomes labeled in case management system; pre
+
+==============================================================================
+  2. Runtime KPI Targets (WAF-derived)
+==============================================================================
+
+  Skipped via --skip-kpi.

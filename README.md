@@ -8,9 +8,9 @@ This project implements a multi-phase pipeline to bridge the gap between feature
 
 1. **Phase 1 (SpecKit Generation):** Takes a free-text description and produces three SpecKit artefacts (spec.md, data-model.md, contracts/http-api.md) via three sequential LLM passes. Each output is validated against regex anchors to enforce the SpecKit template format. 
 
-In parallel:
-2. **Phase 2.1 (Structural Verification):** Reads the SpecKit artefacts and produces a self-contained Alloy 6 model (`feature_model.als`). Runs structural verification and mutation testing.
-3. **Phase 2.2 (KPI Derivation):** Derives runtime KPIs from Functional Requirements (FRs) by matching them against Well-Architected Framework (WAF) principles.
+In parallel:  
+2. **Phase 2.1 (Structural Verification):** Reads the SpecKit artefacts and produces a self-contained Alloy 6 model (`feature_model.als`). Runs structural verification and mutation testing.  
+3. **Phase 2.2 (KPI Derivation):** Derives runtime KPIs from Functional Requirements (FRs) by matching them against Well-Architected Framework (WAF) principles.  
 4. **Phase 3 (Code Generation & Evaluation):** Uses the formally verified outputs to guide agentic code generation via Claude Code (`claude -p`), comparing the result against a baseline generated without verification context.
 
 ## Setup
@@ -86,17 +86,17 @@ bash pipeline/run_pipeline.sh \
 ```
   1. `extract_verification_context.py` reads the speceval run directory (manifest JSON, `.als` model, unified report) and produces a `verification_context.md` with six sections: structural patterns, FR-to-assertion map, mutation results, invariant semantics, feature-specific predicates, and the full unified report.
 
-  2. Two tracks run in parallel via background processes:
-    - **Guided track**: `claude -p` receives the verification context + guided system prompt. Instructed to add `// PATTERN:` comments, `Implements FR-NNN` docstrings, translate each Alloy fact into runtime checks, define `METRIC_*` threshold constants, and add `// HARDENED:` comments for mutation targets. A second `claude -p` pass generates tests following assertion/mutation/KPI/FR naming conventions.
+  2. Two tracks run in parallel via background processes:  
+    - **Guided track**: `claude -p` receives the verification context + guided system prompt. Instructed to add `// PATTERN:` comments, `Implements FR-NNN` docstrings, translate each Alloy fact into runtime checks, define `METRIC_*` threshold constants, and add `// HARDENED:` comments for mutation targets. A second `claude -p` pass generates tests following assertion/mutation/KPI/FR naming conventions.  
     - **Baseline track**: `claude -p` receives only the goal description + a minimal system prompt. No verification context.
 
   3. `score.py` counts concrete artifacts across six weighted dimensions:
-    - Structural Completeness (25%) — `// PATTERN:` comments vs expected patterns
-    - FR Coverage (25%) — `Implements FR-NNN` docstrings vs FR list
-    - Invariant Enforcement (20%) — runtime checks matching named Alloy facts
-    - Test Quality (15%) — test function counts by category (assertion, mutation, KPI, FR)
-    - KPI Instrumentation (10%) — `METRIC_*` constants and threshold definitions
-    - Security Posture (5%) — auth middleware, input validation, ownership checks, rate limiting
+    - Structural Completeness (25%) — `// PATTERN:` comments vs expected patterns  
+    - FR Coverage (25%) — `Implements FR-NNN` docstrings vs FR list  
+    - Invariant Enforcement (20%) — runtime checks matching named Alloy facts  
+    - Test Quality (15%) — test function counts by category (assertion, mutation, KPI, FR)  
+    - KPI Instrumentation (10%) — `METRIC_*` constants and threshold definitions  
+    - Security Posture (5%) — auth middleware, input validation, ownership checks, rate limiting  
 
   4. An LLM comparison judge reads both implementations and produces a qualitative report with per-dimension scores and a verdict.
 
@@ -113,7 +113,7 @@ This interactive Streamlit dashboard provides:
 1. **Business Overview**: A side-by-side comparison of execution costs (API calls), cache savings, and business KPI fulfillment. It also includes the full LLM qualitative comparison report and an overall "Verdict" (e.g., GUIDED WINS).
 2. **Technical Details**: Detailed metrics for the 6 verification quality scores, along with pie charts illustrating test suite composition and a deep dive into KPI alignment and formal constraint mappings.
 
-*Example Comparison Results (Guided vs Baseline):*
+*Example Comparison Results (Guided vs Baseline):*  
 In initial runs, the **Guided** track substantially outperformed the Baseline, yielding 3x more code with comprehensive invariant enforcement, complete test suites, WAF-derived KPIs, and full feature coverage, scoring an overall 8.88/10 vs the Baseline's 1.19/10.
 
 First run on the banking transfer spec (`pipeline_runs/20260519-162520/`):

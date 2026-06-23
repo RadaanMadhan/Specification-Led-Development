@@ -91,19 +91,19 @@ speceval_run() {
   fi
 }
 
-step "4/4  Verify Alloy on bundled snapshots"
+step "4/4  Run health checks"
 
-speceval_run verify-alloy
+speceval_run doctor
 
 step "Done"
 ok "speceval is ready."
 echo
 echo "  Next steps:"
 if [ -f "$ROOT/.env" ] && grep -q "ANTHROPIC_API_KEY=" "$ROOT/.env" 2>/dev/null; then
-  echo "    speceval verify-design <feature-dir>    # Alloy structural verification"
-  echo "    speceval unified-verify <feature-dir>   # both Alloy + KPI halves"
-  echo "    speceval generate \"description\"          # generate SpecKit artefacts"
+  echo "    speceval run <feature-dir>                 # run structural verification + WAF KPI derivation"
+  echo "    speceval generate \"description\"            # generate SpecKit artefacts"
+  echo "    speceval generate-interactive \"description\"# generate with interactive KPI review"
 else
   echo "    Set ANTHROPIC_API_KEY in .env to enable LLM features."
-  echo "    Then: speceval verify-design <feature-dir>"
+  echo "    Then: speceval run <feature-dir>"
 fi

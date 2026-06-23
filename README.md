@@ -1,246 +1,120 @@
 # Specification-Led Development
 
-A system that turns natural-language feature descriptions into formally verified specifications, then uses those verification artifacts to guide higher-quality code generation.
+A system that turns natural language feature descriptions into formally verified specifications, then uses those verification artifacts to guide higher-quality code generation.
 
-## What changed on this branch
+## Overview
 
-# KPI Dashboard Feature
+This project implements a multi-phase pipeline to bridge the gap between feature descriptions and secure, verified code:
 
-The KPI Dashboard provides an interactive Streamlit interface for reviewing extracted KPIs and their fulfillment status against the generated Alloy code.
+1. **Phase 1 (SpecKit Generation):** Takes a free-text description and produces three SpecKit artefacts (spec.md, data-model.md, contracts/http-api.md) via three sequential LLM passes. Each output is validated against regex anchors to enforce the SpecKit template format. 
 
-## Features
+In parallel:
+2. **Phase 2.1 (Structural Verification):** Reads the SpecKit artefacts and produces a self-contained Alloy 6 model (`feature_model.als`). Runs structural verification and mutation testing.
+3. **Phase 2.2 (KPI Derivation):** Derives runtime KPIs from Functional Requirements (FRs) by matching them against Well-Architected Framework (WAF) principles.
+4. **Phase 3 (Code Generation & Evaluation):** Uses the formally verified outputs to guide agentic code generation via Claude Code (`claude -p`), comparing the result against a baseline generated without verification context.
 
-✅ **Color-Coded KPI Status**
-- 🟢 **Green (Fulfilled)**: KPI is directly addressed by an Alloy predicate or assertion
-- 🟡 **Yellow (To be measured)**: KPI requires runtime measurement (success rates, throughput, etc.)
-- 🔴 **Red (Missing)**: KPI is not addressed in the Alloy code
+## Setup
 
-📊 **KPI Summary Statistics**
-- Total KPIs extracted
-- Breakdown by status (Fulfilled, To be measured, Missing)
-- Source tracking (SpecKit vs user prompt)
+```bash
+cp .env.example .env
+# Fill in ANTHROPIC_API_KEY and OPENAI_API_KEY
 
-🔄 **Interactive Regeneration**
-- Modify your original prompt to improve KPI extraction
-- Regenerate SpecKit artefacts with new description
-- Loop until satisfied with KPI coverage
+pip install -r requirements.txt
 
-📥 **Export Functionality**
-- Download KPIs as JSON for integration with other tools
+cd src/speceval
+bash bootstrap.sh
+```
 
 ## CLI Commands
 
-### View Dashboard for Existing Feature
+The CLI provides several commands to interact with the pipeline.
 
+### Core Workflow
+
+**1. Generate SpecKit Artefacts (Phase 1)**
 ```bash
-speceval dashboard specs/005-banking-transfer-system
+speceval generate "A banking transfer system with audit logging"
 ```
+Produces `spec.md`, `data-model.md`, and `contracts/http-api.md` inside `specs/<feature-id>/` using three sequential LLM passes. Each output is validated against regex anchors to enforce the SpecKit template format. Results are content-addressed cached by SHA-256 over (description + config + prompts).
+  1. spec.md — functional requirements, user stories with Given/When/Then scenarios, success criteria
+  2. data-model.md — entities, fields, validation rules, relationships, indexes
+  3. contracts/http-api.md — authentication, authorization matrix, endpoint definitions with FR traceability
 
-This displays KPIs extracted from an existing feature directory's `kpis.json` file.
+**2. Run Verification & KPI Derivation (Phases 2.1 and 2.2)**
+```bash
+speceval run specs/<feature-id>/
+```
+Runs structural verification (Alloy) and runtime KPI derivation (WAF) on an existing feature directory. Produces a `unified_report.md` inside `runs/<feature-id>/`.
+*Options:* `--from-description` to chain Phase 0 automatically, `--skip-alloy` / `--skip-kpi` to run one half, and `--no-mutate` to skip mutation testing.
 
-### Generate with Interactive Dashboard
+A design-mode lifter (lifter_design.py, verify.py, prompts.py) reads all three SpecKit artefacts plus the `patterns.md` catalogue and produces a self-contained `feature_model.als` with a structured manifest containing FR-to-assertion maps and mutation targets.
 
+**3. Health Checks**
+```bash
+speceval doctor
+```
+Checks Java 11+, Alloy JAR, and runs bundled test snapshots.
+
+### Interactive Workflow (Pre-Code-Generation Dashboard)
+
+The KPI Dashboard provides an interactive Streamlit interface for reviewing extracted KPIs before any code or Alloy models are generated. It helps ensure that your initial prompt produces observable and structurally sound requirements.
+
+**Generate with Interactive Dashboard**
 ```bash
 speceval generate-interactive "A banking transfer system with audit logging"
 ```
+This command generates the SpecKit artefacts, extracts KPIs, runs Alloy structural verification, and launches an interactive dashboard. The dashboard categorizes KPIs into **Technical** and **Business** types, and evaluates them on two dimensions:
+- 🛡️ **Logically Guaranteed:** Whether the KPI can be mapped to a formal structural constraint in the generated Alloy code.
+- 📊 **Operationally Observable:** Whether there is a clear runtime metric or telemetry strategy.
 
-This command:
-1. Generates SpecKit artefacts (spec.md, data-model.md, http-api.md)
-2. Extracts KPIs from the spec
-3. Launches the dashboard for review
-4. Allows you to:
-   - Review KPI fulfillment status
-   - Click "Regenerate" to modify your prompt and try again
-   - Click "Continue" when satisfied
-5. Repeats until you're happy or reach max iterations (5)
+You can review these metrics, modify your prompt to regenerate the artefacts if there are missing constraints or telemetry strategies, and proceed only when satisfied with the specifications.
 
-### Optional: Customize Generation
-
+**View Dashboard for Existing Feature**
 ```bash
-speceval generate-interactive \
-  --project-type "web-api" \
-  --tech-stack "Python, FastAPI, PostgreSQL" \
-  --target-frs 12 \
-  --feature-id "my-custom-feature" \
-  "Your feature description"
+speceval dashboard specs/<feature-id>
 ```
+Displays the KPI dashboard for an already generated feature.
 
-## Dashboard Sections
+## Code Generation Pipeline (Phase 3)
 
-### Header
-- Feature name and ID
-- Quick status summary (total KPIs, counts by status)
-
-### KPI Details (Grouped by Status)
-Each expandable section shows:
-- KPI name and category
-- Description
-- Alloy match (if Fulfilled)
-- Measurement strategy
-
-### Action Buttons
-- **🔄 Regenerate with Modified Prompt**: Opens a text area to edit your description and restart generation
-- **✓ Continue / Close**: Accept current KPIs and proceed
-- **📋 Export KPIs as JSON**: Download the full KPI dataset
-
-## KPI Matching Algorithm
-
-The dashboard uses a similarity-based algorithm to match KPIs against Alloy code:
-
-1. **Extracts** all predicate, assertion, and fact names from the Alloy model
-2. **Normalizes** names (lowercase, removes special characters)
-3. **Computes similarity** using:
-   - Exact match (score: 1.0)
-   - Substring containment (score: 0.7)
-   - Trigram overlap (score: 0.0-1.0)
-4. **Tags** based on threshold:
-   - ≥ 0.6: **Fulfilled** ✓
-   - 0.3-0.6 or runtime metric: **To be measured** ○
-   - < 0.3: **Missing** ✗
-
-## JSON Output Format
-
-The `kpis.json` file saved in your feature directory contains:
-
-```json
-{
-  "feature_id": "005-banking-transfer-system",
-  "feature_name": "Banking Transfer System",
-  "metadata": {
-    "total_speckit_kpis": 8,
-    "total_user_prompt_kpis": 3,
-    "total_unique_kpis": 10
-  },
-  "kpis": [
-    {
-      "name": "Audit Entry Immutability",
-      "category": "Data Integrity",
-      "description": "All audit entries must be append-only",
-      "formal_constraint": "fact F_AppendOnly",
-      "measurement_strategy": "Verify no audit record is ever modified",
-      "source": "speckit",
-      "source_location": "spec.md: Formal Requirements & Advanced KPI Mapping",
-      "status": "Fulfilled",
-      "matched_constraint": "F_AppendOnlyAuditEntries"
-    },
-    {
-      "name": "Success Rate",
-      "category": "Success Rate",
-      "description": "Ratio of successful operations",
-      "formal_constraint": null,
-      "measurement_strategy": "Ratio of successful operations",
-      "source": "user_prompt",
-      "source_location": "User-provided description",
-      "status": "To be measured",
-      "matched_constraint": null
-    }
-  ]
-}
-```
-
-## Example Workflow
-
-```bash
-# Step 1: Generate interactively
-$ speceval generate-interactive "A banking system with transfers and audit logging"
-[gen]     iteration 1/5
-[gen]     generating SpecKit artefacts...
-[gen]     provider: Anthropic (claude-3-5-sonnet-20241022)
-[gen]     output:   /path/to/specs
-
-[kpi]     extracting KPIs from spec.md...
-[kpi]     extracted 8 KPIs
-
-[dashboard] launching KPI review dashboard...
-```
-
-At this point, Streamlit opens in your browser showing:
-- ✓ 5 Fulfilled KPIs (data integrity, access control, etc.)
-- ○ 2 To be measured (success rate, transaction throughput)
-- ✗ 1 Missing (cost tracking)
-
-You can either:
-- Click "Continue" to proceed with these KPIs
-- Click "Regenerate" to modify your prompt and try again:
-  - "A banking system with transfers, audit logging, and cost tracking per transaction"
-  - Dashboard regenerates with the updated spec and KPIs
-  - Now shows all 8 KPIs as Fulfilled
-
-# Step 2: Verification
-$ speceval run specs/005-banking-transfer-system
-[parse]   feature '005-banking-transfer-system', 8 FRs, 3 user stories
-[lift]    calling LLM...
-[alloy]   running alloy.jar on feature_model.als...
-[kpi]     extracted 8 KPIs (8 from spec.md)
-```
-
-The full verification runs and dashboard displays KPI-Alloy alignment.
-
-
-##Previous changes on the radaan-code-generation branch:
-
-### 1. CLI redesign
-
-The CLI was rewritten from scratch with three clean commands:
-
-```bash
-speceval generate "A banking transfer system with audit logging"
-speceval run specs/005-a-banking-transfer-system-with-audit-logging/
-speceval doctor
-```
-
-**`speceval generate`** — Phase 0. Takes a free-text description and produces three SpecKit artefacts (`spec.md`, `data-model.md`, `contracts/http-api.md`) via three sequential LLM passes. Each output is validated against regex anchors to enforce the SpecKit template format. Results are content-addressed cached by SHA-256 over (description + config + prompts).
-
-**`speceval run`** — Phases 1 + 2. Runs structural verification (Alloy) and runtime KPI derivation (WAF) on an existing feature directory. Supports `--from-description` to chain Phase 0 automatically, `--skip-alloy` / `--skip-kpi` to run one half, and `--no-mutate` to skip mutation testing. Produces `runs/<feature-id>/unified_report.md`.
-
-**`speceval doctor`** — Checks Java 11+, Alloy JAR, and runs bundled test snapshots.
-
-The old commands (`check`, `unified-verify`) are replaced.
-
-### 2. Integrated SpecKit generator
-
-New file: `src/speceval/speceval/speckit_generator.py`.
-
-Three-phase generation pipeline:
-1. **spec.md** — functional requirements, user stories with Given/When/Then scenarios, success criteria
-2. **data-model.md** — entities, fields, validation rules, relationships, indexes
-3. **contracts/http-api.md** — authentication, authorization matrix, endpoint definitions with FR traceability
-
-Each phase has a dedicated system prompt enforcing exact template structure. The generator auto-numbers feature IDs by scanning existing `specs/` directories and validates every output before writing.
-
-A new design-mode lifter (`lifter_design.py`, `verify.py`, `prompts.py`) replaces the old `lifter.py`. It reads all three SpecKit artefacts plus the `patterns.md` catalogue and produces a self-contained `feature_model.als` with a structured manifest containing FR-to-assertion maps and mutation targets.
-
-### 3. Claude Code integration for code generation
-
-New directory: `pipeline/`.
-
-A pipeline that uses speceval's formally verified output to guide agentic code generation via `claude -p` (Claude Code CLI in headless mode), then compares the result against a baseline generated without verification context.
-
-**How it works:**
+The pipeline uses speceval's formally verified output to guide agentic code generation via `claude -p` (Claude Code CLI in headless mode), then compares the result against a baseline prompt-to-code-generation framework.
 
 ```bash
 bash pipeline/run_pipeline.sh \
-  runs/005-a-banking-transfer-system-with-audit-logging/ \
+  runs/<feature-id>/ \
   "A banking transfer system with audit logging"
 ```
+  1. `extract_verification_context.py` reads the speceval run directory (manifest JSON, `.als` model, unified report) and produces a `verification_context.md` with six sections: structural patterns, FR-to-assertion map, mutation results, invariant semantics, feature-specific predicates, and the full unified report.
 
-1. `extract_verification_context.py` reads the speceval run directory (manifest JSON, `.als` model, unified report) and produces a `verification_context.md` with six sections: structural patterns, FR-to-assertion map, mutation results, invariant semantics, feature-specific predicates, and the full unified report.
+  2. Two tracks run in parallel via background processes:
+    - **Guided track**: `claude -p` receives the verification context + guided system prompt. Instructed to add `// PATTERN:` comments, `Implements FR-NNN` docstrings, translate each Alloy fact into runtime checks, define `METRIC_*` threshold constants, and add `// HARDENED:` comments for mutation targets. A second `claude -p` pass generates tests following assertion/mutation/KPI/FR naming conventions.
+    - **Baseline track**: `claude -p` receives only the goal description + a minimal system prompt. No verification context.
 
-2. Two tracks run in parallel via background processes:
-   - **Guided track** — `claude -p` receives the verification context + guided system prompt. Instructed to add `// PATTERN:` comments, `Implements FR-NNN` docstrings, translate each Alloy fact into a runtime check, define `METRIC_*` threshold constants, and add `// HARDENED:` comments for mutation targets. A second `claude -p` pass generates tests following assertion/mutation/KPI/FR naming conventions.
-   - **Baseline track** — `claude -p` receives only the goal description + a minimal system prompt. No verification context.
+  3. `score.py` counts concrete artifacts across six weighted dimensions:
+    - Structural Completeness (25%) — `// PATTERN:` comments vs expected patterns
+    - FR Coverage (25%) — `Implements FR-NNN` docstrings vs FR list
+    - Invariant Enforcement (20%) — runtime checks matching named Alloy facts
+    - Test Quality (15%) — test function counts by category (assertion, mutation, KPI, FR)
+    - KPI Instrumentation (10%) — `METRIC_*` constants and threshold definitions
+    - Security Posture (5%) — auth middleware, input validation, ownership checks, rate limiting
 
-3. `score.py` counts concrete artifacts across six weighted dimensions:
-   - Structural Completeness (25%) — `// PATTERN:` comments vs expected patterns
-   - FR Coverage (25%) — `Implements FR-NNN` docstrings vs FR list
-   - Invariant Enforcement (20%) — runtime checks matching named Alloy facts
-   - Test Quality (15%) — test function counts by category (assertion, mutation, KPI, FR)
-   - KPI Instrumentation (10%) — `METRIC_*` constants and threshold definitions
-   - Security Posture (5%) — auth middleware, input validation, ownership checks, rate limiting
+  4. An LLM comparison judge reads both implementations and produces a qualitative report with per-dimension scores and a verdict.
 
-4. An LLM comparison judge reads both implementations and produces a qualitative report with per-dimension scores and a verdict.
 
-### 4. Comparison results: guided vs baseline
+### Evaluation Visualization Dashboard
+
+After the code generation pipeline finishes, you can visualize the comparison results using the post-code-generation dashboard located in the `visualization/` folder:
+
+```bash
+python -m visualization.visualize
+```
+
+This interactive Streamlit dashboard provides:
+1. **Business Overview**: A side-by-side comparison of execution costs (API calls), cache savings, and business KPI fulfillment. It also includes the full LLM qualitative comparison report and an overall "Verdict" (e.g., GUIDED WINS).
+2. **Technical Details**: Detailed metrics for the 6 verification quality scores, along with pie charts illustrating test suite composition and a deep dive into KPI alignment and formal constraint mappings.
+
+*Example Comparison Results (Guided vs Baseline):*
+In initial runs, the **Guided** track substantially outperformed the Baseline, yielding 3x more code with comprehensive invariant enforcement, complete test suites, WAF-derived KPIs, and full feature coverage, scoring an overall 8.88/10 vs the Baseline's 1.19/10.
 
 First run on the banking transfer spec (`pipeline_runs/20260519-162520/`):
 
@@ -268,46 +142,35 @@ Key differences:
 
 The full detailed comparison is at `pipeline_runs/20260519-162520/detailed_comparison.md`.
 
-## Project structure
 
-```
+## Project Structure
+
+```text
 src/
   speceval/                   # Structural verification + SpecKit generator
     speceval/
-      cli.py                  # CLI: generate, run, doctor
-      speckit_generator.py    # Phase 0: free-text → SpecKit artefacts
-      verify.py               # Phase 1: Alloy verification orchestrator
-      unified_run.py          # Unified orchestrator (phases 0+1+2)
-      unified_reporter.py     # Report rendering (MD + TXT)
-      prompts.py              # Design-mode LLM prompts
+      cli.py                  # CLI commands
+      speckit_generator.py    # Phase 1
+      verify.py               # Phase 2.1: Alloy verification
+      unified_run.py          # Unified orchestrator
+      unified_reporter.py     # Report rendering
       lifter_design.py        # LLM-driven Alloy model generation
-      parser.py               # SpecKit markdown parser
       runner.py               # Alloy JAR invocation
-      providers/              # LLM provider abstraction (Anthropic)
     alloy/                    # Base Alloy domain + KPI library
-    tools/                    # alloy.jar (downloaded via bootstrap.sh)
-    patterns.md               # 16 structural correctness patterns
+    tools/                    # alloy.jar
+    patterns.md               # Structural correctness patterns
   kpi/                        # WAF-derived runtime KPI derivation
-    kpi_agent.py              # FR → WAF embedding → GQM+KPI pipeline
-    db/                       # WAF records + embedding cache
+    kpi_agent.py              # FR → WAF embedding → GQM+KPI
 specs/                        # SpecKit feature directories
 runs/                         # Verification run outputs
 pipeline/                     # Code-generation evaluation pipeline
-  run_pipeline.sh             # Orchestrator (guided + baseline tracks)
-  extract_verification_context.py  # Turns run output → verification_context.md
+  run_pipeline.sh             # Orchestrator
   score.py                    # 6-dimensional artifact scorer
-  prompts/                    # System prompts for codegen/testgen/comparison
 pipeline_runs/                # Timestamped pipeline execution results
-```
-
-## Setup
-
-```bash
-cp .env.example .env
-# Fill in ANTHROPIC_API_KEY and OPENAI_API_KEY
-
-pip install -r requirements.txt
-
-cd src/speceval
-bash bootstrap.sh
+visualization/                # Post-code-generation evaluation dashboard
+  visualize.py                # Dashboard launch entry point
+  dashboard.py                # Streamlit UI
+  ingest.py                   # Data ingestion from pipeline runs
+  transform.py                # Data transformations and charting
+  visualization.db            # SQLite database for pipeline metrics
 ```

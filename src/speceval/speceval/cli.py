@@ -384,10 +384,6 @@ def extract_kpis(spec_md: Path, user_prompt: str, output: Path) -> None:
     for kpi in collection.merged_kpis:
         click.echo(f"  • {kpi.category}: {kpi.name}")
 
-# ---------------------------------------------------------------------------
-# generate-interactive — SpecKit generation with KPI dashboard review
-# ---------------------------------------------------------------------------
-
 @main.command("generate-interactive")
 @click.argument("description")
 @click.option(
@@ -417,7 +413,9 @@ def extract_kpis(spec_md: Path, user_prompt: str, output: Path) -> None:
     default=None,
     help="Base output directory for specs (default: <project-root>/specs/).",
 )
+@click.pass_context
 def cmd_generate_interactive(
+    ctx,
     description: str,
     project_type: str,
     tech_stack: str,
@@ -427,8 +425,8 @@ def cmd_generate_interactive(
 ) -> None:
     """Generate SpecKit artefacts with interactive KPI dashboard for review.
 
-    After generation, a Streamlit dashboard appears showing extracted KPIs
-    color-coded by fulfillment status. You can:
+    After generation and structural verification, a Streamlit dashboard 
+    appears showing extracted KPIs mapped to Alloy code. You can:
     - Review the KPIs and their mappings to Alloy code
     - Regenerate with a modified prompt if needed
     - Continue when satisfied
@@ -438,8 +436,9 @@ def cmd_generate_interactive(
         speceval generate-interactive "A banking transfer system with audit logging"
     """
     import os
-    from speceval.speckit_generator import GenerationError, GeneratorConfig, generate_speckit
-    from speceval.kpi_extractor import extract_all_kpis, save_kpis_json
+    from speceval.unified_run import run_unified
+    from speceval.speckit_generator import GeneratorConfig
+    from speceval.verify import get_run_dir
 
     try:
         provider = AnthropicProvider.from_env()
@@ -448,14 +447,15 @@ def cmd_generate_interactive(
             f"{e}\nTip: copy .env.example to .env and fill in your key."
         )
 
+    alloy_jar = ctx.obj["alloy_jar"]
+    java_bin = ctx.obj["java_bin"]
+
     cfg = GeneratorConfig(
         project_type=project_type,
         tech_stack=tech_stack,
         target_fr_count=target_frs,
         feature_id=feature_id,
     )
-
-    output_base = output_dir or _default_specs_dir()
 
     current_prompt = description
     iteration = 0
@@ -464,47 +464,31 @@ def cmd_generate_interactive(
     while iteration < max_iterations:
         iteration += 1
         click.echo(f"[gen]     iteration {iteration}/{max_iterations}")
-        click.echo(f"[gen]     generating SpecKit artefacts...")
-        click.echo(f"[gen]     provider: {provider.name} ({provider.model})")
-        click.echo(f"[gen]     output:   {output_base}")
 
         try:
-            result = generate_speckit(
-                current_prompt,
-                config=cfg,
-                provider=provider,
-                output_base=output_base,
-                cache_dir=_default_gen_cache_dir(),
-                use_cache=False,  # No cache in interactive mode
+            result = run_unified(
+                feature_dir=None,
+                alloy_jar=alloy_jar,
+                java_bin=java_bin,
+                no_cache=True,  # No cache in interactive mode
+                no_mutate=False,
+                skip_alloy=False,
+                skip_kpi=False,
+                description=current_prompt,
+                gen_config=cfg,
                 echo=click.echo,
             )
-        except GenerationError as e:
+        except Exception as e:
             raise click.ClickException(str(e))
 
-        feature_dir = result.feature_dir
-        feature_id_resolved = result.feature_id
-
-        # Extract KPIs
-        click.echo("[kpi]     extracting KPIs from spec.md...")
-        kpi_collection = extract_all_kpis(
-            feature_id=feature_id_resolved,
-            spec_md=result.spec_md,
-            user_prompt=current_prompt,
-            feature_name=feature_id_resolved.replace("-", " ").title(),
-            alloy_code="",  # Alloy code not available in generation-only mode
-        )
-
-        kpi_json_path = feature_dir / "kpis.json"
-        save_kpis_json(kpi_collection, kpi_json_path)
+        feature_dir = result["feature_dir"]
+        feature_id_resolved = result["feature_id"]
+        run_dir = get_run_dir(feature_id_resolved)
+        kpi_json_path = run_dir / "kpis.json"
 
         # Save the prompt for reference
         (feature_dir / "generation_prompt.txt").write_text(
             current_prompt, encoding="utf-8"
-        )
-
-        click.echo(
-            f"[kpi]     extracted {len(kpi_collection.merged_kpis)} KPIs → "
-            f"{kpi_json_path}"
         )
 
         # Show dashboard
